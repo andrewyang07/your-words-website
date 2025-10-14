@@ -818,7 +818,7 @@ export default function HomePage() {
                                     >
                                         <RotateCcw className="w-4 h-4 text-bible-700 dark:text-bible-300" />
                                         <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                                            {selectedChapter ? '重选' : '返回'}
+                                            {selectedChapter ? '重选章节' : '返回'}
                                         </span>
                                     </button>
                                 )}
