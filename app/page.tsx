@@ -1064,9 +1064,7 @@ export default function HomePage() {
                     <div className="flex items-center gap-2 flex-wrap">
                         {/* 默认精选经文提示 */}
                         {!selectedBook && filterType !== 'favorites' && !showShareBanner && (
-                            <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">
-                                📖 精選 114 節經文
-                            </span>
+                            <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">📖 精選 114 節經文</span>
                         )}
 
                         {filterType === 'favorites' && (
@@ -1076,9 +1074,7 @@ export default function HomePage() {
                                     已收藏
                                 </span>
                                 {favoritesCount > 0 && (
-                                    <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">
-                                        💡 點擊「分享」生成鏈接
-                                    </span>
+                                    <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">💡 可生成鏈接分享</span>
                                 )}
                             </>
                         )}
