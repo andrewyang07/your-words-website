@@ -65,6 +65,10 @@ export default function HomePage() {
     const [shareToast, setShareToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
     const [hasAddedAllShared, setHasAddedAllShared] = useState(false); // 是否已一键收藏
 
+    // 收藏经文的完整数据
+    const [favoritesVersesData, setFavoritesVersesData] = useState<Verse[]>([]);
+    const [loadingFavorites, setLoadingFavorites] = useState(false);
+
     // 从 localStorage 读取引导卡片状态
     useEffect(() => {
         const guideDismissed = localStorage.getItem('guide-dismissed');
@@ -168,6 +172,7 @@ export default function HomePage() {
             if (decodedVerses.length > 0) {
                 setSharedVerses(decodedVerses);
                 setShowShareBanner(true);
+                setShowAllContent(true); // 自动切换到阅读模式，显示所有内容
 
                 // 加载分享的经文数据
                 const loadSharedVerses = async () => {
@@ -217,6 +222,77 @@ export default function HomePage() {
         }
     }, [shareToast.show]);
 
+    // 当切换到收藏模式时，加载所有收藏的经文
+    useEffect(() => {
+        if (filterType !== 'favorites' || books.length === 0) {
+            setFavoritesVersesData([]);
+            return;
+        }
+
+        const loadAllFavorites = async () => {
+            setLoadingFavorites(true);
+            try {
+                const favoriteIds = getFavoritesList();
+                if (favoriteIds.length === 0) {
+                    setFavoritesVersesData([]);
+                    setLoadingFavorites(false);
+                    return;
+                }
+
+                const { loadChapterVerses } = await import('@/lib/dataLoader');
+                
+                // 解析所有收藏的ID并按章节分组
+                const chapterGroups = new Map<string, Set<number>>();
+                const parsedFavorites: Array<{ bookKey: string; chapter: number; verse: number }> = [];
+                
+                favoriteIds.forEach((id) => {
+                    const parts = id.split('-');
+                    if (parts.length < 3) return;
+                    
+                    const verse = parseInt(parts[parts.length - 1]);
+                    const chapter = parseInt(parts[parts.length - 2]);
+                    const bookKey = parts.slice(0, -2).join('-');
+                    
+                    parsedFavorites.push({ bookKey, chapter, verse });
+                    
+                    const key = `${bookKey}-${chapter}`;
+                    if (!chapterGroups.has(key)) {
+                        chapterGroups.set(key, new Set());
+                    }
+                    chapterGroups.get(key)!.add(verse);
+                });
+
+                // 批量加载所有需要的章节
+                const allVerses: Verse[] = [];
+                for (const [key, verseNumbers] of chapterGroups) {
+                    const lastDashIndex = key.lastIndexOf('-');
+                    const bookKey = key.substring(0, lastDashIndex);
+                    const chapterStr = key.substring(lastDashIndex + 1);
+                    const chapter = parseInt(chapterStr);
+                    
+                    try {
+                        const chapterVerses = await loadChapterVerses(bookKey, chapter, language);
+                        // 只保留收藏的那些节
+                        const filteredVerses = chapterVerses.filter((v) => verseNumbers.has(v.verse));
+                        allVerses.push(...filteredVerses);
+                    } catch (error) {
+                        console.error(`加载章节失败 ${bookKey} ${chapter}:`, error);
+                        // 继续加载其他章节
+                    }
+                }
+
+                setFavoritesVersesData(allVerses);
+            } catch (error) {
+                console.error('加载收藏经文失败:', error);
+                setFavoritesVersesData([]);
+            } finally {
+                setLoadingFavorites(false);
+            }
+        };
+
+        loadAllFavorites();
+    }, [filterType, books, language, getFavoritesList]);
+
     // 筛选和排序经文
     const displayVerses = useMemo(() => {
         // 如果有分享链接，优先显示分享的经文
@@ -234,13 +310,13 @@ export default function HomePage() {
             return [];
         }
 
-        // 否则显示精选经文（筛选后）
-        let filtered = [...verses];
-
-        // 应用收藏筛选
+        // 如果是收藏模式，显示所有收藏的经文
         if (filterType === 'favorites') {
-            filtered = filtered.filter((v) => isFavorite(v.id));
+            return favoritesVersesData;
         }
+
+        // 否则显示精选经文
+        let filtered = [...verses];
 
         // 随机排序（使用 Fisher-Yates 洗牌算法）
         if (shuffleKey > 0) {
@@ -253,7 +329,7 @@ export default function HomePage() {
         }
 
         return filtered;
-    }, [verses, chapterVerses, filterType, selectedBook, selectedChapter, shuffleKey, isFavorite, showShareBanner, sharedVersesData]);
+    }, [verses, chapterVerses, filterType, selectedBook, selectedChapter, shuffleKey, isFavorite, showShareBanner, sharedVersesData, favoritesVersesData]);
 
     const handleShuffle = () => {
         setShuffleKey((prev) => prev + 1);
@@ -377,7 +453,8 @@ export default function HomePage() {
 
     // 一键收藏分享的经文
     const handleAddAllShared = () => {
-        const verseIds = sharedVerses.map((v) => `${v.bookKey}-${v.chapter}-${v.verse}`);
+        // 使用 sharedVersesData（实际加载的经文）的 id，而不是手动拼接
+        const verseIds = sharedVersesData.map((v) => v.id);
         addFavorites(verseIds);
         setHasAddedAllShared(true); // 标记为已收藏
         setShareToast({ show: true, message: `已添加 ${verseIds.length} 节经文到收藏` });
@@ -775,11 +852,11 @@ export default function HomePage() {
                     >
                         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                             <div className="flex items-center gap-3 text-center sm:text-left">
-                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                                    hasAddedAllShared 
-                                        ? 'bg-green-500 dark:bg-green-600' 
-                                        : 'bg-blue-500 dark:bg-blue-600'
-                                }`}>
+                                <div
+                                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                                        hasAddedAllShared ? 'bg-green-500 dark:bg-green-600' : 'bg-blue-500 dark:bg-blue-600'
+                                    }`}
+                                >
                                     {hasAddedAllShared ? (
                                         <Star className="w-5 h-5 text-white fill-white" />
                                     ) : (
@@ -788,16 +865,14 @@ export default function HomePage() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
-                                        {hasAddedAllShared 
+                                        {hasAddedAllShared
                                             ? `已成功收藏 ${sharedVerses.length} 节经文 ✨`
-                                            : `这是分享的收藏列表（共 ${sharedVerses.length} 节经文）`
-                                        }
+                                            : `这是分享的收藏列表（共 ${sharedVerses.length} 节经文）`}
                                     </p>
                                     <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
                                         {hasAddedAllShared
                                             ? '所有卡片已标记为收藏，可以点击"取消"关闭此提示'
-                                            : '您可以一键将这些经文添加到自己的收藏中'
-                                        }
+                                            : '您可以一键将这些经文添加到自己的收藏中'}
                                     </p>
                                 </div>
                             </div>
@@ -987,7 +1062,7 @@ export default function HomePage() {
 
             {/* 经文卡片区域 */}
             <div className="max-w-7xl mx-auto">
-                {loadingChapter ? (
+                {(loadingChapter || loadingFavorites) ? (
                     <div className="text-center py-12">
                         <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
                         <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加载经文中...</p>
