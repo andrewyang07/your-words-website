@@ -18,6 +18,7 @@ import {
     ChevronDown,
     Check,
     Share2,
+    Info,
 } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
@@ -72,6 +73,9 @@ export default function HomePage() {
 
     // 心版 App 推广卡片显示状态（每次刷新都显示）
     const [showAppPromo, setShowAppPromo] = useState(true);
+
+    // 关于弹窗显示状态
+    const [showAbout, setShowAbout] = useState(false);
 
     // 从 localStorage 读取引导卡片状态
     useEffect(() => {
@@ -552,6 +556,18 @@ export default function HomePage() {
                         </div>
 
                         <div className="flex items-center gap-2">
+                            {/* 关于按钮 */}
+                            <button
+                                onClick={() => setShowAbout(true)}
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                title="关于本站"
+                                aria-label="关于本站"
+                            >
+                                <Info className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">关于</span>
+                            </button>
+
                             {/* 帮助按钮 */}
                             <button
                                 onClick={handleOpenGuide}
@@ -947,6 +963,143 @@ export default function HomePage() {
                                 <span>{shareToast.message}</span>
                             </div>
                         </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* 关于弹窗 */}
+                <AnimatePresence>
+                    {showAbout && (
+                        <>
+                            {/* 背景遮罩 */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+                                onClick={() => setShowAbout(false)}
+                            />
+
+                            {/* 弹窗内容 */}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                transition={{ duration: 0.2 }}
+                                className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-3xl md:max-h-[85vh] z-50"
+                            >
+                                <div className="h-full bg-gradient-to-br from-white to-bible-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col border-2 border-bible-200 dark:border-gray-700">
+                                    {/* 标题栏 */}
+                                    <div className="flex items-center justify-between p-5 md:p-6 border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-800">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-bible-500 to-bible-600 dark:from-bible-400 dark:to-bible-500 rounded-xl flex items-center justify-center shadow-md">
+                                                <Info className="w-6 h-6 text-white" />
+                                            </div>
+                                            <h2 className="text-2xl font-bold text-bible-800 dark:text-bible-200 font-chinese">關於本站</h2>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowAbout(false)}
+                                            className="p-2 hover:bg-bible-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                            title="关闭"
+                                        >
+                                            <X className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                                        </button>
+                                    </div>
+
+                                    {/* 内容区域 */}
+                                    <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-6 font-chinese">
+                                        {/* 开发故事 */}
+                                        <section>
+                                            <h3 className="text-lg font-bold text-bible-700 dark:text-bible-300 mb-3 flex items-center gap-2">
+                                                <span className="text-2xl">📱</span>
+                                                從 App 到 Web 的旅程
+                                            </h3>
+                                            <div className="space-y-3 text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                                                <p>
+                                                    最初，我嘗試開發一款名為「你的話語」的 iOS App，以卡片形式幫助弟兄姊妹背誦經文。
+                                                    然而，受限於平台（無法覆蓋安卓用戶）和安裝門檻，我意識到需要一個更開放、更易訪問的解決方案。
+                                                </p>
+                                                <p>
+                                                    在一次主日講道中，聖靈突然給了我靈感（<span className="text-amber-600 dark:text-amber-400 font-medium">友情提醒：請不要效法我，還是要好好聽講道 😊</span>），
+                                                    我在紙上勾勒出了這個網站的雛形。這兩張潦草的草圖，見證了從想法到現實的第一步。
+                                                </p>
+                                            </div>
+                                        </section>
+
+                                        {/* 草图展示 */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
+                                                <Image
+                                                    src="/sketch-1.jpeg"
+                                                    alt="網站構思草圖 1"
+                                                    width={600}
+                                                    height={450}
+                                                    className="w-full h-auto object-cover"
+                                                />
+                                                <p className="p-2 text-xs text-center text-gray-500 dark:text-gray-400">構思草圖（一）</p>
+                                            </div>
+                                            <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
+                                                <Image
+                                                    src="/sketch-2.jpeg"
+                                                    alt="網站構思草圖 2"
+                                                    width={600}
+                                                    height={450}
+                                                    className="w-full h-auto object-cover"
+                                                />
+                                                <p className="p-2 text-xs text-center text-gray-500 dark:text-gray-400">構思草圖（二）</p>
+                                            </div>
+                                        </div>
+
+                                        {/* 初心与使命 */}
+                                        <section>
+                                            <h3 className="text-lg font-bold text-bible-700 dark:text-bible-300 mb-3 flex items-center gap-2">
+                                                <span className="text-2xl">💝</span>
+                                                初心與使命
+                                            </h3>
+                                            <div className="space-y-3 text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                                                <p>
+                                                    這個網站的誕生，源於一個簡單卻深刻的渴望 —— 幫助自己和其他基督徒將神的話語藏在心裡。
+                                                    正如<span className="font-semibold text-bible-600 dark:text-bible-400">詩篇 119:11</span> 所說：
+                                                </p>
+                                                <blockquote className="pl-4 border-l-4 border-bible-400 dark:border-bible-500 italic text-bible-700 dark:text-bible-300 bg-bible-50 dark:bg-gray-800 p-3 rounded-r-lg">
+                                                    「我將你的話藏在心裡，免得我得罪你。」
+                                                </blockquote>
+                                                <p>
+                                                    <span className="font-semibold text-bible-600 dark:text-bible-400">神的話語充滿力量，充滿能力</span>，
+                                                    能夠在我們軟弱時堅固我們，在迷茫時指引我們。
+                                                </p>
+                                                <p className="text-bible-700 dark:text-bible-300 font-medium">
+                                                    願這個小小的工具，成為你背誦聖經旅程中的幫助。🙏
+                                                </p>
+                                            </div>
+                                        </section>
+
+                                        {/* 技术栈 */}
+                                        <section>
+                                            <h3 className="text-lg font-bold text-bible-700 dark:text-bible-300 mb-3 flex items-center gap-2">
+                                                <span className="text-2xl">⚙️</span>
+                                                技術棧
+                                            </h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Framer Motion', 'Zustand'].map((tech) => (
+                                                    <span
+                                                        key={tech}
+                                                        className="px-3 py-1 bg-bible-100 dark:bg-gray-700 text-bible-700 dark:text-bible-300 rounded-full text-xs font-medium"
+                                                    >
+                                                        {tech}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </section>
+
+                                        {/* 版权信息 */}
+                                        <div className="pt-4 border-t border-bible-200 dark:border-gray-700 text-center text-xs text-gray-500 dark:text-gray-400">
+                                            <p>© 2025 你的話語 · Made with ❤️ for Christ</p>
+                                            <p className="mt-1">All Bible verses are from Chinese Union Version (CUV/CUVT)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </>
                     )}
                 </AnimatePresence>
 
