@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: '你的話語 - 聖經背誦應用',
   description: '讓神的話語常在心中 - 精美的聖經背誦助手',
   keywords: ['聖經', '背誦', '經文', 'Bible', '記憶', '學習'],
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({

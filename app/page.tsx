@@ -153,8 +153,14 @@ export default function HomePage() {
           {/* 标题行 */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-2">
-                <BookOpen className="w-6 h-6 md:w-7 md:h-7" />
+              <h1 className="text-2xl md:text-3xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-3">
+                <Image
+                  src="/logo.png"
+                  alt="你的話語 Logo"
+                  width={40}
+                  height={40}
+                  className="w-8 h-8 md:w-10 md:h-10"
+                />
                 你的話語
               </h1>
               
@@ -327,18 +333,24 @@ export default function HomePage() {
             <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
             <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加载经文中...</p>
           </div>
-        ) : selectedBook && selectedChapter === null ? (
-          // 选择了书卷但未选择章节，显示提示
-          <div className="text-center py-20 px-4">
-            <BookOpen className="w-16 h-16 mx-auto mb-4 text-bible-400 dark:text-bible-600" />
-            <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">
-              请选择章节
-            </h3>
-            <p className="text-bible-600 dark:text-bible-400 font-chinese">
-              {selectedBook.name} 共有 {selectedBook.chapters} 章，请在上方选择要查看的章节
-            </p>
-          </div>
-        ) : displayVerses.length > 0 ? (
+                ) : selectedBook && selectedChapter === null ? (
+                  // 选择了书卷但未选择章节，显示提示
+                  <div className="text-center py-20 px-4">
+                    <Image
+                      src="/logo.png"
+                      alt="你的話語"
+                      width={64}
+                      height={64}
+                      className="w-16 h-16 mx-auto mb-4 opacity-60"
+                    />
+                    <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">
+                      请选择章节
+                    </h3>
+                    <p className="text-bible-600 dark:text-bible-400 font-chinese">
+                      {selectedBook.name} 共有 {selectedBook.chapters} 章，请在上方选择要查看的章节
+                    </p>
+                  </div>
+                ) : displayVerses.length > 0 ? (
           <MasonryLayout
             key={shuffleKey}
             verses={displayVerses}
