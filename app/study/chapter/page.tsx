@@ -11,7 +11,6 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import BookSelector from '@/components/study/chapter/BookSelector';
 import ChapterSelector from '@/components/study/chapter/ChapterSelector';
-import VerseList from '@/components/study/chapter/VerseList';
 import MasonryLayout from '@/components/verses/MasonryLayout';
 
 export default function ChapterModePage() {
@@ -76,22 +75,22 @@ export default function ChapterModePage() {
     }
 
     setLoadingVerses(true);
-    // TODO: 从圣经 JSON 数据中加载对应章节的经文
-    // 这里暂时用模拟数据
-    setTimeout(() => {
-      const mockVerses: Verse[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `${selectedBook.key}-${selectedChapter}-${i + 1}`,
-        book: selectedBook.name,
-        bookKey: selectedBook.key,
-        chapter: selectedChapter,
-        verse: i + 1,
-        text: `这是 ${selectedBook.name} 第 ${selectedChapter} 章第 ${i + 1} 节的经文内容...`,
-        testament: selectedBook.testament,
-      }));
-      setChapterVerses(mockVerses);
-      setLoadingVerses(false);
-    }, 300);
-  }, [selectedBook, selectedChapter]);
+    
+    // 从圣经 JSON 数据中加载对应章节的经文
+    import('@/lib/dataLoader').then(({ loadChapterVerses }) => {
+      loadChapterVerses(selectedBook.key, selectedChapter, language)
+        .then((verses) => {
+          setChapterVerses(verses);
+          setLoadingVerses(false);
+        })
+        .catch((err) => {
+          console.error('加载章节经文失败:', err);
+          // 如果加载失败，显示提示信息
+          setChapterVerses([]);
+          setLoadingVerses(false);
+        });
+    });
+  }, [selectedBook, selectedChapter, language]);
 
   const handleBack = () => {
     router.push('/');
@@ -222,21 +221,12 @@ export default function ChapterModePage() {
                   加载经文中...
                 </p>
               </div>
-            ) : showAllContent ? (
-              // 阅读模式：卡片布局，默认全部展开
-              <div className="px-4">
-                <MasonryLayout
-                  verses={chapterVerses}
-                  defaultRevealed={true}
-                  onViewInBible={() => {}}
-                />
-              </div>
             ) : (
-              // 背诵模式：列表布局
-              <VerseList
+              // 卡片布局（背诵/阅读模式）
+              <MasonryLayout
                 verses={chapterVerses}
-                book={selectedBook.name}
-                chapter={selectedChapter}
+                defaultRevealed={showAllContent}
+                onViewInBible={() => {}}
               />
             )}
           </>
