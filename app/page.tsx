@@ -1014,8 +1014,8 @@ export default function HomePage() {
                                             </h3>
                                             <div className="space-y-3 text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                                                 <p>
-                                                    最初，我投入大量心血開發了一款名為「你的話語」的 iOS App，並成功在全球 App Store 上架。
-                                                    雖然這款 App 採用卡片形式幫助弟兄姊妹背誦經文，但效果並不如預期。
+                                                    最初，我投入大量心血開發了一款名為「你的話語」的 iOS App，並成功在全球 App Store 上架。 雖然這款
+                                                    App 採用卡片形式幫助弟兄姊妹背誦經文，但效果並不如預期。
                                                 </p>
                                                 <p>
                                                     然而，隨著時間推移，我逐漸意識到 App 的局限性：許多基督徒並不經常使用手機，
