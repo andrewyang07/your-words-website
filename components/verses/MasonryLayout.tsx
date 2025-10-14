@@ -8,12 +8,12 @@ import { getCardSize } from '@/lib/utils';
 
 interface MasonryLayoutProps {
   verses: Verse[];
-  onCardClick: (verse: Verse) => void;
+  onViewInBible?: (verse: Verse) => void;
 }
 
 export default function MasonryLayout({
   verses,
-  onCardClick,
+  onViewInBible,
 }: MasonryLayoutProps) {
   // 计算瀑布流布局
   const masonryColumns = useMemo(() => {
@@ -56,7 +56,7 @@ export default function MasonryLayout({
               <VerseCard
                 verse={verse}
                 size={getCardSize(verse)}
-                onClick={() => onCardClick(verse)}
+                onViewInBible={() => onViewInBible?.(verse)}
               />
             </motion.div>
           ))}

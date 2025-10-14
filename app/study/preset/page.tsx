@@ -54,9 +54,9 @@ export default function PresetModePage() {
     setFilteredVerses(filtered);
   }, [verses, testament, sortBy, setFilteredVerses]);
 
-  const handleCardClick = (verse: Verse) => {
-    // TODO: 跳转到背诵详情页
-    console.log('点击经文:', verse);
+  const handleViewInBible = (verse: Verse) => {
+    // TODO: 跳转到圣经阅读界面
+    console.log('查看原文:', verse);
   };
 
   const handleBack = () => {
@@ -103,7 +103,7 @@ export default function PresetModePage() {
 
       {/* 经文网格 */}
       {filteredVerses.length > 0 ? (
-        <MasonryLayout verses={filteredVerses} onCardClick={handleCardClick} />
+        <MasonryLayout verses={filteredVerses} onViewInBible={handleViewInBible} />
       ) : (
         <div className="text-center py-20">
           <p className="text-bible-600 font-chinese">暂无经文</p>
