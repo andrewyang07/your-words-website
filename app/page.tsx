@@ -2,7 +2,23 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, Shuffle, Star, X, Eye, EyeOff, Sun, Moon, Monitor, Languages, HelpCircle, RotateCcw, ChevronDown, Check, Share2 } from 'lucide-react';
+import {
+    Filter,
+    Shuffle,
+    Star,
+    X,
+    Eye,
+    EyeOff,
+    Sun,
+    Moon,
+    Monitor,
+    Languages,
+    HelpCircle,
+    RotateCcw,
+    ChevronDown,
+    Check,
+    Share2,
+} from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
@@ -44,6 +60,7 @@ export default function HomePage() {
 
     // 分享功能相关状态
     const [sharedVerses, setSharedVerses] = useState<Array<{ bookKey: string; chapter: number; verse: number }>>([]);
+    const [sharedVersesData, setSharedVersesData] = useState<Verse[]>([]); // 分享经文的完整数据
     const [showShareBanner, setShowShareBanner] = useState(false);
     const [shareToast, setShareToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
 
@@ -138,9 +155,9 @@ export default function HomePage() {
         });
     }, [selectedBook, selectedChapter, language]);
 
-    // 检测URL分享参数
+    // 检测URL分享参数并加载分享的经文
     useEffect(() => {
-        if (typeof window === 'undefined') return;
+        if (typeof window === 'undefined' || books.length === 0) return;
 
         const urlParams = new URLSearchParams(window.location.search);
         const sharedParam = urlParams.get('s');
@@ -150,9 +167,46 @@ export default function HomePage() {
             if (decodedVerses.length > 0) {
                 setSharedVerses(decodedVerses);
                 setShowShareBanner(true);
+
+                // 加载分享的经文数据
+                const loadSharedVerses = async () => {
+                    try {
+                        const { loadChapterVerses } = await import('@/lib/dataLoader');
+                        
+                        // 按章节分组，减少请求次数
+                        const chapterGroups = new Map<string, Set<number>>();
+                        decodedVerses.forEach(({ bookKey, chapter, verse }) => {
+                            const key = `${bookKey}-${chapter}`;
+                            if (!chapterGroups.has(key)) {
+                                chapterGroups.set(key, new Set());
+                            }
+                            chapterGroups.get(key)!.add(verse);
+                        });
+
+                        // 批量加载所有需要的章节
+                        const allVerses: Verse[] = [];
+                        for (const [key, verseNumbers] of chapterGroups) {
+                            const lastDashIndex = key.lastIndexOf('-');
+                            const bookKey = key.substring(0, lastDashIndex);
+                            const chapterStr = key.substring(lastDashIndex + 1);
+                            const chapter = parseInt(chapterStr);
+                            
+                            const chapterVerses = await loadChapterVerses(bookKey, chapter, language);
+                            // 只保留分享的那些节
+                            const filteredVerses = chapterVerses.filter(v => verseNumbers.has(v.verse));
+                            allVerses.push(...filteredVerses);
+                        }
+
+                        setSharedVersesData(allVerses);
+                    } catch (error) {
+                        console.error('加载分享经文失败:', error);
+                    }
+                };
+
+                loadSharedVerses();
             }
         }
-    }, []);
+    }, [books, language]);
 
     // 清理分享toast的timer
     useEffect(() => {
@@ -164,6 +218,11 @@ export default function HomePage() {
 
     // 筛选和排序经文
     const displayVerses = useMemo(() => {
+        // 如果有分享链接，优先显示分享的经文
+        if (showShareBanner && sharedVersesData.length > 0) {
+            return sharedVersesData;
+        }
+
         // 如果选择了具体章节，显示章节经文
         if (selectedChapter !== null && chapterVerses.length > 0) {
             return chapterVerses;
@@ -193,7 +252,7 @@ export default function HomePage() {
         }
 
         return filtered;
-    }, [verses, chapterVerses, filterType, selectedBook, selectedChapter, shuffleKey, isFavorite]);
+    }, [verses, chapterVerses, filterType, selectedBook, selectedChapter, shuffleKey, isFavorite, showShareBanner, sharedVersesData]);
 
     const handleShuffle = () => {
         setShuffleKey((prev) => prev + 1);
@@ -242,7 +301,7 @@ export default function HomePage() {
     // 分享收藏功能
     const handleShareFavorites = () => {
         const favoritesList = getFavoritesList();
-        
+
         if (favoritesList.length === 0) {
             return;
         }
@@ -253,16 +312,18 @@ export default function HomePage() {
 
         try {
             // 将 verseId (如"创世记-3-16") 转换为 {bookKey, chapter, verse}
-            const versesToEncode = favoritesList.map(id => {
-                const parts = id.split('-');
-                if (parts.length < 3) return null;
-                
-                const verse = parseInt(parts[parts.length - 1]);
-                const chapter = parseInt(parts[parts.length - 2]);
-                const bookKey = parts.slice(0, -2).join('-');
-                
-                return { bookKey, chapter, verse };
-            }).filter((v): v is { bookKey: string; chapter: number; verse: number } => v !== null);
+            const versesToEncode = favoritesList
+                .map((id) => {
+                    const parts = id.split('-');
+                    if (parts.length < 3) return null;
+
+                    const verse = parseInt(parts[parts.length - 1]);
+                    const chapter = parseInt(parts[parts.length - 2]);
+                    const bookKey = parts.slice(0, -2).join('-');
+
+                    return { bookKey, chapter, verse };
+                })
+                .filter((v): v is { bookKey: string; chapter: number; verse: number } => v !== null);
 
             const encoded = encodeVerseList(versesToEncode);
             const shareUrl = `${window.location.origin}${window.location.pathname}?s=${encoded}`;
@@ -272,9 +333,9 @@ export default function HomePage() {
 
             if (isMobile) {
                 // 移动端：先显示说明toast
-                setShareToast({ 
-                    show: true, 
-                    message: '已复制分享链接，发送给他人即可查看您的收藏' 
+                setShareToast({
+                    show: true,
+                    message: '已复制分享链接，发送给他人即可查看您的收藏',
                 });
                 // 2秒后复制链接
                 setTimeout(() => {
@@ -293,11 +354,13 @@ export default function HomePage() {
 
     // 一键收藏分享的经文
     const handleAddAllShared = () => {
-        const verseIds = sharedVerses.map(v => `${v.bookKey}-${v.chapter}-${v.verse}`);
+        const verseIds = sharedVerses.map((v) => `${v.bookKey}-${v.chapter}-${v.verse}`);
         addFavorites(verseIds);
         setShowShareBanner(false);
+        setSharedVerses([]);
+        setSharedVersesData([]);
         setShareToast({ show: true, message: `已添加 ${verseIds.length} 节经文到收藏` });
-        
+
         // 清除URL参数
         if (typeof window !== 'undefined') {
             window.history.replaceState({}, '', window.location.pathname);
@@ -308,7 +371,8 @@ export default function HomePage() {
     const handleCancelShare = () => {
         setShowShareBanner(false);
         setSharedVerses([]);
-        
+        setSharedVersesData([]);
+
         // 清除URL参数
         if (typeof window !== 'undefined') {
             window.history.replaceState({}, '', window.location.pathname);
@@ -706,9 +770,7 @@ export default function HomePage() {
                                     <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
                                         这是分享的收藏列表（共 {sharedVerses.length} 节经文）
                                     </p>
-                                    <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
-                                        您可以一键将这些经文添加到自己的收藏中
-                                    </p>
+                                    <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">您可以一键将这些经文添加到自己的收藏中</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
