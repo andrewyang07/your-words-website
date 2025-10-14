@@ -1077,8 +1077,8 @@ export default function HomePage() {
                                                         iPhone 用戶推薦：心版 App
                                                     </p>
                                                     <p className="text-bible-600 dark:text-bible-400">
-                                                        使用 iPhone？試試<span className="font-semibold">「心版」iOS App</span>，
-                                                        將經文以<span className="font-semibold">小組件形式</span>展示在主屏幕上。
+                                                        使用 iPhone？試試<span className="font-semibold">「心版」iOS App</span>， 將經文以
+                                                        <span className="font-semibold">小組件形式</span>展示在主屏幕上。
                                                         每次解鎖手機，第一眼就看到神的話語。支持雙語對照、自定義樣式，完全免費。
                                                         <a
                                                             href="https://apps.apple.com/app/6744570052"
@@ -1197,35 +1197,33 @@ export default function HomePage() {
 
                 {/* iOS App 推广区块 */}
                 <div className="max-w-7xl mx-auto px-4 py-12 mt-8">
-                    <motion.a
+                    <a
                         href="https://apps.apple.com/app/6744570052"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block bg-gradient-to-br from-white to-bible-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-lg overflow-hidden border-2 border-bible-200 dark:border-gray-600 hover:border-bible-400 dark:hover:border-bible-400 transition-all duration-300"
-                        whileHover={{ scale: 1.02, y: -4 }}
-                        whileTap={{ scale: 0.98 }}
+                        className="block bg-gradient-to-br from-white to-bible-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-lg overflow-hidden border-2 border-bible-200 dark:border-gray-600 hover:border-bible-400 dark:hover:border-bible-400 hover:shadow-xl transition-all duration-200 hover:-translate-y-1"
                     >
                         <div className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
                             {/* 图标 */}
                             <div className="flex-shrink-0">
-                                <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-bible-500 to-bible-600 dark:from-bible-400 dark:to-bible-500 rounded-[22%] shadow-xl flex items-center justify-center">
-                                    <span className="text-4xl md:text-5xl">📱</span>
+                                <div className="w-20 h-20 md:w-24 md:h-24 bg-white dark:bg-gray-700 rounded-[22%] shadow-xl flex items-center justify-center p-3 overflow-hidden">
+                                    <Image
+                                        src="/xinban-logo.png"
+                                        alt="心版 App Logo"
+                                        width={96}
+                                        height={96}
+                                        className="w-full h-full object-contain"
+                                    />
                                 </div>
                             </div>
 
                             {/* 文字内容 */}
                             <div className="flex-1 text-center md:text-left">
                                 <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                                    <h3 className="text-2xl md:text-3xl font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                                        心版
-                                    </h3>
-                                    <span className="px-2 py-1 bg-bible-500 text-white text-xs font-semibold rounded-full">
-                                        iOS
-                                    </span>
+                                    <h3 className="text-2xl md:text-3xl font-bold text-bible-800 dark:text-bible-200 font-chinese">心版</h3>
+                                    <span className="px-2 py-1 bg-bible-500 text-white text-xs font-semibold rounded-full">iOS</span>
                                 </div>
-                                <p className="text-bible-700 dark:text-bible-300 font-medium mb-2 font-chinese">
-                                    將神的話語系在指頭上，刻在心版上
-                                </p>
+                                <p className="text-bible-700 dark:text-bible-300 font-medium mb-2 font-chinese">將神的話語系在指頭上，刻在心版上</p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400 font-chinese leading-relaxed">
                                     iPhone 用戶專享：主屏幕小組件展示經文 · 雙語對照閱讀 · 每次解鎖都被神的話語提醒
                                 </p>
@@ -1246,7 +1244,7 @@ export default function HomePage() {
                                 </div>
                             </div>
                         </div>
-                    </motion.a>
+                    </a>
                 </div>
 
                 {/* 页脚 */}
