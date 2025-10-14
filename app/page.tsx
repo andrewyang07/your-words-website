@@ -1062,6 +1062,13 @@ export default function HomePage() {
                 {/* 状态标签和统计 */}
                 <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
+                        {/* 默认精选经文提示 */}
+                        {!selectedBook && filterType !== 'favorites' && !showShareBanner && (
+                            <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese hidden sm:inline">
+                                📖 當前顯示精選 114 節最值得背誦的經文
+                            </span>
+                        )}
+
                         {filterType === 'favorites' && (
                             <>
                                 <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
