@@ -527,7 +527,12 @@ export default function HomePage() {
                                     height={40}
                                     className="w-8 h-8 md:w-10 md:h-10 dark:brightness-90 dark:contrast-125"
                                 />
-                                <span className="text-bible-700 dark:text-bible-300 tracking-wide drop-shadow-[0_0_8px_rgba(190,158,93,0.4)]">你的話語</span>
+                                <span 
+                                    className="text-bible-700 dark:text-bible-300 tracking-wide"
+                                    style={{ textShadow: '0 0 16px rgba(190,158,93,0.6), 0 0 32px rgba(190,158,93,0.3), 0 2px 4px rgba(0,0,0,0.1)' }}
+                                >
+                                    你的話語
+                                </span>
                             </h1>
                         </div>
 
