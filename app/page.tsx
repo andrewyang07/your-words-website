@@ -73,7 +73,7 @@ export default function HomePage() {
                 setError(err.message || '加载数据失败');
                 setLoading(false);
             });
-    }, [language, loadVerses, loadBooks]);
+    }, [language, loadVerses, loadBooks, isInitialLoad]);
 
     // 当选择具体章节时，加载该章经文
     useEffect(() => {
