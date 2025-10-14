@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
 import { CardSize } from '@/types/common';
@@ -25,6 +25,11 @@ export default function VerseCard({
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const [isRevealed, setIsRevealed] = useState(defaultRevealed);
   const isFav = isFavorite(verse.id);
+
+  // 当 defaultRevealed 改变时，更新 isRevealed
+  useEffect(() => {
+    setIsRevealed(defaultRevealed);
+  }, [defaultRevealed]);
 
   // 每张卡片随机显示 3-7 个字
   const previewLength = useMemo(() => {
