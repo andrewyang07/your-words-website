@@ -60,7 +60,7 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
 
 // 从完整圣经 JSON 中加载指定书卷的所有经文
 export async function loadChapterVerses(
-  book: string,
+  bookKey: string,
   chapter: number,
   language: Language
 ): Promise<Verse[]> {
@@ -73,33 +73,42 @@ export async function loadChapterVerses(
 
   try {
     const response = await fetch(`/data/${fileName}`);
+    if (!response.ok) {
+      throw new Error(`加载圣经数据失败: ${response.statusText}`);
+    }
+    
     const bibleData = await response.json();
 
-    const bookData = bibleData[book];
+    // 查找书卷数据
+    const bookData = bibleData[bookKey];
     if (!bookData) {
-      throw new Error(`书卷不存在: ${book}`);
+      console.error(`书卷不存在: ${bookKey}`, '可用的书卷:', Object.keys(bibleData).slice(0, 10));
+      throw new Error(`书卷不存在: ${bookKey}`);
     }
 
     const chapterData = bookData[chapter];
     if (!chapterData) {
-      throw new Error(`章节不存在: ${book} ${chapter}`);
+      throw new Error(`章节不存在: ${bookKey} ${chapter}`);
     }
 
-    const testament = getTestament(book);
+    const testament = getTestament(bookKey);
     const verses: Verse[] = [];
 
     Object.keys(chapterData).forEach((verseNum) => {
       const verseNumber = parseInt(verseNum);
       verses.push({
-        id: `${book}-${chapter}-${verseNumber}`,
-        book,
-        bookKey: book,
+        id: `${bookKey}-${chapter}-${verseNumber}`,
+        book: bookKey,
+        bookKey: bookKey,
         chapter,
         verse: verseNumber,
         text: chapterData[verseNum],
         testament,
       });
     });
+
+    // 按经文编号排序
+    verses.sort((a, b) => a.verse - b.verse);
 
     return verses;
   } catch (error) {
