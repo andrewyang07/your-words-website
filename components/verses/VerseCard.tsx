@@ -129,15 +129,15 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             <div className="mt-3 pt-2 border-t border-bible-100 dark:border-gray-700 flex items-center justify-between">
                 <span className="text-xs text-bible-500 dark:text-gray-400 font-chinese">{verse.testament === 'old' ? '旧约' : '新约'}</span>
 
-                {/* 查看原文按钮 */}
+                {/* 查看整章按钮 */}
                 <button
                     onClick={handleViewInBible}
                     className="flex items-center gap-1 px-2 py-1 text-xs text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation min-h-[44px] min-w-[44px] justify-center"
-                    title="在圣经中查看"
+                    title="查看本章所有经文"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                     <BookOpen className="w-3 h-3" />
-                    <span className="font-chinese">原文</span>
+                    <span className="font-chinese">查看整章</span>
                 </button>
             </div>
         </motion.div>

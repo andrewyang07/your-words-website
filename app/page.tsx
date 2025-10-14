@@ -618,11 +618,7 @@ export default function HomePage() {
                                         ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                                         : 'bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
                                 }`}
-                                title={
-                                    favoritesCount > 200
-                                        ? '收藏过多（超过200节），无法生成分享链接'
-                                        : '点击生成分享链接，可将您的收藏分享给他人'
-                                }
+                                title={favoritesCount > 200 ? '收藏过多（超过200节），无法生成分享链接' : '点击生成分享链接，可将您的收藏分享给他人'}
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 <Share2 className="w-4 h-4" />
