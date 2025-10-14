@@ -76,9 +76,9 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         ${sizeClasses[size]}
         bg-white dark:bg-gray-800 rounded-xl shadow-md
         cursor-pointer
-        border border-bible-200 dark:border-gray-700
-        hover:border-bible-500 dark:hover:border-bible-400
-        hover:shadow-[0_0_0_2px_rgba(190,158,93,0.3)]
+        border-2 border-bible-200 dark:border-gray-700
+        [@media(hover:hover)]:hover:border-bible-500 [@media(hover:hover)]:dark:hover:border-bible-400
+        [@media(hover:hover)]:hover:shadow-[0_0_0_2px_rgba(190,158,93,0.3)]
         flex flex-col justify-between
         relative
         touch-manipulation
