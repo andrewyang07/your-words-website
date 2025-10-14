@@ -404,6 +404,10 @@ export default function HomePage() {
 
     const handleChapterSelect = (chapter: number | null) => {
         setSelectedChapter(chapter);
+        // 选择章节后自动切换到阅读模式，方便查看
+        if (chapter !== null) {
+            setShowAllContent(true);
+        }
         // 不清除分享状态，保留URL
     };
 
