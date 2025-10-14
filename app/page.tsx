@@ -240,21 +240,21 @@ export default function HomePage() {
                 }
 
                 const { loadChapterVerses } = await import('@/lib/dataLoader');
-                
+
                 // 解析所有收藏的ID并按章节分组
                 const chapterGroups = new Map<string, Set<number>>();
                 const parsedFavorites: Array<{ bookKey: string; chapter: number; verse: number }> = [];
-                
+
                 favoriteIds.forEach((id) => {
                     const parts = id.split('-');
                     if (parts.length < 3) return;
-                    
+
                     const verse = parseInt(parts[parts.length - 1]);
                     const chapter = parseInt(parts[parts.length - 2]);
                     const bookKey = parts.slice(0, -2).join('-');
-                    
+
                     parsedFavorites.push({ bookKey, chapter, verse });
-                    
+
                     const key = `${bookKey}-${chapter}`;
                     if (!chapterGroups.has(key)) {
                         chapterGroups.set(key, new Set());
@@ -269,7 +269,7 @@ export default function HomePage() {
                     const bookKey = key.substring(0, lastDashIndex);
                     const chapterStr = key.substring(lastDashIndex + 1);
                     const chapter = parseInt(chapterStr);
-                    
+
                     try {
                         const chapterVerses = await loadChapterVerses(bookKey, chapter, language);
                         // 只保留收藏的那些节
@@ -329,7 +329,18 @@ export default function HomePage() {
         }
 
         return filtered;
-    }, [verses, chapterVerses, filterType, selectedBook, selectedChapter, shuffleKey, isFavorite, showShareBanner, sharedVersesData, favoritesVersesData]);
+    }, [
+        verses,
+        chapterVerses,
+        filterType,
+        selectedBook,
+        selectedChapter,
+        shuffleKey,
+        isFavorite,
+        showShareBanner,
+        sharedVersesData,
+        favoritesVersesData,
+    ]);
 
     const handleShuffle = () => {
         setShuffleKey((prev) => prev + 1);
@@ -352,12 +363,12 @@ export default function HomePage() {
     const handleFilterChange = (type: FilterType) => {
         setFilterType(type);
         setShowFilterMenu(false);
-        clearShareState(); // 清除分享状态
+        // 不清除分享状态，保留URL
     };
 
     const handleToggleFavorites = () => {
         setFilterType(filterType === 'favorites' ? 'all' : 'favorites');
-        clearShareState(); // 清除分享状态
+        // 不清除分享状态，保留URL
     };
 
     const handleBookSelect = (book: Book | null) => {
@@ -367,12 +378,12 @@ export default function HomePage() {
         if (book && filterType === 'favorites') {
             setFilterType('all');
         }
-        clearShareState(); // 清除分享状态
+        // 不清除分享状态，保留URL
     };
 
     const handleChapterSelect = (chapter: number | null) => {
         setSelectedChapter(chapter);
-        clearShareState(); // 清除分享状态
+        // 不清除分享状态，保留URL
     };
 
     const handleClearFilters = () => {
@@ -1024,7 +1035,18 @@ export default function HomePage() {
                                             <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏功能</p>
                                             <p className="text-bible-600 dark:text-bible-400">
                                                 點擊卡片右上角的<span className="font-semibold">星標圖示</span>可以收藏喜歡的經文，
-                                                之後可以使用「收藏」篩選器快速查看。
+                                                之後可以使用「收藏」篩選器快速查看。可收藏任何章節的經文，不限於精選經文。
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-base">🔗</span>
+                                        <div>
+                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">分享收藏</p>
+                                            <p className="text-bible-600 dark:text-bible-400">
+                                                在「收藏」模式下，點擊<span className="font-semibold">「分享」</span>按鈕可生成專屬鏈接，
+                                                將您的收藏分享給其他人。對方打開鏈接後，可一鍵將所有經文添加到自己的收藏中。
                                             </p>
                                         </div>
                                     </div>
@@ -1062,7 +1084,7 @@ export default function HomePage() {
 
             {/* 经文卡片区域 */}
             <div className="max-w-7xl mx-auto">
-                {(loadingChapter || loadingFavorites) ? (
+                {loadingChapter || loadingFavorites ? (
                     <div className="text-center py-12">
                         <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
                         <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加载经文中...</p>
