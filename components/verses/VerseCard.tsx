@@ -112,7 +112,9 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                     onClick={handleToggleFavorite}
                     className="transition-transform hover:scale-110 p-2 -m-2 touch-manipulation"
                     title={isFav ? '取消收藏' : '收藏'}
-                    aria-label={isFav ? `取消收藏 ${verse.book} ${verse.chapter}:${verse.verse}` : `收藏 ${verse.book} ${verse.chapter}:${verse.verse}`}
+                    aria-label={
+                        isFav ? `取消收藏 ${verse.book} ${verse.chapter}:${verse.verse}` : `收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
+                    }
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                     <Star

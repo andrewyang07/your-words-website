@@ -520,7 +520,10 @@ export default function HomePage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-bible-100 dark:from-gray-900 dark:to-gray-800">
             {/* 顶部导航栏 */}
-            <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700" role="banner">
+            <header
+                className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700"
+                role="banner"
+            >
                 <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
                     {/* 标题行 */}
                     <div className="flex items-center justify-between mb-3">
@@ -864,309 +867,309 @@ export default function HomePage() {
 
             {/* 主内容区域 */}
             <main role="main" aria-label="圣经经文内容">
-            {/* 分享横幅 */}
-            <AnimatePresence>
-                {showShareBanner && sharedVerses.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-200 dark:border-blue-800 py-4"
-                        role="alert"
-                        aria-live="polite"
-                        aria-atomic="true"
-                    >
-                        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 text-center sm:text-left">
-                                <div
-                                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                                        hasAddedAllShared ? 'bg-green-500 dark:bg-green-600' : 'bg-blue-500 dark:bg-blue-600'
-                                    }`}
-                                >
-                                    {hasAddedAllShared ? (
-                                        <Star className="w-5 h-5 text-white fill-white" />
-                                    ) : (
-                                        <Share2 className="w-5 h-5 text-white" />
+                {/* 分享横幅 */}
+                <AnimatePresence>
+                    {showShareBanner && sharedVerses.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-200 dark:border-blue-800 py-4"
+                            role="alert"
+                            aria-live="polite"
+                            aria-atomic="true"
+                        >
+                            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 text-center sm:text-left">
+                                    <div
+                                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                                            hasAddedAllShared ? 'bg-green-500 dark:bg-green-600' : 'bg-blue-500 dark:bg-blue-600'
+                                        }`}
+                                    >
+                                        {hasAddedAllShared ? (
+                                            <Star className="w-5 h-5 text-white fill-white" />
+                                        ) : (
+                                            <Share2 className="w-5 h-5 text-white" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
+                                            {hasAddedAllShared
+                                                ? `已成功收藏 ${sharedVerses.length} 节经文 ✨`
+                                                : `这是分享的收藏列表（共 ${sharedVerses.length} 节经文）`}
+                                        </p>
+                                        <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
+                                            {hasAddedAllShared
+                                                ? '所有卡片已标记为收藏，可以点击"取消"关闭此提示'
+                                                : '您可以一键将这些经文添加到自己的收藏中'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {!hasAddedAllShared && (
+                                        <button
+                                            onClick={handleAddAllShared}
+                                            className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg transition-colors font-chinese text-sm font-medium shadow-sm touch-manipulation min-h-[44px]"
+                                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        >
+                                            一键全部收藏
+                                        </button>
                                     )}
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
-                                        {hasAddedAllShared
-                                            ? `已成功收藏 ${sharedVerses.length} 节经文 ✨`
-                                            : `这是分享的收藏列表（共 ${sharedVerses.length} 节经文）`}
-                                    </p>
-                                    <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
-                                        {hasAddedAllShared
-                                            ? '所有卡片已标记为收藏，可以点击"取消"关闭此提示'
-                                            : '您可以一键将这些经文添加到自己的收藏中'}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {!hasAddedAllShared && (
                                     <button
-                                        onClick={handleAddAllShared}
-                                        className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg transition-colors font-chinese text-sm font-medium shadow-sm touch-manipulation min-h-[44px]"
+                                        onClick={handleCancelShare}
+                                        className="px-4 py-2 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-600 rounded-lg transition-colors font-chinese text-sm border border-blue-200 dark:border-blue-700 touch-manipulation min-h-[44px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                     >
-                                        一键全部收藏
-                                    </button>
-                                )}
-                                <button
-                                    onClick={handleCancelShare}
-                                    className="px-4 py-2 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-600 rounded-lg transition-colors font-chinese text-sm border border-blue-200 dark:border-blue-700 touch-manipulation min-h-[44px]"
-                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                >
-                                    {hasAddedAllShared ? '关闭' : '取消'}
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* 分享Toast通知 */}
-            <AnimatePresence>
-                {shareToast.show && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4"
-                    >
-                        <div className="p-4 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 text-blue-900 dark:text-blue-100 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center">
-                                <Share2 className="w-5 h-5 text-white" />
-                            </div>
-                            <span>{shareToast.message}</span>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* 关闭引导提示 - 浮动通知 */}
-            <AnimatePresence>
-                {showGuideHint && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4"
-                    >
-                        <div className="p-4 bg-bible-50 dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 text-bible-800 dark:text-bible-200 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 bg-bible-500 dark:bg-bible-600 rounded-full flex items-center justify-center">
-                                <HelpCircle className="w-5 h-5 text-white" />
-                            </div>
-                            <span>
-                                引导已关闭。如需再次查看，请点击右上角的{' '}
-                                <span className="font-semibold text-bible-700 dark:text-bible-300">「帮助」</span> 按钮
-                            </span>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* 使用提示和统计信息 */}
-            <motion.div className="max-w-7xl mx-auto px-4 py-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                {/* 引导说明 */}
-                {showGuide && (
-                    <motion.div
-                        className="mb-3 p-5 bg-gradient-to-br from-bible-50 via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-xl border-2 border-bible-300/50 dark:border-gray-700 shadow-lg"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <div className="flex items-start gap-4">
-                            <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-bible-500 to-blue-600 dark:from-bible-600 dark:to-blue-700 rounded-full flex items-center justify-center shadow-md">
-                                <span className="text-white text-xl">💡</span>
-                            </div>
-                            <div className="flex-1">
-                                <div className="flex items-start justify-between mb-2">
-                                    <h3 className="text-base font-bold text-bible-900 dark:text-bible-100 font-chinese">
-                                        歡迎使用「你的話語」聖經背誦助手 ✨
-                                    </h3>
-                                    <button
-                                        onClick={handleCloseGuide}
-                                        className="flex-shrink-0 ml-2 p-2 hover:bg-bible-200/50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation"
-                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        title="关闭引导"
-                                    >
-                                        <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                        {hasAddedAllShared ? '关闭' : '取消'}
                                     </button>
                                 </div>
-
-                                <div className="text-xs text-bible-700 dark:text-bible-300 font-chinese space-y-2.5">
-                                    <div className="flex items-start gap-2">
-                                        <span className="text-base">📖</span>
-                                        <div>
-                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">默認顯示：精選經文</p>
-                                            <p className="text-bible-600 dark:text-bible-400">
-                                                當前頁面展示精心挑選的{' '}
-                                                <span className="font-semibold text-bible-700 dark:text-bible-300">114 節最值得背誦的經文</span>，
-                                                這些經文涵蓋了信仰的核心真理，適合初學者和進階學習。
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-2">
-                                        <span className="text-base">🎯</span>
-                                        <div>
-                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">Flash Card 背誦模式</p>
-                                            <p className="text-bible-600 dark:text-bible-400">
-                                                每張卡片<span className="font-semibold">默認隱藏大部分內容</span>（只顯示前幾個字），
-                                                <span className="font-semibold">點擊卡片</span>即可展開查看完整經文。 嘗試先回憶，再驗證！
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-2">
-                                        <span className="text-base">📚</span>
-                                        <div>
-                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">逐節學習：選擇書卷</p>
-                                            <p className="text-bible-600 dark:text-bible-400">
-                                                使用頂部的<span className="font-semibold">「選擇書卷」</span>和
-                                                <span className="font-semibold">「選擇章節」</span>篩選器， 可以瀏覽聖經 66
-                                                卷書的任意章節，逐節背誦或閱讀。
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-2">
-                                        <span className="text-base">👁️</span>
-                                        <div>
-                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">雙模式切換：阅读 / 背诵</p>
-                                            <p className="text-bible-600 dark:text-bible-400">
-                                                點擊右上角的<span className="font-semibold">「阅读/背诵」</span>按鈕， 可以在
-                                                <span className="font-semibold text-blue-600 dark:text-blue-400">阅读模式</span>（顯示全部） 和
-                                                <span className="font-semibold text-purple-600 dark:text-purple-400">背诵模式</span>
-                                                （隱藏內容）之間切換。
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-2">
-                                        <span className="text-base">⭐</span>
-                                        <div>
-                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏功能</p>
-                                            <p className="text-bible-600 dark:text-bible-400">
-                                                點擊卡片右上角的<span className="font-semibold">星標圖示</span>可以收藏喜歡的經文，
-                                                之後可以使用「收藏」篩選器快速查看。可收藏任何章節的經文，不限於精選經文。
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-2">
-                                        <span className="text-base">🔗</span>
-                                        <div>
-                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">分享收藏</p>
-                                            <p className="text-bible-600 dark:text-bible-400">
-                                                在「收藏」模式下，點擊<span className="font-semibold">「分享」</span>按鈕可生成專屬鏈接，
-                                                將您的收藏分享給其他人。對方打開鏈接後，可一鍵將所有經文添加到自己的收藏中。
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
-                        </div>
-                    </motion.div>
-                )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-                {/* 状态标签和统计 */}
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        {/* 默认精选经文提示 */}
-                        {!selectedBook && filterType !== 'favorites' && !showShareBanner && (
-                            <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">📖 精選 114 節經文</span>
-                        )}
+                {/* 分享Toast通知 */}
+                <AnimatePresence>
+                    {shareToast.show && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4"
+                        >
+                            <div className="p-4 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 text-blue-900 dark:text-blue-100 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
+                                <div className="flex-shrink-0 w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center">
+                                    <Share2 className="w-5 h-5 text-white" />
+                                </div>
+                                <span>{shareToast.message}</span>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-                        {filterType === 'favorites' && (
-                            <>
-                                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
-                                    <Star className="w-3 h-3 fill-current" />
-                                    已收藏
+                {/* 关闭引导提示 - 浮动通知 */}
+                <AnimatePresence>
+                    {showGuideHint && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4"
+                        >
+                            <div className="p-4 bg-bible-50 dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 text-bible-800 dark:text-bible-200 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
+                                <div className="flex-shrink-0 w-8 h-8 bg-bible-500 dark:bg-bible-600 rounded-full flex items-center justify-center">
+                                    <HelpCircle className="w-5 h-5 text-white" />
+                                </div>
+                                <span>
+                                    引导已关闭。如需再次查看，请点击右上角的{' '}
+                                    <span className="font-semibold text-bible-700 dark:text-bible-300">「帮助」</span> 按钮
                                 </span>
-                                {favoritesCount > 0 && (
-                                    <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">💡 可生成鏈接分享</span>
-                                )}
-                            </>
-                        )}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-                        {showAllContent && (
-                            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-800">
-                                <Eye className="w-3 h-3" />
-                                阅读模式
+                {/* 使用提示和统计信息 */}
+                <motion.div className="max-w-7xl mx-auto px-4 py-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    {/* 引导说明 */}
+                    {showGuide && (
+                        <motion.div
+                            className="mb-3 p-5 bg-gradient-to-br from-bible-50 via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-xl border-2 border-bible-300/50 dark:border-gray-700 shadow-lg"
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-bible-500 to-blue-600 dark:from-bible-600 dark:to-blue-700 rounded-full flex items-center justify-center shadow-md">
+                                    <span className="text-white text-xl">💡</span>
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-start justify-between mb-2">
+                                        <h3 className="text-base font-bold text-bible-900 dark:text-bible-100 font-chinese">
+                                            歡迎使用「你的話語」聖經背誦助手 ✨
+                                        </h3>
+                                        <button
+                                            onClick={handleCloseGuide}
+                                            className="flex-shrink-0 ml-2 p-2 hover:bg-bible-200/50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation"
+                                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                            title="关闭引导"
+                                        >
+                                            <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                        </button>
+                                    </div>
+
+                                    <div className="text-xs text-bible-700 dark:text-bible-300 font-chinese space-y-2.5">
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-base">📖</span>
+                                            <div>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">默認顯示：精選經文</p>
+                                                <p className="text-bible-600 dark:text-bible-400">
+                                                    當前頁面展示精心挑選的{' '}
+                                                    <span className="font-semibold text-bible-700 dark:text-bible-300">114 節最值得背誦的經文</span>，
+                                                    這些經文涵蓋了信仰的核心真理，適合初學者和進階學習。
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-base">🎯</span>
+                                            <div>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">Flash Card 背誦模式</p>
+                                                <p className="text-bible-600 dark:text-bible-400">
+                                                    每張卡片<span className="font-semibold">默認隱藏大部分內容</span>（只顯示前幾個字），
+                                                    <span className="font-semibold">點擊卡片</span>即可展開查看完整經文。 嘗試先回憶，再驗證！
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-base">📚</span>
+                                            <div>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">逐節學習：選擇書卷</p>
+                                                <p className="text-bible-600 dark:text-bible-400">
+                                                    使用頂部的<span className="font-semibold">「選擇書卷」</span>和
+                                                    <span className="font-semibold">「選擇章節」</span>篩選器， 可以瀏覽聖經 66
+                                                    卷書的任意章節，逐節背誦或閱讀。
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-base">👁️</span>
+                                            <div>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">雙模式切換：阅读 / 背诵</p>
+                                                <p className="text-bible-600 dark:text-bible-400">
+                                                    點擊右上角的<span className="font-semibold">「阅读/背诵」</span>按鈕， 可以在
+                                                    <span className="font-semibold text-blue-600 dark:text-blue-400">阅读模式</span>（顯示全部） 和
+                                                    <span className="font-semibold text-purple-600 dark:text-purple-400">背诵模式</span>
+                                                    （隱藏內容）之間切換。
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-base">⭐</span>
+                                            <div>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏功能</p>
+                                                <p className="text-bible-600 dark:text-bible-400">
+                                                    點擊卡片右上角的<span className="font-semibold">星標圖示</span>可以收藏喜歡的經文，
+                                                    之後可以使用「收藏」篩選器快速查看。可收藏任何章節的經文，不限於精選經文。
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-base">🔗</span>
+                                            <div>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">分享收藏</p>
+                                                <p className="text-bible-600 dark:text-bible-400">
+                                                    在「收藏」模式下，點擊<span className="font-semibold">「分享」</span>按鈕可生成專屬鏈接，
+                                                    將您的收藏分享給其他人。對方打開鏈接後，可一鍵將所有經文添加到自己的收藏中。
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* 状态标签和统计 */}
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {/* 默认精选经文提示 */}
+                            {!selectedBook && filterType !== 'favorites' && !showShareBanner && (
+                                <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">📖 精選 114 節經文</span>
+                            )}
+
+                            {filterType === 'favorites' && (
+                                <>
+                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
+                                        <Star className="w-3 h-3 fill-current" />
+                                        已收藏
+                                    </span>
+                                    {favoritesCount > 0 && (
+                                        <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">💡 可生成鏈接分享</span>
+                                    )}
+                                </>
+                            )}
+
+                            {showAllContent && (
+                                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-800">
+                                    <Eye className="w-3 h-3" />
+                                    阅读模式
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
+                                共 <span className="font-semibold text-bible-700 dark:text-bible-300">{displayVerses.length}</span> 节
                             </span>
-                        )}
+                        </div>
                     </div>
+                </motion.div>
 
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
-                            共 <span className="font-semibold text-bible-700 dark:text-bible-300">{displayVerses.length}</span> 节
-                        </span>
-                    </div>
+                {/* 经文卡片区域 */}
+                <div className="max-w-7xl mx-auto">
+                    {loadingChapter || loadingFavorites ? (
+                        <div className="text-center py-12">
+                            <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
+                            <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加载经文中...</p>
+                        </div>
+                    ) : selectedBook && selectedChapter === null ? (
+                        // 选择了书卷但未选择章节，显示章节选择器
+                        <div className="py-12 px-4">
+                            <div className="text-center mb-8">
+                                <Image
+                                    src="/logo-light.png"
+                                    alt="你的話語"
+                                    width={64}
+                                    height={64}
+                                    className="w-16 h-16 mx-auto mb-4 opacity-60 dark:brightness-90 dark:contrast-125"
+                                />
+                                <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">请选择章节</h3>
+                                <p className="text-bible-600 dark:text-bible-400 font-chinese">
+                                    {selectedBook.name} 共有 {selectedBook.chapters} 章
+                                </p>
+                            </div>
+
+                            {/* 章节按钮网格 */}
+                            <div className="max-w-4xl mx-auto grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 md:gap-3">
+                                {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapterNum) => (
+                                    <motion.button
+                                        key={chapterNum}
+                                        onClick={() => handleChapterSelect(chapterNum)}
+                                        className="aspect-square flex items-center justify-center bg-bible-100 dark:bg-gray-700 text-bible-800 dark:text-bible-200 rounded-lg font-semibold shadow-sm touch-manipulation transition-colors duration-200"
+                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        whileHover={{
+                                            scale: 1.05,
+                                            backgroundColor: 'rgb(190, 158, 93)',
+                                            color: '#ffffff',
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                        }}
+                                        whileTap={{ scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                        title={`第 ${chapterNum} 章`}
+                                    >
+                                        {chapterNum}
+                                    </motion.button>
+                                ))}
+                            </div>
+                        </div>
+                    ) : displayVerses.length > 0 ? (
+                        <MasonryLayout
+                            key={isInitialLoad ? 'initial' : shuffleKey}
+                            verses={displayVerses}
+                            defaultRevealed={showAllContent}
+                            onViewInBible={handleViewInBible}
+                        />
+                    ) : (
+                        <div className="text-center py-20">
+                            <p className="text-bible-600 dark:text-bible-400 font-chinese">暂无经文</p>
+                        </div>
+                    )}
                 </div>
-            </motion.div>
-
-            {/* 经文卡片区域 */}
-            <div className="max-w-7xl mx-auto">
-                {loadingChapter || loadingFavorites ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
-                        <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加载经文中...</p>
-                    </div>
-                ) : selectedBook && selectedChapter === null ? (
-                    // 选择了书卷但未选择章节，显示章节选择器
-                    <div className="py-12 px-4">
-                        <div className="text-center mb-8">
-                            <Image
-                                src="/logo-light.png"
-                                alt="你的話語"
-                                width={64}
-                                height={64}
-                                className="w-16 h-16 mx-auto mb-4 opacity-60 dark:brightness-90 dark:contrast-125"
-                            />
-                            <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">请选择章节</h3>
-                            <p className="text-bible-600 dark:text-bible-400 font-chinese">
-                                {selectedBook.name} 共有 {selectedBook.chapters} 章
-                            </p>
-                        </div>
-
-                        {/* 章节按钮网格 */}
-                        <div className="max-w-4xl mx-auto grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 md:gap-3">
-                            {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapterNum) => (
-                                <motion.button
-                                    key={chapterNum}
-                                    onClick={() => handleChapterSelect(chapterNum)}
-                                    className="aspect-square flex items-center justify-center bg-bible-100 dark:bg-gray-700 text-bible-800 dark:text-bible-200 rounded-lg font-semibold shadow-sm touch-manipulation transition-colors duration-200"
-                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                    whileHover={{
-                                        scale: 1.05,
-                                        backgroundColor: 'rgb(190, 158, 93)',
-                                        color: '#ffffff',
-                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                                    }}
-                                    whileTap={{ scale: 0.95 }}
-                                    transition={{ duration: 0.15 }}
-                                    title={`第 ${chapterNum} 章`}
-                                >
-                                    {chapterNum}
-                                </motion.button>
-                            ))}
-                        </div>
-                    </div>
-                ) : displayVerses.length > 0 ? (
-                    <MasonryLayout
-                        key={isInitialLoad ? 'initial' : shuffleKey}
-                        verses={displayVerses}
-                        defaultRevealed={showAllContent}
-                        onViewInBible={handleViewInBible}
-                    />
-                ) : (
-                    <div className="text-center py-20">
-                        <p className="text-bible-600 dark:text-bible-400 font-chinese">暂无经文</p>
-                    </div>
-                )}
-            </div>
             </main>
         </div>
     );
