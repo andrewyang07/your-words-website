@@ -17,6 +17,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.9",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "clsx": "^2.1.1",

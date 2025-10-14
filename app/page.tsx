@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, Shuffle, Star, X, Eye, EyeOff, Sun, Moon, Monitor, Languages, HelpCircle, RotateCcw } from 'lucide-react';
+import { Filter, Shuffle, Star, X, Eye, EyeOff, Sun, Moon, Monitor, Languages, HelpCircle, RotateCcw, ChevronDown, Check } from 'lucide-react';
+import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
@@ -345,52 +346,186 @@ export default function HomePage() {
                         )}
 
                         {/* 书卷选择器 */}
-                        <select
-                            value={selectedBook?.key || ''}
-                            onChange={(e) => {
-                                const book = books.find((b) => b.key === e.target.value);
-                                handleBookSelect(book || null);
-                            }}
-                            className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 cursor-pointer touch-manipulation min-h-[44px]"
-                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                        >
-                            <option value="">选择书卷</option>
-                            <optgroup label="旧约">
-                                {books
-                                    .filter((b) => b.testament === 'old')
-                                    .map((book) => (
-                                        <option key={book.key} value={book.key}>
-                                            {book.name}
-                                        </option>
-                                    ))}
-                            </optgroup>
-                            <optgroup label="新约">
-                                {books
-                                    .filter((b) => b.testament === 'new')
-                                    .map((book) => (
-                                        <option key={book.key} value={book.key}>
-                                            {book.name}
-                                        </option>
-                                    ))}
-                            </optgroup>
-                        </select>
+                        <Listbox value={selectedBook} onChange={handleBookSelect}>
+                            {({ open }) => (
+                                <div className="relative">
+                                    <Listbox.Button className="relative w-full px-4 py-2 pr-10 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 text-left cursor-pointer touch-manipulation min-h-[44px]">
+                                        <span className="block">{selectedBook?.name || '选择书卷'}</span>
+                                        <ChevronDown
+                                            className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-700 dark:text-bible-300 transition-transform ${
+                                                open ? 'rotate-180' : ''
+                                            }`}
+                                        />
+                                    </Listbox.Button>
+                                    <Transition
+                                        enter="transition duration-100 ease-out"
+                                        enterFrom="transform scale-95 opacity-0"
+                                        enterTo="transform scale-100 opacity-100"
+                                        leave="transition duration-75 ease-out"
+                                        leaveFrom="transform scale-100 opacity-100"
+                                        leaveTo="transform scale-95 opacity-0"
+                                    >
+                                        <Listbox.Options className="absolute z-20 mt-1 min-w-full w-max max-h-[70vh] overflow-auto rounded-lg bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none scrollbar-thin">
+                                            <Listbox.Option
+                                                value={null}
+                                                className={({ active }) =>
+                                                    `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                        active
+                                                            ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                            : 'text-bible-700 dark:text-bible-300'
+                                                    }`
+                                                }
+                                            >
+                                                {({ selected }) => (
+                                                    <>
+                                                        <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>选择书卷</span>
+                                                        {selected && (
+                                                            <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                        )}
+                                                    </>
+                                                )}
+                                            </Listbox.Option>
+
+                                            {/* 旧约 */}
+                                            <div className="px-3 py-1 text-xs font-semibold text-bible-500 dark:text-bible-400 bg-bible-50 dark:bg-gray-900/50 border-t border-b border-bible-100 dark:border-gray-700 font-chinese">
+                                                旧约
+                                            </div>
+                                            {books
+                                                .filter((b) => b.testament === 'old')
+                                                .map((book) => (
+                                                    <Listbox.Option
+                                                        key={book.key}
+                                                        value={book}
+                                                        className={({ active }) =>
+                                                            `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                                active
+                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                    : 'text-bible-700 dark:text-bible-300'
+                                                            }`
+                                                        }
+                                                    >
+                                                        {({ selected }) => (
+                                                            <>
+                                                                <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                                                    {book.name}
+                                                                </span>
+                                                                {selected && (
+                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </Listbox.Option>
+                                                ))}
+
+                                            {/* 新约 */}
+                                            <div className="px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-t border-b border-blue-100 dark:border-blue-800 font-chinese mt-1">
+                                                新约
+                                            </div>
+                                            {books
+                                                .filter((b) => b.testament === 'new')
+                                                .map((book) => (
+                                                    <Listbox.Option
+                                                        key={book.key}
+                                                        value={book}
+                                                        className={({ active }) =>
+                                                            `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                                active
+                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                    : 'text-bible-700 dark:text-bible-300'
+                                                            }`
+                                                        }
+                                                    >
+                                                        {({ selected }) => (
+                                                            <>
+                                                                <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                                                    {book.name}
+                                                                </span>
+                                                                {selected && (
+                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </Listbox.Option>
+                                                ))}
+                                        </Listbox.Options>
+                                    </Transition>
+                                </div>
+                            )}
+                        </Listbox>
 
                         {/* 章节选择器 */}
                         {selectedBook && (
                             <>
-                                <select
-                                    value={selectedChapter || ''}
-                                    onChange={(e) => handleChapterSelect(e.target.value ? parseInt(e.target.value) : null)}
-                                    className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 cursor-pointer touch-manipulation min-h-[44px]"
-                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                >
-                                    <option value="">所有章节</option>
-                                    {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
-                                        <option key={ch} value={ch}>
-                                            第 {ch} 章
-                                        </option>
-                                    ))}
-                                </select>
+                                <Listbox value={selectedChapter} onChange={handleChapterSelect}>
+                                    {({ open }) => (
+                                        <div className="relative">
+                                            <Listbox.Button className="relative w-full px-4 py-2 pr-10 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 text-left cursor-pointer touch-manipulation min-h-[44px]">
+                                                <span className="block">{selectedChapter ? `第 ${selectedChapter} 章` : '所有章节'}</span>
+                                                <ChevronDown
+                                                    className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400 transition-transform ${
+                                                        open ? 'rotate-180' : ''
+                                                    }`}
+                                                />
+                                            </Listbox.Button>
+                                            <Transition
+                                                enter="transition duration-100 ease-out"
+                                                enterFrom="transform scale-95 opacity-0"
+                                                enterTo="transform scale-100 opacity-100"
+                                                leave="transition duration-75 ease-out"
+                                                leaveFrom="transform scale-100 opacity-100"
+                                                leaveTo="transform scale-95 opacity-0"
+                                            >
+                                                <Listbox.Options className="absolute z-20 mt-1 min-w-full w-max max-h-[70vh] overflow-auto rounded-lg bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none scrollbar-thin">
+                                                    <Listbox.Option
+                                                        value={null}
+                                                        className={({ active }) =>
+                                                            `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                                active
+                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                    : 'text-bible-700 dark:text-bible-300'
+                                                            }`
+                                                        }
+                                                    >
+                                                        {({ selected }) => (
+                                                            <>
+                                                                <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                                                    所有章节
+                                                                </span>
+                                                                {selected && (
+                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </Listbox.Option>
+                                                    {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
+                                                        <Listbox.Option
+                                                            key={ch}
+                                                            value={ch}
+                                                            className={({ active }) =>
+                                                                `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                                    active
+                                                                        ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                        : 'text-bible-700 dark:text-bible-300'
+                                                                }`
+                                                            }
+                                                        >
+                                                            {({ selected }) => (
+                                                                <>
+                                                                    <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                                                        第 {ch} 章
+                                                                    </span>
+                                                                    {selected && (
+                                                                        <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </Listbox.Option>
+                                                    ))}
+                                                </Listbox.Options>
+                                            </Transition>
+                                        </div>
+                                    )}
+                                </Listbox>
 
                                 {/* 重置章节按钮 */}
                                 {selectedChapter !== null && (
