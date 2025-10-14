@@ -367,7 +367,15 @@ export default function HomePage() {
     };
 
     const handleToggleFavorites = () => {
-        setFilterType(filterType === 'favorites' ? 'all' : 'favorites');
+        if (filterType === 'favorites') {
+            // 退出收藏模式
+            setFilterType('all');
+        } else {
+            // 进入收藏模式，清除书卷和章节选择
+            setFilterType('favorites');
+            setSelectedBook(null);
+            setSelectedChapter(null);
+        }
         // 不清除分享状态，保留URL
     };
 
@@ -586,44 +594,40 @@ export default function HomePage() {
 
                     {/* 筛选工具栏 */}
                     <div className="flex items-center gap-2 flex-wrap">
-                        {/* 已收藏筛选 */}
-                        {!selectedBook && (
-                            <>
-                                <button
-                                    onClick={handleToggleFavorites}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
-                                        filterType === 'favorites'
-                                            ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
-                                            : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
-                                    }`}
-                                    title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
-                                >
-                                    <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
-                                    <span className="hidden sm:inline font-chinese text-sm">{filterType === 'favorites' ? '已收藏' : '收藏'}</span>
-                                </button>
+                        {/* 已收藏筛选 - 始终显示 */}
+                        <button
+                            onClick={handleToggleFavorites}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
+                                filterType === 'favorites'
+                                    ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
+                                    : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
+                            }`}
+                            title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
+                        >
+                            <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
+                            <span className="hidden sm:inline font-chinese text-sm">{filterType === 'favorites' ? '已收藏' : '收藏'}</span>
+                        </button>
 
-                                {/* 分享收藏按钮 - 只在收藏筛选模式下显示 */}
-                                {filterType === 'favorites' && favoritesCount > 0 && (
-                                    <button
-                                        onClick={handleShareFavorites}
-                                        disabled={favoritesCount > 200}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
-                                            favoritesCount > 200
-                                                ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                                                : 'bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
-                                        }`}
-                                        title={
-                                            favoritesCount > 200
-                                                ? '收藏过多（超过200节），无法生成分享链接'
-                                                : '点击生成分享链接，可将您的收藏分享给他人'
-                                        }
-                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                    >
-                                        <Share2 className="w-4 h-4" />
-                                        <span className="hidden sm:inline font-chinese text-sm">分享</span>
-                                    </button>
-                                )}
-                            </>
+                        {/* 分享收藏按钮 - 只在收藏筛选模式下显示 */}
+                        {filterType === 'favorites' && favoritesCount > 0 && (
+                            <button
+                                onClick={handleShareFavorites}
+                                disabled={favoritesCount > 200}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
+                                    favoritesCount > 200
+                                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                        : 'bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
+                                }`}
+                                title={
+                                    favoritesCount > 200
+                                        ? '收藏过多（超过200节），无法生成分享链接'
+                                        : '点击生成分享链接，可将您的收藏分享给他人'
+                                }
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            >
+                                <Share2 className="w-4 h-4" />
+                                <span className="hidden sm:inline font-chinese text-sm">分享</span>
+                            </button>
                         )}
 
                         {/* 书卷选择器 */}
