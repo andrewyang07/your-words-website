@@ -12,16 +12,18 @@ interface VerseCardProps {
   verse: Verse;
   size?: CardSize;
   onViewInBible?: () => void;
+  defaultRevealed?: boolean; // 是否默认展开
 }
 
 export default function VerseCard({
   verse,
   size = 'medium',
   onViewInBible,
+  defaultRevealed = false,
 }: VerseCardProps) {
   const router = useRouter();
   const { isFavorite, toggleFavorite } = useFavoritesStore();
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(defaultRevealed);
   const isFav = isFavorite(verse.id);
 
   // 每张卡片随机显示 3-7 个字

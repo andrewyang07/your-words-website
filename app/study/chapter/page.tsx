@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, BookOpen } from 'lucide-react';
+import { ArrowLeft, BookOpen, Eye, EyeOff } from 'lucide-react';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { Book, Verse } from '@/types/verse';
@@ -12,6 +12,7 @@ import ErrorMessage from '@/components/ui/ErrorMessage';
 import BookSelector from '@/components/study/chapter/BookSelector';
 import ChapterSelector from '@/components/study/chapter/ChapterSelector';
 import VerseList from '@/components/study/chapter/VerseList';
+import MasonryLayout from '@/components/verses/MasonryLayout';
 
 export default function ChapterModePage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function ChapterModePage() {
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [chapterVerses, setChapterVerses] = useState<Verse[]>([]);
   const [loadingVerses, setLoadingVerses] = useState(false);
+  const [showAllContent, setShowAllContent] = useState(false);
 
   // 加载书卷列表
   useEffect(() => {
@@ -115,10 +117,34 @@ export default function ChapterModePage() {
 
           <h1 className="text-xl md:text-2xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-2">
             <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
-            逐节背诵
+            {showAllContent ? '圣经阅读' : '逐节背诵'}
           </h1>
 
-          <div className="w-20"></div>
+          {/* 切换视图按钮 */}
+          {selectedBook && selectedChapter && (
+            <button
+              onClick={() => setShowAllContent(!showAllContent)}
+              className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+            >
+              {showAllContent ? (
+                <>
+                  <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                  <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm md:text-base">
+                    背诵
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                  <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm md:text-base">
+                    阅读
+                  </span>
+                </>
+              )}
+            </button>
+          )}
+          {!selectedBook || !selectedChapter && <div className="w-20"></div>}
         </div>
       </div>
 
@@ -179,7 +205,7 @@ export default function ChapterModePage() {
             onSelectChapter={handleChapterSelect}
           />
         ) : (
-          // 步骤3: 显示经文列表
+          // 步骤3: 显示经文
           <>
             {loadingVerses ? (
               <div className="text-center py-12">
@@ -188,7 +214,17 @@ export default function ChapterModePage() {
                   加载经文中...
                 </p>
               </div>
+            ) : showAllContent ? (
+              // 阅读模式：卡片布局，默认全部展开
+              <div className="px-4">
+                <MasonryLayout
+                  verses={chapterVerses}
+                  defaultRevealed={true}
+                  onViewInBible={() => {}}
+                />
+              </div>
             ) : (
+              // 背诵模式：列表布局
               <VerseList
                 verses={chapterVerses}
                 book={selectedBook.name}

@@ -1,11 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
-    // 静态导出配置（用于Vercel部署）
-    output: 'export',
-    trailingSlash: true,
+    // Vercel 部署使用默认的服务端渲染模式
     images: {
-        unoptimized: true,
+        remotePatterns: [],
     },
 };
 

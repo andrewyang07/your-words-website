@@ -9,11 +9,13 @@ import { getCardSize } from '@/lib/utils';
 interface MasonryLayoutProps {
   verses: Verse[];
   onViewInBible?: (verse: Verse) => void;
+  defaultRevealed?: boolean; // 是否默认展开所有卡片
 }
 
 export default function MasonryLayout({
   verses,
   onViewInBible,
+  defaultRevealed = false,
 }: MasonryLayoutProps) {
   // 计算瀑布流布局
   const masonryColumns = useMemo(() => {
@@ -57,6 +59,7 @@ export default function MasonryLayout({
                 verse={verse}
                 size={getCardSize(verse)}
                 onViewInBible={() => onViewInBible?.(verse)}
+                defaultRevealed={defaultRevealed}
               />
             </motion.div>
           ))}
