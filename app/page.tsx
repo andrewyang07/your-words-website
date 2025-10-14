@@ -155,7 +155,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <h1 className="text-2xl md:text-3xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-2">
                 <BookOpen className="w-6 h-6 md:w-7 md:h-7" />
-                Your Words
+                你的話語
               </h1>
               
               {/* 默认状态提示 */}
@@ -231,19 +231,20 @@ export default function HomePage() {
                 const book = books.find((b) => b.key === e.target.value);
                 handleBookSelect(book || null);
               }}
-              className="px-4 py-2 bg-white dark:bg-gray-800 border border-bible-200 dark:border-gray-700 rounded-lg font-chinese text-sm text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors shadow-sm cursor-pointer"
+              className="px-3 md:px-4 py-2.5 md:py-2 bg-white dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 rounded-lg font-chinese text-base md:text-sm text-bible-900 dark:text-bible-100 hover:border-bible-500 dark:hover:border-bible-400 focus:border-bible-600 dark:focus:border-bible-300 focus:outline-none transition-colors shadow-sm cursor-pointer font-medium"
+              style={{ minHeight: '44px' }}
             >
-              <option value="">选择书卷</option>
-              <optgroup label="旧约">
+              <option value="" className="text-base">选择书卷</option>
+              <optgroup label="━━ 旧约 ━━" className="text-base font-bold">
                 {books.filter((b) => b.testament === 'old').map((book) => (
-                  <option key={book.key} value={book.key}>
+                  <option key={book.key} value={book.key} className="text-base py-2">
                     {book.name}
                   </option>
                 ))}
               </optgroup>
-              <optgroup label="新约">
+              <optgroup label="━━ 新约 ━━" className="text-base font-bold">
                 {books.filter((b) => b.testament === 'new').map((book) => (
-                  <option key={book.key} value={book.key}>
+                  <option key={book.key} value={book.key} className="text-base py-2">
                     {book.name}
                   </option>
                 ))}
@@ -255,11 +256,12 @@ export default function HomePage() {
               <select
                 value={selectedChapter || ''}
                 onChange={(e) => handleChapterSelect(e.target.value ? parseInt(e.target.value) : null)}
-                className="px-4 py-2 bg-white dark:bg-gray-800 border border-bible-200 dark:border-gray-700 rounded-lg font-chinese text-sm text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors shadow-sm cursor-pointer"
+                className="px-3 md:px-4 py-2.5 md:py-2 bg-white dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 rounded-lg font-chinese text-base md:text-sm text-bible-900 dark:text-bible-100 hover:border-bible-500 dark:hover:border-bible-400 focus:border-bible-600 dark:focus:border-bible-300 focus:outline-none transition-colors shadow-sm cursor-pointer font-medium"
+                style={{ minHeight: '44px' }}
               >
-                <option value="">所有章节</option>
+                <option value="" className="text-base">所有章节</option>
                 {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
-                  <option key={ch} value={ch}>
+                  <option key={ch} value={ch} className="text-base py-2">
                     第 {ch} 章
                   </option>
                 ))}
