@@ -985,7 +985,7 @@ export default function HomePage() {
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                                 transition={{ duration: 0.2 }}
-                                className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-3xl md:max-h-[85vh] z-50"
+                                className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-auto md:max-w-3xl md:max-h-[85vh] z-50"
                             >
                                 <div className="h-full bg-gradient-to-br from-white to-bible-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col border-2 border-bible-200 dark:border-gray-700">
                                     {/* 标题栏 */}
@@ -1010,17 +1010,23 @@ export default function HomePage() {
                                         {/* 开发故事 */}
                                         <section>
                                             <h3 className="text-lg font-bold text-bible-700 dark:text-bible-300 mb-3 flex items-center gap-2">
-                                                <span className="text-2xl">📱</span>
-                                                從 App 到 Web 的旅程
+                                                <span className="text-2xl">📱</span>從 App 到 Web 的旅程
                                             </h3>
                                             <div className="space-y-3 text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                                                 <p>
-                                                    最初，我嘗試開發一款名為「你的話語」的 iOS App，以卡片形式幫助弟兄姊妹背誦經文。
-                                                    然而，受限於平台（無法覆蓋安卓用戶）和安裝門檻，我意識到需要一個更開放、更易訪問的解決方案。
+                                                    最初，我投入大量心血開發了一款名為「你的話語」的 iOS App，並成功在全球 App Store 上架。
+                                                    這款 App 採用卡片形式幫助弟兄姊妹背誦經文，獲得了不少用戶的喜愛。
                                                 </p>
                                                 <p>
-                                                    在一次主日講道中，聖靈突然給了我靈感（<span className="text-amber-600 dark:text-amber-400 font-medium">友情提醒：請不要效法我，還是要好好聽講道 😊</span>），
-                                                    我在紙上勾勒出了這個網站的雛形。這兩張潦草的草圖，見證了從想法到現實的第一步。
+                                                    然而，隨著時間推移，我逐漸意識到 App 的局限性：許多基督徒並不經常使用手機，
+                                                    而網站的使用門檻更低，無需下載安裝，任何設備都能輕鬆訪問。
+                                                </p>
+                                                <p>
+                                                    在一次主日講道中，我突然有了新的想法（
+                                                    <span className="text-amber-600 dark:text-amber-400 font-medium">
+                                                        友情提醒：請不要效法我，還是要好好聽講道 😊
+                                                    </span>
+                                                    ），決定將這個概念轉化為網站。這兩張潦草的草圖，見證了從想法到現實的第一步。
                                                 </p>
                                             </div>
                                         </section>
@@ -1057,15 +1063,17 @@ export default function HomePage() {
                                             </h3>
                                             <div className="space-y-3 text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                                                 <p>
-                                                    這個網站的誕生，源於一個簡單卻深刻的渴望 —— 幫助自己和其他基督徒將神的話語藏在心裡。
-                                                    正如<span className="font-semibold text-bible-600 dark:text-bible-400">詩篇 119:11</span> 所說：
+                                                    這個網站的誕生，源於一個簡單卻深刻的渴望 —— 幫助自己和其他基督徒將神的話語藏在心裡。 正如
+                                                    <span className="font-semibold text-bible-600 dark:text-bible-400">詩篇 119:11</span> 所說：
                                                 </p>
                                                 <blockquote className="pl-4 border-l-4 border-bible-400 dark:border-bible-500 italic text-bible-700 dark:text-bible-300 bg-bible-50 dark:bg-gray-800 p-3 rounded-r-lg">
                                                     「我將你的話藏在心裡，免得我得罪你。」
                                                 </blockquote>
                                                 <p>
-                                                    <span className="font-semibold text-bible-600 dark:text-bible-400">神的話語充滿力量，充滿能力</span>，
-                                                    能夠在我們軟弱時堅固我們，在迷茫時指引我們。
+                                                    <span className="font-semibold text-bible-600 dark:text-bible-400">
+                                                        神的話語充滿力量，充滿能力
+                                                    </span>
+                                                    ， 能夠在我們軟弱時堅固我們，在迷茫時指引我們。
                                                 </p>
                                                 <p className="text-bible-700 dark:text-bible-300 font-medium">
                                                     願這個小小的工具，成為你背誦聖經旅程中的幫助。🙏
