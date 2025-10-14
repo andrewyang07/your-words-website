@@ -70,6 +70,9 @@ export default function HomePage() {
     const [favoritesVersesData, setFavoritesVersesData] = useState<Verse[]>([]);
     const [loadingFavorites, setLoadingFavorites] = useState(false);
 
+    // 心版 App 推广卡片显示状态（每次刷新都显示）
+    const [showAppPromo, setShowAppPromo] = useState(true);
+
     // 从 localStorage 读取引导卡片状态
     useEffect(() => {
         const guideDismissed = localStorage.getItem('guide-dismissed');
@@ -1195,57 +1198,74 @@ export default function HomePage() {
                     )}
                 </div>
 
-                {/* iOS App 推广区块 */}
-                <div className="max-w-7xl mx-auto px-4 py-12 mt-8">
-                    <a
-                        href="https://apps.apple.com/app/6744570052"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block bg-gradient-to-br from-white to-bible-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-lg overflow-hidden border-2 border-bible-200 dark:border-gray-600 hover:border-bible-400 dark:hover:border-bible-400 hover:shadow-xl transition-all duration-200 hover:-translate-y-1"
-                    >
-                        <div className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
-                            {/* 图标 */}
-                            <div className="flex-shrink-0">
-                                <div className="w-20 h-20 md:w-24 md:h-24 bg-white dark:bg-gray-700 rounded-[22%] shadow-xl flex items-center justify-center p-3 overflow-hidden">
-                                    <Image
-                                        src="/xinban-logo.png"
-                                        alt="心版 App Logo"
-                                        width={96}
-                                        height={96}
-                                        className="w-full h-full object-contain"
-                                    />
-                                </div>
-                            </div>
+                {/* iOS App 推广区块 - Mini版 */}
+                <AnimatePresence>
+                    {showAppPromo && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="max-w-7xl mx-auto px-4 py-6 mt-4"
+                        >
+                            <div className="relative bg-gradient-to-r from-bible-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-xl shadow-md border border-bible-200 dark:border-gray-600 overflow-hidden">
+                                {/* 关闭按钮 */}
+                                <button
+                                    onClick={() => setShowAppPromo(false)}
+                                    className="absolute top-2 right-2 p-1.5 hover:bg-bible-200/50 dark:hover:bg-gray-600 rounded-lg transition-colors z-10"
+                                    title="关闭推广"
+                                    aria-label="关闭心版推广"
+                                >
+                                    <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                </button>
 
-                            {/* 文字内容 */}
-                            <div className="flex-1 text-center md:text-left">
-                                <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                                    <h3 className="text-2xl md:text-3xl font-bold text-bible-800 dark:text-bible-200 font-chinese">心版</h3>
-                                    <span className="px-2 py-1 bg-bible-500 text-white text-xs font-semibold rounded-full">iOS</span>
-                                </div>
-                                <p className="text-bible-700 dark:text-bible-300 font-medium mb-2 font-chinese">將神的話語系在指頭上，刻在心版上</p>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 font-chinese leading-relaxed">
-                                    iPhone 用戶專享：主屏幕小組件展示經文 · 雙語對照閱讀 · 每次解鎖都被神的話語提醒
-                                </p>
-                            </div>
+                                <a
+                                    href="https://apps.apple.com/app/6744570052"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block p-4 md:p-5 hover:bg-bible-100/30 dark:hover:bg-gray-700/30 transition-colors"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        {/* Logo */}
+                                        <div className="flex-shrink-0">
+                                            <div className="w-14 h-14 md:w-16 md:h-16 bg-white dark:bg-gray-700 rounded-[18%] shadow-md flex items-center justify-center p-2.5 overflow-hidden">
+                                                <Image
+                                                    src="/xinban-logo.png"
+                                                    alt="心版 App Logo"
+                                                    width={64}
+                                                    height={64}
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            </div>
+                                        </div>
 
-                            {/* 下载按钮 */}
-                            <div className="flex-shrink-0">
-                                <div className="flex flex-col items-center gap-2">
-                                    <div className="px-6 py-3 bg-bible-600 hover:bg-bible-700 dark:bg-bible-500 dark:hover:bg-bible-600 text-white font-semibold rounded-xl shadow-md transition-colors font-chinese">
-                                        前往 App Store
+                                        {/* 内容 */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h4 className="text-lg md:text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">心版</h4>
+                                                <span className="px-1.5 py-0.5 bg-bible-500 text-white text-[10px] font-semibold rounded">iOS</span>
+                                                <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    <span>⭐</span>
+                                                    <span className="font-medium">5.0</span>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 font-chinese line-clamp-2">
+                                                將經文系在指頭上，刻在心版上 · 主屏幕小組件 · 雙語對照 · 免費下載
+                                            </p>
+                                        </div>
+
+                                        {/* 按钮 */}
+                                        <div className="flex-shrink-0 hidden md:block">
+                                            <div className="px-4 py-2 bg-bible-600 hover:bg-bible-700 text-white text-sm font-semibold rounded-lg transition-colors font-chinese whitespace-nowrap">
+                                                前往 App Store →
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                        <span>⭐️</span>
-                                        <span className="font-medium">5.0</span>
-                                        <span>·</span>
-                                        <span>免費下載</span>
-                                    </div>
-                                </div>
+                                </a>
                             </div>
-                        </div>
-                    </a>
-                </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* 页脚 */}
                 <footer className="border-t border-bible-200 dark:border-gray-700 mt-12">
