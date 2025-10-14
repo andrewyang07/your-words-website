@@ -4,13 +4,51 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
 export const metadata: Metadata = {
-    title: '你的話語 - 聖經背誦',
-    description: '讓神的話語常在心中 - 精美的聖經背誦助手',
-    keywords: ['聖經', '背誦', '經文', 'Bible', '記憶', '學習'],
+    title: '你的話語 - 聖經背誦助手 | 精選114節經文',
+    description: '免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習。支持Flash Card模式、收藏分享，讓神的話語常在心中。',
+    keywords: ['聖經', '背誦', '經文', 'Bible', '記憶', '學習', '聖經app', '背經', '靈修', '基督教', '你的話語'],
+    authors: [{ name: 'Your Words Team' }],
+    creator: 'Your Words',
+    publisher: 'Your Words',
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            'max-video-preview': -1,
+            'max-image-preview': 'large',
+            'max-snippet': -1,
+        },
+    },
+    openGraph: {
+        type: 'website',
+        locale: 'zh_TW',
+        alternateLocale: ['zh_CN'],
+        url: 'https://your-words-website.vercel.app',
+        siteName: '你的話語',
+        title: '你的話語 - 聖經背誦助手',
+        description: '免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習。支持Flash Card模式、收藏分享。',
+        images: [
+            {
+                url: '/logo.png',
+                width: 512,
+                height: 512,
+                alt: '你的話語 Logo',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary',
+        title: '你的話語 - 聖經背誦助手',
+        description: '免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習。',
+        images: ['/logo.png'],
+    },
     icons: {
         icon: '/logo.png',
         apple: '/logo.png',
     },
+    manifest: '/manifest.json',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

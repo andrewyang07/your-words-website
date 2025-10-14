@@ -1,0 +1,22 @@
+{
+  "name": "你的話語 - 聖經背誦助手",
+  "short_name": "你的話語",
+  "description": "免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FEF9F0",
+  "theme_color": "#BE9E5D",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "lifestyle", "spirituality"],
+  "lang": "zh-TW",
+  "dir": "ltr"
+}
+

@@ -1,0 +1,7 @@
+# robots.txt for 你的話語
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://your-words-website.vercel.app/sitemap.xml
+
