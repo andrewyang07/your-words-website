@@ -54,8 +54,15 @@ export default function HomePage() {
         localStorage.setItem('guide-dismissed', 'true');
         // 显示提示，3秒后消失
         setShowGuideHint(true);
-        setTimeout(() => setShowGuideHint(false), 3000);
     };
+
+    // 清理提示toast的timer
+    useEffect(() => {
+        if (showGuideHint) {
+            const timer = setTimeout(() => setShowGuideHint(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [showGuideHint]);
 
     // 打开引导卡片
     const handleOpenGuide = () => {
@@ -99,7 +106,8 @@ export default function HomePage() {
                 setError(err.message || '加载数据失败');
                 setLoading(false);
             });
-    }, [language, loadVerses, loadBooks, isInitialLoad]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [language]);
 
     // 当选择具体章节时，加载该章经文
     useEffect(() => {
@@ -143,9 +151,14 @@ export default function HomePage() {
             filtered = filtered.filter((v) => isFavorite(v.id));
         }
 
-        // 随机排序
+        // 随机排序（使用 Fisher-Yates 洗牌算法）
         if (shuffleKey > 0) {
-            filtered = filtered.sort(() => Math.random() - 0.5);
+            const shuffled = [...filtered];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            filtered = shuffled;
         }
 
         return filtered;
@@ -163,6 +176,10 @@ export default function HomePage() {
     const handleBookSelect = (book: Book | null) => {
         setSelectedBook(book);
         setSelectedChapter(null);
+        // 选择书卷时，重置收藏筛选
+        if (book && filterType === 'favorites') {
+            setFilterType('all');
+        }
     };
 
     const handleChapterSelect = (chapter: number | null) => {
@@ -226,7 +243,7 @@ export default function HomePage() {
                                     ) : (
                                         <>
                                             <span className="w-1.5 h-1.5 bg-bible-500 dark:bg-bible-400 rounded-full animate-pulse"></span>
-                                            <span>精選 100 節</span>
+                                            <span>精選 114 節</span>
                                         </>
                                     )}
                                 </span>
@@ -334,7 +351,7 @@ export default function HomePage() {
                                 const book = books.find((b) => b.key === e.target.value);
                                 handleBookSelect(book || null);
                             }}
-                            className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-base md:text-sm text-bible-700 dark:text-bible-300 cursor-pointer touch-manipulation min-h-[44px]"
+                            className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 cursor-pointer touch-manipulation min-h-[44px]"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                         >
                             <option value="">选择书卷</option>
@@ -364,7 +381,7 @@ export default function HomePage() {
                                 <select
                                     value={selectedChapter || ''}
                                     onChange={(e) => handleChapterSelect(e.target.value ? parseInt(e.target.value) : null)}
-                                    className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-base md:text-sm text-bible-700 dark:text-bible-300 cursor-pointer touch-manipulation min-h-[44px]"
+                                    className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 cursor-pointer touch-manipulation min-h-[44px]"
                                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 >
                                     <option value="">所有章节</option>
@@ -464,7 +481,7 @@ export default function HomePage() {
                                             <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">默認顯示：精選經文</p>
                                             <p className="text-bible-600 dark:text-bible-400">
                                                 當前頁面展示精心挑選的{' '}
-                                                <span className="font-semibold text-bible-700 dark:text-bible-300">100 節最值得背誦的經文</span>，
+                                                <span className="font-semibold text-bible-700 dark:text-bible-300">114 節最值得背誦的經文</span>，
                                                 這些經文涵蓋了信仰的核心真理，適合初學者和進階學習。
                                             </p>
                                         </div>
