@@ -502,31 +502,10 @@ export default function HomePage() {
                     {/* 标题行 */}
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-3">
-                                <h1 className="text-2xl md:text-3xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-3">
-                                    <Image src="/logo.png" alt="你的話語 Logo" width={40} height={40} className="w-8 h-8 md:w-10 md:h-10" />
-                                    你的話語
-                                </h1>
-
-                                {/* 状态徽章：显示当前模式 */}
-                                <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-bible-100 dark:bg-gray-700/50 text-bible-700 dark:text-bible-300 text-xs rounded-full font-chinese border border-bible-200/50 dark:border-gray-600/50">
-                                    {hasActiveFilters ? (
-                                        <>
-                                            {selectedBook && (
-                                                <>
-                                                    <span className="font-semibold">{selectedBook.name}</span>
-                                                    {selectedChapter && <span>第{selectedChapter}章</span>}
-                                                </>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span className="w-1.5 h-1.5 bg-bible-500 dark:bg-bible-400 rounded-full animate-pulse"></span>
-                                            <span>精選 114 節</span>
-                                        </>
-                                    )}
-                                </span>
-                            </div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-3">
+                                <Image src="/logo.png" alt="你的話語 Logo" width={40} height={40} className="w-8 h-8 md:w-10 md:h-10" />
+                                你的話語
+                            </h1>
                         </div>
 
                         <div className="flex items-center gap-2">
