@@ -426,6 +426,11 @@ export default function HomePage() {
         );
 
         if (book) {
+            // 如果在分享状态下，先清除分享状态
+            if (showShareBanner) {
+                clearShareState();
+            }
+            
             setSelectedBook(book);
             setSelectedChapter(verse.chapter);
             setShowAllContent(true); // 跳转到原文时自动切换到阅读模式
@@ -527,9 +532,11 @@ export default function HomePage() {
                                     height={40}
                                     className="w-8 h-8 md:w-10 md:h-10 dark:brightness-90 dark:contrast-125"
                                 />
-                                <span 
+                                <span
                                     className="text-bible-700 dark:text-bible-300 tracking-wide"
-                                    style={{ textShadow: '0 0 12px rgba(190,158,93,0.3), 0 0 24px rgba(190,158,93,0.15), 0 1px 2px rgba(0,0,0,0.05)' }}
+                                    style={{
+                                        textShadow: '0 0 12px rgba(190,158,93,0.3), 0 0 24px rgba(190,158,93,0.15), 0 1px 2px rgba(0,0,0,0.05)',
+                                    }}
                                 >
                                     你的話語
                                 </span>

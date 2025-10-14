@@ -116,7 +116,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 transition={{ duration: 0.2 }}
                 className={`
             ${textSizes[size]}
-            text-gray-900 dark:text-gray-100 leading-relaxed font-chinese
+            text-gray-800 dark:text-gray-100 font-medium leading-relaxed font-chinese
             ${isRevealed ? '' : 'line-clamp-4'}
             flex-1
           `}
