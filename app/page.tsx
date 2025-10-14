@@ -77,19 +77,9 @@ export default function HomePage() {
     // 否则显示精选经文（筛选后）
     let filtered = [...verses];
 
-    // 应用约/卷筛选
-    switch (filterType) {
-      case 'old':
-        filtered = filtered.filter((v) => v.testament === 'old');
-        break;
-      case 'new':
-        filtered = filtered.filter((v) => v.testament === 'new');
-        break;
-      case 'favorites':
-        filtered = filtered.filter((v) => isFavorite(v.id));
-        break;
-      default:
-        break;
+    // 应用收藏筛选
+    if (filterType === 'favorites') {
+      filtered = filtered.filter((v) => isFavorite(v.id));
     }
 
     // 应用书卷筛选（但不选择章节时）
@@ -130,6 +120,7 @@ export default function HomePage() {
     setSelectedBook(null);
     setSelectedChapter(null);
     setShuffleKey(0);
+    setShowAllContent(false); // 返回精选时切换到背诵模式
   };
 
   const handleViewInBible = (verse: Verse) => {
@@ -144,29 +135,12 @@ export default function HomePage() {
     if (book) {
       setSelectedBook(book);
       setSelectedChapter(verse.chapter);
+      setShowAllContent(true); // 跳转到原文时自动切换到阅读模式
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  const filterOptions = [
-    { type: 'all' as FilterType, label: '全部', count: verses.length },
-    {
-      type: 'old' as FilterType,
-      label: '旧约',
-      count: verses.filter((v) => v.testament === 'old').length,
-    },
-    {
-      type: 'new' as FilterType,
-      label: '新约',
-      count: verses.filter((v) => v.testament === 'new').length,
-    },
-    {
-      type: 'favorites' as FilterType,
-      label: '已收藏',
-      count: verses.filter((v) => isFavorite(v.id)).length,
-      icon: Star,
-    },
-  ];
+  const favoritesCount = verses.filter((v) => isFavorite(v.id)).length;
 
   const hasActiveFilters = filterType !== 'all' || selectedBook !== null;
 
@@ -207,84 +181,49 @@ export default function HomePage() {
                 </button>
               )}
 
-              {/* 阅读/背诵模式切换 */}
-              {selectedChapter !== null && (
-                <button
-                  onClick={() => setShowAllContent(!showAllContent)}
-                  className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                  title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
-                >
-                  {showAllContent ? (
-                    <>
-                      <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                      <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                        背诵
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                      <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                        阅读
-                      </span>
-                    </>
-                  )}
-                </button>
-              )}
+              {/* 阅读/背诵模式切换（始终显示） */}
+              <button
+                onClick={() => setShowAllContent(!showAllContent)}
+                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+              >
+                {showAllContent ? (
+                  <>
+                    <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                    <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                      背诵
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                    <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                      阅读
+                    </span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
           {/* 筛选工具栏 */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* 约/卷筛选（优先显示） */}
+            {/* 已收藏筛选 */}
             {!selectedBook && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowFilterMenu(!showFilterMenu)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm ${
-                    filterType !== 'all'
-                      ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
-                      : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
-                  }`}
-                >
-                  <Filter className="w-4 h-4" />
-                  <span className="font-chinese text-sm">
-                    {filterType === 'all' ? '约/卷' : filterOptions.find((opt) => opt.type === filterType)?.label}
-                  </span>
-                </button>
-
-                <AnimatePresence>
-                  {showFilterMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-bible-200 dark:border-gray-700 z-20"
-                    >
-                      {filterOptions.map((option) => {
-                        const Icon = option.icon;
-                        return (
-                          <button
-                            key={option.type}
-                            onClick={() => handleFilterChange(option.type)}
-                            className={`w-full flex items-center justify-between px-4 py-3 hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                              filterType === option.type ? 'bg-bible-100 dark:bg-gray-700' : ''
-                            }`}
-                          >
-                            <span className="flex items-center gap-2 font-chinese text-sm">
-                              {Icon && <Icon className="w-4 h-4 text-gold-500" />}
-                              <span className="text-bible-800 dark:text-bible-200">{option.label}</span>
-                            </span>
-                            <span className="text-xs text-bible-500 dark:text-bible-400">
-                              {option.count}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <button
+                onClick={() => setFilterType(filterType === 'favorites' ? 'all' : 'favorites')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm ${
+                  filterType === 'favorites'
+                    ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
+                    : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
+                }`}
+                title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
+              >
+                <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
+                <span className="hidden sm:inline font-chinese text-sm">
+                  {filterType === 'favorites' ? '已收藏' : '收藏'}
+                </span>
+              </button>
             )}
 
             {/* 书卷选择器 */}
@@ -357,9 +296,10 @@ export default function HomePage() {
             <>
               <span className="text-sm text-bible-600 dark:text-bible-400 font-chinese">当前：</span>
               
-              {filterType !== 'all' && (
+              {filterType === 'favorites' && (
                 <span className="inline-flex items-center gap-2 px-3 py-1 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium">
-                  {filterOptions.find((opt) => opt.type === filterType)?.label}
+                  <Star className="w-3 h-3" />
+                  已收藏
                 </span>
               )}
 
@@ -372,7 +312,7 @@ export default function HomePage() {
             </>
           ) : (
             <span className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-              📖 精选100节经文
+              📖 精选100节经文 {showAllContent && '（阅读模式）'}
             </span>
           )}
         </div>

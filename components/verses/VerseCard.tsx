@@ -78,8 +78,7 @@ export default function VerseCard({
         bg-white dark:bg-gray-800 rounded-xl shadow-md
         hover:shadow-xl hover:-translate-y-1
         cursor-pointer transition-all duration-300
-        border
-        ${isRevealed ? 'border-gold-400 dark:border-gold-500' : 'border-bible-200 dark:border-gray-700'}
+        border border-bible-200 dark:border-gray-700
         flex flex-col justify-between
         relative
       `}
@@ -144,16 +143,6 @@ export default function VerseCard({
         </button>
       </div>
 
-      {/* 状态指示 */}
-      {isRevealed && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="absolute -top-2 -right-2 w-8 h-8 bg-gold-400 dark:bg-gold-500 rounded-full flex items-center justify-center shadow-lg"
-        >
-          <span className="text-white text-xs font-bold">✓</span>
-        </motion.div>
-      )}
     </motion.div>
   );
 }
