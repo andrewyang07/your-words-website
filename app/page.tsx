@@ -529,7 +529,7 @@ export default function HomePage() {
                                 />
                                 <span 
                                     className="text-bible-700 dark:text-bible-300 tracking-wide"
-                                    style={{ textShadow: '0 0 16px rgba(190,158,93,0.6), 0 0 32px rgba(190,158,93,0.3), 0 2px 4px rgba(0,0,0,0.1)' }}
+                                    style={{ textShadow: '0 0 12px rgba(190,158,93,0.3), 0 0 24px rgba(190,158,93,0.15), 0 1px 2px rgba(0,0,0,0.05)' }}
                                 >
                                     你的話語
                                 </span>
