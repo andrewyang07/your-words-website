@@ -231,24 +231,20 @@ export default function HomePage() {
                 const book = books.find((b) => b.key === e.target.value);
                 handleBookSelect(book || null);
               }}
-              className="px-3 md:px-4 py-3 md:py-2 bg-white dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 rounded-lg font-chinese text-lg md:text-sm text-bible-900 dark:text-bible-100 hover:border-bible-500 dark:hover:border-bible-400 focus:border-bible-600 dark:focus:border-bible-300 focus:outline-none transition-colors shadow-md cursor-pointer font-semibold appearance-none"
-              style={{ 
-                minHeight: '48px',
-                WebkitAppearance: 'none',
-                MozAppearance: 'none'
-              }}
+              className="px-3 md:px-4 py-2.5 md:py-2 bg-white dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 rounded-lg font-chinese text-base md:text-sm text-bible-900 dark:text-bible-100 hover:border-bible-500 dark:hover:border-bible-400 focus:border-bible-600 dark:focus:border-bible-300 focus:outline-none transition-colors shadow-sm cursor-pointer font-medium"
+              style={{ minHeight: '44px' }}
             >
-              <option value="">📖 选择书卷</option>
-              <optgroup label="━━━ 旧约 ━━━">
+              <option value="" className="text-base">选择书卷</option>
+              <optgroup label="━━ 旧约 ━━" className="text-base font-bold">
                 {books.filter((b) => b.testament === 'old').map((book) => (
-                  <option key={book.key} value={book.key}>
+                  <option key={book.key} value={book.key} className="text-base py-2">
                     {book.name}
                   </option>
                 ))}
               </optgroup>
-              <optgroup label="━━━ 新约 ━━━">
+              <optgroup label="━━ 新约 ━━" className="text-base font-bold">
                 {books.filter((b) => b.testament === 'new').map((book) => (
-                  <option key={book.key} value={book.key}>
+                  <option key={book.key} value={book.key} className="text-base py-2">
                     {book.name}
                   </option>
                 ))}
@@ -260,16 +256,12 @@ export default function HomePage() {
               <select
                 value={selectedChapter || ''}
                 onChange={(e) => handleChapterSelect(e.target.value ? parseInt(e.target.value) : null)}
-                className="px-3 md:px-4 py-3 md:py-2 bg-white dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 rounded-lg font-chinese text-lg md:text-sm text-bible-900 dark:text-bible-100 hover:border-bible-500 dark:hover:border-bible-400 focus:border-bible-600 dark:focus:border-bible-300 focus:outline-none transition-colors shadow-md cursor-pointer font-semibold appearance-none"
-                style={{ 
-                  minHeight: '48px',
-                  WebkitAppearance: 'none',
-                  MozAppearance: 'none'
-                }}
+                className="px-3 md:px-4 py-2.5 md:py-2 bg-white dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 rounded-lg font-chinese text-base md:text-sm text-bible-900 dark:text-bible-100 hover:border-bible-500 dark:hover:border-bible-400 focus:border-bible-600 dark:focus:border-bible-300 focus:outline-none transition-colors shadow-sm cursor-pointer font-medium"
+                style={{ minHeight: '44px' }}
               >
-                <option value="">📑 所有章节</option>
+                <option value="" className="text-base">所有章节</option>
                 {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
-                  <option key={ch} value={ch}>
+                  <option key={ch} value={ch} className="text-base py-2">
                     第 {ch} 章
                   </option>
                 ))}
