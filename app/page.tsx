@@ -1042,13 +1042,20 @@ export default function HomePage() {
                 )}
 
                 {/* 状态标签和统计 */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
                         {filterType === 'favorites' && (
-                            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
-                                <Star className="w-3 h-3 fill-current" />
-                                已收藏
-                            </span>
+                            <>
+                                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
+                                    <Star className="w-3 h-3 fill-current" />
+                                    已收藏
+                                </span>
+                                {favoritesCount > 0 && (
+                                    <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese hidden sm:inline">
+                                        💡 點擊「分享」可生成鏈接，分享您的收藏給其他人
+                                    </span>
+                                )}
+                            </>
                         )}
 
                         {showAllContent && (
