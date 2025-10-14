@@ -52,6 +52,14 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         setIsRevealed(!isRevealed);
     };
 
+    // 键盘导航支持
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsRevealed(!isRevealed);
+        }
+    };
+
     const handleViewInBible = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (onViewInBible) {
@@ -83,10 +91,16 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         relative
         touch-manipulation
         transition-all duration-200
+        focus:outline-none focus:ring-2 focus:ring-bible-500 dark:focus:ring-bible-400
       `}
             onClick={handleCardClick}
+            onKeyDown={handleKeyDown}
             whileTap={{ scale: 0.98 }}
             style={{ WebkitTapHighlightColor: 'transparent' }}
+            role="article"
+            aria-label={`${verse.book} ${verse.chapter}章${verse.verse}节，${isRevealed ? '已展开' : '已收起'}，按Enter或空格键切换`}
+            aria-pressed={isRevealed}
+            tabIndex={0}
         >
             {/* 经文引用 */}
             <div className="flex items-start justify-between mb-3">
@@ -98,6 +112,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                     onClick={handleToggleFavorite}
                     className="transition-transform hover:scale-110 p-2 -m-2 touch-manipulation"
                     title={isFav ? '取消收藏' : '收藏'}
+                    aria-label={isFav ? `取消收藏 ${verse.book} ${verse.chapter}:${verse.verse}` : `收藏 ${verse.book} ${verse.chapter}:${verse.verse}`}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                     <Star
@@ -131,6 +146,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                     onClick={handleViewInBible}
                     className="flex items-center gap-1 px-2 py-1 text-xs text-bible-600 dark:text-bible-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-bible-50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation min-h-[44px] min-w-[44px] justify-center"
                     title="查看本章所有经文"
+                    aria-label={`查看 ${verse.book} 第${verse.chapter}章所有经文`}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                     <BookOpen className="w-3 h-3" />

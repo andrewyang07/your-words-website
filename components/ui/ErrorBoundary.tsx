@@ -46,12 +46,8 @@ export class ErrorBoundary extends Component<Props, State> {
                         <div className="mb-4">
                             <span className="text-6xl">😔</span>
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 font-chinese">
-                            出現錯誤
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6 font-chinese">
-                            很抱歉，應用遇到了一個問題。請刷新頁面重試。
-                        </p>
+                        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 font-chinese">出現錯誤</h1>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6 font-chinese">很抱歉，應用遇到了一個問題。請刷新頁面重試。</p>
                         <button
                             onClick={() => window.location.reload()}
                             className="px-6 py-3 bg-bible-600 hover:bg-bible-700 text-white rounded-lg transition-colors font-chinese"
@@ -66,4 +62,3 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.children;
     }
 }
-

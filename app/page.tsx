@@ -204,11 +204,11 @@ export default function HomePage() {
                             allVerses.push(...filteredVerses);
                         }
 
-                    setSharedVersesData(allVerses);
-                } catch (error) {
-                    logError('HomePage:loadSharedVerses', error);
-                }
-            };
+                        setSharedVersesData(allVerses);
+                    } catch (error) {
+                        logError('HomePage:loadSharedVerses', error);
+                    }
+                };
 
                 loadSharedVerses();
             }
@@ -520,7 +520,7 @@ export default function HomePage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-bible-100 dark:from-gray-900 dark:to-gray-800">
             {/* 顶部导航栏 */}
-            <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700">
+            <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700" role="banner">
                 <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
                     {/* 标题行 */}
                     <div className="flex items-center justify-between mb-3">
@@ -531,6 +531,7 @@ export default function HomePage() {
                                     alt="你的話語 Logo"
                                     width={40}
                                     height={40}
+                                    priority
                                     className="w-8 h-8 md:w-10 md:h-10 dark:brightness-90 dark:contrast-125"
                                 />
                                 <span
@@ -551,6 +552,7 @@ export default function HomePage() {
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="显示使用帮助"
+                                aria-label="显示使用帮助"
                             >
                                 <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
                                 <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">帮助</span>
@@ -562,6 +564,7 @@ export default function HomePage() {
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
+                                aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
                             >
                                 <Languages className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
                                 <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
@@ -575,6 +578,7 @@ export default function HomePage() {
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={theme === 'light' ? '切换到深色模式' : theme === 'dark' ? '跟随系统' : '切换到浅色模式'}
+                                aria-label={theme === 'light' ? '切换到深色模式' : theme === 'dark' ? '切换到跟随系统模式' : '切换到浅色模式'}
                             >
                                 {theme === 'light' ? (
                                     <Sun className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
@@ -591,6 +595,8 @@ export default function HomePage() {
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                                aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                                aria-pressed={showAllContent}
                             >
                                 {showAllContent ? (
                                     <>
@@ -854,8 +860,10 @@ export default function HomePage() {
                         )}
                     </div>
                 </div>
-            </div>
+            </header>
 
+            {/* 主内容区域 */}
+            <main role="main" aria-label="圣经经文内容">
             {/* 分享横幅 */}
             <AnimatePresence>
                 {showShareBanner && sharedVerses.length > 0 && (
@@ -864,6 +872,9 @@ export default function HomePage() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         className="bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-200 dark:border-blue-800 py-4"
+                        role="alert"
+                        aria-live="polite"
+                        aria-atomic="true"
                     >
                         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                             <div className="flex items-center gap-3 text-center sm:text-left">
@@ -1156,6 +1167,7 @@ export default function HomePage() {
                     </div>
                 )}
             </div>
+            </main>
         </div>
     );
 }

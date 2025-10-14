@@ -86,9 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 />
             </head>
             <body className="antialiased" suppressHydrationWarning>
-                <ErrorBoundary>
-                    {children}
-                </ErrorBoundary>
+                <ErrorBoundary>{children}</ErrorBoundary>
                 <Analytics />
                 <SpeedInsights />
             </body>
