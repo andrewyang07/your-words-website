@@ -527,7 +527,7 @@ export default function HomePage() {
                                     height={40}
                                     className="w-8 h-8 md:w-10 md:h-10 dark:brightness-90 dark:contrast-125"
                                 />
-                                <span className="bg-gradient-to-r from-bible-700 via-bible-600 to-gold-600 dark:from-bible-400 dark:via-bible-300 dark:to-gold-400 bg-clip-text text-transparent tracking-wide">
+                                <span className="text-bible-700 dark:text-bible-300 tracking-wide drop-shadow-sm">
                                     你的話語
                                 </span>
                             </h1>
