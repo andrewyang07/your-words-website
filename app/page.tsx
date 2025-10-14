@@ -172,7 +172,7 @@ export default function HomePage() {
                 const loadSharedVerses = async () => {
                     try {
                         const { loadChapterVerses } = await import('@/lib/dataLoader');
-                        
+
                         // 按章节分组，减少请求次数
                         const chapterGroups = new Map<string, Set<number>>();
                         decodedVerses.forEach(({ bookKey, chapter, verse }) => {
@@ -190,10 +190,10 @@ export default function HomePage() {
                             const bookKey = key.substring(0, lastDashIndex);
                             const chapterStr = key.substring(lastDashIndex + 1);
                             const chapter = parseInt(chapterStr);
-                            
+
                             const chapterVerses = await loadChapterVerses(bookKey, chapter, language);
                             // 只保留分享的那些节
-                            const filteredVerses = chapterVerses.filter(v => verseNumbers.has(v.verse));
+                            const filteredVerses = chapterVerses.filter((v) => verseNumbers.has(v.verse));
                             allVerses.push(...filteredVerses);
                         }
 
@@ -258,9 +258,28 @@ export default function HomePage() {
         setShuffleKey((prev) => prev + 1);
     };
 
+    // 清除分享状态的辅助函数
+    const clearShareState = () => {
+        if (showShareBanner) {
+            setShowShareBanner(false);
+            setSharedVerses([]);
+            setSharedVersesData([]);
+            // 清除URL参数
+            if (typeof window !== 'undefined') {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        }
+    };
+
     const handleFilterChange = (type: FilterType) => {
         setFilterType(type);
         setShowFilterMenu(false);
+        clearShareState(); // 清除分享状态
+    };
+
+    const handleToggleFavorites = () => {
+        setFilterType(filterType === 'favorites' ? 'all' : 'favorites');
+        clearShareState(); // 清除分享状态
     };
 
     const handleBookSelect = (book: Book | null) => {
@@ -270,10 +289,12 @@ export default function HomePage() {
         if (book && filterType === 'favorites') {
             setFilterType('all');
         }
+        clearShareState(); // 清除分享状态
     };
 
     const handleChapterSelect = (chapter: number | null) => {
         setSelectedChapter(chapter);
+        clearShareState(); // 清除分享状态
     };
 
     const handleClearFilters = () => {
@@ -356,27 +377,13 @@ export default function HomePage() {
     const handleAddAllShared = () => {
         const verseIds = sharedVerses.map((v) => `${v.bookKey}-${v.chapter}-${v.verse}`);
         addFavorites(verseIds);
-        setShowShareBanner(false);
-        setSharedVerses([]);
-        setSharedVersesData([]);
         setShareToast({ show: true, message: `已添加 ${verseIds.length} 节经文到收藏` });
-
-        // 清除URL参数
-        if (typeof window !== 'undefined') {
-            window.history.replaceState({}, '', window.location.pathname);
-        }
+        clearShareState();
     };
 
     // 取消分享横幅
     const handleCancelShare = () => {
-        setShowShareBanner(false);
-        setSharedVerses([]);
-        setSharedVersesData([]);
-
-        // 清除URL参数
-        if (typeof window !== 'undefined') {
-            window.history.replaceState({}, '', window.location.pathname);
-        }
+        clearShareState();
     };
 
     const favoritesCount = verses.filter((v) => isFavorite(v.id)).length;
@@ -503,7 +510,7 @@ export default function HomePage() {
                         {!selectedBook && (
                             <>
                                 <button
-                                    onClick={() => setFilterType(filterType === 'favorites' ? 'all' : 'favorites')}
+                                    onClick={handleToggleFavorites}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
                                         filterType === 'favorites'
                                             ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
@@ -515,8 +522,8 @@ export default function HomePage() {
                                     <span className="hidden sm:inline font-chinese text-sm">{filterType === 'favorites' ? '已收藏' : '收藏'}</span>
                                 </button>
 
-                                {/* 分享收藏按钮 */}
-                                {favoritesCount > 0 && (
+                                {/* 分享收藏按钮 - 只在收藏筛选模式下显示 */}
+                                {filterType === 'favorites' && favoritesCount > 0 && (
                                     <button
                                         onClick={handleShareFavorites}
                                         disabled={favoritesCount > 200}
