@@ -178,23 +178,37 @@ export default function HomePage() {
           {/* 标题行 */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-3">
-                <Image
-                  src="/logo.png"
-                  alt="你的話語 Logo"
-                  width={40}
-                  height={40}
-                  className="w-8 h-8 md:w-10 md:h-10"
-                />
-                你的話語
-              </h1>
-              
-              {/* 默认状态提示 */}
-              {!hasActiveFilters && (
-                <span className="hidden md:inline-block px-3 py-1 bg-bible-100 dark:bg-gray-700 text-bible-600 dark:text-bible-300 text-xs rounded-full font-chinese">
-                  精选100节经文
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl md:text-3xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-3">
+                  <Image
+                    src="/logo.png"
+                    alt="你的話語 Logo"
+                    width={40}
+                    height={40}
+                    className="w-8 h-8 md:w-10 md:h-10"
+                  />
+                  你的話語
+                </h1>
+                
+                {/* 状态徽章：显示当前模式 */}
+                <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-bible-100 dark:bg-gray-700/50 text-bible-700 dark:text-bible-300 text-xs rounded-full font-chinese border border-bible-200/50 dark:border-gray-600/50">
+                  {hasActiveFilters ? (
+                    <>
+                      {selectedBook && (
+                        <>
+                          <span className="font-semibold">{selectedBook.name}</span>
+                          {selectedChapter && <span>第{selectedChapter}章</span>}
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-1.5 h-1.5 bg-bible-500 dark:bg-bible-400 rounded-full animate-pulse"></span>
+                      <span>精選經文</span>
+                    </>
+                  )}
                 </span>
-              )}
+              </div>
             </div>
 
                     <div className="flex items-center gap-2">
@@ -341,41 +355,33 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 当前状态信息 */}
+      {/* 筛选状态和统计信息 */}
       <motion.div
         className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
         <div className="flex items-center gap-2 flex-wrap">
-          {hasActiveFilters ? (
-            <>
-              <span className="text-sm text-bible-600 dark:text-bible-400 font-chinese">当前：</span>
-              
-              {filterType === 'favorites' && (
-                <span className="inline-flex items-center gap-2 px-3 py-1 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium">
-                  <Star className="w-3 h-3" />
-                  已收藏
-                </span>
-              )}
-
-              {selectedBook && (
-                <span className="inline-flex items-center gap-2 px-3 py-1 bg-bible-100 dark:bg-gray-700 text-bible-700 dark:text-bible-300 rounded-full text-xs font-chinese font-medium">
-                  {selectedBook.name}
-                  {selectedChapter !== null && ` 第${selectedChapter}章`}
-                </span>
-              )}
-            </>
-          ) : (
-            <span className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-              📖 精选100节经文 {showAllContent && '（阅读模式）'}
+          {filterType === 'favorites' && (
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
+              <Star className="w-3 h-3 fill-current" />
+              已收藏
+            </span>
+          )}
+          
+          {showAllContent && (
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-800">
+              <Eye className="w-3 h-3" />
+              阅读模式
             </span>
           )}
         </div>
 
-        <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
-          共 {displayVerses.length} 节
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
+            共 <span className="font-semibold text-bible-700 dark:text-bible-300">{displayVerses.length}</span> 节
+          </span>
+        </div>
       </motion.div>
 
       {/* 经文卡片区域 */}
