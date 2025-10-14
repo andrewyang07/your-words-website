@@ -45,20 +45,28 @@ export default function ChapterModePage() {
     const bookParam = searchParams.get('book');
     const chapterParam = searchParams.get('chapter');
 
+    // 查找书卷（支持简体或繁体名称）
     if (bookParam && !selectedBook) {
-      const book = books.find((b) => b.name === bookParam);
+      const book = books.find(
+        (b) =>
+          b.name === bookParam ||
+          b.nameSimplified === bookParam ||
+          b.nameTraditional === bookParam ||
+          b.key === bookParam
+      );
       if (book) {
         setSelectedBook(book);
+        
+        // 如果同时有章节参数，也设置章节
+        if (chapterParam) {
+          const chapter = parseInt(chapterParam, 10);
+          if (!isNaN(chapter) && chapter > 0 && chapter <= book.chapters) {
+            setSelectedChapter(chapter);
+          }
+        }
       }
     }
-
-    if (chapterParam && selectedBook && !selectedChapter) {
-      const chapter = parseInt(chapterParam, 10);
-      if (!isNaN(chapter) && chapter > 0 && chapter <= selectedBook.chapters) {
-        setSelectedChapter(chapter);
-      }
-    }
-  }, [books, searchParams, selectedBook, selectedChapter]);
+  }, [books, searchParams, selectedBook]);
 
   // 当选择章节时加载经文
   useEffect(() => {
