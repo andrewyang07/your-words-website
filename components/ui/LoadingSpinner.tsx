@@ -1,0 +1,28 @@
+import { motion } from 'framer-motion';
+
+export default function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-bible-50 to-bible-100">
+      <motion.div
+        className="flex flex-col items-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="relative w-16 h-16">
+          <motion.div
+            className="absolute inset-0 rounded-full border-4 border-bible-200"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+          <motion.div
+            className="absolute inset-0 rounded-full border-4 border-transparent border-t-bible-600"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+        </div>
+        <p className="mt-4 text-bible-700 font-chinese">加载中...</p>
+      </motion.div>
+    </div>
+  );
+}
+

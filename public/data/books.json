@@ -1,0 +1,598 @@
+{
+	"books": [
+		{
+			"key": "创世记",
+			"nameSimplified": "创世记",
+			"nameTraditional": "創世記",
+			"nameEnglish": "Genesis",
+			"testament": "old",
+			"chapters": 50,
+			"order": 1
+		},
+		{
+			"key": "出埃及记",
+			"nameSimplified": "出埃及记",
+			"nameTraditional": "出埃及記",
+			"nameEnglish": "Exodus",
+			"testament": "old",
+			"chapters": 40,
+			"order": 2
+		},
+		{
+			"key": "利未记",
+			"nameSimplified": "利未记",
+			"nameTraditional": "利未記",
+			"nameEnglish": "Leviticus",
+			"testament": "old",
+			"chapters": 27,
+			"order": 3
+		},
+		{
+			"key": "民数记",
+			"nameSimplified": "民数记",
+			"nameTraditional": "民數記",
+			"nameEnglish": "Numbers",
+			"testament": "old",
+			"chapters": 36,
+			"order": 4
+		},
+		{
+			"key": "申命记",
+			"nameSimplified": "申命记",
+			"nameTraditional": "申命記",
+			"nameEnglish": "Deuteronomy",
+			"testament": "old",
+			"chapters": 34,
+			"order": 5
+		},
+		{
+			"key": "约书亚记",
+			"nameSimplified": "约书亚记",
+			"nameTraditional": "約書亞記",
+			"nameEnglish": "Joshua",
+			"testament": "old",
+			"chapters": 24,
+			"order": 6
+		},
+		{
+			"key": "士师记",
+			"nameSimplified": "士师记",
+			"nameTraditional": "士師記",
+			"nameEnglish": "Judges",
+			"testament": "old",
+			"chapters": 21,
+			"order": 7
+		},
+		{
+			"key": "路得记",
+			"nameSimplified": "路得记",
+			"nameTraditional": "路得記",
+			"nameEnglish": "Ruth",
+			"testament": "old",
+			"chapters": 4,
+			"order": 8
+		},
+		{
+			"key": "撒母耳记上",
+			"nameSimplified": "撒母耳记上",
+			"nameTraditional": "撒母耳記上",
+			"nameEnglish": "1 Samuel",
+			"testament": "old",
+			"chapters": 31,
+			"order": 9
+		},
+		{
+			"key": "撒母耳记下",
+			"nameSimplified": "撒母耳记下",
+			"nameTraditional": "撒母耳記下",
+			"nameEnglish": "2 Samuel",
+			"testament": "old",
+			"chapters": 24,
+			"order": 10
+		},
+		{
+			"key": "列王纪上",
+			"nameSimplified": "列王纪上",
+			"nameTraditional": "列王紀上",
+			"nameEnglish": "1 Kings",
+			"testament": "old",
+			"chapters": 22,
+			"order": 11
+		},
+		{
+			"key": "列王纪下",
+			"nameSimplified": "列王纪下",
+			"nameTraditional": "列王紀下",
+			"nameEnglish": "2 Kings",
+			"testament": "old",
+			"chapters": 25,
+			"order": 12
+		},
+		{
+			"key": "历代志上",
+			"nameSimplified": "历代志上",
+			"nameTraditional": "歷代志上",
+			"nameEnglish": "1 Chronicles",
+			"testament": "old",
+			"chapters": 29,
+			"order": 13
+		},
+		{
+			"key": "历代志下",
+			"nameSimplified": "历代志下",
+			"nameTraditional": "歷代志下",
+			"nameEnglish": "2 Chronicles",
+			"testament": "old",
+			"chapters": 36,
+			"order": 14
+		},
+		{
+			"key": "以斯拉记",
+			"nameSimplified": "以斯拉记",
+			"nameTraditional": "以斯拉記",
+			"nameEnglish": "Ezra",
+			"testament": "old",
+			"chapters": 10,
+			"order": 15
+		},
+		{
+			"key": "尼希米记",
+			"nameSimplified": "尼希米记",
+			"nameTraditional": "尼希米記",
+			"nameEnglish": "Nehemiah",
+			"testament": "old",
+			"chapters": 13,
+			"order": 16
+		},
+		{
+			"key": "以斯帖记",
+			"nameSimplified": "以斯帖记",
+			"nameTraditional": "以斯帖記",
+			"nameEnglish": "Esther",
+			"testament": "old",
+			"chapters": 10,
+			"order": 17
+		},
+		{
+			"key": "约伯记",
+			"nameSimplified": "约伯记",
+			"nameTraditional": "約伯記",
+			"nameEnglish": "Job",
+			"testament": "old",
+			"chapters": 42,
+			"order": 18
+		},
+		{
+			"key": "诗篇",
+			"nameSimplified": "诗篇",
+			"nameTraditional": "詩篇",
+			"nameEnglish": "Psalms",
+			"testament": "old",
+			"chapters": 150,
+			"order": 19
+		},
+		{
+			"key": "箴言",
+			"nameSimplified": "箴言",
+			"nameTraditional": "箴言",
+			"nameEnglish": "Proverbs",
+			"testament": "old",
+			"chapters": 31,
+			"order": 20
+		},
+		{
+			"key": "传道书",
+			"nameSimplified": "传道书",
+			"nameTraditional": "傳道書",
+			"nameEnglish": "Ecclesiastes",
+			"testament": "old",
+			"chapters": 12,
+			"order": 21
+		},
+		{
+			"key": "雅歌",
+			"nameSimplified": "雅歌",
+			"nameTraditional": "雅歌",
+			"nameEnglish": "Song of Solomon",
+			"testament": "old",
+			"chapters": 8,
+			"order": 22
+		},
+		{
+			"key": "以赛亚书",
+			"nameSimplified": "以赛亚书",
+			"nameTraditional": "以賽亞書",
+			"nameEnglish": "Isaiah",
+			"testament": "old",
+			"chapters": 66,
+			"order": 23
+		},
+		{
+			"key": "耶利米书",
+			"nameSimplified": "耶利米书",
+			"nameTraditional": "耶利米書",
+			"nameEnglish": "Jeremiah",
+			"testament": "old",
+			"chapters": 52,
+			"order": 24
+		},
+		{
+			"key": "耶利米哀歌",
+			"nameSimplified": "耶利米哀歌",
+			"nameTraditional": "耶利米哀歌",
+			"nameEnglish": "Lamentations",
+			"testament": "old",
+			"chapters": 5,
+			"order": 25
+		},
+		{
+			"key": "以西结书",
+			"nameSimplified": "以西结书",
+			"nameTraditional": "以西結書",
+			"nameEnglish": "Ezekiel",
+			"testament": "old",
+			"chapters": 48,
+			"order": 26
+		},
+		{
+			"key": "但以理书",
+			"nameSimplified": "但以理书",
+			"nameTraditional": "但以理書",
+			"nameEnglish": "Daniel",
+			"testament": "old",
+			"chapters": 12,
+			"order": 27
+		},
+		{
+			"key": "何西阿书",
+			"nameSimplified": "何西阿书",
+			"nameTraditional": "何西阿書",
+			"nameEnglish": "Hosea",
+			"testament": "old",
+			"chapters": 14,
+			"order": 28
+		},
+		{
+			"key": "约珥书",
+			"nameSimplified": "约珥书",
+			"nameTraditional": "約珥書",
+			"nameEnglish": "Joel",
+			"testament": "old",
+			"chapters": 3,
+			"order": 29
+		},
+		{
+			"key": "阿摩司书",
+			"nameSimplified": "阿摩司书",
+			"nameTraditional": "阿摩司書",
+			"nameEnglish": "Amos",
+			"testament": "old",
+			"chapters": 9,
+			"order": 30
+		},
+		{
+			"key": "俄巴底亚书",
+			"nameSimplified": "俄巴底亚书",
+			"nameTraditional": "俄巴底亞書",
+			"nameEnglish": "Obadiah",
+			"testament": "old",
+			"chapters": 1,
+			"order": 31
+		},
+		{
+			"key": "约拿书",
+			"nameSimplified": "约拿书",
+			"nameTraditional": "約拿書",
+			"nameEnglish": "Jonah",
+			"testament": "old",
+			"chapters": 4,
+			"order": 32
+		},
+		{
+			"key": "弥迦书",
+			"nameSimplified": "弥迦书",
+			"nameTraditional": "彌迦書",
+			"nameEnglish": "Micah",
+			"testament": "old",
+			"chapters": 7,
+			"order": 33
+		},
+		{
+			"key": "那鸿书",
+			"nameSimplified": "那鸿书",
+			"nameTraditional": "那鴻書",
+			"nameEnglish": "Nahum",
+			"testament": "old",
+			"chapters": 3,
+			"order": 34
+		},
+		{
+			"key": "哈巴谷书",
+			"nameSimplified": "哈巴谷书",
+			"nameTraditional": "哈巴谷書",
+			"nameEnglish": "Habakkuk",
+			"testament": "old",
+			"chapters": 3,
+			"order": 35
+		},
+		{
+			"key": "西番雅书",
+			"nameSimplified": "西番雅书",
+			"nameTraditional": "西番雅書",
+			"nameEnglish": "Zephaniah",
+			"testament": "old",
+			"chapters": 3,
+			"order": 36
+		},
+		{
+			"key": "哈该书",
+			"nameSimplified": "哈该书",
+			"nameTraditional": "哈該書",
+			"nameEnglish": "Haggai",
+			"testament": "old",
+			"chapters": 2,
+			"order": 37
+		},
+		{
+			"key": "撒迦利亚书",
+			"nameSimplified": "撒迦利亚书",
+			"nameTraditional": "撒迦利亞書",
+			"nameEnglish": "Zechariah",
+			"testament": "old",
+			"chapters": 14,
+			"order": 38
+		},
+		{
+			"key": "玛拉基书",
+			"nameSimplified": "玛拉基书",
+			"nameTraditional": "瑪拉基書",
+			"nameEnglish": "Malachi",
+			"testament": "old",
+			"chapters": 4,
+			"order": 39
+		},
+		{
+			"key": "马太福音",
+			"nameSimplified": "马太福音",
+			"nameTraditional": "馬太福音",
+			"nameEnglish": "Matthew",
+			"testament": "new",
+			"chapters": 28,
+			"order": 40
+		},
+		{
+			"key": "马可福音",
+			"nameSimplified": "马可福音",
+			"nameTraditional": "馬可福音",
+			"nameEnglish": "Mark",
+			"testament": "new",
+			"chapters": 16,
+			"order": 41
+		},
+		{
+			"key": "路加福音",
+			"nameSimplified": "路加福音",
+			"nameTraditional": "路加福音",
+			"nameEnglish": "Luke",
+			"testament": "new",
+			"chapters": 24,
+			"order": 42
+		},
+		{
+			"key": "约翰福音",
+			"nameSimplified": "约翰福音",
+			"nameTraditional": "約翰福音",
+			"nameEnglish": "John",
+			"testament": "new",
+			"chapters": 21,
+			"order": 43
+		},
+		{
+			"key": "使徒行传",
+			"nameSimplified": "使徒行传",
+			"nameTraditional": "使徒行傳",
+			"nameEnglish": "Acts",
+			"testament": "new",
+			"chapters": 28,
+			"order": 44
+		},
+		{
+			"key": "罗马书",
+			"nameSimplified": "罗马书",
+			"nameTraditional": "羅馬書",
+			"nameEnglish": "Romans",
+			"testament": "new",
+			"chapters": 16,
+			"order": 45
+		},
+		{
+			"key": "哥林多前书",
+			"nameSimplified": "哥林多前书",
+			"nameTraditional": "哥林多前書",
+			"nameEnglish": "1 Corinthians",
+			"testament": "new",
+			"chapters": 16,
+			"order": 46
+		},
+		{
+			"key": "哥林多后书",
+			"nameSimplified": "哥林多后书",
+			"nameTraditional": "哥林多後書",
+			"nameEnglish": "2 Corinthians",
+			"testament": "new",
+			"chapters": 13,
+			"order": 47
+		},
+		{
+			"key": "加拉太书",
+			"nameSimplified": "加拉太书",
+			"nameTraditional": "加拉太書",
+			"nameEnglish": "Galatians",
+			"testament": "new",
+			"chapters": 6,
+			"order": 48
+		},
+		{
+			"key": "以弗所书",
+			"nameSimplified": "以弗所书",
+			"nameTraditional": "以弗所書",
+			"nameEnglish": "Ephesians",
+			"testament": "new",
+			"chapters": 6,
+			"order": 49
+		},
+		{
+			"key": "腓立比书",
+			"nameSimplified": "腓立比书",
+			"nameTraditional": "腓立比書",
+			"nameEnglish": "Philippians",
+			"testament": "new",
+			"chapters": 4,
+			"order": 50
+		},
+		{
+			"key": "歌罗西书",
+			"nameSimplified": "歌罗西书",
+			"nameTraditional": "歌羅西書",
+			"nameEnglish": "Colossians",
+			"testament": "new",
+			"chapters": 4,
+			"order": 51
+		},
+		{
+			"key": "帖撒罗尼迦前书",
+			"nameSimplified": "帖撒罗尼迦前书",
+			"nameTraditional": "帖撒羅尼迦前書",
+			"nameEnglish": "1 Thessalonians",
+			"testament": "new",
+			"chapters": 5,
+			"order": 52
+		},
+		{
+			"key": "帖撒罗尼迦后书",
+			"nameSimplified": "帖撒罗尼迦后书",
+			"nameTraditional": "帖撒羅尼迦後書",
+			"nameEnglish": "2 Thessalonians",
+			"testament": "new",
+			"chapters": 3,
+			"order": 53
+		},
+		{
+			"key": "提摩太前书",
+			"nameSimplified": "提摩太前书",
+			"nameTraditional": "提摩太前書",
+			"nameEnglish": "1 Timothy",
+			"testament": "new",
+			"chapters": 6,
+			"order": 54
+		},
+		{
+			"key": "提摩太后书",
+			"nameSimplified": "提摩太后书",
+			"nameTraditional": "提摩太後書",
+			"nameEnglish": "2 Timothy",
+			"testament": "new",
+			"chapters": 4,
+			"order": 55
+		},
+		{
+			"key": "提多书",
+			"nameSimplified": "提多书",
+			"nameTraditional": "提多書",
+			"nameEnglish": "Titus",
+			"testament": "new",
+			"chapters": 3,
+			"order": 56
+		},
+		{
+			"key": "腓利门书",
+			"nameSimplified": "腓利门书",
+			"nameTraditional": "腓利門書",
+			"nameEnglish": "Philemon",
+			"testament": "new",
+			"chapters": 1,
+			"order": 57
+		},
+		{
+			"key": "希伯来书",
+			"nameSimplified": "希伯来书",
+			"nameTraditional": "希伯來書",
+			"nameEnglish": "Hebrews",
+			"testament": "new",
+			"chapters": 13,
+			"order": 58
+		},
+		{
+			"key": "雅各书",
+			"nameSimplified": "雅各书",
+			"nameTraditional": "雅各書",
+			"nameEnglish": "James",
+			"testament": "new",
+			"chapters": 5,
+			"order": 59
+		},
+		{
+			"key": "彼得前书",
+			"nameSimplified": "彼得前书",
+			"nameTraditional": "彼得前書",
+			"nameEnglish": "1 Peter",
+			"testament": "new",
+			"chapters": 5,
+			"order": 60
+		},
+		{
+			"key": "彼得后书",
+			"nameSimplified": "彼得后书",
+			"nameTraditional": "彼得後書",
+			"nameEnglish": "2 Peter",
+			"testament": "new",
+			"chapters": 3,
+			"order": 61
+		},
+		{
+			"key": "约翰一书",
+			"nameSimplified": "约翰一书",
+			"nameTraditional": "約翰一書",
+			"nameEnglish": "1 John",
+			"testament": "new",
+			"chapters": 5,
+			"order": 62
+		},
+		{
+			"key": "约翰二书",
+			"nameSimplified": "约翰二书",
+			"nameTraditional": "約翰二書",
+			"nameEnglish": "2 John",
+			"testament": "new",
+			"chapters": 1,
+			"order": 63
+		},
+		{
+			"key": "约翰三书",
+			"nameSimplified": "约翰三书",
+			"nameTraditional": "約翰三書",
+			"nameEnglish": "3 John",
+			"testament": "new",
+			"chapters": 1,
+			"order": 64
+		},
+		{
+			"key": "犹大书",
+			"nameSimplified": "犹大书",
+			"nameTraditional": "猶大書",
+			"nameEnglish": "Jude",
+			"testament": "new",
+			"chapters": 1,
+			"order": 65
+		},
+		{
+			"key": "启示录",
+			"nameSimplified": "启示录",
+			"nameTraditional": "啓示錄",
+			"nameEnglish": "Revelation",
+			"testament": "new",
+			"chapters": 22,
+			"order": 66
+		}
+	]
+}
