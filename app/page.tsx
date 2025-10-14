@@ -186,24 +186,24 @@ export default function HomePage() {
                                     你的話語
                                 </h1>
 
-                                {/* 状态徽章：显示当前模式 */}
-                                <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-bible-100 dark:bg-gray-700/50 text-bible-700 dark:text-bible-300 text-xs rounded-full font-chinese border border-bible-200/50 dark:border-gray-600/50">
-                                    {hasActiveFilters ? (
-                                        <>
-                                            {selectedBook && (
-                                                <>
-                                                    <span className="font-semibold">{selectedBook.name}</span>
-                                                    {selectedChapter && <span>第{selectedChapter}章</span>}
-                                                </>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span className="w-1.5 h-1.5 bg-bible-500 dark:bg-bible-400 rounded-full animate-pulse"></span>
-                                            <span>精選經文</span>
-                                        </>
-                                    )}
-                                </span>
+                {/* 状态徽章：显示当前模式 */}
+                <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-bible-100 dark:bg-gray-700/50 text-bible-700 dark:text-bible-300 text-xs rounded-full font-chinese border border-bible-200/50 dark:border-gray-600/50">
+                  {hasActiveFilters ? (
+                    <>
+                      {selectedBook && (
+                        <>
+                          <span className="font-semibold">{selectedBook.name}</span>
+                          {selectedChapter && <span>第{selectedChapter}章</span>}
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-1.5 h-1.5 bg-bible-500 dark:bg-bible-400 rounded-full animate-pulse"></span>
+                      <span>精選 100 節</span>
+                    </>
+                  )}
+                </span>
                             </div>
                         </div>
 
