@@ -1087,10 +1087,16 @@ export default function HomePage() {
                                 <motion.button
                                     key={chapterNum}
                                     onClick={() => handleChapterSelect(chapterNum)}
-                                    className="aspect-square flex items-center justify-center bg-bible-100 dark:bg-gray-700 hover:bg-bible-500 hover:text-white dark:hover:bg-bible-600 text-bible-800 dark:text-bible-200 rounded-lg font-semibold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 touch-manipulation"
+                                    className="aspect-square flex items-center justify-center bg-bible-100 dark:bg-gray-700 text-bible-800 dark:text-bible-200 rounded-lg font-semibold shadow-sm touch-manipulation transition-colors duration-200"
                                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                    whileHover={{ scale: 1.05 }}
+                                    whileHover={{
+                                        scale: 1.05,
+                                        backgroundColor: 'rgb(190, 158, 93)',
+                                        color: '#ffffff',
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                    }}
                                     whileTap={{ scale: 0.95 }}
+                                    transition={{ duration: 0.15 }}
                                     title={`第 ${chapterNum} 章`}
                                 >
                                     {chapterNum}

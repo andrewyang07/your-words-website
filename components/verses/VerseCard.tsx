@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
@@ -74,16 +74,19 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             className={`
         ${sizeClasses[size]}
         bg-white dark:bg-gray-800 rounded-xl shadow-md
-        hover:shadow-xl hover:-translate-y-1
-        cursor-pointer transition-all duration-300
+        cursor-pointer
         border border-bible-200 dark:border-gray-700
         flex flex-col justify-between
         relative
         touch-manipulation
       `}
             onClick={handleCardClick}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{
+                borderColor: 'rgb(190, 158, 93)',
+                boxShadow: '0 0 0 2px rgba(190, 158, 93, 0.3)',
+            }}
             whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
             style={{ WebkitTapHighlightColor: 'transparent' }}
         >
             {/* 经文引用 */}
@@ -107,23 +110,18 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             </div>
 
             {/* 经文内容 - 带展开动画 */}
-            <AnimatePresence mode="wait">
-                <motion.p
-                    key={isRevealed ? 'revealed' : 'hidden'}
-                    initial={{ opacity: 0, height: 'auto' }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                    className={`
+            <motion.p
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+                className={`
             ${textSizes[size]}
             text-bible-800 dark:text-bible-200 leading-relaxed font-chinese
             ${isRevealed ? '' : 'line-clamp-4'}
             flex-1
           `}
-                >
-                    {displayText}
-                </motion.p>
-            </AnimatePresence>
+            >
+                {displayText}
+            </motion.p>
 
             {/* 底部信息栏 */}
             <div className="mt-3 pt-2 border-t border-bible-100 dark:border-gray-700 flex items-center justify-between">
