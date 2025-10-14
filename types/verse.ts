@@ -1,7 +1,7 @@
 // 核心经文类型定义
 
 export type Testament = 'old' | 'new';
-export type Language = 'simplified' | 'traditional' | 'english';
+export type Language = 'simplified' | 'traditional';
 export type SortBy = 'order' | 'random' | 'priority';
 
 // 经文接口
