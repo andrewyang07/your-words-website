@@ -180,118 +180,77 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
           {/* 标题行 */}
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-2xl md:text-3xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-2">
-              <BookOpen className="w-6 h-6 md:w-7 md:h-7" />
-              Your Words
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-2">
+                <BookOpen className="w-6 h-6 md:w-7 md:h-7" />
+                Your Words
+              </h1>
+              
+              {/* 默认状态提示 */}
+              {!hasActiveFilters && (
+                <span className="hidden md:inline-block px-3 py-1 bg-bible-100 dark:bg-gray-700 text-bible-600 dark:text-bible-300 text-xs rounded-full font-chinese">
+                  精选100节经文
+                </span>
+              )}
+            </div>
 
-            {/* 阅读/背诵模式切换 */}
-            {selectedChapter !== null && (
-              <button
-                onClick={() => setShowAllContent(!showAllContent)}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-              >
-                {showAllContent ? (
-                  <>
-                    <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                    <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                      背诵
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                    <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                      阅读
-                    </span>
-                  </>
-                )}
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {/* 一键返回按钮 */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-600 dark:bg-bible-500 text-white hover:bg-bible-700 dark:hover:bg-bible-600 rounded-lg transition-colors"
+                  title="返回精选经文"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="hidden sm:inline font-chinese text-sm">返回</span>
+                </button>
+              )}
+
+              {/* 阅读/背诵模式切换 */}
+              {selectedChapter !== null && (
+                <button
+                  onClick={() => setShowAllContent(!showAllContent)}
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                  title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                >
+                  {showAllContent ? (
+                    <>
+                      <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                      <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                        背诵
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                      <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                        阅读
+                      </span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* 筛选工具栏 */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* 清除筛选按钮 */}
-            {hasActiveFilters && (
-              <button
-                onClick={handleClearFilters}
-                className="flex items-center gap-2 px-3 py-2 bg-bible-600 dark:bg-bible-500 text-white hover:bg-bible-700 dark:hover:bg-bible-600 rounded-lg transition-colors text-sm"
-              >
-                <X className="w-4 h-4" />
-                <span className="font-chinese">清除筛选</span>
-              </button>
-            )}
-
-            {/* 书卷选择器 */}
-            <select
-              value={selectedBook?.key || ''}
-              onChange={(e) => {
-                const book = books.find((b) => b.key === e.target.value);
-                handleBookSelect(book || null);
-              }}
-              className="px-3 py-2 bg-white dark:bg-gray-700 border border-bible-200 dark:border-gray-600 rounded-lg font-chinese text-sm text-bible-800 dark:text-bible-200"
-            >
-              <option value="">选择书卷</option>
-              <optgroup label="旧约">
-                {books.filter((b) => b.testament === 'old').map((book) => (
-                  <option key={book.key} value={book.key}>
-                    {book.name}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="新约">
-                {books.filter((b) => b.testament === 'new').map((book) => (
-                  <option key={book.key} value={book.key}>
-                    {book.name}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
-
-            {/* 章节选择器 */}
-            {selectedBook && (
-              <select
-                value={selectedChapter || ''}
-                onChange={(e) => handleChapterSelect(e.target.value ? parseInt(e.target.value) : null)}
-                className="px-3 py-2 bg-white dark:bg-gray-700 border border-bible-200 dark:border-gray-600 rounded-lg font-chinese text-sm text-bible-800 dark:text-bible-200"
-              >
-                <option value="">所有章节</option>
-                {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
-                  <option key={ch} value={ch}>
-                    第 {ch} 章
-                  </option>
-                ))}
-              </select>
-            )}
-
-            {/* 随机按钮 */}
-            {!selectedChapter && (
-              <button
-                onClick={handleShuffle}
-                className="flex items-center gap-2 px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                title="重新排列"
-              >
-                <Shuffle className="w-4 h-4 text-bible-700 dark:text-bible-300" />
-                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                  随机
-                </span>
-              </button>
-            )}
-
-            {/* 约/卷筛选 */}
+            {/* 约/卷筛选（优先显示） */}
             {!selectedBook && (
               <div className="relative">
                 <button
                   onClick={() => setShowFilterMenu(!showFilterMenu)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm ${
                     filterType !== 'all'
-                      ? 'bg-gold-500 dark:bg-gold-600 text-white'
-                      : 'bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 text-bible-700 dark:text-bible-300'
+                      ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
+                      : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
                   }`}
                 >
                   <Filter className="w-4 h-4" />
-                  <span className="hidden sm:inline font-chinese text-sm">筛选</span>
+                  <span className="font-chinese text-sm">
+                    {filterType === 'all' ? '约/卷' : filterOptions.find((opt) => opt.type === filterType)?.label}
+                  </span>
                 </button>
 
                 <AnimatePresence>
@@ -300,7 +259,7 @@ export default function HomePage() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-bible-200 dark:border-gray-700 z-20"
+                      className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-bible-200 dark:border-gray-700 z-20"
                     >
                       {filterOptions.map((option) => {
                         const Icon = option.icon;
@@ -327,37 +286,101 @@ export default function HomePage() {
                 </AnimatePresence>
               </div>
             )}
+
+            {/* 书卷选择器 */}
+            <select
+              value={selectedBook?.key || ''}
+              onChange={(e) => {
+                const book = books.find((b) => b.key === e.target.value);
+                handleBookSelect(book || null);
+              }}
+              className="px-4 py-2 bg-white dark:bg-gray-800 border border-bible-200 dark:border-gray-700 rounded-lg font-chinese text-sm text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors shadow-sm cursor-pointer"
+            >
+              <option value="">选择书卷</option>
+              <optgroup label="旧约">
+                {books.filter((b) => b.testament === 'old').map((book) => (
+                  <option key={book.key} value={book.key}>
+                    {book.name}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="新约">
+                {books.filter((b) => b.testament === 'new').map((book) => (
+                  <option key={book.key} value={book.key}>
+                    {book.name}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
+
+            {/* 章节选择器 */}
+            {selectedBook && (
+              <select
+                value={selectedChapter || ''}
+                onChange={(e) => handleChapterSelect(e.target.value ? parseInt(e.target.value) : null)}
+                className="px-4 py-2 bg-white dark:bg-gray-800 border border-bible-200 dark:border-gray-700 rounded-lg font-chinese text-sm text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors shadow-sm cursor-pointer"
+              >
+                <option value="">所有章节</option>
+                {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
+                  <option key={ch} value={ch}>
+                    第 {ch} 章
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* 随机按钮 */}
+            {!selectedChapter && (
+              <button
+                onClick={handleShuffle}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm"
+                title="重新排列"
+              >
+                <Shuffle className="w-4 h-4 text-bible-700 dark:text-bible-300" />
+                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                  随机
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* 当前筛选标签 */}
-      {(filterType !== 'all' || selectedBook || selectedChapter !== null) && (
-        <motion.div
-          className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-2 flex-wrap"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <span className="text-sm text-bible-600 dark:text-bible-400 font-chinese">当前筛选：</span>
-          
-          {filterType !== 'all' && (
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs">
-              {filterOptions.find((opt) => opt.type === filterType)?.label}
+      {/* 当前状态信息 */}
+      <motion.div
+        className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="flex items-center gap-2 flex-wrap">
+          {hasActiveFilters ? (
+            <>
+              <span className="text-sm text-bible-600 dark:text-bible-400 font-chinese">当前：</span>
+              
+              {filterType !== 'all' && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium">
+                  {filterOptions.find((opt) => opt.type === filterType)?.label}
+                </span>
+              )}
+
+              {selectedBook && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-bible-100 dark:bg-gray-700 text-bible-700 dark:text-bible-300 rounded-full text-xs font-chinese font-medium">
+                  {selectedBook.name}
+                  {selectedChapter !== null && ` 第${selectedChapter}章`}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+              📖 精选100节经文
             </span>
           )}
+        </div>
 
-          {selectedBook && (
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-bible-100 dark:bg-gray-700 text-bible-700 dark:text-bible-300 rounded-full text-xs font-chinese">
-              {selectedBook.name}
-              {selectedChapter !== null && ` 第${selectedChapter}章`}
-            </span>
-          )}
-
-          <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
-            共 {displayVerses.length} 节
-          </span>
-        </motion.div>
-      )}
+        <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
+          共 {displayVerses.length} 节
+        </span>
+      </motion.div>
 
       {/* 经文卡片区域 */}
       <div className="max-w-7xl mx-auto">

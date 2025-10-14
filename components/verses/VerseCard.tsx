@@ -78,7 +78,7 @@ export default function VerseCard({
         bg-white dark:bg-gray-800 rounded-xl shadow-md
         hover:shadow-xl hover:-translate-y-1
         cursor-pointer transition-all duration-300
-        border-2
+        border
         ${isRevealed ? 'border-gold-400 dark:border-gold-500' : 'border-bible-200 dark:border-gray-700'}
         flex flex-col justify-between
         relative
