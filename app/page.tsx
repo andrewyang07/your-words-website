@@ -430,7 +430,7 @@ export default function HomePage() {
             if (showShareBanner) {
                 clearShareState();
             }
-            
+
             setSelectedBook(book);
             setSelectedChapter(verse.chapter);
             setShowAllContent(true); // 跳转到原文时自动切换到阅读模式

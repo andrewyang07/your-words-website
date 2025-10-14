@@ -77,17 +77,15 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         bg-white dark:bg-gray-800 rounded-xl shadow-md
         cursor-pointer
         border border-bible-200 dark:border-gray-700
+        hover:border-bible-500 dark:hover:border-bible-400
+        hover:shadow-[0_0_0_2px_rgba(190,158,93,0.3)]
         flex flex-col justify-between
         relative
         touch-manipulation
+        transition-all duration-200
       `}
             onClick={handleCardClick}
-            whileHover={{
-                borderColor: 'rgb(190, 158, 93)',
-                boxShadow: '0 0 0 2px rgba(190, 158, 93, 0.3)',
-            }}
             whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.2 }}
             style={{ WebkitTapHighlightColor: 'transparent' }}
         >
             {/* 经文引用 */}
