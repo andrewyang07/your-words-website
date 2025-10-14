@@ -37,10 +37,11 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         large: 'p-8 min-h-[200px]',
     };
 
+    // 统一字体大小，提升易读性
     const textSizes = {
-        small: 'text-sm',
+        small: 'text-base',
         medium: 'text-base',
-        large: 'text-lg',
+        large: 'text-base',
     };
 
     const handleCardClick = (e: React.MouseEvent) => {

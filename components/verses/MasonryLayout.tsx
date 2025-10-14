@@ -74,12 +74,12 @@ export default function MasonryLayout({ verses, onViewInBible, defaultRevealed =
                     {column.map(({ verse, originalIndex }, indexInColumn) => (
                         <motion.div
                             key={verse.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
                             transition={{
-                                duration: 0.4,
-                                delay: originalIndex * 0.015, // 减少delay，加快显示速度
-                                ease: 'easeOut',
+                                duration: 0.5,
+                                delay: originalIndex * 0.02,
+                                ease: [0.4, 0, 0.2, 1], // cubic-bezier 优雅缓动
                             }}
                         >
                             <VerseCard
