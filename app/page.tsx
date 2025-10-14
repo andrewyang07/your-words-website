@@ -361,9 +361,16 @@ export default function HomePage() {
                                     歡迎使用「你的話語」聖經背誦助手
                                 </h3>
                                 <div className="text-xs text-bible-700 dark:text-bible-300 font-chinese space-y-1">
-                                    <p>📖 <span className="font-semibold">默認顯示</span>：精心挑選的 <span className="font-semibold text-bible-600 dark:text-bible-400">100 節最值得背誦的經文</span></p>
-                                    <p>📚 <span className="font-semibold">逐節學習</span>：使用「選擇書卷」篩選器，可瀏覽任意書卷章節，逐節背誦或閱讀</p>
-                                    <p>👁️ <span className="font-semibold">雙模式切換</span>：點擊右上角「阅读/背诵」按鈕，切換卡片顯示模式</p>
+                                    <p>
+                                        📖 <span className="font-semibold">默認顯示</span>：精心挑選的{' '}
+                                        <span className="font-semibold text-bible-600 dark:text-bible-400">114 節最值得背誦的經文</span>
+                                    </p>
+                                    <p>
+                                        📚 <span className="font-semibold">逐節學習</span>：使用「選擇書卷」篩選器，可瀏覽任意書卷章節，逐節背誦或閱讀
+                                    </p>
+                                    <p>
+                                        👁️ <span className="font-semibold">雙模式切換</span>：點擊右上角「阅读/背诵」按鈕，切換卡片顯示模式
+                                    </p>
                                 </div>
                             </div>
                         </div>
