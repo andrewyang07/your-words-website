@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, Shuffle, Star, X, Eye, EyeOff, Sun, Moon, Monitor, Languages } from 'lucide-react';
+import { Filter, Shuffle, Star, X, Eye, EyeOff, Sun, Moon, Monitor, Languages, HelpCircle } from 'lucide-react';
 import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
@@ -36,8 +36,31 @@ export default function HomePage() {
     // 是否是初次加载（用于控制动画）
     const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-    // 是否显示引导提示（默认显示，关闭只是临时的）
+    // 是否显示引导提示（从 localStorage 读取）
     const [showGuide, setShowGuide] = useState(true);
+    const [showGuideHint, setShowGuideHint] = useState(false); // 关闭提示
+
+    // 从 localStorage 读取引导卡片状态
+    useEffect(() => {
+        const guideDismissed = localStorage.getItem('guide-dismissed');
+        if (guideDismissed === 'true') {
+            setShowGuide(false);
+        }
+    }, []);
+
+    // 关闭引导卡片
+    const handleCloseGuide = () => {
+        setShowGuide(false);
+        localStorage.setItem('guide-dismissed', 'true');
+        // 显示提示，3秒后消失
+        setShowGuideHint(true);
+        setTimeout(() => setShowGuideHint(false), 3000);
+    };
+
+    // 打开引导卡片
+    const handleOpenGuide = () => {
+        setShowGuide(true);
+    };
 
     // 同步主题到 DOM
     useEffect(() => {
@@ -211,10 +234,22 @@ export default function HomePage() {
                         </div>
 
                         <div className="flex items-center gap-2">
+                            {/* 帮助按钮 */}
+                            <button
+                                onClick={handleOpenGuide}
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                title="显示使用帮助"
+                            >
+                                <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">帮助</span>
+                            </button>
+
                             {/* 简繁体切换 */}
                             <button
                                 onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
                             >
                                 <Languages className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
@@ -226,7 +261,8 @@ export default function HomePage() {
                             {/* 主题切换 */}
                             <button
                                 onClick={toggleTheme}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={theme === 'light' ? '切换到深色模式' : theme === 'dark' ? '跟随系统' : '切换到浅色模式'}
                             >
                                 {theme === 'light' ? (
@@ -242,7 +278,8 @@ export default function HomePage() {
                             {hasActiveFilters && (
                                 <button
                                     onClick={handleClearFilters}
-                                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-600 dark:bg-bible-500 text-white hover:bg-bible-700 dark:hover:bg-bible-600 rounded-lg transition-colors"
+                                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-600 dark:bg-bible-500 text-white hover:bg-bible-700 dark:hover:bg-bible-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                     title="返回精选经文"
                                 >
                                     <X className="w-4 h-4" />
@@ -253,7 +290,8 @@ export default function HomePage() {
                             {/* 阅读/背诵模式切换（始终显示） */}
                             <button
                                 onClick={() => setShowAllContent(!showAllContent)}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
                             >
                                 {showAllContent ? (
@@ -277,7 +315,7 @@ export default function HomePage() {
                         {!selectedBook && (
                             <button
                                 onClick={() => setFilterType(filterType === 'favorites' ? 'all' : 'favorites')}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm ${
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
                                     filterType === 'favorites'
                                         ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
                                         : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
@@ -296,7 +334,8 @@ export default function HomePage() {
                                 const book = books.find((b) => b.key === e.target.value);
                                 handleBookSelect(book || null);
                             }}
-                            className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-base md:text-sm text-bible-700 dark:text-bible-300 cursor-pointer"
+                            className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-base md:text-sm text-bible-700 dark:text-bible-300 cursor-pointer touch-manipulation min-h-[44px]"
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                         >
                             <option value="">选择书卷</option>
                             <optgroup label="旧约">
@@ -324,7 +363,8 @@ export default function HomePage() {
                             <select
                                 value={selectedChapter || ''}
                                 onChange={(e) => handleChapterSelect(e.target.value ? parseInt(e.target.value) : null)}
-                                className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-base md:text-sm text-bible-700 dark:text-bible-300 cursor-pointer"
+                                className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-base md:text-sm text-bible-700 dark:text-bible-300 cursor-pointer touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 <option value="">所有章节</option>
                                 {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
@@ -339,7 +379,8 @@ export default function HomePage() {
                         {!selectedChapter && (
                             <button
                                 onClick={handleShuffle}
-                                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="重新排列"
                             >
                                 <Shuffle className="w-4 h-4 text-bible-700 dark:text-bible-300" />
@@ -350,10 +391,32 @@ export default function HomePage() {
                 </div>
             </div>
 
+            {/* 关闭引导提示 - 浮动通知 */}
+            <AnimatePresence>
+                {showGuideHint && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4"
+                    >
+                        <div className="p-4 bg-bible-50 dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 text-bible-800 dark:text-bible-200 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
+                            <div className="flex-shrink-0 w-8 h-8 bg-bible-500 dark:bg-bible-600 rounded-full flex items-center justify-center">
+                                <HelpCircle className="w-5 h-5 text-white" />
+                            </div>
+                            <span>
+                                引导已关闭。如需再次查看，请点击右上角的{' '}
+                                <span className="font-semibold text-bible-700 dark:text-bible-300">「帮助」</span> 按钮
+                            </span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* 使用提示和统计信息 */}
             <motion.div className="max-w-7xl mx-auto px-4 py-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                {/* 引导说明（仅在默认状态显示，且用户未关闭） */}
-                {!hasActiveFilters && !showAllContent && showGuide && (
+                {/* 引导说明 */}
+                {showGuide && (
                     <motion.div
                         className="mb-3 p-5 bg-gradient-to-br from-bible-50 via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-xl border-2 border-bible-300/50 dark:border-gray-700 shadow-lg"
                         initial={{ opacity: 0, y: -20 }}
@@ -370,9 +433,10 @@ export default function HomePage() {
                                         歡迎使用「你的話語」聖經背誦助手 ✨
                                     </h3>
                                     <button
-                                        onClick={() => setShowGuide(false)}
-                                        className="flex-shrink-0 ml-2 p-1 hover:bg-bible-200/50 dark:hover:bg-gray-700 rounded transition-colors"
-                                        title="暂时关闭引导（刷新后会再次显示）"
+                                        onClick={handleCloseGuide}
+                                        className="flex-shrink-0 ml-2 p-2 hover:bg-bible-200/50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation"
+                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        title="关闭引导"
                                     >
                                         <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                                     </button>
