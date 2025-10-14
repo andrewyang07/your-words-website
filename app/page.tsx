@@ -22,19 +22,19 @@ export default function HomePage() {
     const [error, setError] = useState<string | null>(null);
 
     // 筛选状态
-  const [filterType, setFilterType] = useState<FilterType>('all');
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
-  const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [shuffleKey, setShuffleKey] = useState(0);
-  const [showAllContent, setShowAllContent] = useState(false);
-  
-  // 章节模式的经文
-  const [chapterVerses, setChapterVerses] = useState<Verse[]>([]);
-  const [loadingChapter, setLoadingChapter] = useState(false);
-  
-  // 是否是初次加载（用于控制动画）
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [filterType, setFilterType] = useState<FilterType>('all');
+    const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+    const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
+    const [showFilterMenu, setShowFilterMenu] = useState(false);
+    const [shuffleKey, setShuffleKey] = useState(0);
+    const [showAllContent, setShowAllContent] = useState(false);
+
+    // 章节模式的经文
+    const [chapterVerses, setChapterVerses] = useState<Verse[]>([]);
+    const [loadingChapter, setLoadingChapter] = useState(false);
+
+    // 是否是初次加载（用于控制动画）
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     // 同步主题到 DOM
     useEffect(() => {
@@ -62,7 +62,13 @@ export default function HomePage() {
     // 加载初始数据
     useEffect(() => {
         Promise.all([loadVerses('preset', language), loadBooks(language)])
-            .then(() => setLoading(false))
+            .then(() => {
+                setLoading(false);
+                // 初次加载完成后，标记为非初次加载
+                if (isInitialLoad) {
+                    setIsInitialLoad(false);
+                }
+            })
             .catch((err) => {
                 setError(err.message || '加载数据失败');
                 setLoading(false);
@@ -383,11 +389,11 @@ export default function HomePage() {
                         </p>
                     </div>
                 ) : displayVerses.length > 0 ? (
-                    <MasonryLayout 
-                      key={isInitialLoad ? 'initial' : shuffleKey} 
-                      verses={displayVerses} 
-                      defaultRevealed={showAllContent} 
-                      onViewInBible={handleViewInBible} 
+                    <MasonryLayout
+                        key={isInitialLoad ? 'initial' : shuffleKey}
+                        verses={displayVerses}
+                        defaultRevealed={showAllContent}
+                        onViewInBible={handleViewInBible}
                     />
                 ) : (
                     <div className="text-center py-20">
