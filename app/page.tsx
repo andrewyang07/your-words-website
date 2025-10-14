@@ -340,7 +340,7 @@ export default function HomePage() {
           </div>
         ) : displayVerses.length > 0 ? (
           <MasonryLayout
-            key={`${shuffleKey}-${showAllContent}`}
+            key={shuffleKey}
             verses={displayVerses}
             defaultRevealed={showAllContent}
             onViewInBible={handleViewInBible}
