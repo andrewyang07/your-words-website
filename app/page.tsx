@@ -186,24 +186,24 @@ export default function HomePage() {
                                     你的話語
                                 </h1>
 
-                {/* 状态徽章：显示当前模式 */}
-                <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-bible-100 dark:bg-gray-700/50 text-bible-700 dark:text-bible-300 text-xs rounded-full font-chinese border border-bible-200/50 dark:border-gray-600/50">
-                  {hasActiveFilters ? (
-                    <>
-                      {selectedBook && (
-                        <>
-                          <span className="font-semibold">{selectedBook.name}</span>
-                          {selectedChapter && <span>第{selectedChapter}章</span>}
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <span className="w-1.5 h-1.5 bg-bible-500 dark:bg-bible-400 rounded-full animate-pulse"></span>
-                      <span>精選 100 節</span>
-                    </>
-                  )}
-                </span>
+                                {/* 状态徽章：显示当前模式 */}
+                                <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-bible-100 dark:bg-gray-700/50 text-bible-700 dark:text-bible-300 text-xs rounded-full font-chinese border border-bible-200/50 dark:border-gray-600/50">
+                                    {hasActiveFilters ? (
+                                        <>
+                                            {selectedBook && (
+                                                <>
+                                                    <span className="font-semibold">{selectedBook.name}</span>
+                                                    {selectedChapter && <span>第{selectedChapter}章</span>}
+                                                </>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="w-1.5 h-1.5 bg-bible-500 dark:bg-bible-400 rounded-full animate-pulse"></span>
+                                            <span>精選 100 節</span>
+                                        </>
+                                    )}
+                                </span>
                             </div>
                         </div>
 
@@ -347,28 +347,52 @@ export default function HomePage() {
                 </div>
             </div>
 
-            {/* 筛选状态和统计信息 */}
-            <motion.div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="flex items-center gap-2 flex-wrap">
-                    {filterType === 'favorites' && (
-                        <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
-                            <Star className="w-3 h-3 fill-current" />
-                            已收藏
-                        </span>
-                    )}
+            {/* 使用提示和统计信息 */}
+            <motion.div className="max-w-7xl mx-auto px-4 py-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {/* 引导说明（仅在默认状态显示） */}
+                {!hasActiveFilters && !showAllContent && (
+                    <div className="mb-3 p-4 bg-gradient-to-r from-bible-50 to-blue-50 dark:from-gray-800 dark:to-gray-800 rounded-lg border border-bible-200/50 dark:border-gray-700">
+                        <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 w-8 h-8 bg-bible-500 dark:bg-bible-600 rounded-full flex items-center justify-center">
+                                <span className="text-white text-lg">💡</span>
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-semibold text-bible-900 dark:text-bible-100 mb-1.5 font-chinese">
+                                    歡迎使用「你的話語」聖經背誦助手
+                                </h3>
+                                <div className="text-xs text-bible-700 dark:text-bible-300 font-chinese space-y-1">
+                                    <p>📖 <span className="font-semibold">默認顯示</span>：精心挑選的 <span className="font-semibold text-bible-600 dark:text-bible-400">100 節最值得背誦的經文</span></p>
+                                    <p>📚 <span className="font-semibold">逐節學習</span>：使用「選擇書卷」篩選器，可瀏覽任意書卷章節，逐節背誦或閱讀</p>
+                                    <p>👁️ <span className="font-semibold">雙模式切換</span>：點擊右上角「阅读/背诵」按鈕，切換卡片顯示模式</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
-                    {showAllContent && (
-                        <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-800">
-                            <Eye className="w-3 h-3" />
-                            阅读模式
-                        </span>
-                    )}
-                </div>
+                {/* 状态标签和统计 */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {filterType === 'favorites' && (
+                            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
+                                <Star className="w-3 h-3 fill-current" />
+                                已收藏
+                            </span>
+                        )}
 
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
-                        共 <span className="font-semibold text-bible-700 dark:text-bible-300">{displayVerses.length}</span> 节
-                    </span>
+                        {showAllContent && (
+                            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-800">
+                                <Eye className="w-3 h-3" />
+                                阅读模式
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
+                            共 <span className="font-semibold text-bible-700 dark:text-bible-300">{displayVerses.length}</span> 节
+                        </span>
+                    </div>
                 </div>
             </motion.div>
 
