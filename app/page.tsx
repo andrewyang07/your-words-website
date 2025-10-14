@@ -562,19 +562,6 @@ export default function HomePage() {
                                 )}
                             </button>
 
-                            {/* 一键返回按钮 */}
-                            {hasActiveFilters && (
-                                <button
-                                    onClick={handleClearFilters}
-                                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-600 dark:bg-bible-500 text-white hover:bg-bible-700 dark:hover:bg-bible-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                    title="返回精选经文"
-                                >
-                                    <X className="w-4 h-4" />
-                                    <span className="hidden sm:inline font-chinese text-sm">返回</span>
-                                </button>
-                            )}
-
                             {/* 阅读/背诵模式切换（始终显示） */}
                             <button
                                 onClick={() => setShowAllContent(!showAllContent)}
@@ -821,16 +808,18 @@ export default function HomePage() {
                                     )}
                                 </Listbox>
 
-                                {/* 重置章节按钮 */}
-                                {selectedChapter !== null && (
+                                {/* 返回按钮 - 智能显示 */}
+                                {selectedBook && (
                                     <button
-                                        onClick={() => handleChapterSelect(null)}
+                                        onClick={selectedChapter ? () => handleChapterSelect(null) : handleClearFilters}
                                         className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        title="重置章节选择"
+                                        title={selectedChapter ? '返回章节选择' : '返回精选经文'}
                                     >
                                         <RotateCcw className="w-4 h-4 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">重选</span>
+                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                                            {selectedChapter ? '重选' : '返回'}
+                                        </span>
                                     </button>
                                 )}
                             </>
