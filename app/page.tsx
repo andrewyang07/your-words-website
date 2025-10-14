@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, Shuffle, Star, X, Eye, EyeOff, Sun, Moon, Monitor, Languages, HelpCircle } from 'lucide-react';
+import { Filter, Shuffle, Star, X, Eye, EyeOff, Sun, Moon, Monitor, Languages, HelpCircle, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
@@ -360,23 +360,38 @@ export default function HomePage() {
 
                         {/* 章节选择器 */}
                         {selectedBook && (
-                            <select
-                                value={selectedChapter || ''}
-                                onChange={(e) => handleChapterSelect(e.target.value ? parseInt(e.target.value) : null)}
-                                className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-base md:text-sm text-bible-700 dark:text-bible-300 cursor-pointer touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                            >
-                                <option value="">所有章节</option>
-                                {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
-                                    <option key={ch} value={ch}>
-                                        第 {ch} 章
-                                    </option>
-                                ))}
-                            </select>
+                            <>
+                                <select
+                                    value={selectedChapter || ''}
+                                    onChange={(e) => handleChapterSelect(e.target.value ? parseInt(e.target.value) : null)}
+                                    className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-base md:text-sm text-bible-700 dark:text-bible-300 cursor-pointer touch-manipulation min-h-[44px]"
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                >
+                                    <option value="">所有章节</option>
+                                    {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
+                                        <option key={ch} value={ch}>
+                                            第 {ch} 章
+                                        </option>
+                                    ))}
+                                </select>
+
+                                {/* 重置章节按钮 */}
+                                {selectedChapter !== null && (
+                                    <button
+                                        onClick={() => handleChapterSelect(null)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
+                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        title="重置章节选择"
+                                    >
+                                        <RotateCcw className="w-4 h-4 text-bible-700 dark:text-bible-300" />
+                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">重选</span>
+                                    </button>
+                                )}
+                            </>
                         )}
 
-                        {/* 随机按钮 */}
-                        {!selectedChapter && (
+                        {/* 随机按钮 - 只在精选经文界面显示 */}
+                        {!selectedChapter && !selectedBook && (
                             <button
                                 onClick={handleShuffle}
                                 className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
@@ -541,13 +556,32 @@ export default function HomePage() {
                         <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加载经文中...</p>
                     </div>
                 ) : selectedBook && selectedChapter === null ? (
-                    // 选择了书卷但未选择章节，显示提示
-                    <div className="text-center py-20 px-4">
-                        <Image src="/logo.png" alt="你的話語" width={64} height={64} className="w-16 h-16 mx-auto mb-4 opacity-60" />
-                        <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">请选择章节</h3>
-                        <p className="text-bible-600 dark:text-bible-400 font-chinese">
-                            {selectedBook.name} 共有 {selectedBook.chapters} 章，请在上方选择要查看的章节
-                        </p>
+                    // 选择了书卷但未选择章节，显示章节选择器
+                    <div className="py-12 px-4">
+                        <div className="text-center mb-8">
+                            <Image src="/logo.png" alt="你的話語" width={64} height={64} className="w-16 h-16 mx-auto mb-4 opacity-60" />
+                            <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">请选择章节</h3>
+                            <p className="text-bible-600 dark:text-bible-400 font-chinese">
+                                {selectedBook.name} 共有 {selectedBook.chapters} 章
+                            </p>
+                        </div>
+
+                        {/* 章节按钮网格 */}
+                        <div className="max-w-4xl mx-auto grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 md:gap-3">
+                            {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapterNum) => (
+                                <motion.button
+                                    key={chapterNum}
+                                    onClick={() => handleChapterSelect(chapterNum)}
+                                    className="aspect-square flex items-center justify-center bg-bible-100 dark:bg-gray-700 hover:bg-bible-500 hover:text-white dark:hover:bg-bible-600 text-bible-800 dark:text-bible-200 rounded-lg font-semibold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 touch-manipulation"
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    title={`第 ${chapterNum} 章`}
+                                >
+                                    {chapterNum}
+                                </motion.button>
+                            ))}
+                        </div>
                     </div>
                 ) : displayVerses.length > 0 ? (
                     <MasonryLayout
