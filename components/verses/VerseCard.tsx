@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
 import { CardSize } from '@/types/common';
 import { Star, BookOpen } from 'lucide-react';
@@ -17,6 +18,7 @@ export default function VerseCard({
   size = 'medium',
   onViewInBible,
 }: VerseCardProps) {
+  const router = useRouter();
   const [isRevealed, setIsRevealed] = useState(false);
 
   // 每张卡片随机显示 3-7 个字
@@ -49,8 +51,8 @@ export default function VerseCard({
     if (onViewInBible) {
       onViewInBible();
     } else {
-      // TODO: 跳转到圣经阅读界面
-      console.log('查看原文:', verse);
+      // 跳转到逐节背诵页面，并传递书卷和章节信息
+      router.push(`/study/chapter?book=${encodeURIComponent(verse.book)}&chapter=${verse.chapter}`);
     }
   };
 
@@ -75,19 +77,6 @@ export default function VerseCard({
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      {/* 展开提示 */}
-      {!isRevealed && (
-        <div className="absolute top-2 right-2">
-          <motion.div
-            className="w-6 h-6 rounded-full bg-bible-100 dark:bg-gray-700 flex items-center justify-center"
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <span className="text-xs text-bible-600 dark:text-gray-300">?</span>
-          </motion.div>
-        </div>
-      )}
-
       {/* 经文引用 */}
       <div className="flex items-start justify-between mb-3">
         <span className="text-bible-600 dark:text-bible-400 font-medium font-chinese text-sm">
