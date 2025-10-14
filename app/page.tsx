@@ -63,6 +63,7 @@ export default function HomePage() {
     const [sharedVersesData, setSharedVersesData] = useState<Verse[]>([]); // 分享经文的完整数据
     const [showShareBanner, setShowShareBanner] = useState(false);
     const [shareToast, setShareToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
+    const [hasAddedAllShared, setHasAddedAllShared] = useState(false); // 是否已一键收藏
 
     // 从 localStorage 读取引导卡片状态
     useEffect(() => {
@@ -264,6 +265,7 @@ export default function HomePage() {
             setShowShareBanner(false);
             setSharedVerses([]);
             setSharedVersesData([]);
+            setHasAddedAllShared(false); // 重置收藏状态
             // 清除URL参数
             if (typeof window !== 'undefined') {
                 window.history.replaceState({}, '', window.location.pathname);
@@ -377,8 +379,10 @@ export default function HomePage() {
     const handleAddAllShared = () => {
         const verseIds = sharedVerses.map((v) => `${v.bookKey}-${v.chapter}-${v.verse}`);
         addFavorites(verseIds);
+        setHasAddedAllShared(true); // 标记为已收藏
         setShareToast({ show: true, message: `已添加 ${verseIds.length} 节经文到收藏` });
-        clearShareState();
+        // 不立即清除横幅，让用户看到星星变化
+        // 用户可以手动点击"取消"或刷新页面
     };
 
     // 取消分享横幅
@@ -386,7 +390,8 @@ export default function HomePage() {
         clearShareState();
     };
 
-    const favoritesCount = verses.filter((v) => isFavorite(v.id)).length;
+    // 使用 getFavoritesList 获取真实的收藏总数（不受当前筛选影响）
+    const favoritesCount = getFavoritesList().length;
 
     const hasActiveFilters = filterType !== 'all' || selectedBook !== null;
 
@@ -770,30 +775,48 @@ export default function HomePage() {
                     >
                         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                             <div className="flex items-center gap-3 text-center sm:text-left">
-                                <div className="flex-shrink-0 w-10 h-10 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center">
-                                    <Share2 className="w-5 h-5 text-white" />
+                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                                    hasAddedAllShared 
+                                        ? 'bg-green-500 dark:bg-green-600' 
+                                        : 'bg-blue-500 dark:bg-blue-600'
+                                }`}>
+                                    {hasAddedAllShared ? (
+                                        <Star className="w-5 h-5 text-white fill-white" />
+                                    ) : (
+                                        <Share2 className="w-5 h-5 text-white" />
+                                    )}
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
-                                        这是分享的收藏列表（共 {sharedVerses.length} 节经文）
+                                        {hasAddedAllShared 
+                                            ? `已成功收藏 ${sharedVerses.length} 节经文 ✨`
+                                            : `这是分享的收藏列表（共 ${sharedVerses.length} 节经文）`
+                                        }
                                     </p>
-                                    <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">您可以一键将这些经文添加到自己的收藏中</p>
+                                    <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
+                                        {hasAddedAllShared
+                                            ? '所有卡片已标记为收藏，可以点击"取消"关闭此提示'
+                                            : '您可以一键将这些经文添加到自己的收藏中'
+                                        }
+                                    </p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button
-                                    onClick={handleAddAllShared}
-                                    className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg transition-colors font-chinese text-sm font-medium shadow-sm touch-manipulation min-h-[44px]"
-                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                >
-                                    一键全部收藏
-                                </button>
+                                {!hasAddedAllShared && (
+                                    <button
+                                        onClick={handleAddAllShared}
+                                        className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg transition-colors font-chinese text-sm font-medium shadow-sm touch-manipulation min-h-[44px]"
+                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                    >
+                                        一键全部收藏
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleCancelShare}
                                     className="px-4 py-2 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-600 rounded-lg transition-colors font-chinese text-sm border border-blue-200 dark:border-blue-700 touch-manipulation min-h-[44px]"
                                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 >
-                                    取消
+                                    {hasAddedAllShared ? '关闭' : '取消'}
                                 </button>
                             </div>
                         </div>
