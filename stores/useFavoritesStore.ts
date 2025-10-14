@@ -7,6 +7,8 @@ interface FavoritesState {
   removeFavorite: (verseId: string) => void;
   toggleFavorite: (verseId: string) => void;
   isFavorite: (verseId: string) => boolean;
+  addFavorites: (verseIds: string[]) => void; // 批量添加收藏
+  getFavoritesList: () => string[]; // 获取收藏列表数组
 }
 
 export const useFavoritesStore = create<FavoritesState>()(
@@ -34,6 +36,14 @@ export const useFavoritesStore = create<FavoritesState>()(
       },
 
       isFavorite: (verseId) => get().favorites.has(verseId),
+
+      addFavorites: (verseIds) => {
+        const newFavorites = new Set(get().favorites);
+        verseIds.forEach((id) => newFavorites.add(id));
+        set({ favorites: newFavorites });
+      },
+
+      getFavoritesList: () => Array.from(get().favorites),
     }),
     {
       name: 'favorites-storage',

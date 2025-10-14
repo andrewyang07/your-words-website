@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, Shuffle, Star, X, Eye, EyeOff, Sun, Moon, Monitor, Languages, HelpCircle, RotateCcw, ChevronDown, Check } from 'lucide-react';
+import { Filter, Shuffle, Star, X, Eye, EyeOff, Sun, Moon, Monitor, Languages, HelpCircle, RotateCcw, ChevronDown, Check, Share2 } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { Verse, Book } from '@/types/verse';
+import { encodeVerseList, decodeVerseList } from '@/lib/bibleBookMapping';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
@@ -18,7 +19,7 @@ type FilterType = 'all' | 'old' | 'new' | 'favorites';
 export default function HomePage() {
     const { language, theme, setLanguage, toggleTheme } = useAppStore();
     const { verses, books, loadVerses, loadBooks } = useVerseStore();
-    const { isFavorite } = useFavoritesStore();
+    const { isFavorite, addFavorites, getFavoritesList } = useFavoritesStore();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +41,11 @@ export default function HomePage() {
     // 是否显示引导提示（从 localStorage 读取）
     const [showGuide, setShowGuide] = useState(true);
     const [showGuideHint, setShowGuideHint] = useState(false); // 关闭提示
+
+    // 分享功能相关状态
+    const [sharedVerses, setSharedVerses] = useState<Array<{ bookKey: string; chapter: number; verse: number }>>([]);
+    const [showShareBanner, setShowShareBanner] = useState(false);
+    const [shareToast, setShareToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
 
     // 从 localStorage 读取引导卡片状态
     useEffect(() => {
@@ -132,6 +138,30 @@ export default function HomePage() {
         });
     }, [selectedBook, selectedChapter, language]);
 
+    // 检测URL分享参数
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedParam = urlParams.get('s');
+
+        if (sharedParam) {
+            const decodedVerses = decodeVerseList(sharedParam);
+            if (decodedVerses.length > 0) {
+                setSharedVerses(decodedVerses);
+                setShowShareBanner(true);
+            }
+        }
+    }, []);
+
+    // 清理分享toast的timer
+    useEffect(() => {
+        if (shareToast.show) {
+            const timer = setTimeout(() => setShareToast({ show: false, message: '' }), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [shareToast.show]);
+
     // 筛选和排序经文
     const displayVerses = useMemo(() => {
         // 如果选择了具体章节，显示章节经文
@@ -206,6 +236,82 @@ export default function HomePage() {
             setSelectedChapter(verse.chapter);
             setShowAllContent(true); // 跳转到原文时自动切换到阅读模式
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    // 分享收藏功能
+    const handleShareFavorites = () => {
+        const favoritesList = getFavoritesList();
+        
+        if (favoritesList.length === 0) {
+            return;
+        }
+
+        if (favoritesList.length > 200) {
+            return; // 按钮应该已经是禁用状态
+        }
+
+        try {
+            // 将 verseId (如"创世记-3-16") 转换为 {bookKey, chapter, verse}
+            const versesToEncode = favoritesList.map(id => {
+                const parts = id.split('-');
+                if (parts.length < 3) return null;
+                
+                const verse = parseInt(parts[parts.length - 1]);
+                const chapter = parseInt(parts[parts.length - 2]);
+                const bookKey = parts.slice(0, -2).join('-');
+                
+                return { bookKey, chapter, verse };
+            }).filter((v): v is { bookKey: string; chapter: number; verse: number } => v !== null);
+
+            const encoded = encodeVerseList(versesToEncode);
+            const shareUrl = `${window.location.origin}${window.location.pathname}?s=${encoded}`;
+
+            // 检测是否为移动设备
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                // 移动端：先显示说明toast
+                setShareToast({ 
+                    show: true, 
+                    message: '已复制分享链接，发送给他人即可查看您的收藏' 
+                });
+                // 2秒后复制链接
+                setTimeout(() => {
+                    navigator.clipboard.writeText(shareUrl);
+                }, 2000);
+            } else {
+                // 桌面端：直接复制并显示toast
+                navigator.clipboard.writeText(shareUrl);
+                setShareToast({ show: true, message: '链接已复制' });
+            }
+        } catch (error) {
+            console.error('生成分享链接失败:', error);
+            setShareToast({ show: true, message: '分享失败，请稍后重试' });
+        }
+    };
+
+    // 一键收藏分享的经文
+    const handleAddAllShared = () => {
+        const verseIds = sharedVerses.map(v => `${v.bookKey}-${v.chapter}-${v.verse}`);
+        addFavorites(verseIds);
+        setShowShareBanner(false);
+        setShareToast({ show: true, message: `已添加 ${verseIds.length} 节经文到收藏` });
+        
+        // 清除URL参数
+        if (typeof window !== 'undefined') {
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    };
+
+    // 取消分享横幅
+    const handleCancelShare = () => {
+        setShowShareBanner(false);
+        setSharedVerses([]);
+        
+        // 清除URL参数
+        if (typeof window !== 'undefined') {
+            window.history.replaceState({}, '', window.location.pathname);
         }
     };
 
@@ -331,18 +437,42 @@ export default function HomePage() {
                     <div className="flex items-center gap-2 flex-wrap">
                         {/* 已收藏筛选 */}
                         {!selectedBook && (
-                            <button
-                                onClick={() => setFilterType(filterType === 'favorites' ? 'all' : 'favorites')}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
-                                    filterType === 'favorites'
-                                        ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
-                                        : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
-                                }`}
-                                title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
-                            >
-                                <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
-                                <span className="hidden sm:inline font-chinese text-sm">{filterType === 'favorites' ? '已收藏' : '收藏'}</span>
-                            </button>
+                            <>
+                                <button
+                                    onClick={() => setFilterType(filterType === 'favorites' ? 'all' : 'favorites')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
+                                        filterType === 'favorites'
+                                            ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
+                                            : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
+                                    }`}
+                                    title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
+                                >
+                                    <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
+                                    <span className="hidden sm:inline font-chinese text-sm">{filterType === 'favorites' ? '已收藏' : '收藏'}</span>
+                                </button>
+
+                                {/* 分享收藏按钮 */}
+                                {favoritesCount > 0 && (
+                                    <button
+                                        onClick={handleShareFavorites}
+                                        disabled={favoritesCount > 200}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
+                                            favoritesCount > 200
+                                                ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                                : 'bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
+                                        }`}
+                                        title={
+                                            favoritesCount > 200
+                                                ? '收藏过多（超过200节），无法生成分享链接'
+                                                : '点击生成分享链接，可将您的收藏分享给他人'
+                                        }
+                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                    >
+                                        <Share2 className="w-4 h-4" />
+                                        <span className="hidden sm:inline font-chinese text-sm">分享</span>
+                                    </button>
+                                )}
+                            </>
                         )}
 
                         {/* 书卷选择器 */}
@@ -557,6 +687,69 @@ export default function HomePage() {
                     </div>
                 </div>
             </div>
+
+            {/* 分享横幅 */}
+            <AnimatePresence>
+                {showShareBanner && sharedVerses.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-200 dark:border-blue-800 py-4"
+                    >
+                        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 text-center sm:text-left">
+                                <div className="flex-shrink-0 w-10 h-10 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center">
+                                    <Share2 className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
+                                        这是分享的收藏列表（共 {sharedVerses.length} 节经文）
+                                    </p>
+                                    <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
+                                        您可以一键将这些经文添加到自己的收藏中
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleAddAllShared}
+                                    className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg transition-colors font-chinese text-sm font-medium shadow-sm touch-manipulation min-h-[44px]"
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                >
+                                    一键全部收藏
+                                </button>
+                                <button
+                                    onClick={handleCancelShare}
+                                    className="px-4 py-2 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-600 rounded-lg transition-colors font-chinese text-sm border border-blue-200 dark:border-blue-700 touch-manipulation min-h-[44px]"
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                >
+                                    取消
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* 分享Toast通知 */}
+            <AnimatePresence>
+                {shareToast.show && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4"
+                    >
+                        <div className="p-4 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 text-blue-900 dark:text-blue-100 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
+                            <div className="flex-shrink-0 w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center">
+                                <Share2 className="w-5 h-5 text-white" />
+                            </div>
+                            <span>{shareToast.message}</span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* 关闭引导提示 - 浮动通知 */}
             <AnimatePresence>
