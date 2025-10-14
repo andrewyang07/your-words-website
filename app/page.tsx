@@ -36,6 +36,9 @@ export default function HomePage() {
     // 是否是初次加载（用于控制动画）
     const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+    // 是否显示引导提示（默认显示，关闭只是临时的）
+    const [showGuide, setShowGuide] = useState(true);
+
     // 同步主题到 DOM
     useEffect(() => {
         const updateTheme = () => {
@@ -349,32 +352,95 @@ export default function HomePage() {
 
             {/* 使用提示和统计信息 */}
             <motion.div className="max-w-7xl mx-auto px-4 py-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                {/* 引导说明（仅在默认状态显示） */}
-                {!hasActiveFilters && !showAllContent && (
-                    <div className="mb-3 p-4 bg-gradient-to-r from-bible-50 to-blue-50 dark:from-gray-800 dark:to-gray-800 rounded-lg border border-bible-200/50 dark:border-gray-700">
-                        <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 bg-bible-500 dark:bg-bible-600 rounded-full flex items-center justify-center">
-                                <span className="text-white text-lg">💡</span>
+                {/* 引导说明（仅在默认状态显示，且用户未关闭） */}
+                {!hasActiveFilters && !showAllContent && showGuide && (
+                    <motion.div
+                        className="mb-3 p-5 bg-gradient-to-br from-bible-50 via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-xl border-2 border-bible-300/50 dark:border-gray-700 shadow-lg"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-bible-500 to-blue-600 dark:from-bible-600 dark:to-blue-700 rounded-full flex items-center justify-center shadow-md">
+                                <span className="text-white text-xl">💡</span>
                             </div>
                             <div className="flex-1">
-                                <h3 className="text-sm font-semibold text-bible-900 dark:text-bible-100 mb-1.5 font-chinese">
-                                    歡迎使用「你的話語」聖經背誦助手
-                                </h3>
-                                <div className="text-xs text-bible-700 dark:text-bible-300 font-chinese space-y-1">
-                                    <p>
-                                        📖 <span className="font-semibold">默認顯示</span>：精心挑選的{' '}
-                                        <span className="font-semibold text-bible-600 dark:text-bible-400">114 節最值得背誦的經文</span>
-                                    </p>
-                                    <p>
-                                        📚 <span className="font-semibold">逐節學習</span>：使用「選擇書卷」篩選器，可瀏覽任意書卷章節，逐節背誦或閱讀
-                                    </p>
-                                    <p>
-                                        👁️ <span className="font-semibold">雙模式切換</span>：點擊右上角「阅读/背诵」按鈕，切換卡片顯示模式
-                                    </p>
+                                <div className="flex items-start justify-between mb-2">
+                                    <h3 className="text-base font-bold text-bible-900 dark:text-bible-100 font-chinese">
+                                        歡迎使用「你的話語」聖經背誦助手 ✨
+                                    </h3>
+                                    <button
+                                        onClick={() => setShowGuide(false)}
+                                        className="flex-shrink-0 ml-2 p-1 hover:bg-bible-200/50 dark:hover:bg-gray-700 rounded transition-colors"
+                                        title="暂时关闭引导（刷新后会再次显示）"
+                                    >
+                                        <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                    </button>
+                                </div>
+
+                                <div className="text-xs text-bible-700 dark:text-bible-300 font-chinese space-y-2.5">
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-base">📖</span>
+                                        <div>
+                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">默認顯示：精選經文</p>
+                                            <p className="text-bible-600 dark:text-bible-400">
+                                                當前頁面展示精心挑選的{' '}
+                                                <span className="font-semibold text-bible-700 dark:text-bible-300">100 節最值得背誦的經文</span>，
+                                                這些經文涵蓋了信仰的核心真理，適合初學者和進階學習。
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-base">🎯</span>
+                                        <div>
+                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">Flash Card 背誦模式</p>
+                                            <p className="text-bible-600 dark:text-bible-400">
+                                                每張卡片<span className="font-semibold">默認隱藏大部分內容</span>（只顯示前幾個字），
+                                                <span className="font-semibold">點擊卡片</span>即可展開查看完整經文。 嘗試先回憶，再驗證！
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-base">📚</span>
+                                        <div>
+                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">逐節學習：選擇書卷</p>
+                                            <p className="text-bible-600 dark:text-bible-400">
+                                                使用頂部的<span className="font-semibold">「選擇書卷」</span>和
+                                                <span className="font-semibold">「選擇章節」</span>篩選器， 可以瀏覽聖經 66
+                                                卷書的任意章節，逐節背誦或閱讀。
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-base">👁️</span>
+                                        <div>
+                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">雙模式切換：阅读 / 背诵</p>
+                                            <p className="text-bible-600 dark:text-bible-400">
+                                                點擊右上角的<span className="font-semibold">「阅读/背诵」</span>按鈕， 可以在
+                                                <span className="font-semibold text-blue-600 dark:text-blue-400">阅读模式</span>（顯示全部） 和
+                                                <span className="font-semibold text-purple-600 dark:text-purple-400">背诵模式</span>
+                                                （隱藏內容）之間切換。
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-base">⭐</span>
+                                        <div>
+                                            <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏功能</p>
+                                            <p className="text-bible-600 dark:text-bible-400">
+                                                點擊卡片右上角的<span className="font-semibold">星標圖示</span>可以收藏喜歡的經文，
+                                                之後可以使用「收藏」篩選器快速查看。
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* 状态标签和统计 */}
