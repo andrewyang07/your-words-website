@@ -8,12 +8,13 @@ export interface AppState {
     loading: boolean;
     error: string | null;
     language: Language;
-    theme: 'light' | 'dark';
+    theme: 'light' | 'dark' | 'system';
 
     setCurrentMode: (mode: 'preset' | 'chapter') => void;
     setLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
     setLanguage: (language: Language) => void;
+    setTheme: (theme: 'light' | 'dark' | 'system') => void;
     toggleTheme: () => void;
 }
 

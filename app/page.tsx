@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, Shuffle, Star, X, Eye, EyeOff } from 'lucide-react';
+import { Filter, Shuffle, Star, X, Eye, EyeOff, Sun, Moon, Monitor, Languages } from 'lucide-react';
 import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
@@ -173,42 +173,69 @@ export default function HomePage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* 一键返回按钮 */}
-              {hasActiveFilters && (
-                <button
-                  onClick={handleClearFilters}
-                  className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-600 dark:bg-bible-500 text-white hover:bg-bible-700 dark:hover:bg-bible-600 rounded-lg transition-colors"
-                  title="返回精选经文"
-                >
-                  <X className="w-4 h-4" />
-                  <span className="hidden sm:inline font-chinese text-sm">返回</span>
-                </button>
-              )}
+                    <div className="flex items-center gap-2">
+                      {/* 简繁体切换 */}
+                      <button
+                        onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
+                        className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                        title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
+                      >
+                        <Languages className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                          {language === 'simplified' ? '繁' : '簡'}
+                        </span>
+                      </button>
 
-              {/* 阅读/背诵模式切换（始终显示） */}
-              <button
-                onClick={() => setShowAllContent(!showAllContent)}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
-              >
-                {showAllContent ? (
-                  <>
-                    <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                    <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                      背诵
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                    <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                      阅读
-                    </span>
-                  </>
-                )}
-              </button>
-            </div>
+                      {/* 主题切换 */}
+                      <button
+                        onClick={toggleTheme}
+                        className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                        title={theme === 'light' ? '切换到深色模式' : theme === 'dark' ? '跟随系统' : '切换到浅色模式'}
+                      >
+                        {theme === 'light' ? (
+                          <Sun className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                        ) : theme === 'dark' ? (
+                          <Moon className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                        ) : (
+                          <Monitor className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                        )}
+                      </button>
+
+                      {/* 一键返回按钮 */}
+                      {hasActiveFilters && (
+                        <button
+                          onClick={handleClearFilters}
+                          className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-600 dark:bg-bible-500 text-white hover:bg-bible-700 dark:hover:bg-bible-600 rounded-lg transition-colors"
+                          title="返回精选经文"
+                        >
+                          <X className="w-4 h-4" />
+                          <span className="hidden sm:inline font-chinese text-sm">返回</span>
+                        </button>
+                      )}
+
+                      {/* 阅读/背诵模式切换（始终显示） */}
+                      <button
+                        onClick={() => setShowAllContent(!showAllContent)}
+                        className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                        title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                      >
+                        {showAllContent ? (
+                          <>
+                            <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                            <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                              背诵
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                            <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                              阅读
+                            </span>
+                          </>
+                        )}
+                      </button>
+                    </div>
           </div>
 
           {/* 筛选工具栏 */}

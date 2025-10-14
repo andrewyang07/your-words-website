@@ -10,16 +10,17 @@ export const useAppStore = create<AppState>()(
       loading: false,
       error: null,
       language: 'traditional', // 默认繁体中文
-      theme: 'light',
+      theme: 'system', // 默认跟随系统
 
       // Actions
       setCurrentMode: (mode) => set({ currentMode: mode }),
       setLoading: (loading) => set({ loading }),
       setError: (error) => set({ error }),
       setLanguage: (language) => set({ language }),
+      setTheme: (theme) => set({ theme }),
       toggleTheme: () =>
         set((state) => ({
-          theme: state.theme === 'light' ? 'dark' : 'light',
+          theme: state.theme === 'light' ? 'dark' : state.theme === 'dark' ? 'system' : 'light',
         })),
     }),
     {

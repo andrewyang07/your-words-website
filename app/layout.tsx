@@ -24,9 +24,19 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  const theme = localStorage.getItem('theme') || 
-                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-                  if (theme === 'dark') {
+                  const stored = localStorage.getItem('your-words-app');
+                  let theme = 'system';
+                  if (stored) {
+                    try {
+                      const data = JSON.parse(stored);
+                      theme = data.state?.theme || 'system';
+                    } catch (e) {}
+                  }
+                  
+                  const isDark = theme === 'dark' || 
+                    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                  
+                  if (isDark) {
                     document.documentElement.classList.add('dark');
                   } else {
                     document.documentElement.classList.remove('dark');
