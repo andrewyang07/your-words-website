@@ -985,9 +985,9 @@ export default function HomePage() {
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                                 transition={{ duration: 0.2 }}
-                                className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-auto md:max-w-3xl md:max-h-[85vh] z-50"
+                                className="fixed inset-4 md:inset-0 md:flex md:items-center md:justify-center z-50"
                             >
-                                <div className="h-full bg-gradient-to-br from-white to-bible-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col border-2 border-bible-200 dark:border-gray-700">
+                                <div className="h-full md:h-auto md:max-h-[85vh] md:w-full md:max-w-3xl bg-gradient-to-br from-white to-bible-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col border-2 border-bible-200 dark:border-gray-700">
                                     {/* 标题栏 */}
                                     <div className="flex items-center justify-between p-5 md:p-6 border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-800">
                                         <div className="flex items-center gap-3">
@@ -1015,7 +1015,7 @@ export default function HomePage() {
                                             <div className="space-y-3 text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                                                 <p>
                                                     最初，我投入大量心血開發了一款名為「你的話語」的 iOS App，並成功在全球 App Store 上架。
-                                                    這款 App 採用卡片形式幫助弟兄姊妹背誦經文，獲得了不少用戶的喜愛。
+                                                    雖然這款 App 採用卡片形式幫助弟兄姊妹背誦經文，但效果並不如預期。
                                                 </p>
                                                 <p>
                                                     然而，隨著時間推移，我逐漸意識到 App 的局限性：許多基督徒並不經常使用手機，
@@ -1096,6 +1096,29 @@ export default function HomePage() {
                                                         {tech}
                                                     </span>
                                                 ))}
+                                            </div>
+                                        </section>
+
+                                        {/* 开源与联系 */}
+                                        <section>
+                                            <h3 className="text-lg font-bold text-bible-700 dark:text-bible-300 mb-3 flex items-center gap-2">
+                                                <span className="text-2xl">🤝</span>
+                                                開源與聯繫
+                                            </h3>
+                                            <div className="space-y-3 text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                                                <p>
+                                                    這個項目我計劃在未來開源，希望能有更多志同道合的弟兄姊妹一起參與開發，
+                                                    讓這個工具變得更好，幫助更多人將神的話語藏在心裡。
+                                                </p>
+                                                <p>
+                                                    如果你有任何想法、建議或反饋，歡迎聯繫我：
+                                                    <a
+                                                        href="mailto:yy9577@gmail.com"
+                                                        className="ml-1 text-bible-600 dark:text-bible-400 hover:text-bible-700 dark:hover:text-bible-300 font-medium underline"
+                                                    >
+                                                        yy9577@gmail.com
+                                                    </a>
+                                                </p>
                                             </div>
                                         </section>
 
