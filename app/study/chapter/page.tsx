@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { useVerseStore } from '@/stores/useVerseStore';
+import { useAppStore } from '@/stores/useAppStore';
 import { Book, Verse } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
@@ -15,6 +16,7 @@ import VerseList from '@/components/study/chapter/VerseList';
 export default function ChapterModePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { language } = useAppStore();
   const { books, loadBooks } = useVerseStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,13 +28,13 @@ export default function ChapterModePage() {
 
   // 加载书卷列表
   useEffect(() => {
-    loadBooks()
+    loadBooks(language)
       .then(() => setLoading(false))
       .catch((err) => {
         setError(err.message || '加载书卷列表失败');
         setLoading(false);
       });
-  }, [loadBooks]);
+  }, [loadBooks, language]);
 
   // 处理 URL 参数，自动选择书卷和章节
   useEffect(() => {
@@ -68,11 +70,12 @@ export default function ChapterModePage() {
     // 这里暂时用模拟数据
     setTimeout(() => {
       const mockVerses: Verse[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `${selectedBook.id}-${selectedChapter}-${i + 1}`,
+        id: `${selectedBook.key}-${selectedChapter}-${i + 1}`,
         book: selectedBook.name,
+        bookKey: selectedBook.key,
         chapter: selectedChapter,
         verse: i + 1,
-        text: `这是 ${selectedBook.name} ${selectedChapter}:${i + 1} 的经文内容...`,
+        text: `这是 ${selectedBook.name} 第 ${selectedChapter} 章第 ${i + 1} 节的经文内容...`,
         testament: selectedBook.testament,
       }));
       setChapterVerses(mockVerses);

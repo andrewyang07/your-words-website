@@ -29,7 +29,7 @@ export interface VerseState {
     setBooks: (books: Book[]) => void;
     setFilteredVerses: (verses: Verse[]) => void;
     loadVerses: (mode: 'preset' | 'chapter', language: Language) => Promise<void>;
-    loadBooks: () => Promise<void>;
+    loadBooks: (language?: Language) => Promise<void>;
 }
 
 // 筛选状态

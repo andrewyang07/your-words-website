@@ -18,8 +18,9 @@ export interface Verse {
 
 // 书卷接口
 export interface Book {
-    key: string; // 英文key，如"Genesis"
-    name: string; // 中文名称
+    id?: string; // ID，通常与 key 相同
+    key: string; // 书卷key，如"创世记"
+    name: string; // 当前语言的名称
     nameTraditional: string; // 繁体中文
     nameSimplified: string; // 简体中文
     nameEnglish: string; // 英文名

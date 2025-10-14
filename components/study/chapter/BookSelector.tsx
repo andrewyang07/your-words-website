@@ -19,20 +19,20 @@ export default function BookSelector({
   const newTestamentBooks = books.filter((b) => b.testament === 'new');
 
   const renderBookGroup = (groupBooks: Book[], title: string) => (
-    <div className="mb-8">
+    <div className="mb-8" key={title}>
       <h3 className="text-lg font-bold text-bible-900 dark:text-bible-100 mb-4 font-chinese">
         {title}
       </h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {groupBooks.map((book, index) => (
           <motion.button
-            key={book.id}
+            key={book.key}
             onClick={() => onSelectBook(book)}
-            className={`
+              className={`
               p-4 rounded-lg font-chinese text-sm
               transition-all duration-200
               ${
-                selectedBook?.id === book.id
+                selectedBook?.key === book.key
                   ? 'bg-bible-600 dark:bg-bible-500 text-white shadow-lg scale-105'
                   : 'bg-white dark:bg-gray-800 text-bible-800 dark:text-bible-200 border border-bible-200 dark:border-gray-700 hover:border-bible-400 dark:hover:border-bible-500'
               }
@@ -40,7 +40,7 @@ export default function BookSelector({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.02 }}
-            whileHover={{ scale: selectedBook?.id === book.id ? 1.05 : 1.03 }}
+            whileHover={{ scale: selectedBook?.key === book.key ? 1.05 : 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
             <div className="font-bold mb-1">{book.name}</div>

@@ -109,11 +109,17 @@ export async function loadChapterVerses(
 }
 
 // 加载书卷信息
-export async function loadBooks(): Promise<Book[]> {
+export async function loadBooks(language: Language = 'traditional'): Promise<Book[]> {
   try {
     const response = await fetch('/data/books.json');
     const data = await response.json();
-    return data.books;
+    
+    // 根据语言设置 name 属性
+    return data.books.map((book: any) => ({
+      ...book,
+      id: book.key,
+      name: language === 'simplified' ? book.nameSimplified : book.nameTraditional,
+    }));
   } catch (error) {
     console.error('加载书卷信息失败:', error);
     return [];

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
 import { CardSize } from '@/types/common';
 import { Star, BookOpen } from 'lucide-react';
+import { useFavoritesStore } from '@/stores/useFavoritesStore';
 
 interface VerseCardProps {
   verse: Verse;
@@ -19,7 +20,9 @@ export default function VerseCard({
   onViewInBible,
 }: VerseCardProps) {
   const router = useRouter();
+  const { isFavorite, toggleFavorite } = useFavoritesStore();
   const [isRevealed, setIsRevealed] = useState(false);
+  const isFav = isFavorite(verse.id);
 
   // 每张卡片随机显示 3-7 个字
   const previewLength = useMemo(() => {
@@ -56,6 +59,11 @@ export default function VerseCard({
     }
   };
 
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleFavorite(verse.id);
+  };
+
   // 显示预览文本或完整文本
   const displayText = isRevealed
     ? verse.text
@@ -82,9 +90,20 @@ export default function VerseCard({
         <span className="text-bible-600 dark:text-bible-400 font-medium font-chinese text-sm">
           {verse.book} {verse.chapter}:{verse.verse}
         </span>
-        {verse.priority && verse.priority >= 4 && (
-          <Star className="w-4 h-4 text-gold-500 fill-gold-300 dark:text-gold-400 dark:fill-gold-500" />
-        )}
+        {/* 收藏星标 */}
+        <button
+          onClick={handleToggleFavorite}
+          className="transition-transform hover:scale-110"
+          title={isFav ? '取消收藏' : '收藏'}
+        >
+          <Star
+            className={`w-5 h-5 transition-colors ${
+              isFav
+                ? 'text-gold-500 fill-gold-500 dark:text-gold-400 dark:fill-gold-400'
+                : 'text-gray-300 dark:text-gray-600'
+            }`}
+          />
+        </button>
       </div>
 
       {/* 经文内容 - 带展开动画 */}

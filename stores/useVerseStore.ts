@@ -30,9 +30,9 @@ export const useVerseStore = create<VerseState>((set, get) => ({
   },
 
   // 加载书卷信息
-  loadBooks: async () => {
+  loadBooks: async (language = 'traditional') => {
     try {
-      const books = await loadBooks();
+      const books = await loadBooks(language);
       get().setBooks(books);
     } catch (error) {
       console.error('加载书卷信息失败:', error);
