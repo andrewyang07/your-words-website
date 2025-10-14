@@ -1,112 +1,176 @@
-# Your Words - 圣经背诵应用
+# 你的話語 Your Words
 
-> 让神的话语常在心中
+> 讓神的話語常在心中 ✝️
 
-一个精美的圣经背诵应用，帮助用户系统地背诵和学习圣经经文。支持简体中文和繁体中文，提供精选经文和逐节背诵两种模式。
+一個精美的聖經背誦 Web 應用，幫助用戶系統地背誦和學習聖經經文。支持繁體中文和簡體中文，提供精選經文和逐章背誦功能。
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-14-black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://vercel.com)
 
-## ✨ 特性
+## 🌐 在線體驗
 
--   🎨 **精美 UI 设计** - 圣经主题配色，优雅的卡片式布局
--   🎬 **流畅动画** - 瀑布流入场、悬停效果、翻转动画
--   📖 **双模式学习**
-    -   精选经文模式：100 节最值得背诵的经文
-    -   逐节背诵模式：全 66 卷书卷系统背诵
--   🌏 **多语言支持** - 简体中文、繁体中文（默认）
--   📱 **响应式设计** - 完美适配手机、平板、桌面
--   🔍 **智能筛选** - 按约别、书卷筛选，支持随机排序
--   💾 **纯前端** - 无需登录，轻量快速
+**[https://www.yourwords.me](https://www.yourwords.me)**
 
-## 🚀 快速开始
+## ✨ 功能特性
 
-### 安装依赖
+### 📖 核心功能
+- **精選經文模式** - 精心挑選 114 節最值得背誦的經文
+- **逐章背誦模式** - 全 66 卷聖經，逐書卷、逐章節系統學習
+- **Flash Card 互動** - 點擊顯示完整經文，漸進式記憶
+- **收藏與分享** - 收藏喜愛的經文，通過 URL 分享給朋友
+- **閱讀/背誦切換** - 一鍵切換顯示模式，靈活學習
+
+### 🎨 用戶體驗
+- **精美 UI 設計** - 聖經主題金色配色，優雅的卡片式佈局
+- **流暢動畫效果** - 瀑布流入場、懸停效果、平滑過渡
+- **智能篩選排序** - 按書卷、章節篩選，支持隨機洗牌
+- **章節快速選擇** - 可視化章節網格，快速定位
+
+### 🌏 多語言與設備
+- **繁簡體切換** - 繁體中文（默認）、簡體中文無縫切換
+- **深色模式** - 自動跟隨系統，也可手動切換
+- **完全響應式** - 完美適配手機、平板、桌面設備
+- **PWA 支持** - 可添加到主屏幕，類原生應用體驗
+
+### ⚡ 技術亮點
+- **純前端實現** - 無需登錄，無需後端，極速加載
+- **本地存儲** - 收藏和偏好設置本地保存，隱私安全
+- **SEO 優化** - 完善的元數據和站點地圖
+- **性能優化** - 按需加載，流暢 60fps 動畫
+
+## 🚀 快速開始
+
+### 前置要求
+- Node.js 18.0 或更高版本
+- npm 或 yarn
+
+### 本地開發
 
 ```bash
+# 克隆倉庫
+git clone https://github.com/andrewyang07/your-words-website.git
+cd your-words-website
+
+# 安裝依賴
 npm install
-```
 
-### 开发运行
-
-```bash
+# 啟動開發服務器
 npm run dev
 ```
 
-访问 [http://localhost:3000](http://localhost:3000) 查看应用。
+訪問 [http://localhost:3000](http://localhost:3000) 查看應用。
 
-### 构建部署
+### 構建部署
 
 ```bash
+# 生產構建
 npm run build
+
+# 本地預覽構建結果
+npm start
 ```
 
-## 📚 技术栈
+## 📚 技術棧
 
--   **框架**: [Next.js 14](https://nextjs.org/) (App Router)
--   **语言**: [TypeScript](https://www.typescriptlang.org/)
--   **状态管理**: [Zustand](https://github.com/pmndrs/zustand)
--   **样式**: [Tailwind CSS](https://tailwindcss.com/)
--   **动画**: [Framer Motion](https://www.framer.com/motion/)
--   **图标**: [Lucide React](https://lucide.dev/)
+- **框架**: [Next.js 14](https://nextjs.org/) (App Router)
+- **語言**: [TypeScript 5](https://www.typescriptlang.org/)
+- **狀態管理**: [Zustand](https://github.com/pmndrs/zustand)
+- **樣式**: [Tailwind CSS](https://tailwindcss.com/)
+- **動畫**: [Framer Motion](https://www.framer.com/motion/)
+- **UI 組件**: [Headless UI](https://headlessui.com/)
+- **圖標**: [Lucide React](https://lucide.dev/)
+- **部署**: [Vercel](https://vercel.com/)
 
-## 📁 项目结构
+## 📁 項目結構
 
 ```
-your-words/
-├── app/                    # Next.js App Router 页面
-├── components/             # React 组件
-│   ├── ui/                # 基础UI组件
-│   ├── verses/            # 经文相关组件
-│   ├── filters/           # 筛选组件
-│   ├── animations/        # 动画组件
-│   └── study/             # 学习模式组件
-├── lib/                   # 工具函数
-├── stores/                # Zustand 状态管理
-├── types/                 # TypeScript 类型定义
+your-words-website/
+├── app/                    # Next.js App Router
+│   ├── page.tsx           # 主頁面（所有功能集成）
+│   ├── layout.tsx         # 根佈局和元數據
+│   └── sitemap.ts         # 動態站點地圖
+├── components/            # React 組件
+│   └── verses/           # 經文卡片和佈局組件
+├── lib/                   # 工具函數和數據加載
+├── stores/               # Zustand 全局狀態
+├── types/                # TypeScript 類型定義
+├── hooks/                # 自定義 React Hooks
 └── public/
-    └── data/              # 圣经数据文件
+    ├── data/             # 聖經 JSON 數據
+    ├── logo-light.png    # 應用 Logo
+    └── manifest.json     # PWA 配置
 ```
 
-## 🎯 路线图
+## 🎯 路線圖
 
-### ✅ MVP 版本 (v1.0)
+### ✅ v1.0 - MVP（已完成）
+- [x] 114 節精選經文
+- [x] 全 66 卷逐章背誦
+- [x] 繁簡體切換
+- [x] 深色模式
+- [x] 收藏功能
+- [x] URL 分享收藏
+- [x] 書卷章節篩選
+- [x] 閱讀/背誦模式切換
+- [x] 隨機洗牌
+- [x] 精美動畫和響應式設計
+- [x] SEO 優化
 
--   [x] 首页和模式选择
--   [x] 100 节精选经文
--   [x] 全 66 卷逐节背诵
--   [x] 简繁体切换
--   [x] 筛选和排序
--   [x] 精美动画效果
+### 🔜 v2.0 - 增強功能
+- [ ] 英文版本支持
+- [ ] 學習進度追踪
+- [ ] 背誦統計和可視化
+- [ ] 更多聖經譯本
+- [ ] 自定義經文集
 
-### 🔜 第二版 (v2.0)
+### 🌟 未來版本
+- [ ] 多語言對照閱讀
+- [ ] 個人筆記和標註
+- [ ] 成就徽章系統
+- [ ] 每日提醒功能
+- [ ] 社區分享功能
 
--   [ ] 圣经翻开动画
--   [ ] 学习进度追踪
--   [ ] 背诵统计
--   [ ] 成就徽章系统
+## 🤝 貢獻
 
-### 🌟 未来版本
+歡迎任何形式的貢獻！無論是報告 Bug、提出新功能建議，還是提交代碼改進。
 
--   [ ] 英文支持
--   [ ] 多语言对照
--   [ ] 自定义经文集
--   [ ] 个人笔记功能
+詳細指南請查看 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
-## 🤝 贡献
+### 貢獻方式
+1. Fork 本倉庫
+2. 創建你的特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交你的修改 (`git commit -m 'feat: 添加某個很棒的功能'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 創建一個 Pull Request
 
-欢迎贡献代码！请查看 [CONTRIBUTING.md](./CONTRIBUTING.md) 了解如何参与。
+## 📄 許可證
 
-## 📄 许可证
+本項目採用 [MIT License](./LICENSE) 開源協議。你可以自由使用、修改和分發本項目。
 
-本项目采用 [MIT License](./LICENSE) 开源协议。
+## 🙏 致謝
 
-## 🙏 致谢
+- **聖經數據**: 使用公開的中文聖經譯本數據
+- **精選經文**: 參考 [Kendra Fletcher's 100 Scripture Memorization List](https://www.kendrafletcher.com/kendra-fletcher/100-scripture-memorize)
+- **設計靈感**: 聖經應用和現代 Web 設計的結合
+- **開源社區**: 感謝所有使用到的開源項目和工具
 
--   圣经数据来源：公开圣经译本
--   精选经文参考：[Kendra Fletcher 的 100 节清单](https://www.kendrafletcher.com/kendra-fletcher/100-scripture-memorize)
+## 📧 聯繫方式
+
+如有問題或建議，請通過以下方式聯繫：
+
+- 創建 [GitHub Issue](https://github.com/andrewyang07/your-words-website/issues)
+- 訪問項目網站：[www.yourwords.me](https://www.yourwords.me)
 
 ---
 
-用 ❤️ 和 ✝️ 构建
+<div align="center">
+
+**用 ❤️ 和 ✝️ 構建**
+
+願神的話語成為你腳前的燈，路上的光 🕯️
+
+*詩篇 119:105*
+
+</div>
