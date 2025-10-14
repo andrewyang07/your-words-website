@@ -520,7 +520,7 @@ export default function HomePage() {
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl md:text-3xl font-bold text-bible-900 dark:text-bible-100 font-chinese flex items-center gap-3">
-                                <Image src="/logo.png" alt="你的話語 Logo" width={40} height={40} className="w-8 h-8 md:w-10 md:h-10" />
+                                <Image src="/logo-light.png" alt="你的話語 Logo" width={40} height={40} className="w-8 h-8 md:w-10 md:h-10 dark:invert" />
                                 你的話語
                             </h1>
                         </div>
@@ -1085,7 +1085,7 @@ export default function HomePage() {
                     // 选择了书卷但未选择章节，显示章节选择器
                     <div className="py-12 px-4">
                         <div className="text-center mb-8">
-                            <Image src="/logo.png" alt="你的話語" width={64} height={64} className="w-16 h-16 mx-auto mb-4 opacity-60" />
+                            <Image src="/logo-light.png" alt="你的話語" width={64} height={64} className="w-16 h-16 mx-auto mb-4 opacity-60 dark:invert" />
                             <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">请选择章节</h3>
                             <p className="text-bible-600 dark:text-bible-400 font-chinese">
                                 {selectedBook.name} 共有 {selectedBook.chapters} 章

@@ -32,9 +32,9 @@ export const metadata: Metadata = {
         description: '免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習。支持Flash Card模式、收藏分享。',
         images: [
             {
-                url: '/logo.png',
-                width: 512,
-                height: 512,
+                url: '/logo-light.png',
+                width: 1024,
+                height: 1024,
                 alt: '你的話語 Logo',
             },
         ],
@@ -43,11 +43,11 @@ export const metadata: Metadata = {
         card: 'summary',
         title: '你的話語 - 聖經背誦助手',
         description: '免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習。',
-        images: ['/logo.png'],
+        images: ['/logo-light.png'],
     },
     icons: {
-        icon: '/logo.png',
-        apple: '/logo.png',
+        icon: '/logo-light.png',
+        apple: '/logo-light.png',
     },
     manifest: '/manifest.json',
 };
