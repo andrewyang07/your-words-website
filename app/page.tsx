@@ -26,6 +26,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { Verse, Book } from '@/types/verse';
 import { encodeVerseList, decodeVerseList } from '@/lib/bibleBookMapping';
+import { logError } from '@/lib/errorHandler';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
@@ -153,7 +154,7 @@ export default function HomePage() {
                     setLoadingChapter(false);
                 })
                 .catch((err) => {
-                    console.error('加载章节经文失败:', err);
+                    logError('HomePage:loadChapterVerses', err);
                     setChapterVerses([]);
                     setLoadingChapter(false);
                 });
@@ -203,11 +204,11 @@ export default function HomePage() {
                             allVerses.push(...filteredVerses);
                         }
 
-                        setSharedVersesData(allVerses);
-                    } catch (error) {
-                        console.error('加载分享经文失败:', error);
-                    }
-                };
+                    setSharedVersesData(allVerses);
+                } catch (error) {
+                    logError('HomePage:loadSharedVerses', error);
+                }
+            };
 
                 loadSharedVerses();
             }
@@ -276,14 +277,14 @@ export default function HomePage() {
                         const filteredVerses = chapterVerses.filter((v) => verseNumbers.has(v.verse));
                         allVerses.push(...filteredVerses);
                     } catch (error) {
-                        console.error(`加载章节失败 ${bookKey} ${chapter}:`, error);
+                        logError('HomePage:loadFavoritesChapter', `加载章节失败 ${bookKey} ${chapter}: ${error}`);
                         // 继续加载其他章节
                     }
                 }
 
                 setFavoritesVersesData(allVerses);
             } catch (error) {
-                console.error('加载收藏经文失败:', error);
+                logError('HomePage:loadFavorites', error);
                 setFavoritesVersesData([]);
             } finally {
                 setLoadingFavorites(false);
@@ -487,7 +488,7 @@ export default function HomePage() {
                 setShareToast({ show: true, message: '链接已复制' });
             }
         } catch (error) {
-            console.error('生成分享链接失败:', error);
+            logError('HomePage:handleShareFavorites', error);
             setShareToast({ show: true, message: '分享失败，请稍后重试' });
         }
     };

@@ -2,6 +2,7 @@
 
 import { Verse, Book, Language } from '@/types/verse';
 import { PRESET_VERSE_REFERENCES } from './constants';
+import { logError, logWarning } from './errorHandler';
 
 // 从完整圣经 JSON 中提取指定的经文
 export async function loadPresetVerses(language: Language): Promise<Verse[]> {
@@ -16,19 +17,19 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
         PRESET_VERSE_REFERENCES.forEach((ref, index) => {
             const bookData = bibleData[ref.book];
             if (!bookData) {
-                console.warn(`书卷不存在: ${ref.book}`);
+                logWarning('loadPresetVerses', `书卷不存在: ${ref.book}`);
                 return;
             }
 
             const chapterData = bookData[ref.chapter];
             if (!chapterData) {
-                console.warn(`章节不存在: ${ref.book} ${ref.chapter}`);
+                logWarning('loadPresetVerses', `章节不存在: ${ref.book} ${ref.chapter}`);
                 return;
             }
 
             const verseText = chapterData[ref.verse];
             if (!verseText) {
-                console.warn(`经节不存在: ${ref.book} ${ref.chapter}:${ref.verse}`);
+                logWarning('loadPresetVerses', `经节不存在: ${ref.book} ${ref.chapter}:${ref.verse}`);
                 return;
             }
 
@@ -48,7 +49,7 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
 
         return verses;
     } catch (error) {
-        console.error('加载预设经文失败:', error);
+        logError('loadPresetVerses', error);
         return [];
     }
 }
@@ -68,7 +69,7 @@ export async function loadChapterVerses(bookKey: string, chapter: number, langua
         // 查找书卷数据
         const bookData = bibleData[bookKey];
         if (!bookData) {
-            console.error(`书卷不存在: ${bookKey}`, '可用的书卷:', Object.keys(bibleData).slice(0, 10));
+            logError('loadChapterVerses', `书卷不存在: ${bookKey}，可用的书卷: ${Object.keys(bibleData).slice(0, 10).join(', ')}`);
             throw new Error(`书卷不存在: ${bookKey}`);
         }
 
@@ -98,7 +99,7 @@ export async function loadChapterVerses(bookKey: string, chapter: number, langua
 
         return verses;
     } catch (error) {
-        console.error('加载章节经文失败:', error);
+        logError('loadChapterVerses', error);
         throw error;
     }
 }
@@ -116,7 +117,7 @@ export async function loadBooks(language: Language = 'traditional'): Promise<Boo
             name: language === 'simplified' ? book.nameSimplified : book.nameTraditional,
         }));
     } catch (error) {
-        console.error('加载书卷信息失败:', error);
+        logError('loadBooks', error);
         return [];
     }
 }

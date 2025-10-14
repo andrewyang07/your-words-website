@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -85,7 +86,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 />
             </head>
             <body className="antialiased" suppressHydrationWarning>
-                {children}
+                <ErrorBoundary>
+                    {children}
+                </ErrorBoundary>
                 <Analytics />
                 <SpeedInsights />
             </body>
