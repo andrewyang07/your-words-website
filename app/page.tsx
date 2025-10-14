@@ -15,7 +15,7 @@ import MasonryLayout from '@/components/verses/MasonryLayout';
 type FilterType = 'all' | 'old' | 'new' | 'favorites';
 
 export default function HomePage() {
-  const { language } = useAppStore();
+  const { language, theme, setLanguage, toggleTheme } = useAppStore();
   const { verses, books, loadVerses, loadBooks } = useVerseStore();
   const { isFavorite } = useFavoritesStore();
   const [loading, setLoading] = useState(true);
@@ -32,6 +32,30 @@ export default function HomePage() {
   // 章节模式的经文
   const [chapterVerses, setChapterVerses] = useState<Verse[]>([]);
   const [loadingChapter, setLoadingChapter] = useState(false);
+
+  // 同步主题到 DOM
+  useEffect(() => {
+    const updateTheme = () => {
+      const isDark = theme === 'dark' || 
+        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+
+    updateTheme();
+
+    // 监听系统主题变化
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => updateTheme();
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+  }, [theme]);
 
   // 加载初始数据
   useEffect(() => {
