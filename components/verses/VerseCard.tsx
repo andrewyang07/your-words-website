@@ -116,7 +116,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 transition={{ duration: 0.2 }}
                 className={`
             ${textSizes[size]}
-            text-bible-800 dark:text-bible-200 leading-relaxed font-chinese
+            text-gray-900 dark:text-gray-100 leading-relaxed font-chinese
             ${isRevealed ? '' : 'line-clamp-4'}
             flex-1
           `}
@@ -131,7 +131,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 {/* 查看整章按钮 */}
                 <button
                     onClick={handleViewInBible}
-                    className="flex items-center gap-1 px-2 py-1 text-xs text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation min-h-[44px] min-w-[44px] justify-center"
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-bible-600 dark:text-bible-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-bible-50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation min-h-[44px] min-w-[44px] justify-center"
                     title="查看本章所有经文"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
