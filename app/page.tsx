@@ -312,7 +312,17 @@ export default function HomePage() {
 
         // 如果是收藏模式，显示所有收藏的经文
         if (filterType === 'favorites') {
-            return favoritesVersesData;
+            let favFiltered = [...favoritesVersesData];
+            // 收藏模式也支持随机排序
+            if (shuffleKey > 0) {
+                const shuffled = [...favFiltered];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                favFiltered = shuffled;
+            }
+            return favFiltered;
         }
 
         // 否则显示精选经文
@@ -370,11 +380,13 @@ export default function HomePage() {
         if (filterType === 'favorites') {
             // 退出收藏模式
             setFilterType('all');
+            setShuffleKey(0); // 重置随机状态
         } else {
             // 进入收藏模式，清除书卷和章节选择
             setFilterType('favorites');
             setSelectedBook(null);
             setSelectedChapter(null);
+            setShuffleKey(0); // 重置随机状态，默认按顺序显示
         }
         // 不清除分享状态，保留URL
     };
@@ -382,6 +394,7 @@ export default function HomePage() {
     const handleBookSelect = (book: Book | null) => {
         setSelectedBook(book);
         setSelectedChapter(null);
+        setShuffleKey(0); // 重置随机状态，章节内容需要按顺序显示
         // 选择书卷时，重置收藏筛选
         if (book && filterType === 'favorites') {
             setFilterType('all');
@@ -804,8 +817,8 @@ export default function HomePage() {
                             </>
                         )}
 
-                        {/* 随机按钮 - 只在精选经文界面显示 */}
-                        {!selectedChapter && !selectedBook && (
+                        {/* 随机按钮 - 在精选经文和收藏界面显示，选择书卷/章节时隐藏 */}
+                        {!selectedBook && (
                             <button
                                 onClick={handleShuffle}
                                 className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
