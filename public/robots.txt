@@ -3,5 +3,5 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://your-words-website.vercel.app/sitemap.xml
+Sitemap: https://www.yourwords.me/sitemap.xml
 

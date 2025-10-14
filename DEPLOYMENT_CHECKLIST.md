@@ -84,22 +84,12 @@
 ## ⚠️ 部署前必做
 
 ### 1. 更新URL
-在部署到正式域名后，需要更新：
-- `app/layout.tsx` 第28行：openGraph.url
-- `public/robots.txt` 第5行：Sitemap URL
-- `app/sitemap.ts` 第4行：baseUrl
+✅ **已完成** - 所有URL已更新为正式域名：`https://www.yourwords.me`
 
-**如果域名是 `yourwords.com`，需要改为：**
-```typescript
-// app/layout.tsx
-url: 'https://yourwords.com',
-
-// app/sitemap.ts
-const baseUrl = 'https://yourwords.com';
-
-// public/robots.txt
-Sitemap: https://yourwords.com/sitemap.xml
-```
+已更新的文件：
+- `app/layout.tsx` - openGraph.url
+- `public/robots.txt` - Sitemap URL
+- `app/sitemap.ts` - baseUrl
 
 ### 2. 环境变量检查
 - [ ] Vercel项目设置正确（Framework Preset: Next.js）

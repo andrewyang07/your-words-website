@@ -4,6 +4,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
 export const metadata: Metadata = {
+    metadataBase: new URL('https://www.yourwords.me'),
     title: '你的話語 - 聖經背誦助手 | 精選114節經文',
     description: '免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習。支持Flash Card模式、收藏分享，讓神的話語常在心中。',
     keywords: ['聖經', '背誦', '經文', 'Bible', '記憶', '學習', '聖經app', '背經', '靈修', '基督教', '你的話語'],
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
         type: 'website',
         locale: 'zh_TW',
         alternateLocale: ['zh_CN'],
-        url: 'https://your-words-website.vercel.app',
+        url: 'https://www.yourwords.me',
         siteName: '你的話語',
         title: '你的話語 - 聖經背誦助手',
         description: '免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習。支持Flash Card模式、收藏分享。',
