@@ -67,36 +67,36 @@ export default function PresetModePage() {
   if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-bible-50 to-bible-100">
+    <div className="min-h-screen bg-gradient-to-br from-bible-50 to-bible-100 dark:from-gray-900 dark:to-gray-800">
       {/* 顶部导航栏 */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-bible-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 text-bible-700 hover:text-bible-900 transition-colors"
+            className="flex items-center gap-2 text-bible-700 dark:text-bible-300 hover:text-bible-900 dark:hover:text-bible-100 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span className="font-chinese">返回</span>
+            <span className="hidden sm:inline font-chinese">返回</span>
           </button>
 
-          <h1 className="text-2xl font-bold text-bible-900 font-chinese">
+          <h1 className="text-xl md:text-2xl font-bold text-bible-900 dark:text-bible-100 font-chinese">
             精选经文
           </h1>
 
-          <button className="flex items-center gap-2 px-4 py-2 bg-bible-100 hover:bg-bible-200 rounded-lg transition-colors">
-            <Filter className="w-5 h-5 text-bible-700" />
-            <span className="font-chinese text-bible-700">筛选</span>
+          <button className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+            <Filter className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+            <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm md:text-base">筛选</span>
           </button>
         </div>
       </div>
 
       {/* 经文统计 */}
       <motion.div
-        className="max-w-7xl mx-auto px-4 py-4"
+        className="max-w-7xl mx-auto px-4 py-3 md:py-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <p className="text-bible-600 font-chinese">
+        <p className="text-sm md:text-base text-bible-600 dark:text-bible-400 font-chinese">
           共 {filteredVerses.length} 节经文
         </p>
       </motion.div>
@@ -106,7 +106,7 @@ export default function PresetModePage() {
         <MasonryLayout verses={filteredVerses} onViewInBible={handleViewInBible} />
       ) : (
         <div className="text-center py-20">
-          <p className="text-bible-600 font-chinese">暂无经文</p>
+          <p className="text-bible-600 dark:text-bible-400 font-chinese">暂无经文</p>
         </div>
       )}
     </div>

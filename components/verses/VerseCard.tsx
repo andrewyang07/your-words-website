@@ -63,11 +63,11 @@ export default function VerseCard({
     <motion.div
       className={`
         ${sizeClasses[size]}
-        bg-white rounded-xl shadow-md
+        bg-white dark:bg-gray-800 rounded-xl shadow-md
         hover:shadow-xl hover:-translate-y-1
         cursor-pointer transition-all duration-300
         border-2
-        ${isRevealed ? 'border-gold-400' : 'border-bible-200'}
+        ${isRevealed ? 'border-gold-400 dark:border-gold-500' : 'border-bible-200 dark:border-gray-700'}
         flex flex-col justify-between
         relative
       `}
@@ -75,40 +75,40 @@ export default function VerseCard({
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      {/* 翻转提示 */}
+      {/* 展开提示 */}
       {!isRevealed && (
         <div className="absolute top-2 right-2">
           <motion.div
-            className="w-6 h-6 rounded-full bg-bible-100 flex items-center justify-center"
+            className="w-6 h-6 rounded-full bg-bible-100 dark:bg-gray-700 flex items-center justify-center"
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <span className="text-xs text-bible-600">?</span>
+            <span className="text-xs text-bible-600 dark:text-gray-300">?</span>
           </motion.div>
         </div>
       )}
 
       {/* 经文引用 */}
       <div className="flex items-start justify-between mb-3">
-        <span className="text-bible-600 font-medium font-chinese text-sm">
+        <span className="text-bible-600 dark:text-bible-400 font-medium font-chinese text-sm">
           {verse.book} {verse.chapter}:{verse.verse}
         </span>
         {verse.priority && verse.priority >= 4 && (
-          <Star className="w-4 h-4 text-gold-500 fill-gold-300" />
+          <Star className="w-4 h-4 text-gold-500 fill-gold-300 dark:text-gold-400 dark:fill-gold-500" />
         )}
       </div>
 
-      {/* 经文内容 - 带翻转动画 */}
+      {/* 经文内容 - 带展开动画 */}
       <AnimatePresence mode="wait">
         <motion.p
           key={isRevealed ? 'revealed' : 'hidden'}
-          initial={{ opacity: 0, rotateY: -90 }}
-          animate={{ opacity: 1, rotateY: 0 }}
-          exit={{ opacity: 0, rotateY: 90 }}
-          transition={{ duration: 0.3 }}
+          initial={{ opacity: 0, height: 'auto' }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
           className={`
             ${textSizes[size]}
-            text-bible-800 leading-relaxed font-chinese
+            text-bible-800 dark:text-bible-200 leading-relaxed font-chinese
             ${isRevealed ? '' : 'line-clamp-4'}
             flex-1
           `}
@@ -118,15 +118,15 @@ export default function VerseCard({
       </AnimatePresence>
 
       {/* 底部信息栏 */}
-      <div className="mt-3 pt-2 border-t border-bible-100 flex items-center justify-between">
-        <span className="text-xs text-bible-500 font-chinese">
+      <div className="mt-3 pt-2 border-t border-bible-100 dark:border-gray-700 flex items-center justify-between">
+        <span className="text-xs text-bible-500 dark:text-gray-400 font-chinese">
           {verse.testament === 'old' ? '旧约' : '新约'}
         </span>
 
         {/* 查看原文按钮 */}
         <button
           onClick={handleViewInBible}
-          className="flex items-center gap-1 px-2 py-1 text-xs text-bible-600 hover:text-bible-800 hover:bg-bible-50 rounded transition-colors"
+          className="flex items-center gap-1 px-2 py-1 text-xs text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 rounded transition-colors"
           title="在圣经中查看"
         >
           <BookOpen className="w-3 h-3" />
@@ -139,7 +139,7 @@ export default function VerseCard({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute -top-2 -right-2 w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center shadow-lg"
+          className="absolute -top-2 -right-2 w-8 h-8 bg-gold-400 dark:bg-gold-500 rounded-full flex items-center justify-center shadow-lg"
         >
           <span className="text-white text-xs font-bold">✓</span>
         </motion.div>

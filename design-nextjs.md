@@ -500,9 +500,10 @@ export default function HomePage() {
 ### 5.2 经文卡片组件 (VerseCard.tsx) - MVP 核心组件 (Flash Card 模式)
 
 **Flash Card 特性**：
-- 默认只显示经文前3-7个字（每张卡片随机）
-- 点击翻转显示完整内容
-- 有"查看原文"按钮跳转到圣经阅读界面
+
+-   默认只显示经文前 3-7 个字（每张卡片随机）
+-   点击翻转显示完整内容
+-   有"查看原文"按钮跳转到圣经阅读界面
 
 ```typescript
 'use client';
