@@ -19,6 +19,7 @@ import {
     Check,
     Share2,
     Info,
+    Menu,
 } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
@@ -32,6 +33,7 @@ import MaskSettings from '@/components/settings/MaskSettings';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
+import SideMenu from '@/components/navigation/SideMenu';
 
 type FilterType = 'all' | 'old' | 'new' | 'favorites';
 
@@ -77,6 +79,9 @@ export default function HomePage() {
 
     // 关于弹窗显示状态
     const [showAbout, setShowAbout] = useState(false);
+
+    // 侧边栏菜单显示状态
+    const [showSideMenu, setShowSideMenu] = useState(false);
 
     // 从 localStorage 读取引导卡片状态
     useEffect(() => {
@@ -557,18 +562,6 @@ export default function HomePage() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {/* 关于按钮 */}
-                            <button
-                                onClick={() => setShowAbout(true)}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="关于本站"
-                                aria-label="关于本站"
-                            >
-                                <Info className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">关于</span>
-                            </button>
-
                             {/* 帮助按钮 */}
                             <button
                                 onClick={handleOpenGuide}
@@ -595,23 +588,6 @@ export default function HomePage() {
                                 </span>
                             </button>
 
-                            {/* 主题切换 */}
-                            <button
-                                onClick={toggleTheme}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={theme === 'light' ? '切换到深色模式' : theme === 'dark' ? '跟随系统' : '切换到浅色模式'}
-                                aria-label={theme === 'light' ? '切换到深色模式' : theme === 'dark' ? '切换到跟随系统模式' : '切换到浅色模式'}
-                            >
-                                {theme === 'light' ? (
-                                    <Sun className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                ) : theme === 'dark' ? (
-                                    <Moon className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                ) : (
-                                    <Monitor className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                )}
-                            </button>
-
                             {/* 阅读/背诵模式切换（始终显示） */}
                             <button
                                 onClick={() => setShowAllContent(!showAllContent)}
@@ -632,6 +608,18 @@ export default function HomePage() {
                                         <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">阅读</span>
                                     </>
                                 )}
+                            </button>
+
+                            {/* 汉堡菜单按钮 - 移到最右侧 */}
+                            <button
+                                onClick={() => setShowSideMenu(true)}
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                title="菜单"
+                                aria-label="打开菜单"
+                            >
+                                <Menu className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">菜單</span>
                             </button>
                         </div>
                     </div>
@@ -1135,6 +1123,15 @@ export default function HomePage() {
                     )}
                 </AnimatePresence>
 
+                {/* 侧边栏菜单 */}
+                <SideMenu
+                    isOpen={showSideMenu}
+                    onClose={() => setShowSideMenu(false)}
+                    onAboutClick={() => setShowAbout(true)}
+                    theme={theme}
+                    onThemeChange={toggleTheme}
+                />
+
                 {/* 关闭引导提示 - 浮动通知 */}
                 <AnimatePresence>
                     {showGuideHint && (
@@ -1225,8 +1222,8 @@ export default function HomePage() {
                                                 <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">自定義提示設置</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
                                                     調整遮罩設置，自定義顯示字數和模式：
-                                                    <span className="font-semibold">短語提示</span>（每句開頭提示）或
-                                                    <span className="font-semibold">開頭提示</span>（全文開頭提示），適應不同難度。
+                                                    <span className="font-semibold">每句提示</span>（每句開頭顯示）或
+                                                    <span className="font-semibold">開頭提示</span>（全文開頭顯示），適應不同難度。
                                                 </p>
                                             </div>
                                         </div>

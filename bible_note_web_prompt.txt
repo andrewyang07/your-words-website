@@ -1,0 +1,368 @@
+
+I need help building a Bible Note feature as a new section on my existing website. This is a web-based Bible reading and note-taking application with offline capabilities. Here are the complete requirements:
+
+## PROJECT OVERVIEW
+
+**Feature Name**: Bible Note
+**Purpose**: Enable users to read the Bible and create interconnected notes with bidirectional linking between verses and notes
+**Key Requirement**: Must work completely offline using browser storage (no backend required)
+
+## CORE FEATURES TO IMPLEMENT
+
+### 1. Bible Reading Interface
+- Display Bible text for both Chinese Union Version (CUV) and English WEB version
+- Support for all 66 books of the Bible with chapter/verse navigation
+- Fast book/chapter selector with search functionality
+- Adjustable font size, line spacing, and dark/light theme
+- Verse-level highlighting and clicking to create notes
+- Display indicator on verses that have associated notes
+
+### 2. Note Editor
+- Markdown editor with real-time preview mode
+- Support creating notes with:
+  - Title (auto-generated from date + topic if not provided)
+  - Content in Markdown format
+  - Tags for categorization
+  - Folder/category organization
+- Auto-detect verse references in note content (e.g., "John 3:16", "Genesis 1:1-3")
+- Show parsed verse references as clickable badges below the editor
+- Click on verse reference badge to jump to that verse in Bible view
+
+### 3. Bidirectional Linking System
+- When user writes "John 3:16" in a note, automatically:
+  - Parse and recognize the verse reference
+  - Create a link from the note to that verse
+  - Show a badge/indicator on John 3:16 in the Bible view
+- When viewing a Bible verse, show all notes that reference it
+- When viewing a note, show:
+  - All verse references mentioned in this note
+  - Backlinks: other notes that reference the same verses
+
+### 4. Note Management
+- Folder/category structure (e.g., "Devotionals", "Study Notes", "Sermons")
+- Multi-level folder hierarchy support
+- Tag-based organization with tag filtering
+- Note list view showing:
+  - Title, excerpt, created date, last modified date
+  - Associated tags and folder
+  - Number of verse references in the note
+- Search functionality across all note content and titles
+- Sort by: date created, date modified, title (A-Z)
+
+### 5. Data Storage (Client-Side Only)
+- Use IndexedDB for storing:
+  - Bible verse text (Chinese + English)
+  - User notes (full content)
+  - Note metadata (title, tags, timestamps)
+  - Verse-note link relationships
+- Store folder structure and tags in IndexedDB
+- No backend server required
+- Data persists in browser even when offline
+
+### 6. Import/Export Features
+- Export single note as Markdown file (.md)
+- Export all notes as ZIP archive
+- Import Markdown files to create notes
+- Export entire data as JSON backup
+- Import JSON backup to restore all data
+- Use File System Access API to let users choose save location
+
+### 7. Optional Cloud Sync (Without Backend)
+- GitHub Gist integration:
+  - Users connect their GitHub account (OAuth)
+  - Sync notes to private Gist
+  - Pull notes from Gist to sync across devices
+- Alternative: Dropbox/Google Drive client-side API
+- Make sync completely optional (offline-first approach)
+
+### 8. Search and Filter
+- Full-text search across all note content
+- Search Bible verses by keyword
+- Filter notes by:
+  - Folder/category
+  - Tags (multiple tag selection)
+  - Date range
+  - Verse references
+- Search results show context snippet with highlighting
+
+## TECHNICAL REQUIREMENTS
+
+### Frontend Stack
+- Use React 18+ or your existing framework
+- TypeScript for type safety
+- Use a Markdown editor library like:
+  - MDXEditor (recommended for rich editing)
+  - Or react-markdown + react-simplemde-editor
+- IndexedDB wrapper: use 'idb' library for easier API
+- For verse reference parsing: create regex patterns to match formats like:
+  - "John 3:16"
+  - "1 John 2:1-5"
+  - "Genesis 1:1,3,5"
+  - Chinese formats: "约翰福音3:16", "约3:16"
+
+### Data Structure
+
+#### IndexedDB Schema:
+```typescript
+// Store: notes
+{
+  id: string (uuid),
+  title: string,
+  content: string (markdown),
+  folder: string,
+  tags: string[],
+  created_at: number (timestamp),
+  updated_at: number (timestamp)
+}
+
+// Store: verses
+{
+  id: number (auto-increment),
+  book_id: number,
+  book_name: string,
+  chapter: number,
+  verse: number,
+  text_chs: string (Chinese text),
+  text_eng: string (English text)
+}
+
+// Store: verse_note_links
+{
+  id: number (auto-increment),
+  note_id: string,
+  verse_ref: string (e.g., "John3:16"),
+  book_id: number,
+  chapter: number,
+  verse: number,
+  context: string (surrounding text from note)
+}
+
+// Store: folders
+{
+  id: string,
+  name: string,
+  parent_id: string | null,
+  created_at: number
+}
+```
+
+### Bible Data
+- I have Bible text in JSON format (Chinese Union Version + English WEB)
+- JSON structure:
+```json
+{
+  "books": [
+    {
+      "id": 1,
+      "name": "Genesis",
+      "name_chs": "创世记",
+      "chapters": [
+        {
+          "chapter": 1,
+          "verses": [
+            {
+              "verse": 1,
+              "text": "In the beginning God created..."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+- Need to import this JSON into IndexedDB on first load
+- Show loading progress during initial Bible data import
+
+### Verse Reference Parser
+Create a utility function to parse verse references:
+```typescript
+// Should match patterns like:
+- "John 3:16"
+- "1 John 2:1-5" (range)
+- "Genesis 1:1,3,5" (multiple verses)
+- "约翰福音3:16" (Chinese)
+- "约3:16" (abbreviated Chinese)
+
+// Return format:
+{
+  original: string,      // "John 3:16"
+  book: string,          // "John"
+  chapter: number,       // 3
+  startVerse: number,    // 16
+  endVerse?: number,     // for ranges
+  position: number       // position in text
+}
+```
+
+## UI/UX REQUIREMENTS
+
+### Layout Structure
+```
+┌─────────────────────────────────────────────┐
+│  Top Nav: Bible Note | [Bible] [Notes] [Settings] │
+├─────────────────────────────────────────────┤
+│                                             │
+│  Main Content Area:                         │
+│                                             │
+│  [Bible View]          │  [Note Editor]     │
+│  - Book/Chapter Nav    │  - Title input     │
+│  - Verse display       │  - Markdown editor │
+│  - Click verse = note  │  - Preview button  │
+│                        │  - Save button     │
+│                        │                    │
+│  [Note List Sidebar]   │  [Referenced]      │
+│  - Folders tree        │  - Verse badges    │
+│  - Search box          │  - Backlinks       │
+│  - Filter tags         │                    │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+### Key Interactions
+1. **Reading Bible**: 
+   - Click book/chapter to navigate
+   - Verses with notes show a small badge/dot indicator
+   - Click on a verse → opens note editor with that verse pre-filled
+
+2. **Creating Note**:
+   - Write in Markdown
+   - Type "John 3:16" → auto-parsed and shown as badge below editor
+   - Click badge → jumps to that verse in Bible view
+   - Save → updates IndexedDB + creates verse-note links
+
+3. **Viewing Note**:
+   - Show all verse references as clickable links
+   - Show "Referenced by" section with other notes mentioning same verses
+   - Edit/Delete buttons
+
+4. **Search**:
+   - Search bar at top
+   - Real-time results as you type
+   - Shows both matching notes and matching verses
+   - Click result → navigate to that note or verse
+
+### Responsive Design
+- Desktop: side-by-side Bible + Notes view
+- Tablet: collapsible sidebar
+- Mobile: tabbed interface (Bible tab, Notes tab, Search tab)
+
+## OFFLINE CAPABILITY (PWA)
+
+### Make it a Progressive Web App:
+- Add service worker for offline caching
+- Cache all static assets (JS, CSS, fonts)
+- Cache Bible JSON data after first load
+- Show "Works offline" indicator in UI
+- Allow "Add to Home Screen" on mobile browsers
+
+### Service Worker Config:
+```javascript
+// Cache strategy:
+- Static assets: Cache first, fall back to network
+- Bible data: Cache first (after initial load)
+- User notes: IndexedDB (already local)
+```
+
+## ADDITIONAL FEATURES (Nice to Have)
+
+### 1. Statistics Dashboard
+- Total notes count
+- Most referenced verses
+- Notes created this week/month
+- Tag cloud visualization
+
+### 2. Quick Actions
+- Keyboard shortcuts (Ctrl+N for new note, Ctrl+F for search)
+- Verse quick jump (type reference in search bar)
+- Recent notes list
+
+### 3. Customization
+- Theme colors (light/dark/sepia)
+- Font family selection
+- Custom folder colors/icons
+
+### 4. Data Management
+- Clear all data option (with confirmation)
+- Storage usage indicator
+- Auto-backup reminder
+
+## IMPLEMENTATION STEPS
+
+Please help me build this in the following order:
+
+### Phase 1: Core Setup (Priority 1)
+1. Set up IndexedDB schema and wrapper functions
+2. Create Bible data import function from JSON
+3. Build basic Bible reading interface with navigation
+4. Test offline storage and retrieval
+
+### Phase 2: Note Taking (Priority 1)
+5. Implement Markdown note editor with preview
+6. Create note CRUD operations (Create, Read, Update, Delete)
+7. Build note list view with folder organization
+8. Implement basic search functionality
+
+### Phase 3: Linking System (Priority 1)
+9. Create verse reference parser utility
+10. Implement auto-parsing of verse references in notes
+11. Build verse-note linking system
+12. Show backlinks and related notes
+13. Add click-to-navigate between verses and notes
+
+### Phase 4: Advanced Features (Priority 2)
+14. Add import/export functionality (Markdown, JSON, ZIP)
+15. Implement tag system and filtering
+16. Build advanced search with multiple filters
+17. Add folder hierarchy management
+
+### Phase 5: Polish (Priority 3)
+18. Set up PWA with service worker
+19. Add GitHub Gist sync (optional)
+20. Implement statistics dashboard
+21. Add keyboard shortcuts
+22. Responsive design optimization
+
+## INTEGRATION WITH EXISTING WEBSITE
+
+Since this is being added to an existing website:
+- Create a new route/page: `/bible-note`
+- Use the same header/footer as existing site
+- Match existing site's design system (colors, fonts, spacing)
+- Ensure no conflicts with existing JavaScript/CSS
+- Keep all Bible Note code in separate module/namespace
+- Add a navigation link to Bible Note in main menu
+
+## OUTPUT EXPECTATIONS
+
+Please provide:
+1. Complete component structure with all necessary files
+2. IndexedDB setup and CRUD utility functions
+3. Verse reference parsing logic
+4. All UI components (Bible viewer, Note editor, Note list, etc.)
+5. Search and filtering implementation
+6. Import/export functionality
+7. Service worker for offline capability (PWA)
+8. Clear instructions on how to integrate into existing site
+9. Sample Bible JSON data structure for testing
+10. Instructions on how to add my Bible JSON data
+
+## TECHNICAL CONSTRAINTS
+
+- Must work entirely client-side (no backend)
+- Must support offline use
+- Must persist data in browser (IndexedDB)
+- Should load quickly (lazy load Bible data by book)
+- Should handle large note collections (1000+ notes)
+- Must be compatible with modern browsers (Chrome, Firefox, Safari, Edge)
+
+## DELIVERABLES
+
+Please structure your response as:
+1. File structure overview
+2. Key components code
+3. IndexedDB utility functions
+4. Integration instructions
+5. Testing checklist
+
+Let me know if you need any clarification on requirements!

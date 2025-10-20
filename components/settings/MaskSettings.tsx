@@ -20,8 +20,8 @@ export default function MaskSettings() {
     } = useMaskStore();
 
     const modeOptions: SelectOption[] = [
-        { value: 'punctuation', label: '短語提示模式' },
-        { value: 'prefix', label: '開頭提示模式' },
+        { value: 'punctuation', label: '每句提示' },
+        { value: 'prefix', label: '開頭提示' },
     ];
 
     const typeOptions: SelectOption[] = [
