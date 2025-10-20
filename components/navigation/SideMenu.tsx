@@ -133,14 +133,15 @@ export default function SideMenu({ isOpen, onClose, onAboutClick, theme, onTheme
                                     <div className="px-4 py-2">
                                         <p className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese">🚀 更多功能</p>
                                     </div>
-                                    {/* 圣经笔记本 - 禁用状态 */}
-                                    <div className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg opacity-50 cursor-not-allowed mt-2">
-                                        <div className="flex items-center gap-3">
-                                            <FileText className="w-4 h-4 text-bible-400 dark:text-gray-600" />
-                                            <span className="text-bible-600 dark:text-gray-500 font-chinese text-sm">筆記本</span>
-                                        </div>
-                                        <span className="text-xs text-bible-500 dark:text-gray-600 font-chinese">即將推出</span>
-                                    </div>
+                                    {/* 圣经笔记本 - 已启用 */}
+                                    <a
+                                        href="/bible-note"
+                                        onClick={onClose}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-bible-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors mt-2"
+                                    >
+                                        <FileText className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                        <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">筆記本</span>
+                                    </a>
                                 </div>
                             </div>
                         </nav>

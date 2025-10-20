@@ -20,6 +20,7 @@ import {
     Share2,
     Info,
     Menu,
+    ArrowLeft,
 } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
@@ -173,6 +174,9 @@ export default function HomePage() {
                 });
         });
     }, [selectedBook, selectedChapter, language]);
+
+    // 检测 URL 参数（分享和来源）
+    const fromBibleNote = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('from') === 'bible-note';
 
     // 检测URL分享参数并加载分享的经文
     useEffect(() => {
@@ -839,6 +843,19 @@ export default function HomePage() {
                                         </div>
                                     )}
                                 </Listbox>
+
+                                {/* 返回笔记按钮 - 当从笔记本跳转过来时显示 */}
+                                {fromBibleNote && (
+                                    <a
+                                        href="/bible-note"
+                                        className="flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors shadow-sm touch-manipulation min-h-[44px]"
+                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        title="返回聖經筆記本"
+                                    >
+                                        <ArrowLeft className="w-4 h-4" />
+                                        <span className="font-chinese text-sm">返回筆記</span>
+                                    </a>
+                                )}
 
                                 {/* 返回按钮 - 智能显示 */}
                                 {selectedBook && (

@@ -56,3 +56,45 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+/* SimpleMDE 编辑器暗黑模式支持 */
+.dark .EasyMDEContainer {
+    @apply bg-gray-800 border-gray-700;
+}
+
+.dark .EasyMDEContainer .CodeMirror {
+    @apply bg-gray-800 text-gray-100 border-gray-700;
+}
+
+.dark .EasyMDEContainer .CodeMirror-cursor {
+    @apply border-gray-300;
+}
+
+.dark .EasyMDEContainer .editor-toolbar {
+    @apply bg-gray-700 border-gray-600;
+}
+
+.dark .EasyMDEContainer .editor-toolbar button {
+    @apply text-gray-300 hover:bg-gray-600;
+}
+
+.dark .EasyMDEContainer .editor-toolbar button.active,
+.dark .EasyMDEContainer .editor-toolbar button:hover {
+    @apply bg-gray-600 text-white;
+}
+
+.dark .EasyMDEContainer .editor-toolbar i.separator {
+    @apply border-gray-600;
+}
+
+.dark .EasyMDEContainer .editor-preview {
+    @apply bg-gray-800 text-gray-100;
+}
+
+.dark .EasyMDEContainer .editor-preview pre {
+    @apply bg-gray-900;
+}
+
+.dark .EasyMDEContainer .CodeMirror-selected {
+    @apply bg-gray-700;
+}
