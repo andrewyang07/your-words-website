@@ -95,7 +95,7 @@ export function maskVerseText(text: string, mode: 'punctuation' | 'prefix', visi
     if (visibleChars <= 0) {
         return text
             .split('')
-            .map((char) => (/[，。！？；：,.!?;:]/.test(char) ? char : '█'))
+            .map((char) => (/[，。！？；：,.!?;:]/.test(char) ? char : '▓'))
             .join('');
     }
 
@@ -107,7 +107,7 @@ export function maskVerseText(text: string, mode: 'punctuation' | 'prefix', visi
         const maskedPart = text
             .slice(visibleChars)
             .split('')
-            .map((char) => (/[，。！？；：,.!?;:]/.test(char) ? char : '█'))
+            .map((char) => (/[，。！？；：,.!?;:]/.test(char) ? char : '▓'))
             .join('');
 
         return visiblePart + maskedPart;
@@ -136,7 +136,7 @@ export function maskVerseText(text: string, mode: 'punctuation' | 'prefix', visi
                 charsShownInCurrentSegment++;
             } else {
                 // 其余字符遮罩
-                result.push('█');
+                result.push('▓');
                 isAfterPunctuation = false;
             }
         }
