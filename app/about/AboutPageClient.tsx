@@ -170,7 +170,9 @@ export default function AboutPageClient() {
                             </h3>
                             <div className="space-y-4">
                                 <div className="text-bible-700 dark:text-bible-300 font-chinese leading-relaxed">
-                                    <p className="mb-3">這個項目已經開源！歡迎志同道合的開發者一起參與。 無論是代碼貢獻、功能建議，還是發現問題，都歡迎聯繫我。</p>
+                                    <p className="mb-3">
+                                        這個項目已經開源！歡迎志同道合的開發者一起參與。 無論是代碼貢獻、功能建議，還是發現問題，都歡迎聯繫我。
+                                    </p>
                                 </div>
 
                                 {/* GitHub 仓库信息 */}
@@ -179,24 +181,50 @@ export default function AboutPageClient() {
                                         <Github className="w-8 h-8 text-gray-700 dark:text-gray-300 flex-shrink-0 mt-1" />
                                         <div className="flex-1">
                                             <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200 font-chinese mb-2">GitHub 倉庫</h4>
-                                            <a href="https://github.com/andrewyang07/your-words-website" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline text-sm mb-3 block break-all">
+                                            <a
+                                                href="https://github.com/andrewyang07/your-words-website"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 dark:text-blue-400 hover:underline text-sm mb-3 block break-all"
+                                            >
                                                 github.com/andrewyang07/your-words-website
                                             </a>
                                             <div className="flex flex-wrap gap-2 mb-3">
-                                                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">MIT License</span>
-                                                <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs">TypeScript</span>
-                                                <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded text-xs">Next.js</span>
+                                                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
+                                                    MIT License
+                                                </span>
+                                                <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs">
+                                                    TypeScript
+                                                </span>
+                                                <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded text-xs">
+                                                    Next.js
+                                                </span>
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                                                <a href="https://github.com/andrewyang07/your-words-website/issues" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                                                <a
+                                                    href="https://github.com/andrewyang07/your-words-website/issues"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                                                >
                                                     <span>🐛</span>
                                                     <span>報告 Bug</span>
                                                 </a>
-                                                <a href="https://github.com/andrewyang07/your-words-website/issues" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                                                <a
+                                                    href="https://github.com/andrewyang07/your-words-website/issues"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                                                >
                                                     <span>💡</span>
                                                     <span>功能建議</span>
                                                 </a>
-                                                <a href="https://github.com/andrewyang07/your-words-website" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                                                <a
+                                                    href="https://github.com/andrewyang07/your-words-website"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                                                >
                                                     <span>⭐</span>
                                                     <span>給個 Star</span>
                                                 </a>
@@ -209,7 +237,9 @@ export default function AboutPageClient() {
                                 <div className="flex items-center gap-2 text-bible-600 dark:text-bible-400">
                                     <Mail className="w-5 h-5" />
                                     <span className="text-sm">聯繫郵箱：</span>
-                                    <a href="mailto:yy9577@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">yy9577@gmail.com</a>
+                                    <a href="mailto:yy9577@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">
+                                        yy9577@gmail.com
+                                    </a>
                                 </div>
                             </div>
                         </section>
