@@ -39,40 +39,37 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
             });
     }, []);
 
-    // 获取光标位置
-    const getCursorPosition = useCallback(() => {
-        const textarea = textareaRef.current;
-        if (!textarea) return null;
-
-        const { selectionStart } = textarea;
-        const textBeforeCursor = value.substring(0, selectionStart);
-
-        return { selectionStart, textBeforeCursor };
-    }, [value]);
-
     // 检测经文引用模式并生成建议
     const updateSuggestions = useCallback(() => {
-        if (!bibleBooks) return;
+        const textarea = textareaRef.current;
+        if (!textarea || !bibleBooks) {
+            console.log('[Autocomplete] Not ready:', { textarea: !!textarea, bibleBooks: !!bibleBooks });
+            return;
+        }
 
-        const cursorPos = getCursorPosition();
-        if (!cursorPos) return;
+        const selectionStart = textarea.selectionStart;
+        const textBeforeCursor = value.substring(0, selectionStart);
 
-        const { textBeforeCursor, selectionStart } = cursorPos;
+        console.log('[Autocomplete] Text before cursor:', textBeforeCursor.slice(-20));
 
         // 匹配模式: "马太福音5" 或 "太5" 等
         const match = textBeforeCursor.match(/([\u4e00-\u9fa5]+)(\d+)?$/);
 
         if (!match) {
+            console.log('[Autocomplete] No match');
             setSuggestions([]);
             return;
         }
 
         const [, bookName, chapterNum] = match;
+        console.log('[Autocomplete] Matched:', { bookName, chapterNum });
 
         // 查找匹配的书卷
         const matchedBooks = bibleBooks.filter(
             (book: any) => book.name.includes(bookName) || book.abbreviation === bookName
         );
+
+        console.log('[Autocomplete] Matched books:', matchedBooks.length);
 
         if (matchedBooks.length === 0) {
             setSuggestions([]);
@@ -112,27 +109,22 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
         });
 
         // 限制显示数量
-        setSuggestions(newSuggestions.slice(0, 20));
+        const finalSuggestions = newSuggestions.slice(0, 20);
+        console.log('[Autocomplete] Final suggestions:', finalSuggestions.length);
+        
+        setSuggestions(finalSuggestions);
         setSelectedSuggestionIndex(0);
 
         // 计算 autocomplete 位置
-        if (newSuggestions.length > 0 && textareaRef.current) {
-            const textarea = textareaRef.current;
-            const textBeforeCursorLines = textBeforeCursor.split('\n');
-            const currentLineIndex = textBeforeCursorLines.length - 1;
-            const currentLineText = textBeforeCursorLines[currentLineIndex];
-
-            // 简单计算位置（可以优化）
-            const lineHeight = 24;
-            const charWidth = 8;
-
+        if (finalSuggestions.length > 0) {
             const rect = textarea.getBoundingClientRect();
-            const top = rect.top + (currentLineIndex + 1) * lineHeight + window.scrollY;
-            const left = rect.left + currentLineText.length * charWidth + window.scrollX;
+            const top = rect.bottom + window.scrollY + 4; // 简单：显示在 textarea 下方
+            const left = rect.left + window.scrollX;
 
+            console.log('[Autocomplete] Position:', { top, left });
             setAutocompletePosition({ top, left });
         }
-    }, [bibleBooks, getCursorPosition]);
+    }, [bibleBooks, value]);
 
     // 监听输入变化
     useEffect(() => {
@@ -163,10 +155,11 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
     // 选择建议
     const handleSelectSuggestion = useCallback(
         (suggestion: VerseSuggestion) => {
-            const cursorPos = getCursorPosition();
-            if (!cursorPos) return;
+            const textarea = textareaRef.current;
+            if (!textarea) return;
 
-            const { textBeforeCursor, selectionStart } = cursorPos;
+            const selectionStart = textarea.selectionStart;
+            const textBeforeCursor = value.substring(0, selectionStart);
 
             // 找到要替换的文本起始位置
             const match = textBeforeCursor.match(/([\u4e00-\u9fa5]+)(\d+)?$/);
@@ -181,16 +174,14 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
 
             // 设置光标位置
             setTimeout(() => {
-                if (textareaRef.current) {
-                    const newCursorPos = matchStart + suggestion.insert.length;
-                    textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-                    textareaRef.current.focus();
-                }
+                const newCursorPos = matchStart + suggestion.insert.length;
+                textarea.setSelectionRange(newCursorPos, newCursorPos);
+                textarea.focus();
             }, 0);
 
             setSuggestions([]);
         },
-        [getCursorPosition, value, onChange]
+        [value, onChange]
     );
 
     // Markdown 工具栏按钮
