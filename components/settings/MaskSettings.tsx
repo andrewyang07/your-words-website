@@ -74,7 +74,7 @@ export default function MaskSettings() {
                     className="w-full sm:w-auto max-w-[160px]"
                 />
             ) : (
-                <div className="flex flex-row items-center gap-2 w-full sm:w-auto max-w-[320px]">
+                <div className="flex flex-row items-center gap-1.5 w-full sm:w-auto max-w-[320px]">
                     <Slider
                         id="mask-min"
                         label="最少:"
@@ -82,9 +82,9 @@ export default function MaskSettings() {
                         max={10}
                         value={maskCharsMin}
                         onChange={(val) => setMaskCharsRange(Math.min(val, maskCharsMax), maskCharsMax)}
-                        className="w-full sm:w-auto max-w-[100px]"
+                        className="w-full sm:w-auto max-w-[90px]"
                     />
-                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">-</span>
+                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese flex-shrink-0">-</span>
                     <Slider
                         id="mask-max"
                         label="最多:"
@@ -92,10 +92,10 @@ export default function MaskSettings() {
                         max={10}
                         value={maskCharsMax}
                         onChange={(val) => setMaskCharsRange(maskCharsMin, Math.max(val, maskCharsMin))}
-                        className="w-full sm:w-auto max-w-[100px]"
+                        className="w-full sm:w-auto max-w-[90px]"
                         showValue={true}
                     />
-                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">字</span>
+                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese flex-shrink-0">字</span>
                 </div>
             )}
 
