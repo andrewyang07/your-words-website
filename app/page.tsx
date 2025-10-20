@@ -542,7 +542,7 @@ export default function HomePage() {
                     {/* 标题行 */}
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl md:text-3xl font-extrabold font-chinese flex items-center gap-3">
+                            <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity" title="首頁">
                                 <Image
                                     src="/logo-light.png"
                                     alt="你的話語 Logo"
@@ -551,15 +551,15 @@ export default function HomePage() {
                                     priority
                                     className="w-8 h-8 md:w-10 md:h-10 dark:brightness-90 dark:contrast-125"
                                 />
-                                <span
-                                    className="text-bible-700 dark:text-bible-300 tracking-wide"
+                                <h1
+                                    className="text-2xl md:text-3xl font-extrabold font-chinese text-bible-700 dark:text-bible-300 tracking-wide"
                                     style={{
                                         textShadow: '0 0 12px rgba(190,158,93,0.3), 0 0 24px rgba(190,158,93,0.15), 0 1px 2px rgba(0,0,0,0.05)',
                                     }}
                                 >
                                     你的話語
-                                </span>
-                            </h1>
+                                </h1>
+                            </a>
                         </div>
 
                         <div className="flex items-center gap-2">
