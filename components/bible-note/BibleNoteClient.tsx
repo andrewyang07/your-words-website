@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Trash2, FileDown, Copy, ChevronDown } from 'lucide-react';
+import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
@@ -30,6 +30,8 @@ export default function BibleNoteClient() {
         book: '',
         chapter: 0,
     });
+    const [lastViewedBook, setLastViewedBook] = useState<string>('');
+    const [lastViewedChapter, setLastViewedChapter] = useState<number>(1);
 
     // 从 localStorage 恢复内容
     useEffect(() => {
@@ -38,6 +40,39 @@ export default function BibleNoteClient() {
             setContent(saved);
         }
     }, []);
+
+    // 从 localStorage 恢复上次查看的章节
+    useEffect(() => {
+        const saved = localStorage.getItem('bible-note-last-viewed');
+        if (saved) {
+            try {
+                const { book, chapter } = JSON.parse(saved);
+                setLastViewedBook(book);
+                setLastViewedChapter(chapter);
+            } catch (error) {
+                console.error('Error parsing last viewed:', error);
+                setLastViewedBook('GEN');
+                setLastViewedChapter(1);
+            }
+        } else {
+            // 默认为创世记1章
+            setLastViewedBook('GEN');
+            setLastViewedChapter(1);
+        }
+    }, []);
+
+    // 保存上次查看的章节到 localStorage
+    useEffect(() => {
+        if (lastViewedBook && lastViewedChapter) {
+            localStorage.setItem(
+                'bible-note-last-viewed',
+                JSON.stringify({
+                    book: lastViewedBook,
+                    chapter: lastViewedChapter,
+                })
+            );
+        }
+    }, [lastViewedBook, lastViewedChapter]);
 
     // 自动保存到 localStorage
     useEffect(() => {
@@ -81,7 +116,6 @@ export default function BibleNoteClient() {
 
         return uniqueRefs;
     }, [content]);
-
 
     // 导出到文件
     const handleExportToFile = useCallback(() => {
@@ -199,6 +233,23 @@ export default function BibleNoteClient() {
     // 查看整章（打开浮动面板而不是跳转）
     const handleViewChapter = useCallback((book: string, chapter: number) => {
         setChapterViewerState({ isOpen: true, book, chapter });
+        setLastViewedBook(book);
+        setLastViewedChapter(chapter);
+    }, []);
+
+    // 打开圣经查看器（使用上次查看的位置）
+    const handleOpenBible = useCallback(() => {
+        setChapterViewerState({
+            isOpen: true,
+            book: lastViewedBook || 'GEN',
+            chapter: lastViewedChapter || 1,
+        });
+    }, [lastViewedBook, lastViewedChapter]);
+
+    // 章节变化回调
+    const handleChapterChange = useCallback((book: string, chapter: number) => {
+        setLastViewedBook(book);
+        setLastViewedChapter(chapter);
     }, []);
 
     // 插入经文到笔记末尾
@@ -216,6 +267,9 @@ export default function BibleNoteClient() {
             setContent((prevContent) => prevContent + insertText);
 
             showToast(`✅ 已插入 ${verses.length} 節經文`);
+            
+            // 关闭章节查看器，返回笔记
+            setChapterViewerState({ isOpen: false, book: '', chapter: 0 });
         },
         [showToast]
     );
@@ -315,7 +369,7 @@ export default function BibleNoteClient() {
                         </button>
                         <button
                             onClick={() => setActiveTab('preview')}
-                            className={`flex-1 py-2.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[44px] ${
+                            className={`hidden md:flex flex-1 py-2.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[44px] ${
                                 activeTab === 'preview'
                                     ? 'bg-bible-500 text-white shadow-sm'
                                     : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
@@ -389,7 +443,19 @@ export default function BibleNoteClient() {
                     book={chapterViewerState.book}
                     chapter={chapterViewerState.chapter}
                     onInsertVerses={handleInsertVerses}
+                    onChapterChange={handleChapterChange}
                 />
+
+                {/* 浮动按钮 - 打开圣经 */}
+                <button
+                    onClick={handleOpenBible}
+                    className="fixed bottom-20 right-6 lg:bottom-8 lg:left-8 min-h-[56px] min-w-[56px] bg-bible-500 hover:bg-bible-600 active:bg-bible-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all z-40 flex items-center justify-center touch-manipulation"
+                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                    title="打開聖經"
+                    aria-label="打開聖經查看器"
+                >
+                    <BookOpen className="w-6 h-6" />
+                </button>
             </div>
         </div>
     );

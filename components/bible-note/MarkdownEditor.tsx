@@ -374,8 +374,22 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
             {/* 编辑器/预览区域 */}
             <div className="flex-1 overflow-hidden">
                 {showPreview ? (
-                    <div className="h-full overflow-y-auto p-4 prose prose-sm dark:prose-invert max-w-none">
-                        <ReactMarkdown>{value}</ReactMarkdown>
+                    <div className="h-full overflow-y-auto p-4 prose prose-sm dark:prose-invert max-w-none bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100">
+                        <ReactMarkdown
+                            components={{
+                                // Customize blockquote for verse quotes
+                                blockquote: ({ node, ...props }) => (
+                                    <blockquote className="border-l-4 border-bible-500 pl-4 italic text-bible-700 dark:text-bible-300" {...props} />
+                                ),
+                                // Ensure headings have proper color
+                                h1: ({ node, ...props }) => <h1 className="text-gray-900 dark:text-gray-100" {...props} />,
+                                h2: ({ node, ...props }) => <h2 className="text-gray-900 dark:text-gray-100" {...props} />,
+                                h3: ({ node, ...props }) => <h3 className="text-gray-900 dark:text-gray-100" {...props} />,
+                                p: ({ node, ...props }) => <p className="text-gray-800 dark:text-gray-100" {...props} />,
+                            }}
+                        >
+                            {value}
+                        </ReactMarkdown>
                     </div>
                 ) : (
                     <div className="relative h-full">
