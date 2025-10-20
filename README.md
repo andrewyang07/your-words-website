@@ -105,46 +105,50 @@ npm start
 ### 核心技術決策
 
 #### 1. 純前端架構
-- **無後端依賴** - 所有數據以靜態 JSON 存儲在 `/public/data/`
-- **本地優先** - 使用 localStorage 保存用戶偏好和收藏
-- **零延遲加載** - 經文數據預加載，即時響應
+
+-   **無後端依賴** - 所有數據以靜態 JSON 存儲在 `/public/data/`
+-   **本地優先** - 使用 localStorage 保存用戶偏好和收藏
+-   **零延遲加載** - 經文數據預加載，即時響應
 
 #### 2. Next.js App Router
-- **服務端組件（RSC）** - About 和 Help 頁面使用 RSC，優化 SEO
-- **客戶端組件** - 交互邏輯分離到 `*Client.tsx` 組件
-- **靜態生成（SSG）** - 所有頁面在構建時生成，極速加載
-- **動態路由** - 分享鏈接通過 URL 參數實現
+
+-   **服務端組件（RSC）** - About 和 Help 頁面使用 RSC，優化 SEO
+-   **客戶端組件** - 交互邏輯分離到 `*Client.tsx` 組件
+-   **靜態生成（SSG）** - 所有頁面在構建時生成，極速加載
+-   **動態路由** - 分享鏈接通過 URL 參數實現
 
 #### 3. 狀態管理策略
-- **全局狀態（Zustand）** - 主題、語言、收藏等跨組件狀態
-- **本地狀態（useState）** - 組件內部 UI 狀態
-- **URL 狀態** - 分享鏈接參數
+
+-   **全局狀態（Zustand）** - 主題、語言、收藏等跨組件狀態
+-   **本地狀態（useState）** - 組件內部 UI 狀態
+-   **URL 狀態** - 分享鏈接參數
 
 #### 4. 性能優化
-- **按需加載** - 使用 `dynamic()` 動態導入重組件（如筆記本編輯器）
-- **圖片優化** - Next.js `<Image>` 組件自動優化
-- **動畫性能** - Framer Motion GPU 加速動畫
-- **骨架屏** - 加載狀態使用 Skeleton 組件提升感知速度
+
+-   **按需加載** - 使用 `dynamic()` 動態導入重組件（如筆記本編輯器）
+-   **圖片優化** - Next.js `<Image>` 組件自動優化
+-   **動畫性能** - Framer Motion GPU 加速動畫
+-   **骨架屏** - 加載狀態使用 Skeleton 組件提升感知速度
 
 #### 5. 數據結構設計
 
 ```typescript
 // 經文數據結構
 interface Verse {
-  id: string;           // 唯一標識：book-chapter-verse
-  book: string;         // 書卷名（中文）
-  bookKey: string;      // 書卷鍵（英文縮寫）
-  chapter: number;      // 章節編號
-  verse: number;        // 節號
-  text: string;         // 經文內容
+    id: string; // 唯一標識：book-chapter-verse
+    book: string; // 書卷名（中文）
+    bookKey: string; // 書卷鍵（英文縮寫）
+    chapter: number; // 章節編號
+    verse: number; // 節號
+    text: string; // 經文內容
 }
 
 // 書卷元數據
 interface BookMetadata {
-  key: string;          // 書卷鍵
-  name: string;         // 書卷名
-  testament: 'OT' | 'NT'; // 舊約/新約
-  chapters: number;     // 章節總數
+    key: string; // 書卷鍵
+    name: string; // 書卷名
+    testament: 'OT' | 'NT'; // 舊約/新約
+    chapters: number; // 章節總數
 }
 ```
 
@@ -152,8 +156,8 @@ interface BookMetadata {
 
 支持兩種提示模式：
 
-- **每句提示**：在每個句子（以標點符號分隔）開頭顯示提示字
-- **開頭提示**：只在全文開頭顯示提示字
+-   **每句提示**：在每個句子（以標點符號分隔）開頭顯示提示字
+-   **開頭提示**：只在全文開頭顯示提示字
 
 支持固定字數或隨機範圍字數，演算法核心在 `lib/maskUtils.ts`。
 
@@ -304,13 +308,13 @@ your-words-website/
 
 本項目遵循嚴格的代碼規範（參見 `.cursorrules`）：
 
-- **組件結構**：導入 → 類型定義 → 常量 → 主組件 → 導出
-- **命名規範**：
-  - 組件文件：`PascalCase.tsx`
-  - 工具文件：`camelCase.ts`
-  - 類型文件：`camelCase.ts`
-- **函數長度**：單個函數不超過 30 行
-- **類型安全**：避免使用 `any`，所有 props 必須有接口定義
+-   **組件結構**：導入 → 類型定義 → 常量 → 主組件 → 導出
+-   **命名規範**：
+    -   組件文件：`PascalCase.tsx`
+    -   工具文件：`camelCase.ts`
+    -   類型文件：`camelCase.ts`
+-   **函數長度**：單個函數不超過 30 行
+-   **類型安全**：避免使用 `any`，所有 props 必須有接口定義
 
 ### 添加新功能
 
@@ -362,30 +366,198 @@ npm run build && npm start
 2. **類型錯誤**：確保所有 props 都有明確的類型定義
 3. **Server Component 錯誤**：檢查是否在服務端組件中使用了客戶端特性（hooks、事件處理器）
 
-## 🤝 貢獻
+## 🤝 貢獻指南
 
-歡迎任何形式的貢獻！無論是報告 Bug、提出新功能建議，還是提交代碼改進。
+感謝你有興趣為「你的話語」項目做出貢獻！我們歡迎任何形式的貢獻，無論是報告 Bug、提出新功能建議，還是提交代碼改進。
 
-### 貢獻方式
+### 開發環境設置
 
-1. Fork 本倉庫
-2. 創建你的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交你的修改 (`git commit -m 'feat: 添加某個很棒的功能'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 創建一個 Pull Request
+#### 1. Fork 和克隆
 
-### Commit 規範
+```bash
+# Fork 本倉庫後，克隆你的 Fork
+git clone https://github.com/YOUR_USERNAME/your-words-website.git
+cd your-words-website
+
+# 安裝依賴
+npm install
+
+# 啟動開發服務器
+npm run dev
+```
+
+訪問 [http://localhost:3000](http://localhost:3000) 查看應用。
+
+#### 2. 創建分支
+
+```bash
+git checkout -b feature/your-feature-name
+# 或
+git checkout -b fix/your-bug-fix
+```
+
+### 代碼規範
+
+#### 核心原則
+
+-   **簡潔性優先** - 避免過度工程化，代碼應清晰易讀
+-   **組件職責單一** - 每個組件只負責一個功能
+-   **函數長度控制** - 單個函數不超過 30 行代碼
+-   **命名清晰直觀** - 變量和函數命名要見名知意
+
+#### TypeScript
+
+-   ✅ 所有組件必須使用 TypeScript
+-   ✅ 組件必須有明確的 Props 接口定義
+-   ❌ 避免使用 `any` 類型
+
+#### React
+
+-   ✅ 優先使用函數組件和 Hooks
+-   ✅ 狀態管理使用 Zustand
+-   ⚠️ 避免不必要的 `useMemo` 和 `useCallback`（除非確實需要性能優化）
+
+#### 樣式
+
+-   ✅ 使用 Tailwind CSS 原子化樣式
+-   ✅ 移動端優先的響應式設計（`mobile-first`）
+-   ✅ 遵循項目的聖經主題色彩系統（金色 + 深色/淺色模式）
+
+#### 動畫
+
+-   ✅ 使用 Framer Motion 實現流暢動畫
+-   ✅ 確保動畫在 60fps 下流暢運行
+-   ⚠️ 避免過度動畫影響性能
+
+### 提交規範
 
 使用 [Conventional Commits](https://www.conventionalcommits.org/)：
 
-- `feat:` 新功能
-- `fix:` Bug 修復
-- `docs:` 文檔更新
-- `style:` 代碼格式調整
-- `refactor:` 代碼重構
-- `perf:` 性能優化
-- `test:` 測試相關
-- `chore:` 構建/工具相關
+```bash
+feat: 添加書卷篩選功能
+fix: 修復卡片懸停動畫閃爍問題
+docs: 更新 README 安裝說明
+perf: 優化章節數據加載性能
+style: 代碼格式調整（不影響功能）
+refactor: 代碼重構
+test: 測試相關
+chore: 構建/工具相關
+```
+
+### Pull Request 流程
+
+1. **進行修改並提交**
+
+```bash
+git add .
+git commit -m "feat: 你的功能描述"
+```
+
+2. **推送到你的 Fork**
+
+```bash
+git push origin feature/your-feature-name
+```
+
+3. **創建 Pull Request**
+
+-   在 GitHub 上打開你的 Fork
+-   點擊「New Pull Request」
+-   填寫 PR 標題和描述
+-   等待代碼審查
+
+#### PR 描述建議包含
+
+-   🎯 **功能說明**: 這個 PR 做了什麼
+-   🔧 **實現方式**: 簡要說明實現思路
+-   📸 **截圖**: 如果有 UI 變更，附上截圖或 GIF
+-   ✅ **測試**: 說明已測試的場景（手機/桌面，淺色/深色模式）
+
+### 報告 Bug
+
+發現 Bug？請創建 [Issue](https://github.com/andrewyang07/your-words-website/issues/new) 並包含：
+
+-   **清晰的標題和描述**
+-   **重現步驟**（如何觸發這個 bug）
+-   **預期行為** vs **實際行為**
+-   **截圖或錄屏**（如果適用）
+-   **環境信息**：
+    -   瀏覽器和版本（如 Chrome 120, Safari 17）
+    -   設備類型（桌面/手機/平板）
+    -   操作系統（如 macOS 14, Windows 11, iOS 17）
+
+### 功能建議
+
+有新功能想法？請創建 [Issue](https://github.com/andrewyang07/your-words-website/issues/new) 並說明：
+
+-   **功能描述**: 你希望添加什麼功能
+-   **使用場景**: 為什麼需要這個功能，解決什麼問題
+-   **預期效果**: 期望的用戶體驗
+-   **實現方案**（可選）: 如果有技術想法可以分享
+
+### 代碼審查檢查清單
+
+提交 PR 前請自查：
+
+#### 代碼質量
+
+-   [ ] 代碼符合項目編碼規範
+-   [ ] 組件職責單一，邏輯清晰
+-   [ ] 沒有 TypeScript 錯誤或警告
+-   [ ] 函數長度合理（不超過 30 行）
+-   [ ] 變量和函數命名清晰
+
+#### 功能測試
+
+-   [ ] 功能在桌面端正常工作
+-   [ ] 功能在手機端正常工作
+-   [ ] 功能在平板端正常工作
+-   [ ] 淺色模式下顯示正常
+-   [ ] 深色模式下顯示正常
+-   [ ] 繁體中文顯示正常
+-   [ ] 簡體中文顯示正常
+
+#### 性能和體驗
+
+-   [ ] 動畫流暢（60fps）
+-   [ ] 沒有不必要的重渲染
+-   [ ] 手機端觸摸響應靈敏
+-   [ ] 加載狀態有合適的提示
+
+#### 代碼整潔
+
+-   [ ] 移除了 console.log 調試代碼
+-   [ ] 移除了註釋掉的代碼
+-   [ ] 遵循項目文件結構
+-   [ ] 沒有引入不必要的依賴
+
+### 設計指南
+
+#### 配色系統
+
+-   **主題色**: 金色（Bible gold）`#BE9E5D`
+-   **淺色模式**: 溫暖的米白背景 `#FEF9F0`
+-   **深色模式**: 深灰背景 `#1F2937`
+
+#### 間距系統
+
+-   使用 Tailwind 的標準間距（4px 基數）
+-   卡片內邊距：`p-4` 或 `p-6`
+-   組件間距：`gap-2` ~ `gap-6`
+
+#### 響應式斷點
+
+-   手機：`< 640px`（默認）
+-   平板：`md: 768px`
+-   桌面：`lg: 1024px`
+
+### 資源鏈接
+
+-   [Next.js 文檔](https://nextjs.org/docs)
+-   [Tailwind CSS 文檔](https://tailwindcss.com/docs)
+-   [Framer Motion 文檔](https://www.framer.com/motion/)
+-   [Zustand 文檔](https://github.com/pmndrs/zustand)
+-   [Headless UI 文檔](https://headlessui.com/)
 
 ## 📄 許可證
 

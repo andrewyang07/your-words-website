@@ -39,3 +39,45 @@ next-env.d.ts
 *.swp
 *.swo
 *~
+*.sublime-*
+.fleet/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+
+# 临时文件
+*.tmp
+*.bak
+*.cache
+*.pid
+*.seed
+*.pid.lock
+
+# 日志
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# 编辑器备份
+*~
+.#*
+\#*#
+*.orig
