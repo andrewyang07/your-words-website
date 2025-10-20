@@ -461,12 +461,12 @@ export default function BibleNoteClient() {
                     </motion.div>
                 )}
 
-                {/* 移动端 Tab 导航 - 紧凑版 */}
-                <div className="lg:hidden mb-3">
-                    <div className="flex gap-1.5 bg-white dark:bg-gray-800 rounded-lg p-1.5 shadow-lg border border-bible-200 dark:border-gray-700">
+                {/* 移动端 Tab 导航 - 超紧凑版 */}
+                <div className="lg:hidden mb-2">
+                    <div className="flex gap-1 bg-white dark:bg-gray-800 rounded-lg p-1 shadow-lg border border-bible-200 dark:border-gray-700">
                         <button
                             onClick={() => setActiveTab('edit')}
-                            className={`flex-1 py-2 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[44px] ${
+                            className={`flex-1 py-1.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[40px] ${
                                 activeTab === 'edit'
                                     ? 'bg-bible-500 text-white shadow-sm'
                                     : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
@@ -477,7 +477,7 @@ export default function BibleNoteClient() {
                         </button>
                         <button
                             onClick={() => setActiveTab('preview')}
-                            className={`hidden md:flex flex-1 py-2 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[44px] ${
+                            className={`hidden md:flex flex-1 py-1.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[40px] ${
                                 activeTab === 'preview'
                                     ? 'bg-bible-500 text-white shadow-sm'
                                     : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
@@ -488,7 +488,7 @@ export default function BibleNoteClient() {
                         </button>
                         <button
                             onClick={() => setActiveTab('references')}
-                            className={`flex-1 py-2 rounded-lg font-chinese text-sm transition-all relative touch-manipulation min-h-[44px] ${
+                            className={`flex-1 py-1.5 rounded-lg font-chinese text-sm transition-all relative touch-manipulation min-h-[40px] ${
                                 activeTab === 'references'
                                     ? 'bg-bible-500 text-white shadow-sm'
                                     : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'

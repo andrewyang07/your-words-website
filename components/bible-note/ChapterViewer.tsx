@@ -371,7 +371,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                         </span>
 
                                                         {/* 经文内容 */}
-                                                        <p className="flex-1 text-bible-800 dark:text-bible-100 font-chinese text-xs md:text-sm leading-relaxed">
+                                                        <p className="flex-1 text-bible-800 dark:text-bible-100 font-chinese text-base leading-relaxed">
                                                             {verseText}
                                                         </p>
 
