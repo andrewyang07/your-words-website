@@ -19,12 +19,8 @@ export default function PageHeader({
     subtitle 
 }: PageHeaderProps) {
     return (
-        <header 
-            className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700" 
-            role="banner"
-        >
-            <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
+        <header className="relative px-4 py-4 md:py-6" role="banner">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
                 {/* Logo 和标题 - 完全从主页复制 */}
                 <div className="flex items-center gap-3">
                     <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity" title="返回首頁">
@@ -38,9 +34,9 @@ export default function PageHeader({
                         />
                         <div className="flex items-center gap-2">
                             <h1
-                                className="text-2xl md:text-3xl font-extrabold font-chinese tracking-wide text-bible-700 dark:text-bible-300"
+                                className="text-2xl md:text-4xl font-extrabold font-chinese tracking-wide text-bible-800 dark:text-bible-200"
                                 style={{
-                                    textShadow: '0 0 12px rgba(190,158,93,0.3), 0 0 24px rgba(190,158,93,0.15), 0 1px 2px rgba(0,0,0,0.05)',
+                                    textShadow: '0 0 20px rgba(190, 158, 93, 0.3), 0 0 40px rgba(190, 158, 93, 0.15)',
                                 }}
                             >
                                 你的話語
@@ -84,7 +80,6 @@ export default function PageHeader({
                         <Menu className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
                         <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">菜單</span>
                     </button>
-                </div>
                 </div>
             </div>
         </header>
