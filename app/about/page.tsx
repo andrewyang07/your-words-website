@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ArrowLeft, Mail, Github, Heart } from 'lucide-react';
+import { Mail, Github, Heart, Info } from 'lucide-react';
 import Image from 'next/image';
+import PageHeader from '@/components/layout/PageHeader';
 
 export const metadata: Metadata = {
     title: '關於 - 你的話語',
@@ -11,19 +11,11 @@ export const metadata: Metadata = {
 export default function AboutPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
-            {/* 简单的头部 */}
-            <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-bible-200 dark:border-gray-700 sticky top-0 z-40">
-                <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <Link
-                        href="/"
-                        className="flex items-center gap-2 text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 transition-colors group"
-                    >
-                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                        <span className="font-chinese text-sm">返回主頁</span>
-                    </Link>
-                    <h1 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">關於</h1>
-                </div>
-            </header>
+            {/* 使用共用的 PageHeader */}
+            <PageHeader 
+                onMenuClick={() => {}} // 关于页面不需要菜单
+                showHelp={false}
+            />
 
             {/* 主要内容 */}
             <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
@@ -64,6 +56,61 @@ export default function AboutPage() {
                             </div>
                         </section>
 
+                        {/* 开发故事 */}
+                        <section className="space-y-4">
+                            <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese flex items-center gap-2">
+                                <span className="text-base">📱</span>
+                                從 App 到 Web 的旅程
+                            </h3>
+                            <div className="space-y-3 text-bible-700 dark:text-bible-300 font-chinese leading-relaxed">
+                                <p>
+                                    最初，我投入大量心血開發了一款名為「你的話語」的 iOS App，並成功在全球 App Store 上架。
+                                    雖然這款 App 採用卡片形式幫助弟兄姊妹背誦經文，但效果並不如預期。
+                                </p>
+                                <p>
+                                    然而，隨著時間推移，我逐漸意識到 App 的局限性：許多基督徒並不經常使用手機，
+                                    而網站的使用門檻更低，無需下載安裝，任何設備都能輕鬆訪問。
+                                </p>
+                                <p>
+                                    在一次主日講道中，我突然有了新的想法（
+                                    <span className="text-amber-600 dark:text-amber-400 font-medium">
+                                        友情提醒：請不要效法我，還是要好好聽講道 😊
+                                    </span>
+                                    ），決定將這個概念轉化為網站。這兩張潦草的草圖，見證了從想法到現實的第一步。
+                                </p>
+                            </div>
+                        </section>
+
+                        {/* 草图展示 */}
+                        <section className="space-y-4">
+                            <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese flex items-center gap-2">
+                                <span className="text-base">✏️</span>
+                                構思草圖
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
+                                    <Image
+                                        src="/sketch-1.jpeg"
+                                        alt="網站構思草圖 1"
+                                        width={600}
+                                        height={450}
+                                        className="w-full h-auto object-cover"
+                                    />
+                                    <p className="p-2 text-xs text-center text-bible-500 dark:text-bible-400">構思草圖（一）</p>
+                                </div>
+                                <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
+                                    <Image
+                                        src="/sketch-2.jpeg"
+                                        alt="網站構思草圖 2"
+                                        width={600}
+                                        height={450}
+                                        className="w-full h-auto object-cover"
+                                    />
+                                    <p className="p-2 text-xs text-center text-bible-500 dark:text-bible-400">構思草圖（二）</p>
+                                </div>
+                            </div>
+                        </section>
+
                         {/* 开发背景 */}
                         <section className="space-y-4">
                             <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese flex items-center gap-2">
@@ -96,7 +143,7 @@ export default function AboutPage() {
                                 <div className="flex items-start gap-4">
                                     <div className="flex-shrink-0">
                                         <Image
-                                            src="/tablet-of-heart-logo.png"
+                                            src="/xinban-logo.png"
                                             alt="心版 App"
                                             width={80}
                                             height={80}

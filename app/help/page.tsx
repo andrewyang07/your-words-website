@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ArrowLeft, BookOpen, Eye, Star, Share2, FileText, Palette, Globe } from 'lucide-react';
+import { BookOpen, Eye, Star, Share2, FileText, Palette, Globe, ChevronRight, CheckCircle, AlertCircle } from 'lucide-react';
+import PageHeader from '@/components/layout/PageHeader';
 
 export const metadata: Metadata = {
     title: '幫助 - 你的話語',
@@ -10,19 +10,11 @@ export const metadata: Metadata = {
 export default function HelpPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
-            {/* 简单的头部 */}
-            <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-bible-200 dark:border-gray-700 sticky top-0 z-40">
-                <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <Link
-                        href="/"
-                        className="flex items-center gap-2 text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 transition-colors group"
-                    >
-                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                        <span className="font-chinese text-sm">返回主頁</span>
-                    </Link>
-                    <h1 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">使用幫助</h1>
-                </div>
-            </header>
+            {/* 使用共用的 PageHeader */}
+            <PageHeader 
+                onMenuClick={() => {}} // 帮助页面不需要菜单
+                showHelp={false}
+            />
 
             {/* 主要内容 */}
             <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
@@ -51,22 +43,58 @@ export default function HelpPage() {
                             </div>
                             <div className="pl-13 space-y-3 text-bible-700 dark:text-bible-300 font-chinese">
                                 <div className="bg-bible-50 dark:bg-gray-700 rounded-lg p-4 border border-bible-200 dark:border-gray-600">
-                                    <h4 className="font-semibold mb-2">📖 精選 114 節經文</h4>
-                                    <p className="text-sm leading-relaxed">
+                                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                        📖 精選 114 節經文
+                                        <CheckCircle className="w-4 h-4 text-green-600" />
+                                    </h4>
+                                    <p className="text-sm leading-relaxed mb-3">
                                         默認展示最值得背誦的 114 節經文，涵蓋信仰核心真理。
                                         這些經文經過精心挑選，適合初學者和進階學習者。
                                     </p>
+                                    <div className="bg-white dark:bg-gray-800 rounded p-3 border border-bible-200 dark:border-gray-600">
+                                        <p className="text-xs text-bible-600 dark:text-bible-400 mb-2">
+                                            <strong>💡 使用建議：</strong>
+                                        </p>
+                                        <ul className="text-xs space-y-1 list-disc list-inside ml-2">
+                                            <li>初學者建議從精選經文開始</li>
+                                            <li>每天背誦 3-5 節，循序漸進</li>
+                                            <li>重複背誦已學過的經文，加深記憶</li>
+                                        </ul>
+                                    </div>
                                 </div>
                                 <div className="bg-bible-50 dark:bg-gray-700 rounded-lg p-4 border border-bible-200 dark:border-gray-600">
-                                    <h4 className="font-semibold mb-2">📚 選擇書卷章節</h4>
-                                    <p className="text-sm leading-relaxed mb-2">
-                                        點擊「選擇書卷」按鈕，可以瀏覽聖經 66 卷的任意章節：
+                                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                        📚 選擇書卷章節
+                                        <ChevronRight className="w-4 h-4 text-bible-600" />
+                                    </h4>
+                                    <p className="text-sm leading-relaxed mb-3">
+                                        點擊頂部的「選擇書卷」按鈕，可以瀏覽聖經 66 卷的任意章節：
                                     </p>
-                                    <ol className="text-sm space-y-1 list-decimal list-inside ml-2">
-                                        <li>選擇舊約或新約書卷</li>
-                                        <li>選擇章節編號</li>
-                                        <li>該章所有經文會以卡片形式展示</li>
-                                    </ol>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <span className="w-6 h-6 bg-bible-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                                            <span>點擊「選擇書卷」下拉菜單</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <span className="w-6 h-6 bg-bible-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                                            <span>選擇舊約或新約書卷（如：創世記、馬太福音）</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <span className="w-6 h-6 bg-bible-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                                            <span>選擇章節編號（如：第 1 章）</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <span className="w-6 h-6 bg-bible-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                                            <span>該章所有經文會以卡片形式展示</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 bg-blue-50 dark:bg-blue-900/20 rounded p-3 border border-blue-200 dark:border-blue-800">
+                                        <p className="text-xs text-blue-800 dark:text-blue-300">
+                                            <strong>💡 小貼士：</strong>
+                                            選擇章節後，你可以使用「上一章」和「下一章」按鈕快速導航，
+                                            或者點擊「查看整章」按鈕查看該章的所有經文。
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -83,40 +111,79 @@ export default function HelpPage() {
                             </div>
                             <div className="pl-13 space-y-3 text-bible-700 dark:text-bible-300 font-chinese">
                                 <div className="bg-bible-50 dark:bg-gray-700 rounded-lg p-4 border border-bible-200 dark:border-gray-600">
-                                    <h4 className="font-semibold mb-2">👁️ 閱讀模式 vs 背誦模式</h4>
+                                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                        👁️ 閱讀模式 vs 背誦模式
+                                        <AlertCircle className="w-4 h-4 text-orange-600" />
+                                    </h4>
                                     <p className="text-sm leading-relaxed mb-3">
                                         點擊右上角的<strong>眼睛圖標</strong>可以切換模式：
                                     </p>
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex items-start gap-2">
-                                            <span className="flex-shrink-0">👁️</span>
-                                            <div>
-                                                <strong>閱讀模式：</strong>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-lg">👁️</span>
+                                                <strong className="text-sm text-green-800 dark:text-green-300">閱讀模式</strong>
+                                            </div>
+                                            <p className="text-xs text-green-700 dark:text-green-400">
                                                 完整顯示經文內容，方便閱讀和記憶
-                                            </div>
+                                            </p>
                                         </div>
-                                        <div className="flex items-start gap-2">
-                                            <span className="flex-shrink-0">🔒</span>
-                                            <div>
-                                                <strong>背誦模式：</strong>
-                                                經文被遮罩，只顯示部分提示字，用於測試記憶
+                                        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 border border-orange-200 dark:border-orange-800">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-lg">🔒</span>
+                                                <strong className="text-sm text-orange-800 dark:text-orange-300">背誦模式</strong>
                                             </div>
+                                            <p className="text-xs text-orange-700 dark:text-orange-400">
+                                                經文被遮罩，只顯示部分提示字，用於測試記憶
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 bg-blue-50 dark:bg-blue-900/20 rounded p-3 border border-blue-200 dark:border-blue-800">
+                                        <p className="text-xs text-blue-800 dark:text-blue-300">
+                                            <strong>💡 建議：</strong>
+                                            初學者建議先使用閱讀模式熟悉經文，熟練後再切換到背誦模式進行測試。
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="bg-bible-50 dark:bg-gray-700 rounded-lg p-4 border border-bible-200 dark:border-gray-600">
+                                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                        🎴 卡片操作詳解
+                                        <ChevronRight className="w-4 h-4 text-bible-600" />
+                                    </h4>
+                                    <p className="text-sm leading-relaxed mb-3">
+                                        <strong>點擊卡片</strong>可以展開/收起經文內容：
+                                    </p>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <span className="w-6 h-6 bg-bible-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                                            <span>點擊卡片 → 展開顯示完整經文</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <span className="w-6 h-6 bg-bible-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                                            <span>再次點擊 → 收起經文，回到卡片狀態</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <span className="w-6 h-6 bg-bible-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                                            <span>在背誦模式下，展開後會顯示完整經文，方便核對答案</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="bg-bible-50 dark:bg-gray-700 rounded-lg p-4 border border-bible-200 dark:border-gray-600">
-                                    <h4 className="font-semibold mb-2">🎴 卡片操作</h4>
-                                    <p className="text-sm leading-relaxed">
-                                        <strong>點擊卡片</strong>可以展開/收起經文內容。
-                                        在背誦模式下，展開後會顯示完整經文，方便你核對答案。
+                                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                        🔀 隨機排序功能
+                                        <CheckCircle className="w-4 h-4 text-green-600" />
+                                    </h4>
+                                    <p className="text-sm leading-relaxed mb-3">
+                                        點擊<strong>洗牌按鈕</strong>（🔄）可以隨機打亂卡片順序：
                                     </p>
-                                </div>
-                                <div className="bg-bible-50 dark:bg-gray-700 rounded-lg p-4 border border-bible-200 dark:border-gray-600">
-                                    <h4 className="font-semibold mb-2">🔀 隨機排序</h4>
-                                    <p className="text-sm leading-relaxed">
-                                        點擊<strong>洗牌按鈕</strong>可以隨機打亂卡片順序，
-                                        避免按順序記憶，提高背誦效果。
-                                    </p>
+                                    <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded p-3 border border-yellow-200 dark:border-yellow-800">
+                                        <p className="text-xs text-yellow-800 dark:text-yellow-300">
+                                            <strong>🎯 為什麼要隨機排序？</strong><br/>
+                                            • 避免按順序記憶，提高背誦效果<br/>
+                                            • 測試你是否真正記住了經文內容<br/>
+                                            • 增加背誦的挑戰性和趣味性
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </section>

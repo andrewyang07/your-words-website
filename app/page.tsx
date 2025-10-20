@@ -970,12 +970,7 @@ export default function HomePage() {
                 </AnimatePresence>
 
                 {/* 侧边栏菜单 */}
-                <SideMenu
-                    isOpen={showSideMenu}
-                    onClose={() => setShowSideMenu(false)}
-                    theme={theme}
-                    onThemeChange={toggleTheme}
-                />
+                <SideMenu isOpen={showSideMenu} onClose={() => setShowSideMenu(false)} theme={theme} onThemeChange={toggleTheme} />
 
                 {/* 关闭引导提示 - 浮动通知 */}
                 <AnimatePresence>
