@@ -1,17 +1,32 @@
+<div align="center">
+
 # 你的話語 Your Words
 
 > 讓神的話語常在心中 ✝️
 
-一個精美的聖經背誦 Web 應用，幫助用戶系統地背誦和學習聖經經文。支持繁體中文和簡體中文，提供精選經文和逐章背誦功能。
+**一個精美的聖經背誦 Web 應用，幫助用戶系統地背誦和學習聖經經文**
+
+支持繁體中文和簡體中文，提供精選經文和逐章背誦功能
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://vercel.com)
 
-## 🌐 在線體驗
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./README.md#-貢獻指南)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./README.md#-貢獻指南)
 
-**[https://www.yourwords.me](https://www.yourwords.me)**
+### 🌐 在線體驗
+
+## **[👉 立即訪問 www.yourwords.me 🙏](https://www.yourwords.me)**
+
+[![Your Words Screenshot](https://img.shields.io/badge/🌐_訪問網站-www.yourwords.me-BE9E5D?style=for-the-badge)](https://www.yourwords.me)
+
+[English](#) | [繁體中文](#) | [簡體中文](#)
+
+---
+
+</div>
 
 ## ✨ 功能特性
 
@@ -570,25 +585,35 @@ git push origin feature/your-feature-name
 -   **設計靈感**: 聖經應用和現代 Web 設計的結合
 -   **開源社區**: 感謝所有使用到的開源項目和工具
 
-## 📧 聯繫方式
-
-如有問題、建議或希望參與開發，請通過以下方式聯繫：
-
--   📧 Email: [yy9577@gmail.com](mailto:yy9577@gmail.com)
--   🐛 報告 Bug: [GitHub Issue](https://github.com/andrewyang07/your-words-website/issues)
--   🌐 訪問網站: [www.yourwords.me](https://www.yourwords.me)
--   💡 功能建議: 歡迎創建 Issue 或直接聯繫
-
-**開源協作歡迎！** 如果你對聖經應用開發感興趣，或有改進建議，非常歡迎與我聯繫。
-
 ---
 
 <div align="center">
+
+## 🚀 開始使用
+
+準備好開始背誦聖經了嗎？
+
+### **[👉 立即訪問 www.yourwords.me](https://www.yourwords.me)**
+
+[![立即開始](https://img.shields.io/badge/🙏_立即開始背誦-www.yourwords.me-BE9E5D?style=for-the-badge&labelColor=2C3E50)](https://www.yourwords.me)
+
+---
+
+### 💬 聯繫與支持
+
+- 📧 Email: [yy9577@gmail.com](mailto:yy9577@gmail.com)
+- 🐛 報告 Bug: [創建 Issue](https://github.com/andrewyang07/your-words-website/issues/new?template=bug_report.md)
+- 💡 功能建議: [創建 Issue](https://github.com/andrewyang07/your-words-website/issues/new?template=feature_request.md)
+- ⭐ 如果這個項目對你有幫助，請給我們一個 Star！
+
+---
 
 **用 ❤️ 和 ✝️ 構建**
 
 願神的話語成為你腳前的燈，路上的光 🕯️
 
 _詩篇 119:105_
+
+**© 2025 你的話語 · 開源項目 · MIT License**
 
 </div>
