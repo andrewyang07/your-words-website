@@ -28,6 +28,7 @@ import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { Verse, Book } from '@/types/verse';
 import { encodeVerseList, decodeVerseList } from '@/lib/bibleBookMapping';
 import { logError } from '@/lib/errorHandler';
+import MaskSettings from '@/components/settings/MaskSettings';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
@@ -1286,7 +1287,7 @@ export default function HomePage() {
                     )}
 
                     {/* 状态标签和统计 */}
-                    <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center gap-2 flex-wrap">
                             {/* 默认精选经文提示 */}
                             {!selectedBook && filterType !== 'favorites' && !showShareBanner && (
@@ -1311,6 +1312,11 @@ export default function HomePage() {
                                     阅读模式
                                 </span>
                             )}
+                        </div>
+
+                        {/* 遮罩设置控制面板 */}
+                        <div className="w-full md:w-auto">
+                            <MaskSettings />
                         </div>
 
                         <div className="flex items-center gap-2">

@@ -7,6 +7,8 @@ import { Verse } from '@/types/verse';
 import { CardSize } from '@/types/common';
 import { Star, BookOpen } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
+import { useMaskStore } from '@/stores/useMaskStore';
+import { maskVerseText } from '@/lib/utils';
 
 interface VerseCardProps {
     verse: Verse;
@@ -18,6 +20,7 @@ interface VerseCardProps {
 export default function VerseCard({ verse, size = 'medium', onViewInBible, defaultRevealed = false }: VerseCardProps) {
     const router = useRouter();
     const { isFavorite, toggleFavorite } = useFavoritesStore();
+    const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
     const [isRevealed, setIsRevealed] = useState(defaultRevealed);
     const isFav = isFavorite(verse.id);
 
@@ -26,10 +29,16 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         setIsRevealed(defaultRevealed);
     }, [defaultRevealed]);
 
-    // 每张卡片随机显示 3-7 个字
-    const previewLength = useMemo(() => {
-        return Math.floor(Math.random() * 5) + 3; // 3-7
-    }, [verse.id]);
+    // 计算遮罩字符数（固定或随机范围）
+    const visibleChars = useMemo(() => {
+        if (maskCharsType === 'fixed') {
+            return maskCharsFixed;
+        }
+        // 范围模式：为每张卡片生成随机数（基于 verse.id 保证稳定）
+        const seed = verse.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const random = Math.abs(Math.sin(seed)) * (maskCharsMax - maskCharsMin + 1);
+        return Math.floor(random) + maskCharsMin;
+    }, [verse.id, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax]);
 
     const sizeClasses = {
         small: 'p-4 min-h-[120px]',
@@ -76,7 +85,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     };
 
     // 显示预览文本或完整文本
-    const displayText = isRevealed ? verse.text : verse.text.slice(0, previewLength) + '...';
+    const displayText = isRevealed ? verse.text : maskVerseText(verse.text, maskMode, visibleChars);
 
     return (
         <motion.div
