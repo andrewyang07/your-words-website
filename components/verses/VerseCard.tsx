@@ -24,6 +24,9 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     const [isRevealed, setIsRevealed] = useState(defaultRevealed);
     const isFav = isFavorite(verse.id);
 
+    // Debug: Log store values
+    console.log('[VerseCard] Store values:', { maskCharsFixed, maskCharsType });
+
     // 当 defaultRevealed 改变时，更新 isRevealed
     useEffect(() => {
         setIsRevealed(defaultRevealed);
