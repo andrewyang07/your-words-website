@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Mail, Github, Heart, Info } from 'lucide-react';
 import Image from 'next/image';
-import PageHeader from '@/components/layout/PageHeader';
 
 export const metadata: Metadata = {
     title: '關於 - 你的話語',
@@ -11,11 +10,18 @@ export const metadata: Metadata = {
 export default function AboutPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
-            {/* 使用共用的 PageHeader */}
-            <PageHeader 
-                onMenuClick={() => {}} // 关于页面不需要菜单
-                showHelp={false}
-            />
+            {/* 简单的头部 */}
+            <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-bible-200 dark:border-gray-700 sticky top-0 z-40">
+                <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+                    <a
+                        href="/"
+                        className="flex items-center gap-2 text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 transition-colors group"
+                    >
+                        <span className="font-chinese text-sm">← 返回主頁</span>
+                    </a>
+                    <h1 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">關於</h1>
+                </div>
+            </header>
 
             {/* 主要内容 */}
             <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
@@ -27,9 +33,7 @@ export default function AboutPage() {
                                 <Heart className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                                    你的話語
-                                </h2>
+                                <h2 className="text-2xl md:text-3xl font-bold text-bible-800 dark:text-bible-200 font-chinese">你的話語</h2>
                                 <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">聖經背誦助手</p>
                             </div>
                         </div>
@@ -45,27 +49,22 @@ export default function AboutPage() {
                             </h3>
                             <div className="text-bible-700 dark:text-bible-300 font-chinese leading-relaxed space-y-3">
                                 <p>
-                                    「你的話語」是一個專為幫助基督徒背誦聖經經文而設計的網頁應用。
-                                    通過卡片式學習、智能遮罩提示、收藏分享等功能，
+                                    「你的話語」是一個專為幫助基督徒背誦聖經經文而設計的網頁應用。 通過卡片式學習、智能遮罩提示、收藏分享等功能，
                                     讓背誦聖經變得更加輕鬆有效。
                                 </p>
-                                <p>
-                                    我們精選了 114 節核心經文，涵蓋信仰的基本真理。
-                                    你也可以自由選擇聖經 66 卷中的任意章節進行學習。
-                                </p>
+                                <p>我們精選了 114 節核心經文，涵蓋信仰的基本真理。 你也可以自由選擇聖經 66 卷中的任意章節進行學習。</p>
                             </div>
                         </section>
 
                         {/* 开发故事 */}
                         <section className="space-y-4">
                             <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese flex items-center gap-2">
-                                <span className="text-base">📱</span>
-                                從 App 到 Web 的旅程
+                                <span className="text-base">📱</span>從 App 到 Web 的旅程
                             </h3>
                             <div className="space-y-3 text-bible-700 dark:text-bible-300 font-chinese leading-relaxed">
                                 <p>
-                                    最初，我投入大量心血開發了一款名為「你的話語」的 iOS App，並成功在全球 App Store 上架。
-                                    雖然這款 App 採用卡片形式幫助弟兄姊妹背誦經文，但效果並不如預期。
+                                    最初，我投入大量心血開發了一款名為「你的話語」的 iOS App，並成功在全球 App Store 上架。 雖然這款 App
+                                    採用卡片形式幫助弟兄姊妹背誦經文，但效果並不如預期。
                                 </p>
                                 <p>
                                     然而，隨著時間推移，我逐漸意識到 App 的局限性：許多基督徒並不經常使用手機，
@@ -142,27 +141,16 @@ export default function AboutPage() {
                             <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 rounded-lg p-4 md:p-6 border border-blue-200 dark:border-gray-600">
                                 <div className="flex items-start gap-4">
                                     <div className="flex-shrink-0">
-                                        <Image
-                                            src="/xinban-logo.png"
-                                            alt="心版 App"
-                                            width={80}
-                                            height={80}
-                                            className="rounded-xl shadow-md"
-                                        />
+                                        <Image src="/xinban-logo.png" alt="心版 App" width={80} height={80} className="rounded-xl shadow-md" />
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese mb-2">
-                                            iPhone 用戶推薦
-                                        </h4>
+                                        <h4 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese mb-2">iPhone 用戶推薦</h4>
                                         <p className="text-sm text-bible-700 dark:text-bible-300 font-chinese leading-relaxed mb-3">
-                                            使用 iPhone？試試「心版」iOS App！
-                                            將經文以小組件形式展示在主屏幕上，
-                                            每次解鎖手機，第一眼就看到神的話語。
+                                            使用 iPhone？試試「心版」iOS App！ 將經文以小組件形式展示在主屏幕上， 每次解鎖手機，第一眼就看到神的話語。
                                         </p>
                                         <p className="text-xs text-bible-600 dark:text-bible-400 font-chinese mb-3">
                                             我也為這個 App 付出了大量心血，並讓它全球上架。
-                                            雖然功能很豐富，但對於不太常用手機的基督徒來說可能略顯複雜。
-                                            因此，我開發了這個更簡潔易用的網頁版本。
+                                            雖然功能很豐富，但對於不太常用手機的基督徒來說可能略顯複雜。 因此，我開發了這個更簡潔易用的網頁版本。
                                         </p>
                                         <a
                                             href="https://apps.apple.com/app/6744570052"
@@ -185,17 +173,11 @@ export default function AboutPage() {
                                 開源計劃
                             </h3>
                             <div className="text-bible-700 dark:text-bible-300 font-chinese leading-relaxed space-y-3">
-                                <p>
-                                    這個項目計劃在未來開源，歡迎志同道合的開發者一起參與。
-                                    無論是代碼貢獻、功能建議，還是發現問題，都歡迎聯繫我。
-                                </p>
+                                <p>這個項目計劃在未來開源，歡迎志同道合的開發者一起參與。 無論是代碼貢獻、功能建議，還是發現問題，都歡迎聯繫我。</p>
                                 <div className="flex items-center gap-2 text-bible-600 dark:text-bible-400">
                                     <Mail className="w-5 h-5" />
                                     <span className="text-sm">聯繫郵箱：</span>
-                                    <a
-                                        href="mailto:yy9577@gmail.com"
-                                        className="text-blue-600 dark:text-blue-400 hover:underline"
-                                    >
+                                    <a href="mailto:yy9577@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">
                                         yy9577@gmail.com
                                     </a>
                                 </div>
@@ -214,4 +196,3 @@ export default function AboutPage() {
         </div>
     );
 }
-
