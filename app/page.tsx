@@ -1144,14 +1144,23 @@ export default function HomePage() {
                             exit={{ opacity: 0, y: -20 }}
                             className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4"
                         >
-                            <div className="p-4 bg-bible-50 dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 text-bible-800 dark:text-bible-200 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
+                            <div className="p-4 bg-bible-50 dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 text-bible-800 dark:text-bible-200 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3 relative">
                                 <div className="flex-shrink-0 w-8 h-8 bg-bible-500 dark:bg-bible-600 rounded-full flex items-center justify-center">
                                     <HelpCircle className="w-5 h-5 text-white" />
                                 </div>
-                                <span>
+                                <span className="flex-1">
                                     引导已关闭。如需再次查看，请点击右上角的{' '}
                                     <span className="font-semibold text-bible-700 dark:text-bible-300">「帮助」</span> 按钮
                                 </span>
+                                <button
+                                    onClick={() => setShowGuideHint(false)}
+                                    className="flex-shrink-0 p-1 hover:bg-bible-100 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation"
+                                    title="关闭提示"
+                                    aria-label="关闭提示"
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                >
+                                    <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                </button>
                             </div>
                         </motion.div>
                     )}
