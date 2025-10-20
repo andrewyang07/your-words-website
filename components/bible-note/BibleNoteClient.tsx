@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Download, Trash2, FileDown } from 'lucide-react';
+import { Download, Trash2, FileDown, Copy, ChevronDown } from 'lucide-react';
 import { parseVerseReferences } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import UsageGuide from './UsageGuide';
@@ -30,6 +30,7 @@ export default function BibleNoteClient() {
     const [content, setContent] = useState('');
     const [activeTab, setActiveTab] = useState<'edit' | 'preview' | 'references'>('edit');
     const [isExpanding, setIsExpanding] = useState(false);
+    const [showExportMenu, setShowExportMenu] = useState(false);
 
     // 从 localStorage 恢复内容
     useEffect(() => {
@@ -50,9 +51,21 @@ export default function BibleNoteClient() {
         return () => clearTimeout(timer);
     }, [content]);
 
-    // 解析经文引用
+    // 解析经文引用（去重）
     const references = useMemo(() => {
-        return parseVerseReferences(content);
+        const allRefs = parseVerseReferences(content);
+        
+        // 去重：基于 original（如"约3:16"）
+        const seen = new Set<string>();
+        const uniqueRefs = allRefs.filter((ref) => {
+            if (seen.has(ref.original)) {
+                return false;
+            }
+            seen.add(ref.original);
+            return true;
+        });
+        
+        return uniqueRefs;
     }, [content]);
 
     // SimpleMDE 配置
@@ -81,8 +94,8 @@ export default function BibleNoteClient() {
         []
     );
 
-    // 导出 Markdown
-    const handleExport = useCallback(() => {
+    // 导出到文件
+    const handleExportToFile = useCallback(() => {
         const date = new Date().toISOString().split('T')[0];
         const filename = `圣经笔记_${date}.md`;
 
@@ -95,6 +108,19 @@ export default function BibleNoteClient() {
         link.click();
 
         URL.revokeObjectURL(url);
+        setShowExportMenu(false);
+    }, [content]);
+
+    // 复制到剪贴板
+    const handleCopyToClipboard = useCallback(async () => {
+        try {
+            await navigator.clipboard.writeText(content);
+            alert('已複製到剪貼板！');
+            setShowExportMenu(false);
+        } catch (error) {
+            console.error('Failed to copy:', error);
+            alert('複製失敗，請稍後再試');
+        }
     }, [content]);
 
     // 清空笔记
@@ -116,19 +142,28 @@ export default function BibleNoteClient() {
 
         try {
             // 检测已展开的经文（格式：> 约3:16: ...）
+            // 需要检查引用后面紧跟着换行和 > 引用块
             const expandedRefs = new Set<string>();
-            const expandedPattern = /^>\s*([^:：]+[:：]\d+[:：]\d+)[:：]/gm;
-            let match;
-            while ((match = expandedPattern.exec(content)) !== null) {
-                // 标准化引用格式（统一使用中文冒号）
-                const normalized = match[1].replace(/:/g, ':').trim();
-                expandedRefs.add(normalized);
-            }
+            
+            // 遍历所有引用，检查其后面是否紧跟着展开的内容
+            references.forEach((ref) => {
+                // 查找引用在内容中的位置
+                const refEnd = ref.position + ref.original.length;
+                // 获取引用后的内容（接下来的 200 个字符）
+                const afterRef = content.slice(refEnd, refEnd + 200);
+                
+                // 检查是否紧跟着换行和 > 引用块，且包含相同的引用
+                // 格式：\n> 约3:16: 经文内容
+                const expandedPattern = new RegExp(`^\\s*\\n>\\s*${ref.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[:：]`, 'm');
+                
+                if (expandedPattern.test(afterRef)) {
+                    expandedRefs.add(ref.original.trim());
+                }
+            });
 
             // 过滤出未展开的经文
             const toExpand = references.filter((ref) => {
-                const normalized = ref.original.replace(/:/g, ':').trim();
-                return !expandedRefs.has(normalized);
+                return !expandedRefs.has(ref.original.trim());
             });
 
             if (toExpand.length === 0) {
@@ -186,30 +221,67 @@ export default function BibleNoteClient() {
                 <header className="mb-6" role="banner">
                     <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                         {/* 标题 - 使用主站的金色发光样式 */}
-                        <h1 className="text-3xl md:text-4xl font-extrabold font-chinese tracking-wide text-bible-800 dark:text-bible-200"
-                            style={{
-                                textShadow: '0 0 20px rgba(190, 158, 93, 0.3), 0 0 40px rgba(190, 158, 93, 0.15)',
-                            }}
-                        >
-                            <span className="inline-block mr-2">📝</span>
-                            聖經筆記本
-                        </h1>
+                        <div className="flex items-center gap-4">
+                            <h1 className="text-3xl md:text-4xl font-extrabold font-chinese tracking-wide text-bible-800 dark:text-bible-200"
+                                style={{
+                                    textShadow: '0 0 20px rgba(190, 158, 93, 0.3), 0 0 40px rgba(190, 158, 93, 0.15)',
+                                }}
+                            >
+                                你的話語
+                            </h1>
+                            <span className="text-sm md:text-base text-bible-600 dark:text-bible-400 font-chinese">筆記本</span>
+                            <UsageGuide />
+                        </div>
 
                         {/* 操作按钮组 */}
                         <div className="flex items-center gap-2">
-                            <UsageGuide />
+                            {/* 导出按钮（下拉菜单） */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowExportMenu(!showExportMenu)}
+                                    disabled={!content}
+                                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                    title="導出筆記"
+                                    aria-label="導出筆記"
+                                >
+                                    <Download className="w-4 h-4 md:w-5 md:h-5" />
+                                    <span className="hidden sm:inline text-sm font-chinese">導出</span>
+                                    <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
+                                </button>
 
-                            <button
-                                onClick={handleExport}
-                                disabled={!content}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="導出為 Markdown 文件"
-                                aria-label="導出筆記"
-                            >
-                                <Download className="w-4 h-4 md:w-5 md:h-5" />
-                                <span className="hidden sm:inline text-sm font-chinese">導出</span>
-                            </button>
+                                {/* 下拉菜单 */}
+                                {showExportMenu && content && (
+                                    <>
+                                        {/* 背景遮罩 */}
+                                        <div
+                                            className="fixed inset-0 z-10"
+                                            onClick={() => setShowExportMenu(false)}
+                                        />
+                                        {/* 菜单内容 */}
+                                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-20">
+                                            <button
+                                                onClick={handleCopyToClipboard}
+                                                className="w-full flex items-center gap-2 px-4 py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left"
+                                            >
+                                                <Copy className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">
+                                                    複製到剪貼板
+                                                </span>
+                                            </button>
+                                            <button
+                                                onClick={handleExportToFile}
+                                                className="w-full flex items-center gap-2 px-4 py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left"
+                                            >
+                                                <FileDown className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">
+                                                    下載 MD 文件
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
 
                             <button
                                 onClick={handleClear}
