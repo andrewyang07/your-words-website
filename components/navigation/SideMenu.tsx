@@ -1,21 +1,17 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen } from 'lucide-react';
+import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen, HelpCircle } from 'lucide-react';
+import Link from 'next/link';
 
 interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
-    onAboutClick: () => void;
     theme: 'light' | 'dark' | 'system';
     onThemeChange: () => void;
 }
 
-export default function SideMenu({ isOpen, onClose, onAboutClick, theme, onThemeChange }: SideMenuProps) {
-    const handleAboutClick = () => {
-        onAboutClick();
-        onClose();
-    };
+export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: SideMenuProps) {
 
     return (
         <AnimatePresence>
@@ -55,33 +51,44 @@ export default function SideMenu({ isOpen, onClose, onAboutClick, theme, onTheme
                         <nav className="flex-1 overflow-y-auto p-4">
                             <div className="space-y-4">
                                 {/* 背经文 */}
-                                <a
+                                <Link
                                     href="/"
                                     onClick={onClose}
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
                                 >
                                     <BookOpen className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
                                     <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">背經文</span>
-                                </a>
+                                </Link>
 
                                 {/* 圣经笔记本 */}
-                                <a
+                                <Link
                                     href="/note"
                                     onClick={onClose}
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
                                 >
                                     <FileText className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
                                     <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">筆記本</span>
-                                </a>
+                                </Link>
+
+                                {/* 帮助 */}
+                                <Link
+                                    href="/help"
+                                    onClick={onClose}
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
+                                >
+                                    <HelpCircle className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
+                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">幫助</span>
+                                </Link>
 
                                 {/* 关于 */}
-                                <button
-                                    onClick={handleAboutClick}
+                                <Link
+                                    href="/about"
+                                    onClick={onClose}
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
                                 >
                                     <Info className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
                                     <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">關於</span>
-                                </button>
+                                </Link>
 
                                 {/* 分隔线 */}
                                 <div className="border-t border-bible-200 dark:border-gray-700" />

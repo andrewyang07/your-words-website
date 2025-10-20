@@ -24,7 +24,6 @@ export default function BibleNoteClient() {
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [showSideMenu, setShowSideMenu] = useState(false);
-    const [showAbout, setShowAbout] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
     const [chapterViewerState, setChapterViewerState] = useState<{ isOpen: boolean; book: string; chapter: number }>({
         isOpen: false,
@@ -362,7 +361,6 @@ export default function BibleNoteClient() {
                 <SideMenu
                     isOpen={showSideMenu}
                     onClose={() => setShowSideMenu(false)}
-                    onAboutClick={() => setShowAbout(true)}
                     theme={theme}
                     onThemeChange={toggleTheme}
                 />
