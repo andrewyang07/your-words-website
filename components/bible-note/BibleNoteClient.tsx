@@ -31,6 +31,7 @@ export default function BibleNoteClient() {
     const [activeTab, setActiveTab] = useState<'edit' | 'preview' | 'references'>('edit');
     const [isExpanding, setIsExpanding] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
 
     // 从 localStorage 恢复内容
     useEffect(() => {
@@ -50,6 +51,21 @@ export default function BibleNoteClient() {
 
         return () => clearTimeout(timer);
     }, [content]);
+
+    // Toast 自动消失
+    useEffect(() => {
+        if (toastMessage) {
+            const timer = setTimeout(() => {
+                setToastMessage(null);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toastMessage]);
+
+    // 显示 Toast 提示
+    const showToast = useCallback((message: string) => {
+        setToastMessage(message);
+    }, []);
 
     // 解析经文引用（去重）
     const references = useMemo(() => {
@@ -115,13 +131,13 @@ export default function BibleNoteClient() {
     const handleCopyToClipboard = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(content);
-            alert('已複製到剪貼板！');
+            showToast('✅ 已複製到剪貼板');
             setShowExportMenu(false);
         } catch (error) {
             console.error('Failed to copy:', error);
-            alert('複製失敗，請稍後再試');
+            showToast('❌ 複製失敗，請稍後再試');
         }
-    }, [content]);
+    }, [content, showToast]);
 
     // 清空笔记
     const handleClear = useCallback(() => {
@@ -134,7 +150,7 @@ export default function BibleNoteClient() {
     // 展开所有经文（跳过已展开的）
     const handleExpandAll = useCallback(async () => {
         if (references.length === 0) {
-            alert('未檢測到經文引用');
+            showToast('⚠️ 未檢測到經文引用');
             return;
         }
 
@@ -167,7 +183,7 @@ export default function BibleNoteClient() {
             });
 
             if (toExpand.length === 0) {
-                alert('所有經文已展開！');
+                showToast('✅ 所有經文已展開');
                 setIsExpanding(false);
                 return;
             }
@@ -195,15 +211,17 @@ export default function BibleNoteClient() {
             // 给用户反馈
             const skipped = references.length - toExpand.length;
             if (skipped > 0) {
-                alert(`已展開 ${toExpand.length} 節經文，跳過 ${skipped} 節（已存在）`);
+                showToast(`✅ 已展開 ${toExpand.length} 節，跳過 ${skipped} 節`);
+            } else {
+                showToast(`✅ 已展開 ${toExpand.length} 節經文`);
             }
         } catch (error) {
             console.error('Error expanding verses:', error);
-            alert('展開經文時發生錯誤，請稍後再試');
+            showToast('❌ 展開失敗，請稍後再試');
         } finally {
             setIsExpanding(false);
         }
-    }, [content, references]);
+    }, [content, references, showToast]);
 
     // 查看整章
     const handleViewChapter = useCallback(
@@ -218,19 +236,21 @@ export default function BibleNoteClient() {
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
             <div className="max-w-7xl mx-auto px-4 py-6">
                 {/* 头部 - 与主站风格一致 */}
-                <header className="mb-6" role="banner">
-                    <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                        {/* 标题 - 使用主站的金色发光样式 */}
+                <header className="mb-4" role="banner">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                        {/* 标题 - 可点击返回主页 */}
                         <div className="flex items-center gap-4">
-                            <h1 className="text-3xl md:text-4xl font-extrabold font-chinese tracking-wide text-bible-800 dark:text-bible-200"
+                            <a
+                                href="/"
+                                className="text-3xl md:text-4xl font-extrabold font-chinese tracking-wide text-bible-800 dark:text-bible-200 hover:opacity-80 transition-opacity cursor-pointer"
                                 style={{
                                     textShadow: '0 0 20px rgba(190, 158, 93, 0.3), 0 0 40px rgba(190, 158, 93, 0.15)',
                                 }}
+                                title="返回首頁"
                             >
                                 你的話語
-                            </h1>
+                            </a>
                             <span className="text-sm md:text-base text-bible-600 dark:text-bible-400 font-chinese">筆記本</span>
-                            <UsageGuide />
                         </div>
 
                         {/* 操作按钮组 */}
@@ -298,6 +318,11 @@ export default function BibleNoteClient() {
                     </div>
                 </header>
 
+                {/* 使用说明 - 独立一行 */}
+                <div className="mb-4">
+                    <UsageGuide />
+                </div>
+
                 {/* 移动端 Tab 导航 - 与主站风格一致 */}
                 <div className="lg:hidden mb-4">
                     <div className="flex gap-2 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-lg border border-bible-200 dark:border-gray-700">
@@ -363,6 +388,18 @@ export default function BibleNoteClient() {
                         />
                     </div>
                 </div>
+
+                {/* Toast 提示 */}
+                {toastMessage && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-lg z-50 font-chinese text-sm max-w-md"
+                    >
+                        {toastMessage}
+                    </motion.div>
+                )}
             </div>
         </div>
     );
