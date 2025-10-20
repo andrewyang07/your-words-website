@@ -22,8 +22,6 @@
 
 [![Your Words Screenshot](https://img.shields.io/badge/🌐_訪問網站-www.yourwords.me-BE9E5D?style=for-the-badge)](https://www.yourwords.me)
 
-[English](#) | [繁體中文](#) | [簡體中文](#)
-
 ---
 
 </div>
@@ -173,7 +171,6 @@ your-words-website/
 -   [ ] 成就徽章系統
 -   [ ] 每日提醒功能
 -   [ ] 社區分享功能
-
 
 ## 🤝 貢獻指南
 
