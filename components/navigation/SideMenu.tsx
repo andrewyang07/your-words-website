@@ -66,7 +66,7 @@ export default function SideMenu({ isOpen, onClose, onAboutClick, theme, onTheme
 
                                 {/* 圣经笔记本 */}
                                 <a
-                                    href="/bible-note"
+                                    href="/note"
                                     onClick={onClose}
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
                                 >

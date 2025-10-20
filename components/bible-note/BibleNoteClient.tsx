@@ -3,11 +3,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen } from 'lucide-react';
+import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
-import AppHeader from '@/components/layout/AppHeader';
+import PageHeader from '@/components/layout/PageHeader';
 import SideMenu from '@/components/navigation/SideMenu';
 import MarkdownEditor from './MarkdownEditor';
 import UsageGuide from './UsageGuide';
@@ -25,6 +25,7 @@ export default function BibleNoteClient() {
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [showSideMenu, setShowSideMenu] = useState(false);
     const [showAbout, setShowAbout] = useState(false);
+    const [showHelp, setShowHelp] = useState(false);
     const [chapterViewerState, setChapterViewerState] = useState<{ isOpen: boolean; book: string; chapter: number }>({
         isOpen: false,
         book: '',
@@ -278,10 +279,19 @@ export default function BibleNoteClient() {
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
             <div className="max-w-7xl mx-auto px-4 py-6">
                 {/* 共用头部 */}
-                <AppHeader
+                <PageHeader
                     onMenuClick={() => setShowSideMenu(true)}
-                    subtitle="筆記本"
-                    rightButtons={
+                    onHelpClick={() => setShowHelp(true)}
+                    showHelp={true}
+                    subtitle={
+                        <span className="flex items-center gap-2 text-bible-600 dark:text-bible-400">
+                            筆記本
+                            <span className="px-2 py-0.5 text-xs bg-gold-500 text-white rounded-full font-bold">
+                                BETA
+                            </span>
+                        </span>
+                    }
+                    rightContent={
                         <>
                             {/* 导出按钮（下拉菜单） */}
                             <div className="relative">
@@ -458,6 +468,43 @@ export default function BibleNoteClient() {
                 >
                     <BookOpen className="w-6 h-6" />
                 </button>
+
+                {/* 帮助模态框 */}
+                <AnimatePresence>
+                    {showHelp && (
+                        <>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50"
+                                onClick={() => setShowHelp(false)}
+                            />
+                            
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl z-50"
+                            >
+                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <h2 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">
+                                            📝 聖經筆記本使用說明
+                                        </h2>
+                                        <button
+                                            onClick={() => setShowHelp(false)}
+                                            className="p-2 hover:bg-bible-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                        >
+                                            <X className="w-5 h-5 text-bible-600 dark:text-bible-400" />
+                                        </button>
+                                    </div>
+                                    <UsageGuide />
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
