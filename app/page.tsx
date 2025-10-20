@@ -1305,13 +1305,6 @@ export default function HomePage() {
                                     )}
                                 </>
                             )}
-
-                            {showAllContent && (
-                                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-800">
-                                    <Eye className="w-3 h-3" />
-                                    阅读模式
-                                </span>
-                            )}
                         </div>
 
                         {/* 遮罩设置控制面板 */}

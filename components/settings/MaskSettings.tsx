@@ -18,8 +18,8 @@ export default function MaskSettings() {
     } = useMaskStore();
 
     const modeOptions: SelectOption[] = [
-        { value: 'punctuation', label: '標點前顯示' },
-        { value: 'prefix', label: '開頭顯示' },
+        { value: 'punctuation', label: '短語提示模式' },
+        { value: 'prefix', label: '開頭提示模式' },
     ];
 
     const typeOptions: SelectOption[] = [
@@ -28,13 +28,13 @@ export default function MaskSettings() {
     ];
 
     return (
-        <div className="flex flex-wrap items-center gap-3 text-sm">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
             {/* 模式选择 */}
             <Select
                 value={maskMode}
                 onChange={(val) => setMaskMode(val as 'punctuation' | 'prefix')}
                 options={modeOptions}
-                className="w-full sm:w-40"
+                className="w-36 sm:w-40"
             />
 
             {/* 类型选择 */}
@@ -42,7 +42,7 @@ export default function MaskSettings() {
                 value={maskCharsType}
                 onChange={(val) => setMaskCharsType(val as 'fixed' | 'range')}
                 options={typeOptions}
-                className="w-full sm:w-32"
+                className="w-24 sm:w-32"
             />
 
             {/* 滑块控制 */}
