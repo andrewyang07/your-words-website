@@ -15,7 +15,7 @@ let fullBibleData: BibleData | null = null;
 /**
  * 加载完整圣经数据
  */
-async function loadFullBible(): Promise<BibleData> {
+export async function loadFullBible(): Promise<BibleData> {
     if (fullBibleData) {
         return fullBibleData;
     }

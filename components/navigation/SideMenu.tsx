@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, FileText, Sun, Moon, Monitor, Check } from 'lucide-react';
+import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen } from 'lucide-react';
 
 interface SideMenuProps {
     isOpen: boolean;
@@ -54,6 +54,26 @@ export default function SideMenu({ isOpen, onClose, onAboutClick, theme, onTheme
                         {/* 菜单项 */}
                         <nav className="flex-1 overflow-y-auto p-4">
                             <div className="space-y-4">
+                                {/* 背经文 */}
+                                <a
+                                    href="/"
+                                    onClick={onClose}
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
+                                >
+                                    <BookOpen className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
+                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">背經文</span>
+                                </a>
+
+                                {/* 圣经笔记本 */}
+                                <a
+                                    href="/bible-note"
+                                    onClick={onClose}
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
+                                >
+                                    <FileText className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
+                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">筆記本</span>
+                                </a>
+
                                 {/* 关于 */}
                                 <button
                                     onClick={handleAboutClick}
@@ -125,24 +145,6 @@ export default function SideMenu({ isOpen, onClose, onAboutClick, theme, onTheme
                                     </div>
                                 </div>
 
-                                {/* 分隔线 */}
-                                <div className="border-t border-bible-200 dark:border-gray-700" />
-
-                                {/* 更多功能 */}
-                                <div>
-                                    <div className="px-4 py-2">
-                                        <p className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese">🚀 更多功能</p>
-                                    </div>
-                                    {/* 圣经笔记本 - 已启用 */}
-                                    <a
-                                        href="/bible-note"
-                                        onClick={onClose}
-                                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-bible-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors mt-2"
-                                    >
-                                        <FileText className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                        <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">筆記本</span>
-                                    </a>
-                                </div>
                             </div>
                         </nav>
 

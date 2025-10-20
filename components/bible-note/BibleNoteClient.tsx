@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Trash2, FileDown, Copy, ChevronDown } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
@@ -10,23 +9,9 @@ import { parseVerseReferences } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import AppHeader from '@/components/layout/AppHeader';
 import SideMenu from '@/components/navigation/SideMenu';
+import MarkdownEditor from './MarkdownEditor';
 import UsageGuide from './UsageGuide';
 import VerseReferenceList from './VerseReferenceList';
-
-// 动态导入编辑器（仅客户端，减少初始包大小）
-const SimpleMDE = dynamic(() => import('react-simplemde-editor'), {
-    ssr: false,
-    loading: () => (
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg">
-            <div className="h-96 flex items-center justify-center">
-                <p className="text-bible-600 dark:text-bible-400 font-chinese">加載編輯器中...</p>
-            </div>
-        </div>
-    ),
-});
-
-// 导入 SimpleMDE 样式
-import 'easymde/dist/easymde.min.css';
 
 export default function BibleNoteClient() {
     const router = useRouter();
@@ -91,32 +76,6 @@ export default function BibleNoteClient() {
         return uniqueRefs;
     }, [content]);
 
-    // SimpleMDE 配置
-    const editorOptions = useMemo(
-        () =>
-            ({
-                spellChecker: false,
-                placeholder: '開始記錄你的靈修筆記...\n\n試試輸入經文引用，如「约3:16」或「马太福音5:3」，系統會自動識別並顯示完整經文。',
-                status: false,
-                toolbar: [
-                    'bold',
-                    'italic',
-                    'heading',
-                    '|',
-                    'quote',
-                    'unordered-list',
-                    'ordered-list',
-                    '|',
-                    'link',
-                    '|',
-                    'preview',
-                    'side-by-side',
-                    'fullscreen',
-                ] as const,
-                minHeight: '400px',
-            } as any), // 使用 any 避免 SimpleMDE 类型定义问题
-        []
-    );
 
     // 导出到文件
     const handleExportToFile = useCallback(() => {
@@ -368,7 +327,11 @@ export default function BibleNoteClient() {
                     {/* 编辑器区域（桌面端：2/3 宽度） */}
                     <div className={`lg:col-span-2 ${activeTab === 'edit' || activeTab === 'preview' ? 'block' : 'hidden lg:block'}`}>
                         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 overflow-hidden">
-                            <SimpleMDE value={content} onChange={setContent} options={editorOptions} />
+                            <MarkdownEditor
+                                value={content}
+                                onChange={setContent}
+                                placeholder="開始記錄你的靈修筆記...\n\n試試輸入經文引用，如「马太福音5:1」，系統會自動顯示補全建議。"
+                            />
                         </div>
                     </div>
 
