@@ -83,6 +83,7 @@ export default function MaskSettings() {
                         value={maskCharsMin}
                         onChange={(val) => setMaskCharsRange(Math.min(val, maskCharsMax), maskCharsMax)}
                         className="w-full sm:w-auto max-w-[90px]"
+                        showValue={false}
                     />
                     <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese flex-shrink-0">-</span>
                     <Slider
@@ -93,9 +94,11 @@ export default function MaskSettings() {
                         value={maskCharsMax}
                         onChange={(val) => setMaskCharsRange(maskCharsMin, Math.max(val, maskCharsMin))}
                         className="w-full sm:w-auto max-w-[90px]"
-                        showValue={true}
+                        showValue={false}
                     />
-                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese flex-shrink-0">字</span>
+                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese font-semibold flex-shrink-0">
+                        {maskCharsMin}-{maskCharsMax}字
+                    </span>
                 </div>
             )}
 
