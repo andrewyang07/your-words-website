@@ -201,6 +201,25 @@ export default function BibleNoteClient() {
         setChapterViewerState({ isOpen: true, book, chapter });
     }, []);
 
+    // 插入经文到笔记末尾
+    const handleInsertVerses = useCallback(
+        (verses: Array<{ book: string; chapter: number; verse: number; text: string }>) => {
+            // 格式化经文为 Markdown 引用格式
+            const insertText = verses
+                .map((v) => {
+                    const ref = `${v.book}${v.chapter}:${v.verse}`;
+                    return `\n> ${ref}: ${v.text}\n`;
+                })
+                .join('');
+
+            // 插入到笔记末尾
+            setContent((prevContent) => prevContent + insertText);
+
+            showToast(`✅ 已插入 ${verses.length} 節經文`);
+        },
+        [showToast]
+    );
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
             <div className="max-w-7xl mx-auto px-4 py-6">
@@ -369,6 +388,7 @@ export default function BibleNoteClient() {
                     onClose={() => setChapterViewerState({ isOpen: false, book: '', chapter: 0 })}
                     book={chapterViewerState.book}
                     chapter={chapterViewerState.chapter}
+                    onInsertVerses={handleInsertVerses}
                 />
             </div>
         </div>

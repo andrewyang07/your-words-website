@@ -130,3 +130,30 @@ export function clearCache(): void {
     fullBibleData = null;
 }
 
+/**
+ * 获取书卷元数据（名称和章节数）
+ */
+let booksMetadata: any[] | null = null;
+
+export async function getBookMetadata(bookKey?: string): Promise<any> {
+    if (!booksMetadata) {
+        try {
+            const response = await fetch('/data/books.json');
+            if (!response.ok) {
+                throw new Error('Failed to load books data');
+            }
+            const data = await response.json();
+            booksMetadata = data.books || data;
+        } catch (error) {
+            console.error('Error loading books metadata:', error);
+            throw error;
+        }
+    }
+
+    if (bookKey) {
+        return booksMetadata.find((book: any) => book.key === bookKey) || null;
+    }
+
+    return booksMetadata;
+}
+
