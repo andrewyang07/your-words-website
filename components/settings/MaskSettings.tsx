@@ -77,10 +77,7 @@ export default function MaskSettings() {
                     min={1}
                     max={10}
                     value={maskCharsFixed}
-                    onChange={(val) => {
-                        console.log('[MaskSettings] setMaskCharsFixed called with:', val);
-                        setMaskCharsFixed(val);
-                    }}
+                    onChange={setMaskCharsFixed}
                     className="w-full sm:w-auto max-w-[160px]"
                     suffix={t.chars}
                 />

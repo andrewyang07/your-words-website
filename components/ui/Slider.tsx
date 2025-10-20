@@ -13,12 +13,6 @@ interface SliderProps {
 }
 
 export default function Slider({ id, label, min, max, value, onChange, showValue = true, suffix, className = '' }: SliderProps) {
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = Number(e.target.value);
-        console.log(`[Slider ${id}] Changed from ${value} to ${newValue}`);
-        onChange(newValue);
-    };
-
     return (
         <div className={`flex items-center gap-1.5 ${className}`}>
             {label && (
@@ -32,7 +26,7 @@ export default function Slider({ id, label, min, max, value, onChange, showValue
                 min={min}
                 max={max}
                 value={value}
-                onChange={handleChange}
+                onChange={(e) => onChange(Number(e.target.value))}
                 className="flex-1 h-2 bg-bible-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-bible-600 dark:accent-bible-400 
                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-bible-600 dark:[&::-webkit-slider-thumb]:bg-bible-400 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110
                     [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-bible-600 dark:[&::-moz-range-thumb]:bg-bible-400 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:hover:scale-110"

@@ -101,19 +101,14 @@ function isEnglishText(text: string): boolean {
 // 遮罩经文文本（支持中文和英文）
 export function maskVerseText(text: string, mode: 'punctuation' | 'prefix', visibleChars: number): string {
     const isEnglish = isEnglishText(text);
-    console.log('[maskVerseText] text preview:', text.substring(0, 30) + '...', 'isEnglish:', isEnglish, 'mode:', mode, 'visibleChars:', visibleChars);
     
     // 英文：按单词遮罩
     if (isEnglish) {
-        const result = maskEnglishText(text, mode, visibleChars);
-        console.log('[maskVerseText] English result preview:', result.substring(0, 50) + '...');
-        return result;
+        return maskEnglishText(text, mode, visibleChars);
     }
     
     // 中文：按字符遮罩
-    const result = maskChineseText(text, mode, visibleChars);
-    console.log('[maskVerseText] Chinese result preview:', result.substring(0, 50) + '...');
-    return result;
+    return maskChineseText(text, mode, visibleChars);
 }
 
 // 中文遮罩逻辑（按字符）

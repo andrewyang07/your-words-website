@@ -33,7 +33,6 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     // 注意：每次卡片点击（isRevealed 切换）时重新生成随机数
     const visibleChars = useMemo(() => {
         if (maskCharsType === 'fixed') {
-            console.log('[VerseCard] Fixed mode, visibleChars:', maskCharsFixed);
             return maskCharsFixed;
         }
         // 范围模式：生成随机数
@@ -42,9 +41,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         const revealSeed = isRevealed ? 0 : 1;
         const combinedSeed = seed + revealSeed + maskCharsMin + maskCharsMax;
         const random = Math.abs(Math.sin(combinedSeed)) * (maskCharsMax - maskCharsMin + 1);
-        const result = Math.floor(random) + maskCharsMin;
-        console.log('[VerseCard] Range mode, min:', maskCharsMin, 'max:', maskCharsMax, 'result:', result);
-        return result;
+        return Math.floor(random) + maskCharsMin;
     }, [verse.id, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax, isRevealed]);
 
     const sizeClasses = {
