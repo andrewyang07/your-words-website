@@ -109,18 +109,32 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
             const bookKey = book.key;
 
             if (chapterNum) {
-                // 如果输入了章节号，显示该章的经文（1-20节）
+                // 如果输入了章节号
                 const chapter = parseInt(chapterNum, 10);
                 if (chapter >= 1 && chapter <= book.chapters) {
-                    // 显示该章的前20节经文
-                    for (let v = 1; v <= 20; v++) {
-                        newSuggestions.push({
-                            display: `${bookDisplayName} ${chapter}:${v}`,
-                            insert: `${bookKey}${chapter}:${v}`,
-                            book: bookKey,
-                            chapter,
-                            verse: v,
-                        });
+                    if (verseNum) {
+                        // 如果还输入了节数，从该节数开始推荐
+                        const startVerse = parseInt(verseNum, 10);
+                        for (let v = startVerse; v <= startVerse + 19; v++) {
+                            newSuggestions.push({
+                                display: `${bookDisplayName} ${chapter}:${v}`,
+                                insert: `${bookKey}${chapter}:${v}`,
+                                book: bookKey,
+                                chapter,
+                                verse: v,
+                            });
+                        }
+                    } else {
+                        // 只输入了章节号，从第1节开始推荐
+                        for (let v = 1; v <= 20; v++) {
+                            newSuggestions.push({
+                                display: `${bookDisplayName} ${chapter}:${v}`,
+                                insert: `${bookKey}${chapter}:${v}`,
+                                book: bookKey,
+                                chapter,
+                                verse: v,
+                            });
+                        }
                     }
                 }
             } else {
