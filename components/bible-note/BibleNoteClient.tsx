@@ -268,7 +268,7 @@ export default function BibleNoteClient() {
             setContent((prevContent) => prevContent + insertText);
 
             showToast(`✅ 已插入 ${verses.length} 節經文`);
-            
+
             // 关闭章节查看器，返回笔记
             setChapterViewerState({ isOpen: false, book: '', chapter: 0 });
         },
@@ -277,18 +277,15 @@ export default function BibleNoteClient() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
-            <div className="max-w-7xl mx-auto px-4 py-6">
-                {/* 共用头部 */}
-                <PageHeader
+            {/* 共用头部 */}
+            <PageHeader
                     onMenuClick={() => setShowSideMenu(true)}
                     onHelpClick={() => setShowHelp(true)}
                     showHelp={true}
                     subtitle={
                         <span className="flex items-center gap-2 text-bible-600 dark:text-bible-400">
                             筆記本
-                            <span className="px-2 py-0.5 text-xs bg-gold-500 text-white rounded-full font-bold">
-                                BETA
-                            </span>
+                            <span className="px-2 py-0.5 text-xs bg-gold-500 text-white rounded-full font-bold">BETA</span>
                         </span>
                     }
                     rightContent={
@@ -347,8 +344,10 @@ export default function BibleNoteClient() {
                             </button>
                         </>
                     }
-                />
+                    />
 
+            {/* 主内容区域 */}
+            <div className="max-w-7xl mx-auto px-4 py-6">
                 {/* 侧边栏菜单 */}
                 <SideMenu
                     isOpen={showSideMenu}
@@ -480,18 +479,16 @@ export default function BibleNoteClient() {
                                 className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50"
                                 onClick={() => setShowHelp(false)}
                             />
-                            
+
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
-                                className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl z-50"
+                                className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl z-[60]"
                             >
                                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
                                     <div className="flex items-start justify-between mb-4">
-                                        <h2 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                                            📝 聖經筆記本使用說明
-                                        </h2>
+                                        <h2 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">📝 聖經筆記本使用說明</h2>
                                         <button
                                             onClick={() => setShowHelp(false)}
                                             className="p-2 hover:bg-bible-100 dark:hover:bg-gray-700 rounded transition-colors"
@@ -505,6 +502,7 @@ export default function BibleNoteClient() {
                         </>
                     )}
                 </AnimatePresence>
+            </div>
             </div>
         </div>
     );
