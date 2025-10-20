@@ -1201,8 +1201,9 @@ export default function HomePage() {
                                             <div>
                                                 <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">精選 114 節經文</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    默認展示<span className="font-semibold text-bible-700 dark:text-bible-300">最值得背誦的 114 節經文</span>，
-                                                    涵蓋信仰核心真理。也可選擇書卷章節，瀏覽聖經 66 卷任意內容。
+                                                    默認展示
+                                                    <span className="font-semibold text-bible-700 dark:text-bible-300">最值得背誦的 114 節經文</span>
+                                                    ， 涵蓋信仰核心真理。也可選擇書卷章節，瀏覽聖經 66 卷任意內容。
                                                 </p>
                                             </div>
                                         </div>
@@ -1212,8 +1213,8 @@ export default function HomePage() {
                                             <div>
                                                 <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">卡片背誦模式</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    <span className="font-semibold">點擊卡片</span>展開/收起經文內容，
-                                                    點擊右上角<span className="font-semibold">眼睛圖標</span>切換阅读/背誦模式。
+                                                    <span className="font-semibold">點擊卡片</span>展開/收起經文內容， 點擊右上角
+                                                    <span className="font-semibold">眼睛圖標</span>切換阅读/背誦模式。
                                                 </p>
                                             </div>
                                         </div>
@@ -1235,8 +1236,8 @@ export default function HomePage() {
                                             <div>
                                                 <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏與分享</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    點擊卡片<span className="font-semibold">星標圖示</span>收藏經文，
-                                                    在收藏模式下可<span className="font-semibold">生成鏈接</span>分享給他人。
+                                                    點擊卡片<span className="font-semibold">星標圖示</span>收藏經文， 在收藏模式下可
+                                                    <span className="font-semibold">生成鏈接</span>分享給他人。
                                                 </p>
                                             </div>
                                         </div>
