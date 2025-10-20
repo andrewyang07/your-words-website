@@ -12,6 +12,7 @@ import SideMenu from '@/components/navigation/SideMenu';
 import MarkdownEditor from './MarkdownEditor';
 import UsageGuide from './UsageGuide';
 import VerseReferenceList from './VerseReferenceList';
+import ChapterViewer from './ChapterViewer';
 
 export default function BibleNoteClient() {
     const router = useRouter();
@@ -24,6 +25,11 @@ export default function BibleNoteClient() {
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [showSideMenu, setShowSideMenu] = useState(false);
     const [showAbout, setShowAbout] = useState(false);
+    const [chapterViewerState, setChapterViewerState] = useState<{ isOpen: boolean; book: string; chapter: number }>({
+        isOpen: false,
+        book: '',
+        chapter: 0,
+    });
 
     // 从 localStorage 恢复内容
     useEffect(() => {
@@ -190,14 +196,10 @@ export default function BibleNoteClient() {
         }
     }, [content, references, showToast]);
 
-    // 查看整章
-    const handleViewChapter = useCallback(
-        (book: string, chapter: number) => {
-            // 跳转到主站，带上 from 参数
-            router.push(`/?book=${encodeURIComponent(book)}&chapter=${chapter}&from=bible-note`);
-        },
-        [router]
-    );
+    // 查看整章（打开浮动面板而不是跳转）
+    const handleViewChapter = useCallback((book: string, chapter: number) => {
+        setChapterViewerState({ isOpen: true, book, chapter });
+    }, []);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
@@ -360,6 +362,14 @@ export default function BibleNoteClient() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                {/* 章节查看器 */}
+                <ChapterViewer
+                    isOpen={chapterViewerState.isOpen}
+                    onClose={() => setChapterViewerState({ isOpen: false, book: '', chapter: 0 })}
+                    book={chapterViewerState.book}
+                    chapter={chapterViewerState.chapter}
+                />
             </div>
         </div>
     );

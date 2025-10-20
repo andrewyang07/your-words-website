@@ -78,7 +78,7 @@ export default function UsageGuide() {
                                         自動補全經文引用
                                     </h4>
                                     <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        輸入書卷名（如「马太」）會自動彈出章節建議。選擇後繼續輸入即可完成引用，如「马太福音3:16」。
+                                        輸入書卷名（如「马太」或「马1:2」）會自動彈出經文建議。選中後自動插入經文完整內容。支持模糊搜索，如「路1:1」會匹配「路加福音1:1」。
                                     </p>
                                 </div>
                             </div>
@@ -91,7 +91,7 @@ export default function UsageGuide() {
                                         查看引用的經文
                                     </h4>
                                     <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        右側（桌面端）或「引用」標籤（移動端）會顯示所有引用的經文完整內容。點擊「查看整章」可跳轉查看完整章節。
+                                        右側（桌面端）或「引用」標籤（移動端）會顯示所有引用的經文完整內容。點擊「查看整章」會在底部彈出浮動窗口，可同時查看整章和編輯筆記。
                                     </p>
                                 </div>
                             </div>
@@ -109,12 +109,16 @@ export default function UsageGuide() {
                                 </div>
                             </div>
 
-                            {/* 提示 */}
-                            <div className="mt-4 p-3 bg-bible-50 dark:bg-gray-700 rounded-lg">
-                                <p className="text-xs text-bible-600 dark:text-bible-400 font-chinese">
-                                    💡 <span className="font-semibold">提示：</span>
-                                    笔记内容会自动保存到浏览器，刷新页面不会丢失。如需永久保存，请及时导出备份。
+                            {/* 重要提示 */}
+                            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+                                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 font-chinese mb-2">
+                                    ⚠️ 重要提示
                                 </p>
+                                <ul className="text-xs text-amber-700 dark:text-amber-300 font-chinese space-y-1 ml-4">
+                                    <li>• 僅支持一篇筆記，適合作為草稿使用</li>
+                                    <li>• 數據保存在瀏覽器本地，清除瀏覽器數據會丟失</li>
+                                    <li>• 建議定期導出備份（複製到剪貼板或下載 MD 文件）</li>
+                                </ul>
                             </div>
                         </div>
                     </motion.div>
