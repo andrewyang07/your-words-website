@@ -21,6 +21,7 @@
 - **Flash Card 互動** - 點擊顯示完整經文，漸進式記憶
 - **收藏與分享** - 收藏喜愛的經文，通過 URL 分享給朋友
 - **閱讀/背誦切換** - 一鍵切換顯示模式，靈活學習
+- **🆕 聖經筆記本 (BETA)** - 記錄靈修筆記，支持經文引用自動補全、Markdown 編輯、導出備份
 
 ### 🎨 用戶體驗
 - **精美 UI 設計** - 聖經主題金色配色，優雅的卡片式佈局
@@ -88,12 +89,19 @@ npm start
 ```
 your-words-website/
 ├── app/                    # Next.js App Router
-│   ├── page.tsx           # 主頁面（所有功能集成）
+│   ├── page.tsx           # 主頁面（卡片背誦功能）
+│   ├── note/              # 聖經筆記本頁面
 │   ├── layout.tsx         # 根佈局和元數據
 │   └── sitemap.ts         # 動態站點地圖
 ├── components/            # React 組件
-│   └── verses/           # 經文卡片和佈局組件
+│   ├── verses/           # 經文卡片和佈局組件
+│   ├── note/             # 筆記本相關組件
+│   ├── navigation/       # 導航和菜單組件
+│   └── layout/           # 頁面佈局組件
 ├── lib/                   # 工具函數和數據加載
+│   ├── verseLoader.ts    # 經文數據加載
+│   ├── verseParser.ts    # 經文引用解析
+│   └── utils.ts          # 工具函數
 ├── stores/               # Zustand 全局狀態
 ├── types/                # TypeScript 類型定義
 ├── hooks/                # 自定義 React Hooks
@@ -114,9 +122,22 @@ your-words-website/
 - [x] URL 分享收藏
 - [x] 書卷章節篩選
 - [x] 閱讀/背誦模式切換
+- [x] 遮罩背誦模式（短語提示/開頭提示）
 - [x] 隨機洗牌
 - [x] 精美動畫和響應式設計
 - [x] SEO 優化
+
+### ✅ v1.1 - 筆記本功能（BETA）
+- [x] 聖經筆記本編輯器
+- [x] 經文引用自動補全
+- [x] Markdown 格式支持
+- [x] 實時預覽
+- [x] 經文引用列表
+- [x] 一鍵展開經文內容
+- [x] 浮動聖經章節查看器
+- [x] 多選插入經文
+- [x] 導出為 Markdown 文件
+- [x] 本地存儲自動保存
 
 ### 🔜 v2.0 - 增強功能
 - [ ] 英文版本支持
@@ -124,10 +145,11 @@ your-words-website/
 - [ ] 背誦統計和可視化
 - [ ] 更多聖經譯本
 - [ ] 自定義經文集
+- [ ] 筆記本多篇管理
 
 ### 🌟 未來版本
 - [ ] 多語言對照閱讀
-- [ ] 個人筆記和標註
+- [ ] 雲端同步功能
 - [ ] 成就徽章系統
 - [ ] 每日提醒功能
 - [ ] 社區分享功能
@@ -158,10 +180,14 @@ your-words-website/
 
 ## 📧 聯繫方式
 
-如有問題或建議，請通過以下方式聯繫：
+如有問題、建議或希望參與開發，請通過以下方式聯繫：
 
-- 創建 [GitHub Issue](https://github.com/andrewyang07/your-words-website/issues)
-- 訪問項目網站：[www.yourwords.me](https://www.yourwords.me)
+- 📧 Email: [yy9577@gmail.com](mailto:yy9577@gmail.com)
+- 🐛 報告 Bug: [GitHub Issue](https://github.com/andrewyang07/your-words-website/issues)
+- 🌐 訪問網站: [www.yourwords.me](https://www.yourwords.me)
+- 💡 功能建議: 歡迎創建 Issue 或直接聯繫
+
+**開源協作歡迎！** 如果你對聖經應用開發感興趣，或有改進建議，非常歡迎與我聯繫。
 
 ---
 
