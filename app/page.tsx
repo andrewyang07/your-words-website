@@ -1210,63 +1210,94 @@ export default function HomePage() {
                                     </div>
 
                                     <div className="text-xs text-bible-700 dark:text-bible-300 font-chinese space-y-2.5">
+                                        {/* 1. 經文選擇 */}
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">📖</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">精選 114 節經文</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">經文選擇</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    默認展示
-                                                    <span className="font-semibold text-bible-700 dark:text-bible-300">最值得背誦的 114 節經文</span>
-                                                    ， 涵蓋信仰核心真理。也可選擇書卷章節，瀏覽聖經 66 卷任意內容。
+                                                    <span className="font-semibold">精選 114 節</span>核心經文，或選擇
+                                                    <span className="font-semibold">聖經 66 卷</span>任意章節瀏覽。
                                                 </p>
                                             </div>
                                         </div>
 
+                                        {/* 2. 背誦功能 */}
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🎯</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">卡片背誦模式</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">背誦模式</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    <span className="font-semibold">點擊卡片</span>展開/收起經文內容， 點擊右上角
-                                                    <span className="font-semibold">眼睛圖標</span>切換阅读/背誦模式。
+                                                    <span className="font-semibold">點擊卡片</span>顯示/隱藏經文內容。
+                                                    點擊<span className="font-semibold">眼睛圖標</span>切換閱讀/背誦模式，
+                                                    <span className="font-semibold">洗牌按鈕</span>隨機排序。
                                                 </p>
                                             </div>
                                         </div>
 
+                                        {/* 3. 遮罩設置 */}
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🎨</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">自定義提示設置</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">遮罩提示</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    調整遮罩設置，自定義顯示字數和模式：
-                                                    <span className="font-semibold">每句提示</span>（每句開頭顯示）或
-                                                    <span className="font-semibold">開頭提示</span>（全文開頭顯示），適應不同難度。
+                                                    點擊卡片顯示/隱藏經文內容。支持
+                                                    <span className="font-semibold">每句提示</span>/
+                                                    <span className="font-semibold">開頭提示</span>兩種模式，
+                                                    可設置固定或隨機字數，每次點擊隨機顯示不同提示字數。
                                                 </p>
                                             </div>
                                         </div>
 
+                                        {/* 4. 收藏分享 */}
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">⭐</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏與分享</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏分享</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    點擊卡片<span className="font-semibold">星標圖示</span>收藏經文， 在收藏模式下可
-                                                    <span className="font-semibold">生成鏈接</span>分享給他人。
+                                                    點擊<span className="font-semibold">星標</span>收藏經文，
+                                                    點擊<span className="font-semibold">分享按鈕</span>生成鏈接。
                                                 </p>
                                             </div>
                                         </div>
 
+                                        {/* 5. 筆記本功能 */}
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-base">📝</span>
+                                            <div>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">
+                                                    筆記本 <span className="px-1.5 py-0.5 text-xs bg-gold-500 text-white rounded-full">BETA</span>
+                                                </p>
+                                                <p className="text-bible-600 dark:text-bible-400">
+                                                    右上角菜單 → 筆記本，
+                                                    <span className="font-semibold">自動補全</span>經文引用，
+                                                    <span className="font-semibold">一鍵展開</span>內容，
+                                                    <span className="font-semibold">Markdown</span>編輯。
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* 6. 主題設置 */}
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-base">🌓</span>
+                                            <div>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">主題語言</p>
+                                                <p className="text-bible-600 dark:text-bible-400">
+                                                    支持<span className="font-semibold">繁簡切換</span>、
+                                                    <span className="font-semibold">深色模式</span>（淺色/深色/自動）。
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* iPhone App 推薦 */}
                                         <div className="mt-3 pt-3 border-t border-bible-200/50 dark:border-gray-700">
                                             <div className="flex items-start gap-2">
                                                 <span className="text-base">📱</span>
                                                 <div>
-                                                    <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">
-                                                        iPhone 用戶推薦：心版 App
-                                                    </p>
+                                                    <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">心版 iOS App</p>
                                                     <p className="text-bible-600 dark:text-bible-400">
-                                                        使用 iPhone？試試<span className="font-semibold">「心版」iOS App</span>， 將經文以
-                                                        <span className="font-semibold">小組件形式</span>展示在主屏幕上。
-                                                        每次解鎖手機，第一眼就看到神的話語。支持雙語對照、自定義樣式，完全免費。
+                                                        將經文以<span className="font-semibold">小組件</span>形式展示在主屏幕，
+                                                        每次解鎖第一眼看到神的話語。
                                                         <a
                                                             href="https://apps.apple.com/app/6744570052"
                                                             target="_blank"
@@ -1277,42 +1308,6 @@ export default function HomePage() {
                                                         </a>
                                                     </p>
                                                 </div>
-                                            </div>
-                                        </div>
-
-                                        {/* 新功能宣传 - 圣经笔记本 BETA */}
-                                        <div className="mt-3 pt-3 border-t border-bible-200/50 dark:border-gray-700">
-                                            <div className="p-4 bg-gradient-to-r from-bible-50 to-gold-50 dark:from-gray-700 dark:to-gray-800 rounded-lg border-2 border-bible-300 dark:border-bible-600">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <span className="text-xl">📝</span>
-                                                    <h3 className="text-base font-bold text-bible-800 dark:text-bible-200">全新功能：聖經筆記本</h3>
-                                                    <span className="px-2 py-0.5 text-xs bg-gold-500 text-white rounded-full font-bold">BETA</span>
-                                                </div>
-                                                <p className="text-xs text-bible-700 dark:text-bible-300 leading-relaxed mb-3">
-                                                    現在可以記錄你的靈修筆記了！點擊右上角菜單 → 「筆記本」
-                                                </p>
-                                                <ul className="text-xs text-bible-700 dark:text-bible-300 space-y-1.5">
-                                                    <li className="flex items-start gap-2">
-                                                        <span className="text-bible-500 mt-0.5">✨</span>
-                                                        <span>自動補全經文引用（如「约3:16」）</span>
-                                                    </li>
-                                                    <li className="flex items-start gap-2">
-                                                        <span className="text-bible-500 mt-0.5">📖</span>
-                                                        <span>一鍵展開經文內容</span>
-                                                    </li>
-                                                    <li className="flex items-start gap-2">
-                                                        <span className="text-bible-500 mt-0.5">🔍</span>
-                                                        <span>底部浮動按鈕快速查看整章聖經</span>
-                                                    </li>
-                                                    <li className="flex items-start gap-2">
-                                                        <span className="text-bible-500 mt-0.5">✍️</span>
-                                                        <span>支持 Markdown 格式編輯和預覽</span>
-                                                    </li>
-                                                    <li className="flex items-start gap-2">
-                                                        <span className="text-bible-500 mt-0.5">💾</span>
-                                                        <span>自動保存到本地，支持導出 MD 文件</span>
-                                                    </li>
-                                                </ul>
                                             </div>
                                         </div>
                                     </div>
