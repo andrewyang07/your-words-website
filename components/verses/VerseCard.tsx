@@ -24,9 +24,6 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     const [isRevealed, setIsRevealed] = useState(defaultRevealed);
     const isFav = isFavorite(verse.id);
 
-    // Debug: Log store values
-    console.log('[VerseCard] Store values:', { maskCharsFixed, maskCharsType });
-
     // 当 defaultRevealed 改变时，更新 isRevealed
     useEffect(() => {
         setIsRevealed(defaultRevealed);
@@ -91,8 +88,10 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         toggleFavorite(verse.id);
     };
 
-    // 显示预览文本或完整文本
-    const displayText = isRevealed ? verse.text : maskVerseText(verse.text, maskMode, visibleChars);
+    // 显示预览文本或完整文本（使用 useMemo 优化性能）
+    const displayText = useMemo(() => {
+        return isRevealed ? verse.text : maskVerseText(verse.text, maskMode, visibleChars);
+    }, [isRevealed, verse.text, maskMode, visibleChars]);
 
     return (
         <motion.div

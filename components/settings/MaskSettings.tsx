@@ -25,9 +25,6 @@ export default function MaskSettings() {
         resetToDefaults,
     } = useMaskStore();
 
-    // Debug: Log current values
-    console.log('[MaskSettings] Current values:', { maskCharsFixed, maskCharsType });
-
     const [showHelp, setShowHelp] = useState(false);
     
     const t = translations[language];
