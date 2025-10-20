@@ -17,9 +17,10 @@ interface MarkdownEditorProps {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
+    onExpandVerse?: (book: string, chapter: number, verse: number) => Promise<string | null>;
 }
 
-export default function MarkdownEditor({ value, onChange, placeholder }: MarkdownEditorProps) {
+export default function MarkdownEditor({ value, onChange, placeholder, onExpandVerse }: MarkdownEditorProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [showPreview, setShowPreview] = useState(false);
     const [suggestions, setSuggestions] = useState<VerseSuggestion[]>([]);
@@ -54,8 +55,12 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
 
         console.log('[Autocomplete] Text before cursor:', textBeforeCursor.slice(-20));
 
-        // 匹配模式: "马太福音5" 或 "太5" 等
-        const match = textBeforeCursor.match(/([\u4e00-\u9fa5]+)(\d+)?$/);
+        // 匹配模式: 
+        // 1. "路加福音2:1" -> bookName="路加福音", chapter="2", verse="1"
+        // 2. "路加福音2:" -> bookName="路加福音", chapter="2", verse=""
+        // 3. "路加福音" -> bookName="路加福音", chapter="", verse=""
+        // 4. "路1:1" -> bookName="路", chapter="1", verse="1" (模糊匹配)
+        const match = textBeforeCursor.match(/([\u4e00-\u9fa5]+)(\d+)?:?(\d+)?$/);
 
         if (!match) {
             console.log('[Autocomplete] No match');
@@ -63,16 +68,32 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
             return;
         }
 
-        const [, bookName, chapterNum] = match;
-        console.log('[Autocomplete] Matched:', { bookName, chapterNum });
+        const [fullMatch, bookName, chapterNum, verseNum] = match;
+        console.log('[Autocomplete] Matched:', { fullMatch, bookName, chapterNum, verseNum });
 
-        // 查找匹配的书卷 (使用 nameTraditional 字段)
-        const matchedBooks = bibleBooks.filter(
-            (book: any) => 
-                book.nameTraditional?.includes(bookName) || 
-                book.nameSimplified?.includes(bookName) ||
-                book.key?.includes(bookName)
-        );
+        // 查找匹配的书卷 (支持模糊搜索)
+        const matchedBooks = bibleBooks.filter((book: any) => {
+            const traditional = book.nameTraditional || '';
+            const simplified = book.nameSimplified || '';
+            const key = book.key || '';
+            
+            // 精确匹配
+            if (traditional.includes(bookName) || simplified.includes(bookName) || key.includes(bookName)) {
+                return true;
+            }
+            
+            // 模糊匹配：检查书名的第一个字符
+            if (bookName.length === 1) {
+                return traditional.startsWith(bookName) || simplified.startsWith(bookName) || key.startsWith(bookName);
+            }
+            
+            // 模糊匹配：检查书名是否包含在完整书名中
+            if (bookName.length >= 2) {
+                return traditional.includes(bookName) || simplified.includes(bookName) || key.includes(bookName);
+            }
+            
+            return false;
+        });
 
         console.log('[Autocomplete] Matched books:', matchedBooks.length);
 
@@ -86,13 +107,13 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
         matchedBooks.forEach((book: any) => {
             const bookDisplayName = book.nameTraditional || book.key;
             const bookKey = book.key;
-            
+
             if (chapterNum) {
-                // 如果输入了章节号，显示该章的部分经文（简化：显示1-10节）
+                // 如果输入了章节号，显示该章的经文（1-20节）
                 const chapter = parseInt(chapterNum, 10);
                 if (chapter >= 1 && chapter <= book.chapters) {
-                    // 简化：假设每章至少有10节，实际可以动态加载
-                    for (let v = 1; v <= 10; v++) {
+                    // 显示该章的前20节经文
+                    for (let v = 1; v <= 20; v++) {
                         newSuggestions.push({
                             display: `${bookDisplayName} ${chapter}:${v}`,
                             insert: `${bookKey}${chapter}:${v}`,
@@ -103,14 +124,15 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
                     }
                 }
             } else {
-                // 如果只输入了书卷名，显示所有章节
-                for (let ch = 1; ch <= book.chapters; ch++) {
+                // 如果只输入了书卷名，默认显示第1章的经文（1-20节）
+                const chapter = 1;
+                for (let v = 1; v <= 20; v++) {
                     newSuggestions.push({
-                        display: `${bookDisplayName} ${ch}章`,
-                        insert: `${bookKey}${ch}`,
+                        display: `${bookDisplayName} ${chapter}:${v}`,
+                        insert: `${bookKey}${chapter}:${v}`,
                         book: bookKey,
-                        chapter: ch,
-                        verse: 1,
+                        chapter,
+                        verse: v,
                     });
                 }
             }
@@ -119,17 +141,48 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
         // 限制显示数量
         const finalSuggestions = newSuggestions.slice(0, 20);
         console.log('[Autocomplete] Final suggestions:', finalSuggestions.length);
-        
+
         setSuggestions(finalSuggestions);
         setSelectedSuggestionIndex(0);
 
         // 计算 autocomplete 位置
         if (finalSuggestions.length > 0) {
-            const rect = textarea.getBoundingClientRect();
-            const top = rect.bottom + window.scrollY + 4; // 简单：显示在 textarea 下方
-            const left = rect.left + window.scrollX;
+            // 获取光标在 textarea 中的位置
+            const textareaRect = textarea.getBoundingClientRect();
+            const textareaStyle = window.getComputedStyle(textarea);
 
-            console.log('[Autocomplete] Position:', { top, left });
+            // 计算字符宽度和行高
+            const fontSize = parseInt(textareaStyle.fontSize, 10);
+            const lineHeight = fontSize * 1.2; // 假设行高是字体的1.2倍
+            const charWidth = fontSize * 0.6; // 中文字符宽度大约是字体的0.6倍
+
+            // 获取光标位置
+            const cursorPos = textarea.selectionStart;
+            const textBeforeCursor = value.substring(0, cursorPos);
+
+            // 计算光标所在的行和列
+            const lines = textBeforeCursor.split('\n');
+            const currentLineIndex = lines.length - 1;
+            const currentLineText = lines[currentLineIndex];
+
+            // 计算光标在 textarea 中的相对位置
+            const paddingTop = parseInt(textareaStyle.paddingTop, 10) || 0;
+            const paddingLeft = parseInt(textareaStyle.paddingLeft, 10) || 0;
+
+            const cursorX = paddingLeft + currentLineText.length * charWidth;
+            const cursorY = paddingTop + (currentLineIndex + 1) * lineHeight;
+
+            // 转换为页面坐标
+            const top = textareaRect.top + cursorY + window.scrollY + 2;
+            const left = textareaRect.left + cursorX + window.scrollX;
+
+            console.log('[Autocomplete] Position:', {
+                top,
+                left,
+                cursorPos,
+                currentLineIndex,
+                currentLineText: currentLineText.slice(-10),
+            });
             setAutocompletePosition({ top, left });
         }
     }, [bibleBooks, value]);
@@ -162,7 +215,7 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
 
     // 选择建议
     const handleSelectSuggestion = useCallback(
-        (suggestion: VerseSuggestion) => {
+        async (suggestion: VerseSuggestion) => {
             const textarea = textareaRef.current;
             if (!textarea) return;
 
@@ -170,14 +223,29 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
             const textBeforeCursor = value.substring(0, selectionStart);
 
             // 找到要替换的文本起始位置
-            const match = textBeforeCursor.match(/([\u4e00-\u9fa5]+)(\d+)?$/);
+            const match = textBeforeCursor.match(/([\u4e00-\u9fa5]+)(\d+)?:?(\d+)?$/);
             if (!match) return;
 
             const matchStart = selectionStart - match[0].length;
             const textAfterCursor = value.substring(selectionStart);
 
             // 插入建议
-            const newValue = value.substring(0, matchStart) + suggestion.insert + textAfterCursor;
+            let newValue = value.substring(0, matchStart) + suggestion.insert + textAfterCursor;
+
+            // 如果提供了展开功能，自动展开经文
+            if (onExpandVerse) {
+                try {
+                    const verseText = await onExpandVerse(suggestion.book, suggestion.chapter, suggestion.verse);
+                    if (verseText) {
+                        // 在引用后插入完整经文
+                        const expandedText = `\n> ${suggestion.insert}: ${verseText}\n`;
+                        newValue = value.substring(0, matchStart) + suggestion.insert + expandedText + textAfterCursor;
+                    }
+                } catch (error) {
+                    console.error('Error expanding verse:', error);
+                }
+            }
+
             onChange(newValue);
 
             // 设置光标位置
@@ -189,7 +257,7 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
 
             setSuggestions([]);
         },
-        [value, onChange]
+        [value, onChange, onExpandVerse]
     );
 
     // Markdown 工具栏按钮
@@ -321,4 +389,3 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
         </div>
     );
 }
-
