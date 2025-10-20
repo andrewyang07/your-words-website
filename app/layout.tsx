@@ -7,14 +7,16 @@ import './globals.css';
 export const metadata: Metadata = {
     metadataBase: new URL('https://www.yourwords.me'),
     title: '你的話語 - 背聖經',
-    description: '免費聖經背誦工具，114節精選經文，Flash Card背誦模式，支持收藏分享。免费圣经背诵工具，让神的话语常在心中。',
+    description: '你的話語 - 免費聖經背誦工具，114節精選經文，Flash Card背誦模式。你的话语 - 免费圣经背诵工具，让神的话语常在心中。',
     keywords: [
         // 繁体关键词
         '聖經', '背誦', '經文', '背聖經', '聖經背誦', '背經文', '聖經app', '靈修', '背經', '經文背誦',
         // 简体关键词
         '圣经', '背诵', '经文', '背圣经', '圣经背诵', '背经文', '圣经app', '灵修', '背经', '经文背诵',
+        // 品牌关键词
+        '你的話語', '你的话语', 'your words', 'yourwords', '你的話語app', '你的话语app',
         // 通用词
-        'Bible', '記憶經文', '记忆经文', '基督教', '你的話語', '你的话语',
+        'Bible', '記憶經文', '记忆经文', '基督教', '基督教app', '聖經學習', '圣经学习',
     ],
     authors: [{ name: 'Your Words Team' }],
     creator: 'Your Words',
