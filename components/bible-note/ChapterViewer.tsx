@@ -221,7 +221,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                         className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl max-h-[70vh] flex flex-col"
                     >
                         {/* 头部 - 导航控制 */}
-                        <div className="flex flex-col gap-3 p-3 md:p-4 border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900">
+                        <div className="flex flex-col gap-2 p-2 md:p-4 border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900">
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex flex-wrap items-center gap-2">
                                     {/* 书卷选择器 */}

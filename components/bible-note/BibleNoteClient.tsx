@@ -310,21 +310,21 @@ export default function BibleNoteClient() {
                                 <>
                                     {/* 背景遮罩 */}
                                     <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
-                                    {/* 菜单内容 */}
-                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-20">
+                                    {/* 菜单内容 - 移动端底部弹出，桌面端下拉 */}
+                                    <div className="fixed md:absolute bottom-0 md:bottom-auto left-0 right-0 md:right-0 md:left-auto md:mt-2 w-full md:w-48 bg-white dark:bg-gray-800 rounded-t-xl md:rounded-lg shadow-2xl border-t md:border border-bible-200 dark:border-gray-700 py-3 md:py-1 z-20">
                                         <button
                                             onClick={handleCopyToClipboard}
-                                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left"
+                                            className="w-full flex items-center gap-3 px-4 py-3 md:py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left min-h-[48px] md:min-h-0"
                                         >
-                                            <Copy className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                            <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">複製到剪貼板</span>
+                                            <Copy className="w-5 h-5 md:w-4 md:h-4 text-bible-600 dark:text-bible-400" />
+                                            <span className="text-base md:text-sm font-chinese text-bible-700 dark:text-bible-300">複製到剪貼板</span>
                                         </button>
                                         <button
                                             onClick={handleExportToFile}
-                                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left"
+                                            className="w-full flex items-center gap-3 px-4 py-3 md:py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left min-h-[48px] md:min-h-0"
                                         >
-                                            <FileDown className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                            <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">下載 MD 文件</span>
+                                            <FileDown className="w-5 h-5 md:w-4 md:h-4 text-bible-600 dark:text-bible-400" />
+                                            <span className="text-base md:text-sm font-chinese text-bible-700 dark:text-bible-300">下載 MD 文件</span>
                                         </button>
                                     </div>
                                 </>
@@ -347,7 +347,7 @@ export default function BibleNoteClient() {
             />
 
             {/* 主内容区域 */}
-            <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
                 {/* 侧边栏菜单 */}
                 <SideMenu
                     isOpen={showSideMenu}
@@ -363,9 +363,9 @@ export default function BibleNoteClient() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-6"
+                        className="mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-4 md:p-6"
                     >
-                        <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 <HelpCircle className="w-6 h-6 text-bible-600 dark:text-bible-400" />
                                 <h2 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese">
@@ -383,7 +383,7 @@ export default function BibleNoteClient() {
                         </div>
 
                         {/* 直接显示使用说明内容，不需要再点击 */}
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {/* 功能 1 */}
                             <div className="flex items-start gap-3">
                                 <FileText className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
@@ -451,12 +451,12 @@ export default function BibleNoteClient() {
                     </motion.div>
                 )}
 
-                {/* 移动端 Tab 导航 - 与主站风格一致 */}
-                <div className="lg:hidden mb-4">
-                    <div className="flex gap-2 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-lg border border-bible-200 dark:border-gray-700">
+                {/* 移动端 Tab 导航 - 紧凑版 */}
+                <div className="lg:hidden mb-3">
+                    <div className="flex gap-1.5 bg-white dark:bg-gray-800 rounded-lg p-1.5 shadow-lg border border-bible-200 dark:border-gray-700">
                         <button
                             onClick={() => setActiveTab('edit')}
-                            className={`flex-1 py-2.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[44px] ${
+                            className={`flex-1 py-2 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[44px] ${
                                 activeTab === 'edit'
                                     ? 'bg-bible-500 text-white shadow-sm'
                                     : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
@@ -467,7 +467,7 @@ export default function BibleNoteClient() {
                         </button>
                         <button
                             onClick={() => setActiveTab('preview')}
-                            className={`hidden md:flex flex-1 py-2.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[44px] ${
+                            className={`hidden md:flex flex-1 py-2 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[44px] ${
                                 activeTab === 'preview'
                                     ? 'bg-bible-500 text-white shadow-sm'
                                     : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
@@ -478,7 +478,7 @@ export default function BibleNoteClient() {
                         </button>
                         <button
                             onClick={() => setActiveTab('references')}
-                            className={`flex-1 py-2.5 rounded-lg font-chinese text-sm transition-all relative touch-manipulation min-h-[44px] ${
+                            className={`flex-1 py-2 rounded-lg font-chinese text-sm transition-all relative touch-manipulation min-h-[44px] ${
                                 activeTab === 'references'
                                     ? 'bg-bible-500 text-white shadow-sm'
                                     : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
@@ -496,7 +496,7 @@ export default function BibleNoteClient() {
                 </div>
 
                 {/* 主要内容区域 - 统一卡片样式 */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     {/* 编辑器区域（桌面端：2/3 宽度） */}
                     <div className={`lg:col-span-2 ${activeTab === 'edit' || activeTab === 'preview' ? 'block' : 'hidden lg:block'}`}>
                         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 overflow-hidden">

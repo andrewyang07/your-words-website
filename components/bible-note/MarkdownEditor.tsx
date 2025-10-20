@@ -438,8 +438,8 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                             onChange={(e) => onChange(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder={placeholder}
-                            className="w-full h-full p-4 bg-transparent text-bible-800 dark:text-bible-200 font-chinese text-sm resize-none focus:outline-none"
-                            style={{ minHeight: '400px' }}
+                            className="w-full h-full p-4 bg-transparent text-bible-800 dark:text-bible-200 font-chinese text-base resize-none focus:outline-none"
+                            style={{ minHeight: '400px', fontSize: '16px' }}
                         />
                         {/* 自动补全 */}
                         {suggestions.length > 0 && (
