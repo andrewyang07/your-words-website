@@ -44,7 +44,7 @@ export default function MaskSettings() {
                 value={maskCharsType}
                 onChange={(val) => setMaskCharsType(val as 'fixed' | 'range')}
                 options={typeOptions}
-                className="w-24 sm:w-32"
+                className="w-36 sm:w-40"
             />
 
             {/* 滑块控制 */}
@@ -64,19 +64,19 @@ export default function MaskSettings() {
                         id="mask-min"
                         label="顯示:"
                         min={1}
-                        max={maskCharsMax}
+                        max={10}
                         value={maskCharsMin}
-                        onChange={(val) => setMaskCharsRange(val, maskCharsMax)}
+                        onChange={(val) => setMaskCharsRange(Math.min(val, maskCharsMax), maskCharsMax)}
                         className="w-full sm:w-auto"
                     />
                     <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">-</span>
                     <Slider
                         id="mask-max"
                         label=""
-                        min={maskCharsMin}
+                        min={1}
                         max={10}
                         value={maskCharsMax}
-                        onChange={(val) => setMaskCharsRange(maskCharsMin, val)}
+                        onChange={(val) => setMaskCharsRange(maskCharsMin, Math.max(val, maskCharsMin))}
                         className="w-full sm:w-auto"
                         showValue={true}
                     />
