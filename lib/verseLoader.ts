@@ -151,9 +151,9 @@ export async function getBookMetadata(bookKey?: string): Promise<any> {
     }
 
     if (bookKey) {
-        return booksMetadata.find((book: any) => book.key === bookKey) || null;
+        return booksMetadata?.find((book: any) => book.key === bookKey) || null;
     }
 
-    return booksMetadata;
+    return booksMetadata || [];
 }
 
