@@ -32,8 +32,9 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
         fetch('/data/books.json')
             .then((res) => res.json())
             .then((data) => {
-                console.log('[Autocomplete] Loaded books:', data.length);
-                setBibleBooks(data);
+                const booksList = data.books || data; // 兼容两种格式
+                console.log('[Autocomplete] Loaded books:', booksList.length);
+                setBibleBooks(booksList);
             })
             .catch((error) => {
                 console.error('Error loading books:', error);
@@ -65,9 +66,12 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
         const [, bookName, chapterNum] = match;
         console.log('[Autocomplete] Matched:', { bookName, chapterNum });
 
-        // 查找匹配的书卷
+        // 查找匹配的书卷 (使用 nameTraditional 字段)
         const matchedBooks = bibleBooks.filter(
-            (book: any) => book.name.includes(bookName) || book.abbreviation === bookName
+            (book: any) => 
+                book.nameTraditional?.includes(bookName) || 
+                book.nameSimplified?.includes(bookName) ||
+                book.key?.includes(bookName)
         );
 
         console.log('[Autocomplete] Matched books:', matchedBooks.length);
@@ -80,6 +84,9 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
         const newSuggestions: VerseSuggestion[] = [];
 
         matchedBooks.forEach((book: any) => {
+            const bookDisplayName = book.nameTraditional || book.key;
+            const bookKey = book.key;
+            
             if (chapterNum) {
                 // 如果输入了章节号，显示该章的部分经文（简化：显示1-10节）
                 const chapter = parseInt(chapterNum, 10);
@@ -87,9 +94,9 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
                     // 简化：假设每章至少有10节，实际可以动态加载
                     for (let v = 1; v <= 10; v++) {
                         newSuggestions.push({
-                            display: `${book.name} ${chapter}:${v}`,
-                            insert: `${book.abbreviation}${chapter}:${v}`,
-                            book: book.name,
+                            display: `${bookDisplayName} ${chapter}:${v}`,
+                            insert: `${bookKey}${chapter}:${v}`,
+                            book: bookKey,
                             chapter,
                             verse: v,
                         });
@@ -99,9 +106,9 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
                 // 如果只输入了书卷名，显示所有章节
                 for (let ch = 1; ch <= book.chapters; ch++) {
                     newSuggestions.push({
-                        display: `${book.name} ${ch}章`,
-                        insert: `${book.abbreviation}${ch}`,
-                        book: book.name,
+                        display: `${bookDisplayName} ${ch}章`,
+                        insert: `${bookKey}${ch}`,
+                        book: bookKey,
                         chapter: ch,
                         verse: 1,
                     });
