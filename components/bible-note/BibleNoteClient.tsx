@@ -346,8 +346,12 @@ export default function BibleNoteClient() {
                 }
             />
 
-            {/* 主内容区域 */}
-            <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
+            {/* 主内容区域 - 根据 ChapterViewer 状态调整高度 */}
+            <div className={`max-w-7xl mx-auto px-4 py-4 md:py-6 transition-all duration-300 ${
+                chapterViewerState.isOpen 
+                    ? 'h-[calc(50vh-5rem)] overflow-y-auto' 
+                    : 'min-h-[calc(100vh-8rem)]'
+            }`}>
                 {/* 侧边栏菜单 */}
                 <SideMenu
                     isOpen={showSideMenu}
@@ -546,10 +550,14 @@ export default function BibleNoteClient() {
                     onChapterChange={handleChapterChange}
                 />
 
-                {/* 浮动按钮 - 打开圣经 */}
+                {/* 浮动按钮 - 位置根据 ChapterViewer 状态调整 */}
                 <button
                     onClick={handleOpenBible}
-                    className="fixed bottom-20 right-6 lg:bottom-8 lg:left-8 min-h-[56px] min-w-[56px] bg-bible-500 hover:bg-bible-600 active:bg-bible-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all z-40 flex items-center justify-center touch-manipulation"
+                    className={`fixed ${
+                        chapterViewerState.isOpen 
+                            ? 'bottom-[52vh]' 
+                            : 'bottom-20 lg:bottom-8'
+                    } right-6 lg:left-8 min-h-[56px] min-w-[56px] bg-bible-500 hover:bg-bible-600 active:bg-bible-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-40 flex items-center justify-center touch-manipulation`}
                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                     title="打開聖經"
                     aria-label="打開聖經查看器"

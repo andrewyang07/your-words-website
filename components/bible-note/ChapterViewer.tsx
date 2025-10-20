@@ -202,23 +202,13 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* 背景遮罩 */}
+                    {/* 浮动面板 - Split View 模式 */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50"
-                        onClick={onClose}
-                    />
-
-                    {/* 浮动面板 */}
-                    <motion.div
-                        initial={{ y: '100%' }}
-                        animate={{ y: 0 }}
-                        exit={{ y: '100%' }}
-                        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                        className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl max-h-[60vh] md:max-h-[70vh] flex flex-col"
+                        className="fixed top-[50vh] bottom-0 left-0 right-0 z-30 bg-white dark:bg-gray-800 shadow-2xl border-t-2 border-bible-300 dark:border-gray-600 flex flex-col"
                     >
                         {/* 头部 - 导航控制 */}
                         <div className="flex flex-col gap-2 p-2 md:p-4 border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900">
