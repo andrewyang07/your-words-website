@@ -1199,11 +1199,10 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">📖</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">默認顯示：精選經文</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">精選 114 節經文</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    當前頁面展示精心挑選的{' '}
-                                                    <span className="font-semibold text-bible-700 dark:text-bible-300">114 節最值得背誦的經文</span>，
-                                                    這些經文涵蓋了信仰的核心真理，適合初學者和進階學習。
+                                                    默認展示<span className="font-semibold text-bible-700 dark:text-bible-300">最值得背誦的 114 節經文</span>，
+                                                    涵蓋信仰核心真理。也可選擇書卷章節，瀏覽聖經 66 卷任意內容。
                                                 </p>
                                             </div>
                                         </div>
@@ -1211,35 +1210,22 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🎯</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">Flash Card 背誦模式</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">卡片背誦模式</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    每張卡片<span className="font-semibold">默認隱藏大部分內容</span>（只顯示前幾個字），
-                                                    <span className="font-semibold">點擊卡片</span>即可展開查看完整經文。 嘗試先回憶，再驗證！
+                                                    <span className="font-semibold">點擊卡片</span>展開/收起經文內容，
+                                                    點擊右上角<span className="font-semibold">眼睛圖標</span>切換阅读/背誦模式。
                                                 </p>
                                             </div>
                                         </div>
 
                                         <div className="flex items-start gap-2">
-                                            <span className="text-base">📚</span>
+                                            <span className="text-base">🎨</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">逐節學習：選擇書卷</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">自定義提示設置</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    使用頂部的<span className="font-semibold">「選擇書卷」</span>和
-                                                    <span className="font-semibold">「選擇章節」</span>篩選器， 可以瀏覽聖經 66
-                                                    卷書的任意章節，逐節背誦或閱讀。
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-start gap-2">
-                                            <span className="text-base">👁️</span>
-                                            <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">雙模式切換：阅读 / 背诵</p>
-                                                <p className="text-bible-600 dark:text-bible-400">
-                                                    點擊右上角的<span className="font-semibold">「阅读/背诵」</span>按鈕， 可以在
-                                                    <span className="font-semibold text-blue-600 dark:text-blue-400">阅读模式</span>（顯示全部） 和
-                                                    <span className="font-semibold text-purple-600 dark:text-purple-400">背诵模式</span>
-                                                    （隱藏內容）之間切換。
+                                                    調整遮罩設置，自定義顯示字數和模式：
+                                                    <span className="font-semibold">短語提示</span>（每句開頭提示）或
+                                                    <span className="font-semibold">開頭提示</span>（全文開頭提示），適應不同難度。
                                                 </p>
                                             </div>
                                         </div>
@@ -1247,21 +1233,10 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">⭐</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏功能</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏與分享</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    點擊卡片右上角的<span className="font-semibold">星標圖示</span>可以收藏喜歡的經文，
-                                                    之後可以使用「收藏」篩選器快速查看。可收藏任何章節的經文，不限於精選經文。
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-start gap-2">
-                                            <span className="text-base">🔗</span>
-                                            <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">分享收藏</p>
-                                                <p className="text-bible-600 dark:text-bible-400">
-                                                    在「收藏」模式下，點擊<span className="font-semibold">「分享」</span>按鈕可生成專屬鏈接，
-                                                    將您的收藏分享給其他人。對方打開鏈接後，可一鍵將所有經文添加到自己的收藏中。
+                                                    點擊卡片<span className="font-semibold">星標圖示</span>收藏經文，
+                                                    在收藏模式下可<span className="font-semibold">生成鏈接</span>分享給他人。
                                                 </p>
                                             </div>
                                         </div>
