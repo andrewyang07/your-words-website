@@ -52,7 +52,7 @@ export default function VerseReferenceList({
 
     if (loading) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-6">
                 <div className="flex items-center justify-center py-8">
                     <Loader2 className="w-6 h-6 animate-spin text-bible-600 dark:text-bible-400" />
                     <span className="ml-2 text-sm text-bible-600 dark:text-bible-400 font-chinese">
@@ -65,7 +65,7 @@ export default function VerseReferenceList({
 
     if (references.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-6">
                 <div className="flex items-center gap-2 mb-4">
                     <BookOpen className="w-5 h-5 text-bible-600 dark:text-bible-400" />
                     <h3 className="font-bold text-bible-800 dark:text-bible-200 font-chinese">
@@ -82,7 +82,7 @@ export default function VerseReferenceList({
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-6">
             {/* 标题和操作按钮 */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">

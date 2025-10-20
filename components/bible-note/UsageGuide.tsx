@@ -18,26 +18,28 @@ export default function UsageGuide() {
 
     return (
         <>
-            {/* 触发按钮 */}
+            {/* 触发按钮 - 与主站风格一致 */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
+                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                 title="使用說明"
+                aria-label="打開使用說明"
             >
-                <HelpCircle className="w-5 h-5 text-bible-600 dark:text-bible-300" />
+                <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-600 dark:text-bible-300" />
                 <span className="hidden sm:inline text-sm font-chinese text-bible-700 dark:text-bible-200">
                     使用說明
                 </span>
             </button>
 
-            {/* 说明卡片 */}
+            {/* 说明卡片 - 与主站风格一致 */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6"
+                        className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-6 mb-6"
                     >
                         <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-2">

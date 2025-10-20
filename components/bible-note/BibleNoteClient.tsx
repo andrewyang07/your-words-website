@@ -105,7 +105,7 @@ export default function BibleNoteClient() {
         }
     }, []);
 
-    // 展开所有经文
+    // 展开所有经文（跳过已展开的）
     const handleExpandAll = useCallback(async () => {
         if (references.length === 0) {
             alert('未檢測到經文引用');
@@ -115,8 +115,30 @@ export default function BibleNoteClient() {
         setIsExpanding(true);
 
         try {
+            // 检测已展开的经文（格式：> 约3:16: ...）
+            const expandedRefs = new Set<string>();
+            const expandedPattern = /^>\s*([^:：]+[:：]\d+[:：]\d+)[:：]/gm;
+            let match;
+            while ((match = expandedPattern.exec(content)) !== null) {
+                // 标准化引用格式（统一使用中文冒号）
+                const normalized = match[1].replace(/:/g, ':').trim();
+                expandedRefs.add(normalized);
+            }
+
+            // 过滤出未展开的经文
+            const toExpand = references.filter((ref) => {
+                const normalized = ref.original.replace(/:/g, ':').trim();
+                return !expandedRefs.has(normalized);
+            });
+
+            if (toExpand.length === 0) {
+                alert('所有經文已展開！');
+                setIsExpanding(false);
+                return;
+            }
+
             // 从后往前处理，避免位置偏移
-            const sortedRefs = [...references].sort((a, b) => b.position - a.position);
+            const sortedRefs = [...toExpand].sort((a, b) => b.position - a.position);
 
             let newContent = content;
 
@@ -134,6 +156,12 @@ export default function BibleNoteClient() {
             }
 
             setContent(newContent);
+
+            // 给用户反馈
+            const skipped = references.length - toExpand.length;
+            if (skipped > 0) {
+                alert(`已展開 ${toExpand.length} 節經文，跳過 ${skipped} 節（已存在）`);
+            }
         } catch (error) {
             console.error('Error expanding verses:', error);
             alert('展開經文時發生錯誤，請稍後再試');
@@ -152,75 +180,89 @@ export default function BibleNoteClient() {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800 p-4">
-            <div className="max-w-7xl mx-auto">
-                {/* 头部 */}
-                <header className="mb-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h1 className="text-3xl font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                            📝 聖經筆記本
+        <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
+            <div className="max-w-7xl mx-auto px-4 py-6">
+                {/* 头部 - 与主站风格一致 */}
+                <header className="mb-6" role="banner">
+                    <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+                        {/* 标题 - 使用主站的金色发光样式 */}
+                        <h1 className="text-3xl md:text-4xl font-extrabold font-chinese tracking-wide text-bible-800 dark:text-bible-200"
+                            style={{
+                                textShadow: '0 0 20px rgba(190, 158, 93, 0.3), 0 0 40px rgba(190, 158, 93, 0.15)',
+                            }}
+                        >
+                            <span className="inline-block mr-2">📝</span>
+                            聖經筆記本
                         </h1>
 
+                        {/* 操作按钮组 */}
                         <div className="flex items-center gap-2">
                             <UsageGuide />
 
                             <button
                                 onClick={handleExport}
                                 disabled={!content}
-                                className="flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="導出為 Markdown 文件"
+                                aria-label="導出筆記"
                             >
-                                <Download className="w-5 h-5" />
+                                <Download className="w-4 h-4 md:w-5 md:h-5" />
                                 <span className="hidden sm:inline text-sm font-chinese">導出</span>
                             </button>
 
                             <button
                                 onClick={handleClear}
                                 disabled={!content}
-                                className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="清空筆記"
+                                aria-label="清空筆記"
                             >
-                                <Trash2 className="w-5 h-5" />
+                                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                                 <span className="hidden sm:inline text-sm font-chinese">清空</span>
                             </button>
                         </div>
                     </div>
                 </header>
 
-                {/* 移动端 Tab 导航 */}
+                {/* 移动端 Tab 导航 - 与主站风格一致 */}
                 <div className="lg:hidden mb-4">
-                    <div className="flex gap-2 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+                    <div className="flex gap-2 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-lg border border-bible-200 dark:border-gray-700">
                         <button
                             onClick={() => setActiveTab('edit')}
-                            className={`flex-1 py-2 rounded-lg font-chinese text-sm transition-colors ${
+                            className={`flex-1 py-2.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[44px] ${
                                 activeTab === 'edit'
-                                    ? 'bg-bible-500 text-white'
+                                    ? 'bg-bible-500 text-white shadow-sm'
                                     : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
                             }`}
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                         >
                             編輯
                         </button>
                         <button
                             onClick={() => setActiveTab('preview')}
-                            className={`flex-1 py-2 rounded-lg font-chinese text-sm transition-colors ${
+                            className={`flex-1 py-2.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[44px] ${
                                 activeTab === 'preview'
-                                    ? 'bg-bible-500 text-white'
+                                    ? 'bg-bible-500 text-white shadow-sm'
                                     : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
                             }`}
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                         >
                             預覽
                         </button>
                         <button
                             onClick={() => setActiveTab('references')}
-                            className={`flex-1 py-2 rounded-lg font-chinese text-sm transition-colors relative ${
+                            className={`flex-1 py-2.5 rounded-lg font-chinese text-sm transition-all relative touch-manipulation min-h-[44px] ${
                                 activeTab === 'references'
-                                    ? 'bg-bible-500 text-white'
+                                    ? 'bg-bible-500 text-white shadow-sm'
                                     : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
                             }`}
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                         >
                             引用
                             {references.length > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                <span className="absolute -top-1 -right-1 bg-gold-500 dark:bg-gold-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
                                     {references.length}
                                 </span>
                             )}
@@ -228,13 +270,13 @@ export default function BibleNoteClient() {
                     </div>
                 </div>
 
-                {/* 主要内容区域 */}
+                {/* 主要内容区域 - 统一卡片样式 */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* 编辑器区域（桌面端：2/3 宽度） */}
                     <div
                         className={`lg:col-span-2 ${activeTab === 'edit' || activeTab === 'preview' ? 'block' : 'hidden lg:block'}`}
                     >
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 overflow-hidden">
                             <SimpleMDE value={content} onChange={setContent} options={editorOptions} />
                         </div>
                     </div>
