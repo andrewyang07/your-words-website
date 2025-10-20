@@ -113,34 +113,35 @@ export function maskVerseText(text: string, mode: 'punctuation' | 'prefix', visi
         return visiblePart + maskedPart;
     }
 
-    // 标点符号模式：只显示每个标点前 X 个字，其余遮罩
-    const punctuationRegex = /[，。！？；：,.!?;:]/g;
+    // 标点符号模式：显示每个短语/句子开头 X 个字，后面遮罩到标点为止
+    const punctuationRegex = /[，。！？；：,.!?;:]/;
     const chars = text.split('');
-    const visibleIndices = new Set<number>();
+    const result: string[] = [];
+    let charsShownInCurrentSegment = 0;
+    let isAfterPunctuation = true; // 开头视为"标点后"
 
-    // 找到所有标点符号，标记标点前 X 个字和标点本身为可见
-    chars.forEach((char, index) => {
+    for (let i = 0; i < chars.length; i++) {
+        const char = chars[i];
+
         if (punctuationRegex.test(char)) {
-            // 标点本身可见
-            visibleIndices.add(index);
-            // 标点前 X 个字可见
-            for (let i = Math.max(0, index - visibleChars); i < index; i++) {
-                visibleIndices.add(i);
+            // 标点符号本身显示
+            result.push(char);
+            charsShownInCurrentSegment = 0;
+            isAfterPunctuation = true;
+        } else {
+            // 普通字符
+            if (isAfterPunctuation && charsShownInCurrentSegment < visibleChars) {
+                // 标点后的前 X 个字显示
+                result.push(char);
+                charsShownInCurrentSegment++;
+            } else {
+                // 其余字符遮罩
+                result.push('█');
+                isAfterPunctuation = false;
             }
         }
-    });
+    }
 
-    // 生成遮罩文本
-    return chars
-        .map((char, index) => {
-            if (visibleIndices.has(index)) {
-                return char;
-            }
-            // 标点符号始终保留（以防万一有遗漏）
-            if (/[，。！？；：,.!?;:]/.test(char)) {
-                return char;
-            }
-            return '█';
-        })
-        .join('');
+    return result.join('');
 }
+
