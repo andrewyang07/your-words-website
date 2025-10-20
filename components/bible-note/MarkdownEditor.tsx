@@ -29,9 +29,10 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
 
     // 加载书卷数据（用于自动补全）
     useEffect(() => {
-        fetch('/data/books_traditional.json')
+        fetch('/data/books.json')
             .then((res) => res.json())
             .then((data) => {
+                console.log('[Autocomplete] Loaded books:', data.length);
                 setBibleBooks(data);
             })
             .catch((error) => {
