@@ -6,12 +6,26 @@ import './globals.css';
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://www.yourwords.me'),
-    title: '你的話語 - 聖經背誦助手 | 精選114節經文',
-    description: '免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習。支持Flash Card模式、收藏分享，讓神的話語常在心中。',
-    keywords: ['聖經', '背誦', '經文', 'Bible', '記憶', '學習', '聖經app', '背經', '靈修', '基督教', '你的話語'],
+    title: '你的話語 - 背聖經',
+    description: '免費聖經背誦工具，114節精選經文，Flash Card背誦模式，支持收藏分享。免费圣经背诵工具，让神的话语常在心中。',
+    keywords: [
+        // 繁体关键词
+        '聖經', '背誦', '經文', '背聖經', '聖經背誦', '背經文', '聖經app', '靈修', '背經', '經文背誦',
+        // 简体关键词
+        '圣经', '背诵', '经文', '背圣经', '圣经背诵', '背经文', '圣经app', '灵修', '背经', '经文背诵',
+        // 通用词
+        'Bible', '記憶經文', '记忆经文', '基督教', '你的話語', '你的话语',
+    ],
     authors: [{ name: 'Your Words Team' }],
     creator: 'Your Words',
     publisher: 'Your Words',
+    alternates: {
+        languages: {
+            'zh-TW': 'https://www.yourwords.me',
+            'zh-CN': 'https://www.yourwords.me',
+            'zh': 'https://www.yourwords.me',
+        },
+    },
     robots: {
         index: true,
         follow: true,
@@ -29,21 +43,21 @@ export const metadata: Metadata = {
         alternateLocale: ['zh_CN'],
         url: 'https://www.yourwords.me',
         siteName: '你的話語',
-        title: '你的話語 - 聖經背誦助手',
-        description: '免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習。支持Flash Card模式、收藏分享。',
+        title: '你的話語 - 背聖經',
+        description: '免費聖經背誦工具，114節精選經文，Flash Card背誦模式，支持收藏分享。',
         images: [
             {
                 url: '/logo-light.png',
                 width: 1024,
                 height: 1024,
-                alt: '你的話語 Logo',
+                alt: '你的話語 - 背聖經',
             },
         ],
     },
     twitter: {
         card: 'summary',
-        title: '你的話語 - 聖經背誦助手',
-        description: '免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習。',
+        title: '你的話語 - 背聖經',
+        description: '免費聖經背誦工具，114節精選經文，Flash Card背誦模式。',
         images: ['/logo-light.png'],
     },
     icons: {

@@ -1,7 +1,7 @@
 {
-  "name": "你的話語 - 聖經背誦助手",
+  "name": "你的話語 - 背聖經",
   "short_name": "你的話語",
-  "description": "免費的聖經背誦工具，提供精選114節經文和66卷聖經逐節學習",
+  "description": "免費聖經背誦工具，114節精選經文，Flash Card背誦模式",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FEF9F0",
