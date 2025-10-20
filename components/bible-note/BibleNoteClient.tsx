@@ -309,9 +309,9 @@ export default function BibleNoteClient() {
                             {showExportMenu && content && (
                                 <>
                                     {/* 背景遮罩 */}
-                                    <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
                                     {/* 菜单内容 - 移动端底部弹出，桌面端下拉 */}
-                                    <div className="fixed md:absolute bottom-0 md:bottom-auto left-0 right-0 md:right-0 md:left-auto md:mt-2 w-full md:w-48 bg-white dark:bg-gray-800 rounded-t-xl md:rounded-lg shadow-2xl border-t md:border border-bible-200 dark:border-gray-700 py-3 md:py-1 z-20">
+                                    <div className="fixed md:absolute bottom-0 md:bottom-auto left-0 right-0 md:right-0 md:left-auto md:mt-2 w-full md:w-48 bg-white dark:bg-gray-800 rounded-t-xl md:rounded-lg shadow-2xl border-t md:border border-bible-200 dark:border-gray-700 py-3 md:py-1 z-50">
                                         <button
                                             onClick={handleCopyToClipboard}
                                             className="w-full flex items-center gap-3 px-4 py-3 md:py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left min-h-[48px] md:min-h-0"

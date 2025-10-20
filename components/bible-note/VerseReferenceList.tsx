@@ -51,8 +51,8 @@ export default function VerseReferenceList({
 
     if (loading) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-6">
-                <div className="flex items-center justify-center py-8">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-3 md:p-4">
+                <div className="flex items-center justify-center py-4 md:py-6">
                     <Loader2 className="w-6 h-6 animate-spin text-bible-600 dark:text-bible-400" />
                     <span className="ml-2 text-sm text-bible-600 dark:text-bible-400 font-chinese">
                         加載經文中...
@@ -64,14 +64,14 @@ export default function VerseReferenceList({
 
     if (references.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-6">
-                <div className="flex items-center gap-2 mb-4">
-                    <BookOpen className="w-5 h-5 text-bible-600 dark:text-bible-400" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-3 md:p-4">
+                <div className="flex items-center gap-2 mb-2 md:mb-3">
+                    <BookOpen className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     <h3 className="font-bold text-bible-800 dark:text-bible-200 font-chinese">
                         引用的經文
                     </h3>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8 font-chinese">
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4 md:py-6 font-chinese">
                     尚未引用任何經文
                     <br />
                     <span className="text-xs">試著輸入「约3:16」或「马太福音5:3」</span>
@@ -81,11 +81,11 @@ export default function VerseReferenceList({
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-3 md:p-4">
             {/* 标题和操作按钮 */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-2 md:mb-3">
                 <div className="flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-bible-600 dark:text-bible-400" />
+                    <BookOpen className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     <h3 className="font-bold text-bible-800 dark:text-bible-200 font-chinese">
                         引用的經文
                         <span className="ml-2 text-sm font-normal text-bible-500 dark:text-bible-400">
@@ -116,7 +116,7 @@ export default function VerseReferenceList({
             </div>
 
             {/* 经文列表 */}
-            <div className="space-y-3">
+            <div className="space-y-2">
                 {versesWithText.map((verse, index) => (
                     <VerseCard
                         key={`${verse.book}-${verse.chapter}-${verse.startVerse}-${index}`}

@@ -218,7 +218,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
                         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                        className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl max-h-[70vh] flex flex-col"
+                        className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl max-h-[60vh] md:max-h-[70vh] flex flex-col"
                     >
                         {/* 头部 - 导航控制 */}
                         <div className="flex flex-col gap-2 p-2 md:p-4 border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900">
@@ -227,7 +227,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                     {/* 书卷选择器 */}
                                     <Listbox value={currentBook} onChange={handleBookChange}>
                                         <div className="relative">
-                                            <Listbox.Button className="min-h-[44px] px-3 py-2 bg-white dark:bg-gray-700 border border-bible-300 dark:border-gray-600 rounded-lg text-sm md:text-base font-chinese text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-600 transition-colors touch-manipulation">
+                                            <Listbox.Button className="min-h-[40px] md:min-h-[44px] px-2.5 md:px-3 py-1.5 md:py-2 bg-white dark:bg-gray-700 border border-bible-300 dark:border-gray-600 rounded-lg text-xs md:text-sm font-chinese text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-600 transition-colors touch-manipulation">
                                                 {bookDisplayName || currentBook}
                                             </Listbox.Button>
                                             <Transition
@@ -242,7 +242,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                             key={book.key}
                                                             value={book.key}
                                                             className={({ active }) =>
-                                                                `min-h-[44px] cursor-pointer select-none px-4 py-2 font-chinese text-sm md:text-base ${
+                                                                `min-h-[40px] md:min-h-[44px] cursor-pointer select-none px-3 md:px-4 py-1.5 md:py-2 font-chinese text-xs md:text-sm ${
                                                                     active
                                                                         ? 'bg-bible-100 dark:bg-gray-600 text-bible-900 dark:text-bible-100'
                                                                         : 'text-bible-700 dark:text-bible-300'
@@ -275,7 +275,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                             key={ch}
                                                             value={ch}
                                                             className={({ active }) =>
-                                                                `min-h-[44px] cursor-pointer select-none px-4 py-2 font-chinese text-sm md:text-base ${
+                                                                `min-h-[40px] md:min-h-[44px] cursor-pointer select-none px-3 md:px-4 py-1.5 md:py-2 font-chinese text-xs md:text-sm ${
                                                                     active
                                                                         ? 'bg-bible-100 dark:bg-gray-600 text-bible-900 dark:text-bible-100'
                                                                         : 'text-bible-700 dark:text-bible-300'
@@ -328,14 +328,14 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                         </div>
 
                         {/* 内容区域 */}
-                        <div className="flex-1 overflow-y-auto p-3 md:p-4">
+                        <div className="flex-1 overflow-y-auto p-2 md:p-3">
                             {loading ? (
                                 <div className="flex items-center justify-center py-12">
                                     <Loader2 className="w-8 h-8 animate-spin text-bible-600 dark:text-bible-400" />
                                     <span className="ml-3 text-bible-600 dark:text-bible-400 font-chinese text-sm md:text-base">加載中...</span>
                                 </div>
                             ) : (
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     {Object.entries(verses)
                                         .sort(([a], [b]) => parseInt(a) - parseInt(b))
                                         .map(([verseNum, verseText]) => {
@@ -347,7 +347,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     transition={{ duration: 0.2, delay: num * 0.01 }}
-                                                    className={`min-h-[56px] p-3 md:p-4 bg-bible-50 dark:bg-gray-700 rounded-lg border-2 transition-colors cursor-pointer ${
+                                                    className={`min-h-[56px] p-2.5 md:p-3 bg-bible-50 dark:bg-gray-700 rounded-lg border-2 transition-colors cursor-pointer ${
                                                         isSelected
                                                             ? 'border-bible-500 dark:border-bible-400 bg-bible-100 dark:bg-gray-600'
                                                             : 'border-bible-200 dark:border-gray-600'
@@ -371,12 +371,12 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                         />
 
                                                         {/* 节数标记 */}
-                                                        <span className="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 flex items-center justify-center bg-bible-500 text-white rounded-full text-xs md:text-sm font-semibold">
+                                                        <span className="flex-shrink-0 w-6 h-6 md:w-7 md:h-7 flex items-center justify-center bg-bible-500 text-white rounded-full text-xs md:text-sm font-semibold">
                                                             {verseNum}
                                                         </span>
 
                                                         {/* 经文内容 */}
-                                                        <p className="flex-1 text-bible-800 dark:text-bible-100 font-chinese text-sm md:text-base leading-relaxed">
+                                                        <p className="flex-1 text-bible-800 dark:text-bible-100 font-chinese text-xs md:text-sm leading-relaxed">
                                                             {verseText}
                                                         </p>
 
@@ -405,7 +405,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                         </div>
 
                         {/* 底部操作栏 */}
-                        <div className="min-h-[60px] p-3 md:p-4 border-t border-bible-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between gap-3">
+                        <div className="min-h-[52px] p-2.5 md:p-3 border-t border-bible-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between gap-3">
                             {/* 左侧：选择提示 */}
                             <div className="text-xs md:text-sm text-bible-600 dark:text-bible-400 font-chinese">
                                 {selectedVerses.size > 0 ? `已選 ${selectedVerses.size} 節` : '點擊 ☑️ 多選'}

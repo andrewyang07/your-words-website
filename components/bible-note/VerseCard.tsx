@@ -24,10 +24,10 @@ export default function VerseCard({
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-bible-50 dark:bg-gray-700 rounded-lg p-4 border border-bible-200 dark:border-gray-600 hover:border-bible-400 dark:hover:border-bible-500 transition-colors"
+            className="bg-bible-50 dark:bg-gray-700 rounded-lg p-3 border border-bible-200 dark:border-gray-600 hover:border-bible-400 dark:hover:border-bible-500 transition-colors"
         >
             {/* 经文引用标题 */}
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-1.5">
                 <h4 className="font-semibold text-bible-700 dark:text-bible-300 font-chinese">
                     {reference}
                 </h4>
