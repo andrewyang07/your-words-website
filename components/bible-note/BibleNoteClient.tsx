@@ -238,14 +238,20 @@ export default function BibleNoteClient() {
         setLastViewedChapter(chapter);
     }, []);
 
-    // 打开圣经查看器（使用上次查看的位置）
+    // 切换圣经查看器（打开/关闭）
     const handleOpenBible = useCallback(() => {
-        setChapterViewerState({
-            isOpen: true,
-            book: lastViewedBook || 'GEN',
-            chapter: lastViewedChapter || 1,
-        });
-    }, [lastViewedBook, lastViewedChapter]);
+        if (chapterViewerState.isOpen) {
+            // 如果已打开，则关闭
+            setChapterViewerState({ isOpen: false, book: '', chapter: 0 });
+        } else {
+            // 如果未打开，则打开
+            setChapterViewerState({
+                isOpen: true,
+                book: lastViewedBook || 'GEN',
+                chapter: lastViewedChapter || 1,
+            });
+        }
+    }, [chapterViewerState.isOpen, lastViewedBook, lastViewedChapter]);
 
     // 章节变化回调
     const handleChapterChange = useCallback((book: string, chapter: number) => {
@@ -557,12 +563,12 @@ export default function BibleNoteClient() {
                         chapterViewerState.isOpen 
                             ? 'bottom-[52vh]' 
                             : 'bottom-20 lg:bottom-8'
-                    } right-6 lg:left-8 min-h-[56px] min-w-[56px] bg-bible-500 hover:bg-bible-600 active:bg-bible-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-40 flex items-center justify-center touch-manipulation`}
+                    } right-6 lg:left-8 min-h-[56px] min-w-[56px] lg:min-h-[48px] lg:min-w-[48px] bg-bible-500 hover:bg-bible-600 active:bg-bible-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-40 flex items-center justify-center touch-manipulation`}
                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                     title="打開聖經"
                     aria-label="打開聖經查看器"
                 >
-                    <BookOpen className="w-6 h-6" />
+                    <BookOpen className="w-6 h-6 lg:w-5 lg:h-5" />
                 </button>
             </div>
         </div>

@@ -20,7 +20,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
     const [verses, setVerses] = useState<Record<number, string>>({});
     const [loading, setLoading] = useState(false);
     const [isInserting, setIsInserting] = useState(false);
-    const [bookDisplayName, setBookDisplayName] = useState('');
+    const [bookDisplayName, setBookDisplayName] = useState(book);
     const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
     const [allBooks, setAllBooks] = useState<any[]>([]);
     const [currentBook, setCurrentBook] = useState(book);
@@ -61,10 +61,15 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                 if (bookData) {
                     setBookDisplayName(bookData.nameTraditional || currentBook);
                     setMaxChapter(bookData.chapters || 1);
+                } else {
+                    // fallback 到 currentBook
+                    setBookDisplayName(currentBook);
                 }
             })
             .catch((error) => {
                 console.error('Error loading book metadata:', error);
+                // fallback 到 currentBook
+                setBookDisplayName(currentBook);
             });
 
         // 加载章节经文
