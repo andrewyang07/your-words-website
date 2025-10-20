@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Bold, Italic, Heading, Quote, List, ListOrdered, Link as LinkIcon, Eye, EyeOff } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import VerseAutocomplete from './VerseAutocomplete';
 
 interface VerseSuggestion {
@@ -34,7 +35,6 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
             .then((res) => res.json())
             .then((data) => {
                 const booksList = data.books || data; // 兼容两种格式
-                console.log('[Autocomplete] Loaded books:', booksList.length);
                 setBibleBooks(booksList);
             })
             .catch((error) => {
@@ -46,14 +46,11 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
     const updateSuggestions = useCallback(() => {
         const textarea = textareaRef.current;
         if (!textarea || !bibleBooks) {
-            console.log('[Autocomplete] Not ready:', { textarea: !!textarea, bibleBooks: !!bibleBooks });
             return;
         }
 
         const selectionStart = textarea.selectionStart;
         const textBeforeCursor = value.substring(0, selectionStart);
-
-        console.log('[Autocomplete] Text before cursor:', textBeforeCursor.slice(-20));
 
         // 匹配模式: 
         // 1. "路加福音2:1" -> bookName="路加福音", chapter="2", verse="1"
@@ -63,13 +60,11 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
         const match = textBeforeCursor.match(/([\u4e00-\u9fa5]+)(\d+)?:?(\d+)?$/);
 
         if (!match) {
-            console.log('[Autocomplete] No match');
             setSuggestions([]);
             return;
         }
 
         const [fullMatch, bookName, chapterNum, verseNum] = match;
-        console.log('[Autocomplete] Matched:', { fullMatch, bookName, chapterNum, verseNum });
 
         // 查找匹配的书卷 (支持模糊搜索)
         const matchedBooks = bibleBooks.filter((book: any) => {
@@ -94,8 +89,6 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
             
             return false;
         });
-
-        console.log('[Autocomplete] Matched books:', matchedBooks.length);
 
         if (matchedBooks.length === 0) {
             setSuggestions([]);
@@ -154,7 +147,6 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
 
         // 限制显示数量
         const finalSuggestions = newSuggestions.slice(0, 20);
-        console.log('[Autocomplete] Final suggestions:', finalSuggestions.length);
 
         setSuggestions(finalSuggestions);
         setSelectedSuggestionIndex(0);
@@ -190,13 +182,6 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
             const top = textareaRect.top + cursorY + window.scrollY + 2;
             const left = textareaRect.left + cursorX + window.scrollX;
 
-            console.log('[Autocomplete] Position:', {
-                top,
-                left,
-                cursorPos,
-                currentLineIndex,
-                currentLineText: currentLineText.slice(-10),
-            });
             setAutocompletePosition({ top, left });
         }
     }, [bibleBooks, value]);
@@ -376,16 +361,70 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                 {showPreview ? (
                     <div className="h-full overflow-y-auto p-4 prose prose-sm dark:prose-invert max-w-none bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100">
                         <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
                             components={{
-                                // Customize blockquote for verse quotes
+                                // 经文引用块 - 特殊样式
                                 blockquote: ({ node, ...props }) => (
-                                    <blockquote className="border-l-4 border-bible-500 pl-4 italic text-bible-700 dark:text-bible-300" {...props} />
+                                    <blockquote 
+                                        className="border-l-4 border-bible-500 dark:border-bible-400 pl-4 py-2 my-3 italic text-bible-700 dark:text-bible-300 bg-bible-50 dark:bg-gray-700/50 rounded-r" 
+                                        {...props} 
+                                    />
                                 ),
-                                // Ensure headings have proper color
-                                h1: ({ node, ...props }) => <h1 className="text-gray-900 dark:text-gray-100" {...props} />,
-                                h2: ({ node, ...props }) => <h2 className="text-gray-900 dark:text-gray-100" {...props} />,
-                                h3: ({ node, ...props }) => <h3 className="text-gray-900 dark:text-gray-100" {...props} />,
-                                p: ({ node, ...props }) => <p className="text-gray-800 dark:text-gray-100" {...props} />,
+                                // 标题 (h1-h6)
+                                h1: ({ node, ...props }) => (
+                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700" {...props} />
+                                ),
+                                h2: ({ node, ...props }) => (
+                                    <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-5 mb-2" {...props} />
+                                ),
+                                h3: ({ node, ...props }) => (
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-4 mb-2" {...props} />
+                                ),
+                                h4: ({ node, ...props }) => (
+                                    <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-3 mb-1" {...props} />
+                                ),
+                                h5: ({ node, ...props }) => (
+                                    <h5 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mt-2 mb-1" {...props} />
+                                ),
+                                h6: ({ node, ...props }) => (
+                                    <h6 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mt-2 mb-1" {...props} />
+                                ),
+                                // 段落
+                                p: ({ node, ...props }) => (
+                                    <p className="text-gray-800 dark:text-gray-100 my-3 leading-relaxed" {...props} />
+                                ),
+                                // 列表
+                                ul: ({ node, ...props }) => (
+                                    <ul className="list-disc list-outside ml-5 text-gray-800 dark:text-gray-100 my-3 space-y-1" {...props} />
+                                ),
+                                ol: ({ node, ...props }) => (
+                                    <ol className="list-decimal list-outside ml-5 text-gray-800 dark:text-gray-100 my-3 space-y-1" {...props} />
+                                ),
+                                li: ({ node, ...props }) => (
+                                    <li className="text-gray-800 dark:text-gray-100" {...props} />
+                                ),
+                                // 文本格式
+                                strong: ({ node, ...props }) => (
+                                    <strong className="font-bold text-gray-900 dark:text-white" {...props} />
+                                ),
+                                em: ({ node, ...props }) => (
+                                    <em className="italic text-gray-800 dark:text-gray-200" {...props} />
+                                ),
+                                // 代码
+                                code: ({ node, inline, ...props }: any) => 
+                                    inline ? (
+                                        <code className="bg-bible-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-bible-800 dark:text-bible-200 text-sm font-mono" {...props} />
+                                    ) : (
+                                        <code className="block bg-bible-100 dark:bg-gray-700 p-3 rounded text-bible-800 dark:text-bible-200 text-sm font-mono my-3 overflow-x-auto" {...props} />
+                                    ),
+                                // 链接
+                                a: ({ node, ...props }) => (
+                                    <a className="text-bible-600 dark:text-bible-400 underline hover:text-bible-700 dark:hover:text-bible-300" {...props} />
+                                ),
+                                // 水平线
+                                hr: ({ node, ...props }) => (
+                                    <hr className="my-4 border-gray-300 dark:border-gray-600" {...props} />
+                                ),
                             }}
                         >
                             {value}

@@ -405,7 +405,9 @@ export default function BibleNoteClient() {
                             <MarkdownEditor
                                 value={content}
                                 onChange={setContent}
-                                placeholder="開始記錄你的靈修筆記...\n\n試試輸入經文引用，如「马太福音5:1」，系統會自動顯示補全建議。"
+                                placeholder={`開始記錄你的靈修筆記...
+
+試試輸入經文引用，如「马太福音5:1」，系統會自動顯示補全建議。`}
                                 onExpandVerse={getVerseText}
                             />
                         </div>

@@ -1279,6 +1279,46 @@ export default function HomePage() {
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {/* 新功能宣传 - 圣经笔记本 BETA */}
+                                        <div className="mt-3 pt-3 border-t border-bible-200/50 dark:border-gray-700">
+                                            <div className="p-4 bg-gradient-to-r from-bible-50 to-gold-50 dark:from-gray-700 dark:to-gray-800 rounded-lg border-2 border-bible-300 dark:border-bible-600">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="text-2xl">📝</span>
+                                                    <h3 className="text-lg font-bold text-bible-800 dark:text-bible-200">
+                                                        全新功能：聖經筆記本
+                                                    </h3>
+                                                    <span className="px-2 py-0.5 text-xs bg-gold-500 text-white rounded-full font-bold">
+                                                        BETA
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-bible-700 dark:text-bible-300 leading-relaxed mb-3">
+                                                    現在可以記錄你的靈修筆記了！點擊右上角菜單 → 「筆記本」
+                                                </p>
+                                                <ul className="text-sm text-bible-700 dark:text-bible-300 space-y-2">
+                                                    <li className="flex items-start gap-2">
+                                                        <span className="text-bible-500 mt-0.5">✨</span>
+                                                        <span>自動補全經文引用（如「约3:16」）</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2">
+                                                        <span className="text-bible-500 mt-0.5">📖</span>
+                                                        <span>一鍵展開經文內容</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2">
+                                                        <span className="text-bible-500 mt-0.5">🔍</span>
+                                                        <span>底部浮動按鈕快速查看整章聖經</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2">
+                                                        <span className="text-bible-500 mt-0.5">✍️</span>
+                                                        <span>支持 Markdown 格式編輯和預覽</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2">
+                                                        <span className="text-bible-500 mt-0.5">💾</span>
+                                                        <span>自動保存到本地，支持導出 MD 文件</span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
