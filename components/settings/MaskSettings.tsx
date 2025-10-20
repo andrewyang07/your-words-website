@@ -128,7 +128,7 @@ export default function MaskSettings() {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
                             transition={{ duration: 0.2 }}
-                            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-2 border-bible-300 dark:border-gray-600 z-50 p-5"
+                            className="fixed left-1/2 top-[20vh] sm:top-1/2 -translate-x-1/2 sm:-translate-y-1/2 w-[95vw] sm:w-[90vw] max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-2 border-bible-300 dark:border-gray-600 z-50 p-4 sm:p-5"
                         >
                             {/* 标题和关闭按钮 */}
                             <div className="flex items-center justify-between mb-4">
@@ -149,36 +149,36 @@ export default function MaskSettings() {
                             </div>
 
                             {/* 内容 */}
-                            <div className="space-y-4 text-sm text-bible-700 dark:text-bible-300 font-chinese">
+                            <div className="space-y-3 sm:space-y-4 text-sm text-bible-700 dark:text-bible-300 font-chinese">
                                 {/* 每句提示 */}
-                                <div className="p-3 bg-bible-50 dark:bg-gray-700 rounded-lg">
-                                    <p className="font-semibold text-bible-800 dark:text-bible-200 mb-2">
+                                <div className="p-2.5 sm:p-3 bg-bible-50 dark:bg-gray-700 rounded-lg">
+                                    <p className="font-semibold text-bible-800 dark:text-bible-200 mb-1.5 sm:mb-2 text-sm">
                                         • 每句提示
                                     </p>
-                                    <p className="text-xs mb-2 text-bible-600 dark:text-bible-400">
+                                    <p className="text-xs mb-1.5 sm:mb-2 text-bible-600 dark:text-bible-400">
                                         在每個句子開頭顯示提示字
                                     </p>
-                                    <div className="p-2 bg-white dark:bg-gray-800 rounded border border-bible-200 dark:border-gray-600 font-chinese text-xs">
+                                    <div className="p-1.5 sm:p-2 bg-white dark:bg-gray-800 rounded border border-bible-200 dark:border-gray-600 font-chinese text-xs">
                                         <p>這律██，總要████（每句都有提示）</p>
                                     </div>
                                 </div>
 
                                 {/* 开头提示 */}
-                                <div className="p-3 bg-bible-50 dark:bg-gray-700 rounded-lg">
-                                    <p className="font-semibold text-bible-800 dark:text-bible-200 mb-2">
+                                <div className="p-2.5 sm:p-3 bg-bible-50 dark:bg-gray-700 rounded-lg">
+                                    <p className="font-semibold text-bible-800 dark:text-bible-200 mb-1.5 sm:mb-2 text-sm">
                                         • 開頭提示
                                     </p>
-                                    <p className="text-xs mb-2 text-bible-600 dark:text-bible-400">
+                                    <p className="text-xs mb-1.5 sm:mb-2 text-bible-600 dark:text-bible-400">
                                         只在全文開頭顯示提示字
                                     </p>
-                                    <div className="p-2 bg-white dark:bg-gray-800 rounded border border-bible-200 dark:border-gray-600 font-chinese text-xs">
+                                    <div className="p-1.5 sm:p-2 bg-white dark:bg-gray-800 rounded border border-bible-200 dark:border-gray-600 font-chinese text-xs">
                                         <p>這律██████████（只有開頭有提示）</p>
                                     </div>
                                 </div>
 
                                 {/* 使用建议 */}
-                                <div className="flex items-start gap-2 p-3 bg-gold-50 dark:bg-gray-700 rounded-lg border border-gold-200 dark:border-gold-600">
-                                    <span className="text-base">💡</span>
+                                <div className="flex items-start gap-2 p-2.5 sm:p-3 bg-gold-50 dark:bg-gray-700 rounded-lg border border-gold-200 dark:border-gold-600">
+                                    <span className="text-sm sm:text-base">💡</span>
                                     <p className="text-xs text-bible-700 dark:text-bible-300">
                                         <span className="font-semibold">建議：</span>
                                         初學者推薦「每句提示」，更容易記憶；

@@ -1228,8 +1228,8 @@ export default function HomePage() {
                                             <div>
                                                 <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">背誦模式</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    <span className="font-semibold">點擊卡片</span>顯示/隱藏經文內容。
-                                                    點擊<span className="font-semibold">眼睛圖標</span>切換閱讀/背誦模式，
+                                                    <span className="font-semibold">點擊卡片</span>顯示/隱藏經文內容。 點擊
+                                                    <span className="font-semibold">眼睛圖標</span>切換閱讀/背誦模式，
                                                     <span className="font-semibold">洗牌按鈕</span>隨機排序。
                                                 </p>
                                             </div>
@@ -1242,9 +1242,8 @@ export default function HomePage() {
                                                 <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">遮罩提示</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
                                                     點擊卡片顯示/隱藏經文內容。支持
-                                                    <span className="font-semibold">每句提示</span>/
-                                                    <span className="font-semibold">開頭提示</span>兩種模式，
-                                                    可設置固定或隨機字數，每次點擊隨機顯示不同提示字數。
+                                                    <span className="font-semibold">每句提示</span>/<span className="font-semibold">開頭提示</span>
+                                                    兩種模式， 可設置固定或隨機字數，每次點擊隨機顯示不同提示字數。
                                                 </p>
                                             </div>
                                         </div>
@@ -1255,8 +1254,8 @@ export default function HomePage() {
                                             <div>
                                                 <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏分享</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    點擊<span className="font-semibold">星標</span>收藏經文，
-                                                    點擊<span className="font-semibold">分享按鈕</span>生成鏈接。
+                                                    點擊<span className="font-semibold">星標</span>收藏經文， 點擊
+                                                    <span className="font-semibold">分享按鈕</span>生成鏈接。
                                                 </p>
                                             </div>
                                         </div>
