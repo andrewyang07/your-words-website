@@ -2,12 +2,16 @@
 
 import { useState } from 'react';
 import { useMaskStore } from '@/stores/useMaskStore';
+import { useAppStore } from '@/stores/useAppStore';
 import Select, { SelectOption } from '@/components/ui/Select';
 import Slider from '@/components/ui/Slider';
 import { RotateCcw, HelpCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import translations from '@/lib/i18n';
+import { getFontClass } from '@/lib/fontUtils';
 
 export default function MaskSettings() {
+    const { language } = useAppStore();
     const {
         maskMode,
         maskCharsType,
@@ -22,15 +26,18 @@ export default function MaskSettings() {
     } = useMaskStore();
 
     const [showHelp, setShowHelp] = useState(false);
+    
+    const t = translations[language];
+    const fontClass = getFontClass(language);
 
     const modeOptions: SelectOption[] = [
-        { value: 'punctuation', label: '每句提示' },
-        { value: 'prefix', label: '開頭提示' },
+        { value: 'punctuation', label: t.perSentenceHint },
+        { value: 'prefix', label: t.beginningHint },
     ];
 
     const typeOptions: SelectOption[] = [
-        { value: 'fixed', label: '固定字數' },
-        { value: 'range', label: '隨機字數' },
+        { value: 'fixed', label: t.fixedCount },
+        { value: 'range', label: t.randomRange },
     ];
 
     return (
@@ -66,18 +73,22 @@ export default function MaskSettings() {
             {maskCharsType === 'fixed' ? (
                 <Slider
                     id="mask-slider"
-                    label="顯示:"
+                    label={language === 'english' ? 'Show:' : '顯示:'}
                     min={1}
                     max={10}
                     value={maskCharsFixed}
-                    onChange={setMaskCharsFixed}
+                    onChange={(val) => {
+                        console.log('[MaskSettings] setMaskCharsFixed called with:', val);
+                        setMaskCharsFixed(val);
+                    }}
                     className="w-full sm:w-auto max-w-[160px]"
+                    suffix={t.chars}
                 />
             ) : (
                 <div className="flex flex-row items-center gap-1.5 w-full sm:w-auto max-w-[320px]">
                     <Slider
                         id="mask-min"
-                        label="最少:"
+                        label={t.minChars}
                         min={1}
                         max={10}
                         value={maskCharsMin}
@@ -85,10 +96,10 @@ export default function MaskSettings() {
                         className="w-full sm:w-auto max-w-[90px]"
                         showValue={false}
                     />
-                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese flex-shrink-0">-</span>
+                    <span className={`text-xs text-bible-600 dark:text-bible-400 ${fontClass} flex-shrink-0`}>-</span>
                     <Slider
                         id="mask-max"
-                        label="最多:"
+                        label={t.maxChars}
                         min={1}
                         max={10}
                         value={maskCharsMax}
@@ -96,8 +107,8 @@ export default function MaskSettings() {
                         className="w-full sm:w-auto max-w-[90px]"
                         showValue={false}
                     />
-                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese font-semibold flex-shrink-0">
-                        {maskCharsMin}-{maskCharsMax}字
+                    <span className={`text-xs text-bible-600 dark:text-bible-400 ${fontClass} font-semibold flex-shrink-0`}>
+                        {maskCharsMin}-{maskCharsMax}{t.chars}
                     </span>
                 </div>
             )}
@@ -105,12 +116,12 @@ export default function MaskSettings() {
             {/* 恢复默认按钮 */}
             <button
                 onClick={resetToDefaults}
-                className="flex items-center gap-1 px-2.5 py-2 text-xs text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors touch-manipulation border border-bible-200 dark:border-gray-700"
-                title="恢復默認設置"
-                aria-label="恢復默認設置"
+                className={`flex items-center gap-1 px-2.5 py-2 text-xs text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors touch-manipulation border border-bible-200 dark:border-gray-700 ${fontClass}`}
+                title={t.resetToDefault}
+                aria-label={t.resetToDefault}
             >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline font-chinese">恢復默認</span>
+                <span className="hidden sm:inline">{t.resetToDefault}</span>
             </button>
 
             {/* 帮助提示框 */}

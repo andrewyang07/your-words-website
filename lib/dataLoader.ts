@@ -3,6 +3,7 @@
 import { Verse, Book, Language } from '@/types/verse';
 import { PRESET_VERSE_REFERENCES } from './constants';
 import { logError, logWarning } from './errorHandler';
+import { getBookKey } from './bookKeyMapping';
 
 // 从完整圣经 JSON 中提取指定的经文
 export async function loadPresetVerses(language: Language): Promise<Verse[]> {
@@ -19,9 +20,12 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
         const verses: Verse[] = [];
 
         PRESET_VERSE_REFERENCES.forEach((ref, index) => {
-            const bookData = bibleData[ref.book];
+            // 根据语言获取正确的书卷 key
+            const bookKey = getBookKey(ref.book, language);
+            
+            const bookData = bibleData[bookKey];
             if (!bookData) {
-                logWarning('loadPresetVerses', `书卷不存在: ${ref.book}`);
+                logWarning('loadPresetVerses', `书卷不存在: ${ref.book} (${bookKey})`);
                 return;
             }
 
@@ -74,10 +78,13 @@ export async function loadChapterVerses(bookKey: string, chapter: number, langua
 
         const bibleData = await response.json();
 
+        // 根据语言获取正确的书卷 key
+        const dataKey = getBookKey(bookKey, language);
+
         // 查找书卷数据
-        const bookData = bibleData[bookKey];
+        const bookData = bibleData[dataKey];
         if (!bookData) {
-            logError('loadChapterVerses', `书卷不存在: ${bookKey}，可用的书卷: ${Object.keys(bibleData).slice(0, 10).join(', ')}`);
+            logError('loadChapterVerses', `书卷不存在: ${bookKey} (${dataKey})，可用的书卷: ${Object.keys(bibleData).slice(0, 10).join(', ')}`);
             throw new Error(`书卷不存在: ${bookKey}`);
         }
 

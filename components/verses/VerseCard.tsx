@@ -30,15 +30,22 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     }, [defaultRevealed]);
 
     // 计算遮罩字符数（固定或随机范围）
+    // 注意：每次卡片点击（isRevealed 切换）时重新生成随机数
     const visibleChars = useMemo(() => {
         if (maskCharsType === 'fixed') {
+            console.log('[VerseCard] Fixed mode, visibleChars:', maskCharsFixed);
             return maskCharsFixed;
         }
-        // 范围模式：为每张卡片生成随机数（基于 verse.id 保证稳定）
+        // 范围模式：生成随机数
+        // 使用 verse.id + isRevealed 作为种子，确保每次打开/关闭都不同
         const seed = verse.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const random = Math.abs(Math.sin(seed)) * (maskCharsMax - maskCharsMin + 1);
-        return Math.floor(random) + maskCharsMin;
-    }, [verse.id, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax]);
+        const revealSeed = isRevealed ? 0 : 1;
+        const combinedSeed = seed + revealSeed + maskCharsMin + maskCharsMax;
+        const random = Math.abs(Math.sin(combinedSeed)) * (maskCharsMax - maskCharsMin + 1);
+        const result = Math.floor(random) + maskCharsMin;
+        console.log('[VerseCard] Range mode, min:', maskCharsMin, 'max:', maskCharsMax, 'result:', result);
+        return result;
+    }, [verse.id, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax, isRevealed]);
 
     const sizeClasses = {
         small: 'p-4 min-h-[120px]',

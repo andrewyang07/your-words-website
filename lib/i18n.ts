@@ -9,7 +9,7 @@ interface Translations {
     close: string;
     cancel: string;
     confirm: string;
-    
+
     // 导航和菜单
     menu: string;
     help: string;
@@ -19,13 +19,13 @@ interface Translations {
     notebook: string;
     about: string;
     helpPage: string;
-    
+
     // 模式切换
     readMode: string;
     reciteMode: string;
     switchToRead: string;
     switchToRecite: string;
-    
+
     // 书卷和章节
     selectBook: string;
     selectChapter: string;
@@ -35,14 +35,14 @@ interface Translations {
     viewWholeChapter: string;
     oldTestament: string;
     newTestament: string;
-    
+
     // 卡片操作
     shuffle: string;
     favorites: string;
     share: string;
     addToFavorites: string;
     removeFromFavorites: string;
-    
+
     // 遮罩设置
     maskSettings: string;
     maskMode: string;
@@ -56,7 +56,7 @@ interface Translations {
     chars: string;
     showBeforePunctuation: string;
     resetToDefault: string;
-    
+
     // 收藏和分享
     myFavorites: string;
     shareLink: string;
@@ -66,7 +66,7 @@ interface Translations {
     addAllSuccess: string;
     noFavorites: string;
     noFavoritesHint: string;
-    
+
     // 筆記本
     noteTitle: string;
     noteBeta: string;
@@ -83,12 +83,12 @@ interface Translations {
     noteInsert: string;
     noteSelect: string;
     noteMultiSelect: string;
-    
+
     // 帮助和引导
     helpGuideTitle: string;
     helpGuideClose: string;
     guideClosed: string;
-    
+
     // 其他
     total: string;
     verses: string;
@@ -105,7 +105,7 @@ export const translations: Record<Language, Translations> = {
         close: '關閉',
         cancel: '取消',
         confirm: '確認',
-        
+
         // 导航和菜单
         menu: '菜單',
         help: '幫助',
@@ -115,13 +115,13 @@ export const translations: Record<Language, Translations> = {
         notebook: '筆記本',
         about: '關於',
         helpPage: '幫助',
-        
+
         // 模式切换
         readMode: '閱讀',
         reciteMode: '背誦',
         switchToRead: '切換到閱讀模式',
         switchToRecite: '切換到背誦模式',
-        
+
         // 书卷和章节
         selectBook: '選擇書卷',
         selectChapter: '選擇章節',
@@ -131,14 +131,14 @@ export const translations: Record<Language, Translations> = {
         viewWholeChapter: '查看整章',
         oldTestament: '舊約',
         newTestament: '新約',
-        
+
         // 卡片操作
         shuffle: '隨機',
         favorites: '收藏',
         share: '分享',
         addToFavorites: '加入收藏',
         removeFromFavorites: '取消收藏',
-        
+
         // 遮罩设置
         maskSettings: '遮罩設置',
         maskMode: '提示模式',
@@ -152,7 +152,7 @@ export const translations: Record<Language, Translations> = {
         chars: '字',
         showBeforePunctuation: '標點前顯示',
         resetToDefault: '恢復默認',
-        
+
         // 收藏和分享
         myFavorites: '我的收藏',
         shareLink: '分享鏈接',
@@ -162,7 +162,7 @@ export const translations: Record<Language, Translations> = {
         addAllSuccess: '已將所有經文加入收藏！',
         noFavorites: '還沒有收藏的經文',
         noFavoritesHint: '點擊經文卡片上的星標圖標即可收藏',
-        
+
         // 筆記本
         noteTitle: '你的話語',
         noteBeta: 'BETA',
@@ -179,19 +179,19 @@ export const translations: Record<Language, Translations> = {
         noteInsert: '插入',
         noteSelect: '選擇經文',
         noteMultiSelect: '已選擇',
-        
+
         // 帮助和引导
         helpGuideTitle: '如何使用',
         helpGuideClose: '知道了',
         guideClosed: '引導已關閉。如需再次查看，請點擊右上角的「幫助」按鈕',
-        
+
         // 其他
         total: '共',
         verses: '節',
         selected: '已選',
         searching: '搜尋中...',
     },
-    
+
     simplified: {
         // 通用
         loading: '加载中...',
@@ -200,7 +200,7 @@ export const translations: Record<Language, Translations> = {
         close: '关闭',
         cancel: '取消',
         confirm: '确认',
-        
+
         // 导航和菜单
         menu: '菜单',
         help: '帮助',
@@ -210,13 +210,13 @@ export const translations: Record<Language, Translations> = {
         notebook: '笔记本',
         about: '关于',
         helpPage: '帮助',
-        
+
         // 模式切换
         readMode: '阅读',
         reciteMode: '背诵',
         switchToRead: '切换到阅读模式',
         switchToRecite: '切换到背诵模式',
-        
+
         // 书卷和章节
         selectBook: '选择书卷',
         selectChapter: '选择章节',
@@ -226,14 +226,14 @@ export const translations: Record<Language, Translations> = {
         viewWholeChapter: '查看整章',
         oldTestament: '旧约',
         newTestament: '新约',
-        
+
         // 卡片操作
         shuffle: '随机',
         favorites: '收藏',
         share: '分享',
         addToFavorites: '加入收藏',
         removeFromFavorites: '取消收藏',
-        
+
         // 遮罩设置
         maskSettings: '遮罩设置',
         maskMode: '提示模式',
@@ -247,7 +247,7 @@ export const translations: Record<Language, Translations> = {
         chars: '字',
         showBeforePunctuation: '标点前显示',
         resetToDefault: '恢复默认',
-        
+
         // 收藏和分享
         myFavorites: '我的收藏',
         shareLink: '分享链接',
@@ -257,7 +257,7 @@ export const translations: Record<Language, Translations> = {
         addAllSuccess: '已将所有经文加入收藏！',
         noFavorites: '还没有收藏的经文',
         noFavoritesHint: '点击经文卡片上的星标图标即可收藏',
-        
+
         // 笔记本
         noteTitle: '你的话语',
         noteBeta: 'BETA',
@@ -274,19 +274,19 @@ export const translations: Record<Language, Translations> = {
         noteInsert: '插入',
         noteSelect: '选择经文',
         noteMultiSelect: '已选择',
-        
+
         // 帮助和引导
         helpGuideTitle: '如何使用',
         helpGuideClose: '知道了',
         guideClosed: '引导已关闭。如需再次查看，请点击右上角的「帮助」按钮',
-        
+
         // 其他
         total: '共',
         verses: '节',
         selected: '已选',
         searching: '搜索中...',
     },
-    
+
     english: {
         // 通用
         loading: 'Loading...',
@@ -295,7 +295,7 @@ export const translations: Record<Language, Translations> = {
         close: 'Close',
         cancel: 'Cancel',
         confirm: 'Confirm',
-        
+
         // 导航和菜单
         menu: 'Menu',
         help: 'Help',
@@ -305,13 +305,13 @@ export const translations: Record<Language, Translations> = {
         notebook: 'Notebook',
         about: 'About',
         helpPage: 'Help',
-        
+
         // 模式切换
         readMode: 'Read',
         reciteMode: 'Recite',
         switchToRead: 'Switch to Read Mode',
         switchToRecite: 'Switch to Recite Mode',
-        
+
         // 书卷和章节
         selectBook: 'Select Book',
         selectChapter: 'Select Chapter',
@@ -321,14 +321,14 @@ export const translations: Record<Language, Translations> = {
         viewWholeChapter: 'View Chapter',
         oldTestament: 'Old Testament',
         newTestament: 'New Testament',
-        
+
         // 卡片操作
         shuffle: 'Shuffle',
         favorites: 'Favorites',
         share: 'Share',
         addToFavorites: 'Add to Favorites',
         removeFromFavorites: 'Remove from Favorites',
-        
+
         // 遮罩设置
         maskSettings: 'Mask Settings',
         maskMode: 'Hint Mode',
@@ -342,7 +342,7 @@ export const translations: Record<Language, Translations> = {
         chars: 'words',
         showBeforePunctuation: 'Before Punctuation',
         resetToDefault: 'Reset to Default',
-        
+
         // 收藏和分享
         myFavorites: 'My Favorites',
         shareLink: 'Share Link',
@@ -352,7 +352,7 @@ export const translations: Record<Language, Translations> = {
         addAllSuccess: 'All verses added to favorites!',
         noFavorites: 'No favorite verses yet',
         noFavoritesHint: 'Click the star icon on verse cards to add favorites',
-        
+
         // 笔记本
         noteTitle: 'Your Words',
         noteBeta: 'BETA',
@@ -369,12 +369,12 @@ export const translations: Record<Language, Translations> = {
         noteInsert: 'Insert',
         noteSelect: 'Select Verses',
         noteMultiSelect: 'Selected',
-        
+
         // 帮助和引导
         helpGuideTitle: 'How to Use',
         helpGuideClose: 'Got it',
         guideClosed: 'Guide closed. Click the "Help" button in the top right to view again',
-        
+
         // 其他
         total: 'Total',
         verses: 'verses',
@@ -390,4 +390,3 @@ export function t(key: keyof Translations, language: Language = 'traditional'): 
 
 // 导出 translations 供直接使用
 export default translations;
-

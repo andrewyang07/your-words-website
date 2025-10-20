@@ -36,6 +36,7 @@ import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
 import SideMenu from '@/components/navigation/SideMenu';
 import translations from '@/lib/i18n';
+import { getFontClass } from '@/lib/fontUtils';
 
 type FilterType = 'all' | 'old' | 'new' | 'favorites';
 
@@ -45,7 +46,7 @@ export default function HomePage() {
     const { isFavorite, addFavorites, getFavoritesList } = useFavoritesStore();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+
     // 当前语言的翻译文本
     const t = translations[language];
 
@@ -576,7 +577,10 @@ export default function HomePage() {
                                 aria-label={t.help}
                             >
                                 <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline text-bible-700 dark:text-bible-300 text-sm" style={{ fontFamily: language === 'english' ? 'system-ui' : 'inherit' }}>
+                                <span
+                                    className="hidden sm:inline text-bible-700 dark:text-bible-300 text-sm"
+                                    style={{ fontFamily: language === 'english' ? 'system-ui' : 'inherit' }}
+                                >
                                     {t.help}
                                 </span>
                             </button>
@@ -584,26 +588,20 @@ export default function HomePage() {
                             {/* 语言切换 */}
                             <button
                                 onClick={() => {
-                                    const nextLang = language === 'traditional' 
-                                        ? 'simplified' 
-                                        : language === 'simplified' 
-                                        ? 'english' 
-                                        : 'traditional';
+                                    const nextLang =
+                                        language === 'traditional' ? 'simplified' : language === 'simplified' ? 'english' : 'traditional';
                                     setLanguage(nextLang);
                                 }}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={
-                                    language === 'traditional' 
-                                        ? '切換到簡體' 
-                                        : language === 'simplified' 
-                                        ? 'Switch to English' 
-                                        : '切換到繁體'
-                                }
+                                title={language === 'traditional' ? '切換到簡體' : language === 'simplified' ? 'Switch to English' : '切換到繁體'}
                                 aria-label="切换语言"
                             >
                                 <Languages className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline text-bible-700 dark:text-bible-300 text-sm" style={{ fontFamily: language === 'english' ? 'system-ui' : 'inherit' }}>
+                                <span
+                                    className="hidden sm:inline text-bible-700 dark:text-bible-300 text-sm"
+                                    style={{ fontFamily: language === 'english' ? 'system-ui' : 'inherit' }}
+                                >
                                     {language === 'traditional' ? '繁' : language === 'simplified' ? '简' : 'EN'}
                                 </span>
                             </button>
@@ -620,14 +618,20 @@ export default function HomePage() {
                                 {showAllContent ? (
                                     <>
                                         <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline text-bible-700 dark:text-bible-300 text-sm" style={{ fontFamily: language === 'english' ? 'system-ui' : 'inherit' }}>
+                                        <span
+                                            className="hidden sm:inline text-bible-700 dark:text-bible-300 text-sm"
+                                            style={{ fontFamily: language === 'english' ? 'system-ui' : 'inherit' }}
+                                        >
                                             {t.reciteMode}
                                         </span>
                                     </>
                                 ) : (
                                     <>
                                         <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline text-bible-700 dark:text-bible-300 text-sm" style={{ fontFamily: language === 'english' ? 'system-ui' : 'inherit' }}>
+                                        <span
+                                            className="hidden sm:inline text-bible-700 dark:text-bible-300 text-sm"
+                                            style={{ fontFamily: language === 'english' ? 'system-ui' : 'inherit' }}
+                                        >
                                             {t.readMode}
                                         </span>
                                     </>
@@ -643,7 +647,10 @@ export default function HomePage() {
                                 aria-label={t.menu}
                             >
                                 <Menu className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline text-bible-700 dark:text-bible-300 text-sm" style={{ fontFamily: language === 'english' ? 'system-ui' : 'inherit' }}>
+                                <span
+                                    className="hidden sm:inline text-bible-700 dark:text-bible-300 text-sm"
+                                    style={{ fontFamily: language === 'english' ? 'system-ui' : 'inherit' }}
+                                >
                                     {t.menu}
                                 </span>
                             </button>

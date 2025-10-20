@@ -6,6 +6,11 @@
     body {
         @apply font-chinese antialiased;
     }
+    
+    /* 英文字体类 */
+    .font-english {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    }
 }
 
 /* 自定义滚动条 */

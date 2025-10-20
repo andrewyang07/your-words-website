@@ -90,8 +90,34 @@ export function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// 遮罩经文文本
+// 判断文本是否为英文（基于字符分析）
+function isEnglishText(text: string): boolean {
+    // 统计英文字母的比例
+    const englishChars = text.match(/[a-zA-Z]/g)?.length || 0;
+    const totalChars = text.replace(/\s/g, '').length;
+    return totalChars > 0 && englishChars / totalChars > 0.5;
+}
+
+// 遮罩经文文本（支持中文和英文）
 export function maskVerseText(text: string, mode: 'punctuation' | 'prefix', visibleChars: number): string {
+    const isEnglish = isEnglishText(text);
+    console.log('[maskVerseText] text preview:', text.substring(0, 30) + '...', 'isEnglish:', isEnglish, 'mode:', mode, 'visibleChars:', visibleChars);
+    
+    // 英文：按单词遮罩
+    if (isEnglish) {
+        const result = maskEnglishText(text, mode, visibleChars);
+        console.log('[maskVerseText] English result preview:', result.substring(0, 50) + '...');
+        return result;
+    }
+    
+    // 中文：按字符遮罩
+    const result = maskChineseText(text, mode, visibleChars);
+    console.log('[maskVerseText] Chinese result preview:', result.substring(0, 50) + '...');
+    return result;
+}
+
+// 中文遮罩逻辑（按字符）
+function maskChineseText(text: string, mode: 'punctuation' | 'prefix', visibleChars: number): string {
     if (visibleChars <= 0) {
         return text
             .split('')
@@ -143,4 +169,76 @@ export function maskVerseText(text: string, mode: 'punctuation' | 'prefix', visi
     }
 
     return result.join('');
+}
+
+// 英文遮罩逻辑（按单词）
+function maskEnglishText(text: string, mode: 'punctuation' | 'prefix', visibleWords: number): string {
+    const punctuationRegex = /[,.!?;:]/;
+
+    if (visibleWords <= 0) {
+        // 完全遮罩：保留标点和空格
+        return text
+            .split(' ')
+            .map((word) => {
+                if (!word) return '';
+                // 保留标点符号
+                const punctuation = word.match(/[,.!?;:]+$/)?.[0] || '';
+                const wordPart = word.replace(/[,.!?;:]+$/, '');
+                return wordPart ? '░'.repeat(wordPart.length) + punctuation : punctuation;
+            })
+            .join(' ');
+    }
+
+    if (mode === 'prefix') {
+        // 前缀模式：只显示前 X 个单词
+        const words = text.split(/\s+/);
+        if (words.length <= visibleWords) return text;
+
+        const visiblePart = words.slice(0, visibleWords).join(' ');
+        const maskedPart = words
+            .slice(visibleWords)
+            .map((word) => {
+                if (!word) return '';
+                const punctuation = word.match(/[,.!?;:]+$/)?.[0] || '';
+                const wordPart = word.replace(/[,.!?;:]+$/, '');
+                return wordPart ? '░'.repeat(wordPart.length) + punctuation : punctuation;
+            })
+            .join(' ');
+
+        return visiblePart + ' ' + maskedPart;
+    }
+
+    // 标点符号模式：每个句子开头显示 X 个单词
+    const words = text.split(/\s+/);
+    const result: string[] = [];
+    let wordsShownInSegment = 0;
+    let isAfterPunctuation = true;
+
+    for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        if (!word) continue;
+
+        // 检查这个单词是否包含句子结束标点
+        const hasPunctuation = /[.!?;:]$/.test(word);
+
+        if (isAfterPunctuation && wordsShownInSegment < visibleWords) {
+            // 句子开头的前 X 个单词显示
+            result.push(word);
+            wordsShownInSegment++;
+        } else {
+            // 遮罩单词，但保留标点
+            const punctuation = word.match(/[,.!?;:]+$/)?.[0] || '';
+            const wordPart = word.replace(/[,.!?;:]+$/, '');
+            result.push(wordPart ? '░'.repeat(wordPart.length) + punctuation : punctuation);
+        }
+
+        if (hasPunctuation) {
+            wordsShownInSegment = 0;
+            isAfterPunctuation = true;
+        } else {
+            isAfterPunctuation = false;
+        }
+    }
+
+    return result.join(' ');
 }
