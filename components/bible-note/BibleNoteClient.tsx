@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X } from 'lucide-react';
+import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
@@ -268,7 +268,7 @@ export default function BibleNoteClient() {
             setContent((prevContent) => prevContent + insertText);
 
             showToast(`✅ 已插入 ${verses.length} 節經文`);
-            
+
             // 关闭章节查看器，返回笔记
             setChapterViewerState({ isOpen: false, book: '', chapter: 0 });
         },
@@ -277,78 +277,77 @@ export default function BibleNoteClient() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
-            <div className="max-w-7xl mx-auto px-4 py-6">
-                {/* 共用头部 */}
-                <PageHeader
-                    onMenuClick={() => setShowSideMenu(true)}
-                    onHelpClick={() => setShowHelp(true)}
-                    showHelp={true}
-                    subtitle={
-                        <span className="flex items-center gap-2 text-bible-600 dark:text-bible-400">
-                            筆記本
-                            <span className="px-2 py-0.5 text-xs bg-gold-500 text-white rounded-full font-bold">
-                                BETA
-                            </span>
-                        </span>
-                    }
-                    rightContent={
-                        <>
-                            {/* 导出按钮（下拉菜单） */}
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowExportMenu(!showExportMenu)}
-                                    disabled={!content}
-                                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
-                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                    title="導出筆記"
-                                    aria-label="導出筆記"
-                                >
-                                    <Download className="w-4 h-4 md:w-5 md:h-5" />
-                                    <span className="hidden sm:inline text-sm font-chinese">導出</span>
-                                    <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
-                                </button>
-
-                                {/* 下拉菜单 */}
-                                {showExportMenu && content && (
-                                    <>
-                                        {/* 背景遮罩 */}
-                                        <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
-                                        {/* 菜单内容 */}
-                                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-20">
-                                            <button
-                                                onClick={handleCopyToClipboard}
-                                                className="w-full flex items-center gap-2 px-4 py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left"
-                                            >
-                                                <Copy className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">複製到剪貼板</span>
-                                            </button>
-                                            <button
-                                                onClick={handleExportToFile}
-                                                className="w-full flex items-center gap-2 px-4 py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left"
-                                            >
-                                                <FileDown className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">下載 MD 文件</span>
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-
+            {/* 共用头部 */}
+            <PageHeader
+                onMenuClick={() => setShowSideMenu(true)}
+                onHelpClick={() => setShowHelp(true)}
+                showHelp={true}
+                subtitle={
+                    <span className="flex items-center gap-2 text-bible-600 dark:text-bible-400">
+                        筆記本
+                        <span className="px-2 py-0.5 text-xs bg-gold-500 text-white rounded-full font-bold">BETA</span>
+                    </span>
+                }
+                rightContent={
+                    <>
+                        {/* 导出按钮（下拉菜单） */}
+                        <div className="relative">
                             <button
-                                onClick={handleClear}
+                                onClick={() => setShowExportMenu(!showExportMenu)}
                                 disabled={!content}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="清空筆記"
-                                aria-label="清空筆記"
+                                title="導出筆記"
+                                aria-label="導出筆記"
                             >
-                                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-                                <span className="hidden sm:inline text-sm font-chinese">清空</span>
+                                <Download className="w-4 h-4 md:w-5 md:h-5" />
+                                <span className="hidden sm:inline text-sm font-chinese">導出</span>
+                                <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
                             </button>
-                        </>
-                    }
-                />
 
+                            {/* 下拉菜单 */}
+                            {showExportMenu && content && (
+                                <>
+                                    {/* 背景遮罩 */}
+                                    <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
+                                    {/* 菜单内容 */}
+                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-20">
+                                        <button
+                                            onClick={handleCopyToClipboard}
+                                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left"
+                                        >
+                                            <Copy className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                            <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">複製到剪貼板</span>
+                                        </button>
+                                        <button
+                                            onClick={handleExportToFile}
+                                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left"
+                                        >
+                                            <FileDown className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                            <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">下載 MD 文件</span>
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={handleClear}
+                            disabled={!content}
+                            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            title="清空筆記"
+                            aria-label="清空筆記"
+                        >
+                            <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                            <span className="hidden sm:inline text-sm font-chinese">清空</span>
+                        </button>
+                    </>
+                }
+            />
+
+            {/* 主内容区域 */}
+            <div className="max-w-7xl mx-auto px-4 py-6">
                 {/* 侧边栏菜单 */}
                 <SideMenu
                     isOpen={showSideMenu}
@@ -358,10 +357,99 @@ export default function BibleNoteClient() {
                     onThemeChange={toggleTheme}
                 />
 
-                {/* 使用说明 - 独立一行 */}
-                <div className="mb-4">
-                    <UsageGuide />
-                </div>
+                {/* 使用说明 - 条件显示 */}
+                {showHelp && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-6"
+                    >
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <HelpCircle className="w-6 h-6 text-bible-600 dark:text-bible-400" />
+                                <h2 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese">
+                                    如何使用聖經筆記本
+                                </h2>
+                            </div>
+                            <button
+                                onClick={() => setShowHelp(false)}
+                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                title="關閉"
+                                aria-label="關閉使用說明"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* 直接显示使用说明内容，不需要再点击 */}
+                        <div className="space-y-4">
+                            {/* 功能 1 */}
+                            <div className="flex items-start gap-3">
+                                <FileText className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
+                                <div>
+                                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                                        Markdown 編輯
+                                    </h4>
+                                    <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                                        支持基礎 Markdown 語法，使用工具欄快速插入格式。移動端可切換「编辑」和「预览」標籤查看效果。
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 功能 2 */}
+                            <div className="flex items-start gap-3">
+                                <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
+                                <div>
+                                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                                        自動補全經文引用
+                                    </h4>
+                                    <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                                        輸入書卷名（如「马太」或「马1:2」）會自動彈出經文建議。選中後自動插入經文完整內容。支持模糊搜索，如「路1:1」會匹配「路加福音1:1」。
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 功能 3 */}
+                            <div className="flex items-start gap-3">
+                                <BookOpen className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
+                                <div>
+                                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                                        查看引用的經文
+                                    </h4>
+                                    <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                                        右側（桌面端）或「引用」標籤（移動端）會顯示所有引用的經文完整內容。點擊「查看整章」會在底部彈出浮動窗口，可同時查看整章和編輯筆記。
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 功能 4 */}
+                            <div className="flex items-start gap-3">
+                                <Download className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
+                                <div>
+                                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                                        展開與導出
+                                    </h4>
+                                    <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                                        點擊「展開所有經文」可將完整經文內容插入筆記。完成後使用「導出」下載為 Markdown 文件。
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 重要提示 */}
+                            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+                                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 font-chinese mb-2">
+                                    ⚠️ 重要提示
+                                </p>
+                                <ul className="text-xs text-amber-700 dark:text-amber-300 font-chinese space-y-1 ml-4">
+                                    <li>• 僅支持一篇筆記，適合作為草稿使用</li>
+                                    <li>• 數據保存在瀏覽器本地，清除瀏覽器數據會丟失</li>
+                                    <li>• 建議定期導出備份（複製到剪貼板或下載 MD 文件）</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* 移动端 Tab 导航 - 与主站风格一致 */}
                 <div className="lg:hidden mb-4">
@@ -468,43 +556,6 @@ export default function BibleNoteClient() {
                 >
                     <BookOpen className="w-6 h-6" />
                 </button>
-
-                {/* 帮助模态框 */}
-                <AnimatePresence>
-                    {showHelp && (
-                        <>
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50"
-                                onClick={() => setShowHelp(false)}
-                            />
-                            
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl z-50"
-                            >
-                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <h2 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                                            📝 聖經筆記本使用說明
-                                        </h2>
-                                        <button
-                                            onClick={() => setShowHelp(false)}
-                                            className="p-2 hover:bg-bible-100 dark:hover:bg-gray-700 rounded transition-colors"
-                                        >
-                                            <X className="w-5 h-5 text-bible-600 dark:text-bible-400" />
-                                        </button>
-                                    </div>
-                                    <UsageGuide />
-                                </div>
-                            </motion.div>
-                        </>
-                    )}
-                </AnimatePresence>
             </div>
         </div>
     );
