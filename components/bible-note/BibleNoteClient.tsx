@@ -3,9 +3,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Trash2, FileDown, Copy, ChevronDown } from 'lucide-react';
+import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
+import AppHeader from '@/components/layout/AppHeader';
+import SideMenu from '@/components/navigation/SideMenu';
 import UsageGuide from './UsageGuide';
 import VerseReferenceList from './VerseReferenceList';
 
@@ -27,11 +31,14 @@ import 'easymde/dist/easymde.min.css';
 export default function BibleNoteClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { theme, toggleTheme } = useAppStore();
     const [content, setContent] = useState('');
     const [activeTab, setActiveTab] = useState<'edit' | 'preview' | 'references'>('edit');
     const [isExpanding, setIsExpanding] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const [showSideMenu, setShowSideMenu] = useState(false);
+    const [showAbout, setShowAbout] = useState(false);
 
     // 从 localStorage 恢复内容
     useEffect(() => {
@@ -70,7 +77,7 @@ export default function BibleNoteClient() {
     // 解析经文引用（去重）
     const references = useMemo(() => {
         const allRefs = parseVerseReferences(content);
-        
+
         // 去重：基于 original（如"约3:16"）
         const seen = new Set<string>();
         const uniqueRefs = allRefs.filter((ref) => {
@@ -80,33 +87,34 @@ export default function BibleNoteClient() {
             seen.add(ref.original);
             return true;
         });
-        
+
         return uniqueRefs;
     }, [content]);
 
     // SimpleMDE 配置
     const editorOptions = useMemo(
-        () => ({
-            spellChecker: false,
-            placeholder: '開始記錄你的靈修筆記...\n\n試試輸入經文引用，如「约3:16」或「马太福音5:3」，系統會自動識別並顯示完整經文。',
-            status: false,
-            toolbar: [
-                'bold',
-                'italic',
-                'heading',
-                '|',
-                'quote',
-                'unordered-list',
-                'ordered-list',
-                '|',
-                'link',
-                '|',
-                'preview',
-                'side-by-side',
-                'fullscreen',
-            ] as const,
-            minHeight: '400px',
-        } as any), // 使用 any 避免 SimpleMDE 类型定义问题
+        () =>
+            ({
+                spellChecker: false,
+                placeholder: '開始記錄你的靈修筆記...\n\n試試輸入經文引用，如「约3:16」或「马太福音5:3」，系統會自動識別並顯示完整經文。',
+                status: false,
+                toolbar: [
+                    'bold',
+                    'italic',
+                    'heading',
+                    '|',
+                    'quote',
+                    'unordered-list',
+                    'ordered-list',
+                    '|',
+                    'link',
+                    '|',
+                    'preview',
+                    'side-by-side',
+                    'fullscreen',
+                ] as const,
+                minHeight: '400px',
+            } as any), // 使用 any 避免 SimpleMDE 类型定义问题
         []
     );
 
@@ -160,18 +168,18 @@ export default function BibleNoteClient() {
             // 检测已展开的经文（格式：> 约3:16: ...）
             // 需要检查引用后面紧跟着换行和 > 引用块
             const expandedRefs = new Set<string>();
-            
+
             // 遍历所有引用，检查其后面是否紧跟着展开的内容
             references.forEach((ref) => {
                 // 查找引用在内容中的位置
                 const refEnd = ref.position + ref.original.length;
                 // 获取引用后的内容（接下来的 200 个字符）
                 const afterRef = content.slice(refEnd, refEnd + 200);
-                
+
                 // 检查是否紧跟着换行和 > 引用块，且包含相同的引用
                 // 格式：\n> 约3:16: 经文内容
                 const expandedPattern = new RegExp(`^\\s*\\n>\\s*${ref.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[:：]`, 'm');
-                
+
                 if (expandedPattern.test(afterRef)) {
                     expandedRefs.add(ref.original.trim());
                 }
@@ -235,26 +243,12 @@ export default function BibleNoteClient() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
             <div className="max-w-7xl mx-auto px-4 py-6">
-                {/* 头部 - 与主站风格一致 */}
-                <header className="mb-4" role="banner">
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                        {/* 标题 - 可点击返回主页 */}
-                        <div className="flex items-center gap-4">
-                            <a
-                                href="/"
-                                className="text-3xl md:text-4xl font-extrabold font-chinese tracking-wide text-bible-800 dark:text-bible-200 hover:opacity-80 transition-opacity cursor-pointer"
-                                style={{
-                                    textShadow: '0 0 20px rgba(190, 158, 93, 0.3), 0 0 40px rgba(190, 158, 93, 0.15)',
-                                }}
-                                title="返回首頁"
-                            >
-                                你的話語
-                            </a>
-                            <span className="text-sm md:text-base text-bible-600 dark:text-bible-400 font-chinese">筆記本</span>
-                        </div>
-
-                        {/* 操作按钮组 */}
-                        <div className="flex items-center gap-2">
+                {/* 共用头部 */}
+                <AppHeader
+                    onMenuClick={() => setShowSideMenu(true)}
+                    subtitle="筆記本"
+                    rightButtons={
+                        <>
                             {/* 导出按钮（下拉菜单） */}
                             <div className="relative">
                                 <button
@@ -274,10 +268,7 @@ export default function BibleNoteClient() {
                                 {showExportMenu && content && (
                                     <>
                                         {/* 背景遮罩 */}
-                                        <div
-                                            className="fixed inset-0 z-10"
-                                            onClick={() => setShowExportMenu(false)}
-                                        />
+                                        <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
                                         {/* 菜单内容 */}
                                         <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-20">
                                             <button
@@ -285,18 +276,14 @@ export default function BibleNoteClient() {
                                                 className="w-full flex items-center gap-2 px-4 py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left"
                                             >
                                                 <Copy className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">
-                                                    複製到剪貼板
-                                                </span>
+                                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">複製到剪貼板</span>
                                             </button>
                                             <button
                                                 onClick={handleExportToFile}
                                                 className="w-full flex items-center gap-2 px-4 py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left"
                                             >
                                                 <FileDown className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">
-                                                    下載 MD 文件
-                                                </span>
+                                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">下載 MD 文件</span>
                                             </button>
                                         </div>
                                     </>
@@ -314,9 +301,18 @@ export default function BibleNoteClient() {
                                 <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                                 <span className="hidden sm:inline text-sm font-chinese">清空</span>
                             </button>
-                        </div>
-                    </div>
-                </header>
+                        </>
+                    }
+                />
+
+                {/* 侧边栏菜单 */}
+                <SideMenu
+                    isOpen={showSideMenu}
+                    onClose={() => setShowSideMenu(false)}
+                    onAboutClick={() => setShowAbout(true)}
+                    theme={theme}
+                    onThemeChange={toggleTheme}
+                />
 
                 {/* 使用说明 - 独立一行 */}
                 <div className="mb-4">
@@ -370,9 +366,7 @@ export default function BibleNoteClient() {
                 {/* 主要内容区域 - 统一卡片样式 */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* 编辑器区域（桌面端：2/3 宽度） */}
-                    <div
-                        className={`lg:col-span-2 ${activeTab === 'edit' || activeTab === 'preview' ? 'block' : 'hidden lg:block'}`}
-                    >
+                    <div className={`lg:col-span-2 ${activeTab === 'edit' || activeTab === 'preview' ? 'block' : 'hidden lg:block'}`}>
                         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 overflow-hidden">
                             <SimpleMDE value={content} onChange={setContent} options={editorOptions} />
                         </div>
@@ -390,18 +384,19 @@ export default function BibleNoteClient() {
                 </div>
 
                 {/* Toast 提示 */}
-                {toastMessage && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 50 }}
-                        className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-lg z-50 font-chinese text-sm max-w-md"
-                    >
-                        {toastMessage}
-                    </motion.div>
-                )}
+                <AnimatePresence>
+                    {toastMessage && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 50 }}
+                            className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-lg z-50 font-chinese text-sm max-w-md"
+                        >
+                            {toastMessage}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
 }
-

@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { BookOpen, Loader2, Sparkles, ArrowLeft } from 'lucide-react';
+import { BookOpen, Loader2, Sparkles } from 'lucide-react';
 import { VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import VerseCard from './VerseCard';
@@ -83,18 +82,6 @@ export default function VerseReferenceList({
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-6">
-            {/* 返回按钮 */}
-            <div className="mb-4">
-                <a
-                    href="/"
-                    className="flex items-center gap-2 px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors text-bible-700 dark:text-bible-300 font-chinese text-sm"
-                    title="返回卡片界面"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>返回卡片</span>
-                </a>
-            </div>
-
             {/* 标题和操作按钮 */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
