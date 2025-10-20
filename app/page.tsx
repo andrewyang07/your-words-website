@@ -1252,12 +1252,7 @@ export default function HomePage() {
                             </div>
                         </div>
                     ) : displayVerses.length > 0 ? (
-                        <MasonryLayout
-                            key={shuffleKey}
-                            verses={displayVerses}
-                            defaultRevealed={showAllContent}
-                            onViewInBible={handleViewInBible}
-                        />
+                        <MasonryLayout key={shuffleKey} verses={displayVerses} defaultRevealed={showAllContent} onViewInBible={handleViewInBible} />
                     ) : (
                         <div className="text-center py-20">
                             <p className="text-bible-600 dark:text-bible-400 font-chinese">暂无经文</p>
