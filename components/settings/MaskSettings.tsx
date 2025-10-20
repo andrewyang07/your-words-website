@@ -3,6 +3,7 @@
 import { useMaskStore } from '@/stores/useMaskStore';
 import Select, { SelectOption } from '@/components/ui/Select';
 import Slider from '@/components/ui/Slider';
+import { RotateCcw } from 'lucide-react';
 
 export default function MaskSettings() {
     const {
@@ -15,6 +16,7 @@ export default function MaskSettings() {
         setMaskCharsType,
         setMaskCharsFixed,
         setMaskCharsRange,
+        resetToDefaults,
     } = useMaskStore();
 
     const modeOptions: SelectOption[] = [
@@ -81,6 +83,17 @@ export default function MaskSettings() {
                     <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">字</span>
                 </div>
             )}
+
+            {/* 恢复默认按钮 */}
+            <button
+                onClick={resetToDefaults}
+                className="flex items-center gap-1 px-2.5 py-2 text-xs text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors touch-manipulation border border-bible-200 dark:border-gray-700"
+                title="恢復默認設置"
+                aria-label="恢復默認設置"
+            >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline font-chinese">恢復默認</span>
+            </button>
         </div>
     );
 }
