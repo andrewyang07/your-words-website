@@ -25,19 +25,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
         }
 
-        // 服务端限流：检查 IP
-        const ip = request.headers.get('x-forwarded-for') || 'unknown';
-        const rateLimitKey = `ratelimit:${ip}:${Math.floor(Date.now() / 10000)}`; // 10秒窗口
-
-        const currentCount = await safeRedisGet(rateLimitKey, '0');
-        if (parseInt(currentCount) > 50) {
-            return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
-        }
-
-        // 增加限流计数
-        await safeRedisIncr(rateLimitKey);
-
-        // 更新统计
+        // 更新统计（移除了服务端限流以节省 Redis 命令数）
+        // 客户端已经有 throttling 机制，足够防止滥用
         if (action === 'click') {
             await safeRedisIncr('total_clicks');
         } else if (action === 'favorite') {
