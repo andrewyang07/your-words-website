@@ -501,7 +501,7 @@ export default function HomePage() {
     };
 
     // 分享收藏功能
-    const handleShareFavorites = () => {
+    const handleShareFavorites = async () => {
         const favoritesList = getFavoritesList();
 
         if (favoritesList.length === 0) {
@@ -530,27 +530,15 @@ export default function HomePage() {
             const encoded = encodeVerseList(versesToEncode);
             const shareUrl = `${window.location.origin}${window.location.pathname}?s=${encoded}`;
 
-            // 检测是否为移动设备
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-            if (isMobile) {
-                // 移动端：先显示说明toast
-                setShareToast({
-                    show: true,
-                    message: '已复制分享链接，发送给他人即可查看您的收藏',
-                });
-                // 2秒后复制链接
-                setTimeout(() => {
-                    navigator.clipboard.writeText(shareUrl);
-                }, 2000);
-            } else {
-                // 桌面端：直接复制并显示toast
-                navigator.clipboard.writeText(shareUrl);
-                setShareToast({ show: true, message: '链接已复制' });
-            }
+            // 立即复制到剪贴板（移动端和桌面端统一处理）
+            await navigator.clipboard.writeText(shareUrl);
+            setShareToast({
+                show: true,
+                message: '链接已复制到剪贴板，发送给他人即可查看您的收藏',
+            });
         } catch (error) {
             logError('HomePage:handleShareFavorites', error);
-            setShareToast({ show: true, message: '分享失败，请稍后重试' });
+            setShareToast({ show: true, message: '复制失败，请稍后重试' });
         }
     };
 
