@@ -16,7 +16,7 @@ export async function GET(request: Request) {
         }
 
         // 只在有 Upstash 环境变量时执行
-        if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+        if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
             return NextResponse.json({ success: true, dev: true });
         }
 

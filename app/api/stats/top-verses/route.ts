@@ -19,7 +19,7 @@ interface TopVerse {
 export async function GET() {
     try {
         // 只在有 Upstash 环境变量时返回真实数据
-        if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+        if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
             // 本地开发返回 Mock 数据
             return NextResponse.json({
                 topVerses: [
