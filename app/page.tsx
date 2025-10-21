@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Filter,
@@ -34,7 +35,11 @@ import MaskSettings from '@/components/settings/MaskSettings';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
-import SideMenu from '@/components/navigation/SideMenu';
+
+// 动态导入非关键组件以提升性能
+const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
+    ssr: false,
+});
 
 type FilterType = 'all' | 'old' | 'new' | 'favorites';
 
@@ -1188,6 +1193,7 @@ export default function HomePage() {
                                     alt="你的話語"
                                     width={64}
                                     height={64}
+                                    loading="lazy"
                                     className="w-16 h-16 mx-auto mb-4 opacity-60 dark:brightness-90 dark:contrast-125"
                                 />
                                 <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">请选择章节</h3>
@@ -1264,6 +1270,8 @@ export default function HomePage() {
                                                     alt="心版 App Logo"
                                                     width={64}
                                                     height={64}
+                                                    loading="lazy"
+                                                    quality={80}
                                                     className="w-full h-full object-contain"
                                                 />
                                             </div>

@@ -89,6 +89,8 @@ export default function AboutPageClient() {
                                         alt="網站構思草圖 1"
                                         width={600}
                                         height={450}
+                                        loading="lazy"
+                                        quality={75}
                                         className="w-full h-auto object-cover"
                                     />
                                     <p className="p-2 text-xs text-center text-bible-500 dark:text-bible-400">構思草圖（一）</p>
@@ -99,6 +101,8 @@ export default function AboutPageClient() {
                                         alt="網站構思草圖 2"
                                         width={600}
                                         height={450}
+                                        loading="lazy"
+                                        quality={75}
                                         className="w-full h-auto object-cover"
                                     />
                                     <p className="p-2 text-xs text-center text-bible-500 dark:text-bible-400">構思草圖（二）</p>
@@ -137,7 +141,15 @@ export default function AboutPageClient() {
                             <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 rounded-lg p-4 md:p-6 border border-blue-200 dark:border-gray-600">
                                 <div className="flex items-start gap-4">
                                     <div className="flex-shrink-0">
-                                        <Image src="/xinban-logo.png" alt="心版 App" width={80} height={80} className="rounded-xl shadow-md" />
+                                        <Image
+                                            src="/xinban-logo.png"
+                                            alt="心版 App"
+                                            width={80}
+                                            height={80}
+                                            loading="lazy"
+                                            quality={80}
+                                            className="rounded-xl shadow-md"
+                                        />
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese mb-2">iPhone 用戶推薦</h4>

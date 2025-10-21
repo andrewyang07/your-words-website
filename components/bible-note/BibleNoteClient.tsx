@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search } from 'lucide-react';
@@ -8,11 +9,17 @@ import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import PageHeader from '@/components/layout/PageHeader';
-import SideMenu from '@/components/navigation/SideMenu';
 import MarkdownEditor from './MarkdownEditor';
 import UsageGuide from './UsageGuide';
 import VerseReferenceList from './VerseReferenceList';
-import ChapterViewer from './ChapterViewer';
+
+// 动态导入非关键组件以提升性能
+const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
+    ssr: false,
+});
+const ChapterViewer = dynamic(() => import('./ChapterViewer'), {
+    ssr: false,
+});
 
 export default function BibleNoteClient() {
     const router = useRouter();

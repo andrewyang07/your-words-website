@@ -2,12 +2,21 @@ import type { Metadata } from 'next';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { Noto_Sans_SC } from 'next/font/google';
 import './globals.css';
+
+const notoSans = Noto_Sans_SC({
+    subsets: ['latin'],
+    display: 'swap',
+    weight: ['400', '500', '700'],
+    preload: true,
+});
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://www.yourwords.me'),
     title: '你的話語 - 背聖經，記筆記 | 你的话语 - 背圣经，记笔记',
-    description: '免費聖經背誦工具，支持Flash Card背誦模式和聖經筆記本功能。免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能。繁體中文、簡體中文雙語支持，讓神的話語常在心中。',
+    description:
+        '免費聖經背誦工具，支持Flash Card背誦模式和聖經筆記本功能。免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能。繁體中文、簡體中文雙語支持，讓神的話語常在心中。',
     keywords: [
         // 繁体关键词（主要）
         '背聖經',
@@ -130,6 +139,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="zh-CN" suppressHydrationWarning>
             <head>
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{
@@ -164,7 +175,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     }}
                 />
             </head>
-            <body className="antialiased" suppressHydrationWarning>
+            <body className={`${notoSans.className} antialiased`} suppressHydrationWarning>
                 <ErrorBoundary>{children}</ErrorBoundary>
                 <Analytics />
                 <SpeedInsights />
