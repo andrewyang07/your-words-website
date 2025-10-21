@@ -67,20 +67,36 @@ export async function GET() {
             return NextResponse.json({ topVerses: [] });
         }
 
-        // 批量获取所有 key 的值
-        const values = await safeRedisMget(keys);
+        // 过滤掉旧格式的 key（verse:*:favorites 和 verse:*:clicks）
+        const validKeys = keys.filter((key) => {
+            const verseId = key.replace('verse:', '');
+            return !verseId.includes(':') && /^\d+-\d+-\d+$/.test(verseId);
+        });
 
-        // 构建经文统计数据
-        const versesWithCounts: Array<{ verseId: string; favorites: number }> = [];
-        keys.forEach((key, i) => {
+        if (validKeys.length === 0) {
+            return NextResponse.json({ topVerses: [] });
+        }
+
+        // 批量获取所有 key 的值
+        const values = await safeRedisMget(validKeys);
+
+        // 构建经文统计数据（使用 Map 去重）
+        const versesMap = new Map<string, number>();
+        validKeys.forEach((key, i) => {
             const favorites = parseInt(values[i] || '0');
             if (favorites > 0) {
-                versesWithCounts.push({
-                    verseId: key.replace('verse:', ''),
-                    favorites,
-                });
+                const verseId = key.replace('verse:', '');
+                versesMap.set(verseId, Math.max(versesMap.get(verseId) || 0, favorites));
             }
         });
+
+        // 转换为数组
+        const versesWithCounts: Array<{ verseId: string; favorites: number }> = Array.from(versesMap.entries()).map(
+            ([verseId, favorites]) => ({
+                verseId,
+                favorites,
+            })
+        );
 
         // 按收藏数排序，取 Top 7
         const sorted = versesWithCounts.sort((a, b) => b.favorites - a.favorites).slice(0, 7);

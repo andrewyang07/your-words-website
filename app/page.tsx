@@ -575,9 +575,7 @@ export default function HomePage() {
 
     // 从侧边栏查看章节（与卡片的实现一致）
     const handleViewChapterFromMenu = (bookName: string, chapter: number) => {
-        const book = books.find(
-            (b) => b.name === bookName || b.nameTraditional === bookName || b.nameSimplified === bookName || b.key === bookName
-        );
+        const book = books.find((b) => b.name === bookName || b.nameTraditional === bookName || b.nameSimplified === bookName || b.key === bookName);
 
         if (book) {
             setSelectedBook(book);
@@ -1079,14 +1077,14 @@ export default function HomePage() {
                     </div>
                 )}
 
-            {/* 侧边栏菜单 */}
-            <SideMenu
-                isOpen={showSideMenu}
-                onClose={() => setShowSideMenu(false)}
-                theme={theme}
-                onThemeChange={toggleTheme}
-                onViewChapter={handleViewChapterFromMenu}
-            />
+                {/* 侧边栏菜单 */}
+                <SideMenu
+                    isOpen={showSideMenu}
+                    onClose={() => setShowSideMenu(false)}
+                    theme={theme}
+                    onThemeChange={toggleTheme}
+                    onViewChapter={handleViewChapterFromMenu}
+                />
 
                 {/* 关闭引导提示 - 浮动通知 */}
                 {showGuideHint && (
@@ -1224,7 +1222,7 @@ export default function HomePage() {
                                                 <p className="text-center text-xs text-bible-700 dark:text-bible-300 font-chinese leading-relaxed">
                                                     已有{' '}
                                                     {statsLoading ? (
-                                                        <span className="inline-block h-4 w-12 bg-bible-200 dark:bg-gray-600 rounded animate-pulse"></span>
+                                                        <span className="inline-block h-4 w-12 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                                     ) : (
                                                         <span className="font-bold text-bible-900 dark:text-bible-100">
                                                             {globalStats.totalUsers.toLocaleString()}
@@ -1234,7 +1232,7 @@ export default function HomePage() {
                                                     <br />
                                                     共收藏{' '}
                                                     {statsLoading ? (
-                                                        <span className="inline-block h-4 w-12 bg-gold-200 dark:bg-gold-700 rounded animate-pulse"></span>
+                                                        <span className="inline-block h-4 w-12 bg-gradient-to-r from-gold-200 to-gold-300 dark:from-gold-700 dark:to-gold-600 rounded animate-pulse-slow"></span>
                                                     ) : (
                                                         <span className="font-bold text-gold-600 dark:text-gold-400">
                                                             {globalStats.totalFavorites.toLocaleString()}

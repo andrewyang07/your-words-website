@@ -38,20 +38,36 @@ export async function GET() {
             return NextResponse.json({ rankings: [], timestamp: Date.now() });
         }
 
-        // 批量获取所有 key 的值
-        const values = await safeRedisMget(keys);
+        // 过滤掉旧格式的 key（verse:*:favorites 和 verse:*:clicks）
+        const validKeys = keys.filter((key) => {
+            // 只保留格式为 verse:数字-数字-数字 的 key
+            const verseId = key.replace('verse:', '');
+            return !verseId.includes(':') && /^\d+-\d+-\d+$/.test(verseId);
+        });
 
-        // 构建排行榜数据
-        const rankings: Array<{ verseId: string; favorites: number }> = [];
-        keys.forEach((key, i) => {
+        if (validKeys.length === 0) {
+            return NextResponse.json({ rankings: [], timestamp: Date.now() });
+        }
+
+        // 批量获取所有 key 的值
+        const values = await safeRedisMget(validKeys);
+
+        // 构建排行榜数据（使用 Map 去重）
+        const rankingsMap = new Map<string, number>();
+        validKeys.forEach((key, i) => {
             const favorites = parseInt(values[i] || '0');
             if (favorites > 0) {
-                rankings.push({
-                    verseId: key.replace('verse:', ''),
-                    favorites,
-                });
+                const verseId = key.replace('verse:', '');
+                // 如果已存在，取最大值（防止重复）
+                rankingsMap.set(verseId, Math.max(rankingsMap.get(verseId) || 0, favorites));
             }
         });
+
+        // 转换为数组
+        const rankings: Array<{ verseId: string; favorites: number }> = Array.from(rankingsMap.entries()).map(([verseId, favorites]) => ({
+            verseId,
+            favorites,
+        }));
 
         // 按收藏数降序排序
         rankings.sort((a, b) => b.favorites - a.favorites);
