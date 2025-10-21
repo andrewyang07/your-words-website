@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { safeRedisScan, safeRedisMget } from '@/lib/redisUtils';
 
-export const revalidate = 3600; // ISR: 1小时缓存
+export const dynamic = 'force-dynamic'; // 强制动态渲染
+export const revalidate = 3600; // 缓存1小时
 
 // 本地开发环境检测
 const isDevelopment = process.env.NODE_ENV === 'development';
