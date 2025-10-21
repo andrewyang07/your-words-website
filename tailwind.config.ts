@@ -31,6 +31,7 @@ const config: Config = {
                 'fade-in': 'fadeIn 0.4s ease-out forwards',
                 'slide-in': 'slideIn 0.6s ease-out',
                 'card-hover': 'cardHover 0.3s ease-out',
+                'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             },
             keyframes: {
                 fadeIn: {

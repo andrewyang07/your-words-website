@@ -8,6 +8,7 @@ import { Star, BookOpen } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { maskVerseText } from '@/lib/utils';
+import { getVerseNumericId, sendStats } from '@/lib/statsUtils';
 
 interface VerseCardProps {
     verse: Verse;
@@ -80,7 +81,14 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
 
     const handleToggleFavorite = (e: React.MouseEvent) => {
         e.stopPropagation();
+        const wasFavorite = isFav;
         toggleFavorite(verse.id);
+
+        // 只统计"收藏"动作，不统计"取消收藏"
+        if (!wasFavorite) {
+            const verseId = getVerseNumericId(verse);
+            sendStats('favorite', verseId);
+        }
     };
 
     // 显示预览文本或完整文本
@@ -112,9 +120,11 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         >
             {/* 经文引用 */}
             <div className="flex items-start justify-between mb-3">
-                <span className="text-bible-600 dark:text-bible-400 font-medium font-chinese text-sm">
-                    {verse.book} {verse.chapter}:{verse.verse}
-                </span>
+                <div className="flex-1">
+                    <span className="text-bible-600 dark:text-bible-400 font-medium font-chinese text-sm">
+                        {verse.book} {verse.chapter}:{verse.verse}
+                    </span>
+                </div>
                 {/* 收藏星标 */}
                 <button
                     onClick={handleToggleFavorite}
@@ -140,6 +150,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             text-gray-800 dark:text-gray-100 font-medium leading-relaxed font-chinese
             flex-1
             transition-opacity duration-200
+            break-words overflow-wrap-anywhere
           `}
             >
                 {displayText}
