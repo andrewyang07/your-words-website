@@ -19,6 +19,7 @@ interface TopVerse {
     chapter: number;
     verse: number;
     favorites: number;
+    text?: string; // 经文内容
 }
 
 export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: SideMenuProps) {
@@ -26,16 +27,16 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
 
     // 默认显示 Mock 数据（Top 7），方便本地开发
     const [topVerses, setTopVerses] = useState<TopVerse[]>([
-        { verseId: '43-3-16', book: '約翰福音', chapter: 3, verse: 16, favorites: 0 },
-        { verseId: '19-23-1', book: '詩篇', chapter: 23, verse: 1, favorites: 0 },
-        { verseId: '50-4-13', book: '腓立比書', chapter: 4, verse: 13, favorites: 0 },
-        { verseId: '45-8-28', book: '羅馬書', chapter: 8, verse: 28, favorites: 0 },
-        { verseId: '20-3-5', book: '箴言', chapter: 3, verse: 5, favorites: 0 },
-        { verseId: '58-11-1', book: '希伯來書', chapter: 11, verse: 1, favorites: 0 },
-        { verseId: '40-5-16', book: '馬太福音', chapter: 5, verse: 16, favorites: 0 },
+        { verseId: '43-3-16', book: '約翰福音', chapter: 3, verse: 16, favorites: 0, text: '神愛世人，甚至將他的獨生子賜給他們，叫一切信他的，不至滅亡，反得永生。' },
+        { verseId: '19-23-1', book: '詩篇', chapter: 23, verse: 1, favorites: 0, text: '耶和華是我的牧者，我必不至缺乏。' },
+        { verseId: '50-4-13', book: '腓立比書', chapter: 4, verse: 13, favorites: 0, text: '我靠著那加給我力量的，凡事都能做。' },
+        { verseId: '45-8-28', book: '羅馬書', chapter: 8, verse: 28, favorites: 0, text: '我們曉得萬事都互相效力，叫愛神的人得益處，就是按他旨意被召的人。' },
+        { verseId: '20-3-5', book: '箴言', chapter: 3, verse: 5, favorites: 0, text: '你要專心仰賴耶和華，不可倚靠自己的聰明。' },
+        { verseId: '58-11-1', book: '希伯來書', chapter: 11, verse: 1, favorites: 0, text: '信就是所望之事的實底，是未見之事的確據。' },
+        { verseId: '40-5-16', book: '馬太福音', chapter: 5, verse: 16, favorites: 0, text: '你們的光也當這樣照在人前，叫他們看見你們的好行為，便將榮耀歸給你們在天上的父。' },
     ]);
 
-    // 获取热门经文排行榜（带错误处理）
+    // 获取热门经文排行榜（带错误处理，失败时保留默认数据）
     useEffect(() => {
         if (isOpen) {
             const fetchTopVerses = async () => {
@@ -43,11 +44,14 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
                     const response = await fetch('/api/stats/top-verses');
                     if (response.ok) {
                         const data = await response.json();
-                        setTopVerses(data.topVerses || []);
+                        if (data.topVerses && data.topVerses.length > 0) {
+                            setTopVerses(data.topVerses);
+                        }
+                        // 如果返回空数组，保留默认的 Mock 数据
                     }
                 } catch (error) {
                     console.error('Failed to fetch top verses:', error);
-                    setTopVerses([]); // 降级为空数组
+                    // 失败时保留默认的 Mock 数据，不设置为空数组
                 }
             };
             fetchTopVerses();
@@ -210,16 +214,22 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
                                             {topVerses.slice(0, 7).map((verse, index) => (
                                                 <div
                                                     key={verse.verseId}
-                                                    className="flex items-center justify-between gap-2 text-xs bg-white dark:bg-gray-900 rounded-lg p-2 border border-gold-100 dark:border-gray-700"
+                                                    className="flex items-start justify-between gap-2 text-xs bg-white dark:bg-gray-900 rounded-lg p-2 border border-gold-100 dark:border-gray-700"
                                                 >
-                                                    <span className="flex-shrink-0 w-5 h-5 bg-gold-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                                    <span className="flex-shrink-0 w-5 h-5 bg-gold-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
                                                         {index + 1}
                                                     </span>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="font-semibold text-bible-800 dark:text-bible-200 font-chinese truncate">
                                                             {verse.book} {verse.chapter}:{verse.verse}
                                                         </p>
-                                                        <p className="text-gold-600 dark:text-gold-400 flex items-center gap-1">
+                                                        {/* 经文内容 - 小字显示，最多2行 */}
+                                                        {verse.text && (
+                                                            <p className="text-[10px] text-bible-600 dark:text-bible-400 font-chinese line-clamp-2 mt-1 leading-relaxed">
+                                                                {verse.text}
+                                                            </p>
+                                                        )}
+                                                        <p className="text-gold-600 dark:text-gold-400 flex items-center gap-1 mt-1">
                                                             <span>⭐</span>
                                                             <span className="font-semibold">{verse.favorites.toLocaleString()}</span>
                                                             <span className="text-bible-500 dark:text-bible-400">人收藏</span>

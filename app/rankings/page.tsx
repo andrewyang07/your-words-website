@@ -1,38 +1,40 @@
-import { Metadata } from 'next';
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, TrendingUp } from 'lucide-react';
 import RankingsList from '@/components/rankings/RankingsList';
 
-export const metadata: Metadata = {
-    title: '聖經經文排行榜 - 你的話語',
-    description: '查看最受歡迎的聖經經文排行榜，按收藏次數排序',
-    keywords: ['聖經', '經文', '排行榜', '最受歡迎', '收藏', '統計'],
-};
-
 /**
- * 排行榜页面
- * 使用 ISR 缓存策略，每小时自动重新生成
+ * 排行榜页面（客户端渲染）
+ * 确保在 Redis 不可用时也能正常显示
  */
-export default async function RankingsPage() {
-    let rankings = [];
-    let error = null;
+export default function RankingsPage() {
+    const [rankings, setRankings] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        const response = await fetch(`${baseUrl}/api/rankings`, {
-            next: { revalidate: 3600 }, // ISR: 1小时缓存
-        });
+    // 客户端获取排行榜数据
+    useEffect(() => {
+        const fetchRankings = async () => {
+            try {
+                const response = await fetch('/api/rankings');
+                if (response.ok) {
+                    const data = await response.json();
+                    setRankings(data.rankings || []);
+                } else {
+                    setError('加載失敗，請稍後重試');
+                }
+            } catch (err) {
+                console.error('Failed to fetch rankings:', err);
+                setError('網絡連接失敗');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        if (response.ok) {
-            const data = await response.json();
-            rankings = data.rankings || [];
-        } else {
-            error = '加載失敗';
-        }
-    } catch (err) {
-        console.error('Failed to fetch rankings:', err);
-        error = '加載失敗';
-    }
+        fetchRankings();
+    }, []);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-bible-100 dark:from-gray-900 dark:to-gray-800">
@@ -66,8 +68,13 @@ export default async function RankingsPage() {
                     </p>
                 </div>
 
-                {/* 排行榜内容 */}
-                {error ? (
+                {/* 加载状态 */}
+                {loading ? (
+                    <div className="text-center py-12">
+                        <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
+                        <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加載排行榜中...</p>
+                    </div>
+                ) : error ? (
                     <div className="text-center py-12">
                         <p className="text-bible-600 dark:text-bible-400 font-chinese mb-4">{error}</p>
                         <Link
