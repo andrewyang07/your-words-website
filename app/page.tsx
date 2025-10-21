@@ -767,11 +767,12 @@ export default function HomePage() {
                                     <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
                                     <span className="text-xs text-bible-700 dark:text-bible-300 whitespace-nowrap font-chinese">
-                                        👥 已有 {globalStats.totalUsers.toLocaleString()} 位弟兄姊妹 · ⭐ 共收藏 {globalStats.totalFavorites.toLocaleString()} 节经文
+                                        👥 已有 {globalStats.totalUsers.toLocaleString()} 位弟兄姊妹 · ⭐ 共收藏{' '}
+                                        {globalStats.totalFavorites.toLocaleString()} 节经文
                                     </span>
                                 )}
                             </div>
-                            
+
                             {/* 全局统计 - 平板端（简化，可点击）*/}
                             <button
                                 onClick={() => setShowStatsModal(true)}
@@ -787,7 +788,7 @@ export default function HomePage() {
                                     </span>
                                 )}
                             </button>
-                            
+
                             {/* 全局统计 - 移动端（紧凑，可点击）*/}
                             <button
                                 onClick={() => setShowStatsModal(true)}

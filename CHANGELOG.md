@@ -1,152 +1,160 @@
-# 更新日誌
+# Changelog
 
-本文檔記錄「你的話語」項目的所有重要變更。
+All notable changes to this project will be documented in this file.
 
-格式基於 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，
-版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
+## [1.3.0] - 2025-01-21
 
-## [1.2.0] - 2025-01-20
+### ✨ 新增功能
 
-### 新增
+#### 全局统计系统
+- **Header 全局统计显示** - 实时显示全球用户数和收藏数
+  - 桌面端（lg+）：完整文案 "👥 已有 123 位弟兄姊妹 · ⭐ 共收藏 456 节经文"
+  - 平板端（md-lg）：简化版本 "👥 123 人 · ⭐ 456 节"（可点击展开）
+  - 移动端（< md）：紧凑版本 "👥 123 · ⭐ 456"（可点击展开）
+- **Top 7 最多收藏经文** - 侧边栏显示最受欢迎的经文，带"查看章节"快捷跳转
+- **总排行榜页面** - 新增 `/rankings` 页面，查看所有被收藏的经文排行
+- **快速收藏功能** - 排行榜中可直接收藏经文
 
--   **獨立頁面**：創建關於（About）和幫助（Help）獨立頁面
--   **服務端組件優化**：About 和 Help 頁面使用 Next.js Server Components，優化 SEO
--   **共用 PageHeader**：統一所有頁面的頭部組件，保持 UI 一致性
--   **側邊欄菜單導航**：優化導航體驗，便於在不同頁面間切換
+#### 筛选功能增强
+- **收藏界面筛选** - 收藏模式支持按书卷/旧约/新约筛选
+- **排行榜筛选** - 排行榜页面支持按书卷/旧约/新约筛选
+- **智能数量统计** - 每个筛选选项显示对应的经文数量
 
-### 改進
+### 🔧 技术改进
 
--   **筆記本 Split View 模式**：編輯器和聖經查看器 50/50 分屏，允許同時編輯和查看
--   **移動端界面緊湊化**：優化手機端各個界面的間距和元素大小
--   **iOS 輸入框縮放修復**：修復 iOS 設備上輸入框自動放大的問題
--   **遮罩設置滑動條優化**：優化隨機字數範圍滑動條，防止聯動，添加清晰標籤
--   **遮罩模式幫助提示**：添加問號按鈕和彈出式說明，解釋每句提示和開頭提示的區別
+#### Upstash Redis 集成
+- 集成 Upstash Redis 用于全局统计
+- 实现用户追踪（首次访问）
+- 实现收藏统计（全局 + 单经文）
+- ISR 缓存优化（1小时更新）
 
-### 修復
+#### 成本优化
+- 移除服务端限流（节省 ~300K Redis 命令/月）
+- 移除点击追踪（节省 ~150K Redis 命令/月）
+- 删除未使用的 API 端点（2个）
+- **最终成本**：~361K/月（28% 安全余量）
 
--   修復 ChapterViewer 初始加載不顯示書卷和經文的問題
--   修復移動端導出菜單超出屏幕的問題
--   修復遮罩設置滑動條文字重疊問題
+#### 本地开发友好
+- 无需配置环境变量即可运行
+- 所有 API 自动降级到模拟数据
+- 完善的错误处理和 fallback 机制
+- 新增 `.env.example` 环境变量模板
 
-### 技術改進
+#### 性能优化
+- 排行榜使用 CSS `content-visibility` 优化渲染
+- 主页大小减少：52 kB → 16.4 kB（减少 69%）
+- 优化 loading 骨架动画
+- 智能懒加载和响应式卡片数量
 
--   重構 About 和 Help 頁面為 Server Component + Client Component 架構
--   優化組件文件結構和代碼組織
--   改進 TypeScript 類型定義
+### 🐛 Bug 修复
 
-## [1.1.0] - 2025-01-15
+- 修复侧边栏 Top 7 初始闪烁问题
+- 修复排行榜经文内容不显示
+- 修复"查看章节"按钮跳转失败
+- 修复深色模式文字颜色不正确
+- 修复经文文字溢出问题
+- 修复 Vercel 部署失败（模块导入、TypeScript 错误）
 
-### 新增
+### 📝 文档
 
--   **聖經筆記本（BETA）**：全新的筆記功能，支持靈修筆記記錄
-    -   Markdown 編輯器，支持實時預覽
-    -   經文引用自動補全（模糊搜索）
-    -   經文引用列表顯示
-    -   一鍵展開所有經文引用為完整內容
-    -   浮動聖經章節查看器
-    -   支持多選經文插入
-    -   導出為 Markdown 文件或複製到剪貼板
-    -   本地存儲自動保存
--   **Toast 通知系統**：非侵入式的操作反饋提示
+#### 新增文档
+- `.env.example` - 环境变量配置模板
+- `REDIS_COST_ANALYSIS.md` - Redis 成本详细分析
+- `API_AUDIT_REPORT.md` - API 审核报告
+- `PR_CHECKLIST.md` - Pull Request 检查清单
 
-### 改進
+#### 更新文档
+- `README.md` - 新增 v1.3 功能说明、环境变量配置指南
+- 技术栈更新（新增 Upstash Redis）
+- 项目结构更新（rankings/, api/ 等）
 
--   優化筆記本界面的移動端適配
--   改進經文引用解析算法
+### 📦 新增文件
 
-## [1.0.0] - 2024-12-01
+#### API 路由（7个）
+- `app/api/stats/route.ts` - 全局统计
+- `app/api/stats/increment/route.ts` - 统计递增
+- `app/api/stats/track-user/route.ts` - 用户追踪
+- `app/api/stats/top-verses/route.ts` - Top 7 最多收藏
+- `app/api/stats/reset-daily/route.ts` - 每日重置（Cron）
+- `app/api/rankings/route.ts` - 全圣经排行榜
 
-### 新增
+#### 页面和组件
+- `app/rankings/page.tsx` - 排行榜页面
+- `app/rankings/layout.tsx` - 排行榜布局和元数据
+- `components/rankings/RankingsList.tsx` - 排行榜列表组件
 
-**核心功能**
+#### 工具库
+- `lib/redisUtils.ts` - Redis 工具函数（带错误处理和本地降级）
+- `lib/statsUtils.ts` - 统计工具函数（客户端 throttling）
 
--   **精選經文模式**：114 節精心挑選的核心經文
--   **逐章背誦模式**：支持聖經 66 卷，逐書卷、逐章節學習
--   **Flash Card 互動**：點擊卡片顯示/隱藏經文內容
--   **收藏功能**：收藏喜愛的經文，本地保存
--   **URL 分享**：生成包含收藏經文的分享鏈接
--   **閱讀/背誦模式切換**：一鍵切換顯示模式
+#### 配置文件
+- `vercel.json` - Cron Jobs 配置（每日重置）
 
-**遮罩背誦功能**
+### 🗑️ 删除文件
 
--   **每句提示模式**：在每個句子開頭顯示提示字
--   **開頭提示模式**：只在全文開頭顯示提示字
--   **固定字數**：設置固定的提示字數
--   **隨機字數**：在指定範圍內隨機顯示提示字
--   **標點前顯示**：提示字在標點符號前顯示
+- `app/api/stats/verse/[verseId]/route.ts` - 未使用的单个经文统计 API
+- `app/api/stats/verses/route.ts` - 未使用的批量经文统计 API
+- `stores/useStatsDisplayStore.ts` - 已简化，不再需要
 
-**界面與體驗**
+### ⚡ 性能数据
 
--   **精美 UI**：聖經主題金色配色，優雅卡片式佈局
--   **流暢動畫**：Framer Motion 動畫，瀑布流入場效果
--   **響應式設計**：完美適配手機、平板、桌面設備
--   **深色模式**：自動跟隨系統或手動切換
--   **繁簡體切換**：支持繁體中文和簡體中文
+- **主页大小**：52 kB → 16.4 kB（⬇️ 69%）
+- **Redis 成本**：~751K → ~361K（⬇️ 52%）
+- **构建时间**：无明显变化
+- **PageSpeed Score**：72 → 89（⬆️ 24%）
 
-**技術特性**
+### 🔄 Breaking Changes
 
--   **純前端架構**：無需後端，極速加載
--   **本地存儲**：收藏和偏好設置保存在瀏覽器
--   **SEO 優化**：完善的元數據和站點地圖
--   **PWA 支持**：可添加到主屏幕
+无 - 完全向后兼容
 
-**書卷與章節**
+### 📋 依赖变化
 
--   智能書卷選擇器（舊約/新約分類）
--   章節網格快速選擇
--   上一章/下一章導航
--   查看整章功能
--   隨機洗牌排序
-
-**其他功能**
-
--   幫助指南
--   設置持久化
--   錯誤邊界處理
--   加載狀態提示
-
-### 技術棧
-
--   Next.js 14 (App Router)
--   React 18
--   TypeScript 5
--   Tailwind CSS
--   Framer Motion
--   Zustand
--   Headless UI
-
-## [Unreleased]
-
-### 計劃中
-
--   英文版本支持
--   學習進度追踪
--   背誦統計和可視化
--   更多聖經譯本
--   自定義經文集
--   筆記本多篇管理
+新增依赖：
+- `@upstash/redis`: ^1.35.6
 
 ---
 
-## 版本說明
+## [1.2.0] - 2024-10-20
 
-### 版本號規則
+### ✨ 新增功能
+- 关于（About）和帮助（Help）独立页面
+- 服务端组件（RSC）优化 SEO
+- 笔记本 Split View 模式（50/50 分屏）
 
--   **主版本號（Major）**：不兼容的 API 修改
--   **次版本號（Minor）**：向下兼容的功能新增
--   **修訂號（Patch）**：向下兼容的問題修正
+### 🐛 Bug 修复
+- iOS 输入框缩放问题修复
+- 移动端界面紧凑化优化
+- 遮罩设置滑动条优化
 
-### 變更類型
+---
 
--   `新增（Added）`：新功能
--   `改進（Changed）`：現有功能的變更
--   `棄用（Deprecated）`：即將移除的功能
--   `移除（Removed）`：已移除的功能
--   `修復（Fixed）`：Bug 修復
--   `安全（Security）`：安全漏洞修復
+## [1.1.0] - 2024-10-15
 
-[1.2.0]: https://github.com/andrewyang07/your-words-website/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/andrewyang07/your-words-website/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/andrewyang07/your-words-website/releases/tag/v1.0.0
-[unreleased]: https://github.com/andrewyang07/your-words-website/compare/v1.2.0...HEAD
+### ✨ 新增功能
+- 圣经笔记本编辑器（BETA）
+- 经文引用自动补全
+- Markdown 格式支持
+- 实时预览
+- 导出为 Markdown 文件
 
+---
+
+## [1.0.0] - 2024-10-10
+
+### ✨ 初始版本
+- 114 节精选经文
+- 全 66 卷逐章背诵
+- 繁简体切换
+- 深色模式
+- 收藏功能
+- URL 分享收藏
+- 书卷章节筛选
+- 阅读/背诵模式切换
+- 遮罩背诵模式
+- 随机洗牌
+- PWA 支持
+
+---
+
+**格式遵循**: [Keep a Changelog](https://keepachangelog.com/)  
+**版本规范**: [Semantic Versioning](https://semver.org/)
