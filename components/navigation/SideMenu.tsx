@@ -4,13 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen, HelpCircle, TrendingUp, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     theme: 'light' | 'dark' | 'system';
     onThemeChange: () => void;
+    onViewChapter?: (bookName: string, chapter: number) => void;
 }
 
 interface TopVerse {
@@ -22,9 +22,7 @@ interface TopVerse {
     text?: string; // 经文内容
 }
 
-export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: SideMenuProps) {
-    const router = useRouter();
-
+export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onViewChapter }: SideMenuProps) {
     // 默认显示 Mock 数据（Top 7），方便本地开发
     const [topVerses, setTopVerses] = useState<TopVerse[]>([
         { verseId: '43-3-16', book: '約翰福音', chapter: 3, verse: 16, favorites: 0, text: '神愛世人，甚至將他的獨生子賜給他們，叫一切信他的，不至滅亡，反得永生。' },
@@ -58,12 +56,11 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
         }
     }, [isOpen]);
 
-    // 查看章节功能（添加调试日志）
+    // 查看章节功能（通过回调函数）
     const handleViewChapter = (book: string, chapter: number) => {
-        console.log('查看章节 - 书卷:', book, '章节:', chapter);
-        const url = `/?book=${encodeURIComponent(book)}&chapter=${chapter}`;
-        console.log('跳转URL:', url);
-        router.push(url);
+        if (onViewChapter) {
+            onViewChapter(book, chapter);
+        }
         onClose();
     };
 
@@ -226,9 +223,9 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
                                                         <p className="font-semibold text-bible-800 dark:text-bible-200 font-chinese truncate">
                                                             {verse.book} {verse.chapter}:{verse.verse}
                                                         </p>
-                                                        {/* 经文内容 - 小字显示，最多2行 */}
+                                                        {/* 经文内容 - 小字显示，完整内容 */}
                                                         {verse.text && (
-                                                            <p className="text-[10px] text-bible-600 dark:text-bible-400 font-chinese line-clamp-2 mt-1 leading-relaxed">
+                                                            <p className="text-[10px] text-bible-600 dark:text-bible-400 font-chinese mt-1 leading-relaxed">
                                                                 {verse.text}
                                                             </p>
                                                         )}

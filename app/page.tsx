@@ -106,6 +106,7 @@ export default function HomePage() {
         totalFavorites: 0,
         totalClicks: 0,
     });
+    const [statsLoading, setStatsLoading] = useState(true);
 
     // 滚动监听 - 懒加载更多卡片
     useEffect(() => {
@@ -153,7 +154,7 @@ export default function HomePage() {
         // 追踪新用户
         trackUser();
 
-        // 获取全局统计数据（带错误处理）
+        // 获取全局统计数据（带错误处理和加载状态）
         const fetchStats = async () => {
             try {
                 const response = await fetch('/api/stats');
@@ -164,6 +165,8 @@ export default function HomePage() {
             } catch (error) {
                 console.error('Failed to fetch stats:', error);
                 // 静默失败，不影响页面显示
+            } finally {
+                setStatsLoading(false);
             }
         };
         fetchStats();
@@ -254,47 +257,6 @@ export default function HomePage() {
 
     // 检测 URL 参数（分享和来源）
     const fromBibleNote = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('from') === 'bible-note';
-
-    // 检测 URL 参数：书卷和章节（从侧边栏跳转）
-    useEffect(() => {
-        if (typeof window === 'undefined' || books.length === 0) return;
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const bookParam = urlParams.get('book');
-        const chapterParam = urlParams.get('chapter');
-
-        console.log('URL参数 - book:', bookParam, 'chapter:', chapterParam);
-
-        if (bookParam && chapterParam) {
-            // 查找对应的书卷
-            const book = books.find(
-                (b) =>
-                    b.nameTraditional === bookParam ||
-                    b.nameSimplified === bookParam ||
-                    b.key === bookParam ||
-                    b.nameEnglish === bookParam ||
-                    b.name === bookParam
-            );
-
-            console.log('找到的书卷:', book);
-
-            if (book) {
-                const chapter = parseInt(chapterParam);
-                if (!isNaN(chapter) && chapter > 0 && chapter <= book.chapters) {
-                    console.log('设置书卷和章节:', book.name, chapter);
-                    setSelectedBook(book);
-                    setSelectedChapter(chapter);
-                    setShowAllContent(true); // 自动切换到阅读模式
-                    // 清除 URL 参数
-                    window.history.replaceState({}, '', window.location.pathname);
-                } else {
-                    console.log('章节号无效:', chapter);
-                }
-            } else {
-                console.log('未找到匹配的书卷');
-            }
-        }
-    }, [books]);
 
     // 检测URL分享参数并加载分享的经文
     useEffect(() => {
@@ -607,6 +569,20 @@ export default function HomePage() {
             setSelectedBook(book);
             setSelectedChapter(verse.chapter);
             setShowAllContent(true); // 跳转到原文时自动切换到阅读模式
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    // 从侧边栏查看章节（与卡片的实现一致）
+    const handleViewChapterFromMenu = (bookName: string, chapter: number) => {
+        const book = books.find(
+            (b) => b.name === bookName || b.nameTraditional === bookName || b.nameSimplified === bookName || b.key === bookName
+        );
+
+        if (book) {
+            setSelectedBook(book);
+            setSelectedChapter(chapter);
+            setShowAllContent(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -1103,8 +1079,14 @@ export default function HomePage() {
                     </div>
                 )}
 
-                {/* 侧边栏菜单 */}
-                <SideMenu isOpen={showSideMenu} onClose={() => setShowSideMenu(false)} theme={theme} onThemeChange={toggleTheme} />
+            {/* 侧边栏菜单 */}
+            <SideMenu
+                isOpen={showSideMenu}
+                onClose={() => setShowSideMenu(false)}
+                theme={theme}
+                onThemeChange={toggleTheme}
+                onViewChapter={handleViewChapterFromMenu}
+            />
 
                 {/* 关闭引导提示 - 浮动通知 */}
                 {showGuideHint && (
@@ -1241,15 +1223,23 @@ export default function HomePage() {
                                                 </p>
                                                 <p className="text-center text-xs text-bible-700 dark:text-bible-300 font-chinese leading-relaxed">
                                                     已有{' '}
-                                                    <span className="font-bold text-bible-900 dark:text-bible-100">
-                                                        {globalStats.totalUsers.toLocaleString()}
-                                                    </span>{' '}
+                                                    {statsLoading ? (
+                                                        <span className="inline-block h-4 w-12 bg-bible-200 dark:bg-gray-600 rounded animate-pulse"></span>
+                                                    ) : (
+                                                        <span className="font-bold text-bible-900 dark:text-bible-100">
+                                                            {globalStats.totalUsers.toLocaleString()}
+                                                        </span>
+                                                    )}{' '}
                                                     位弟兄姊妹在此背誦神的話語
                                                     <br />
                                                     共收藏{' '}
-                                                    <span className="font-bold text-gold-600 dark:text-gold-400">
-                                                        {globalStats.totalFavorites.toLocaleString()}
-                                                    </span>{' '}
+                                                    {statsLoading ? (
+                                                        <span className="inline-block h-4 w-12 bg-gold-200 dark:bg-gold-700 rounded animate-pulse"></span>
+                                                    ) : (
+                                                        <span className="font-bold text-gold-600 dark:text-gold-400">
+                                                            {globalStats.totalFavorites.toLocaleString()}
+                                                        </span>
+                                                    )}{' '}
                                                     節寶貴經文 ⭐
                                                     <br />
                                                     <span className="text-bible-600 dark:text-bible-400">一同將主的話藏在心裡</span>

@@ -8,6 +8,7 @@ import booksData from '@/public/data/books.json';
 interface RankingItem {
     verseId: string;
     favorites: number;
+    text?: string;
 }
 
 interface RankingsListProps {
@@ -76,7 +77,13 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                             <p className="font-semibold text-bible-900 dark:text-bible-100 font-chinese text-base truncate">
                                 {item.bookName} {item.chapter}:{item.verse}
                             </p>
-                            <div className="flex items-center gap-2 mt-1">
+                            {/* 经文内容 - 完整显示 */}
+                            {item.text && (
+                                <p className="text-xs text-bible-600 dark:text-bible-400 font-chinese mt-1.5 leading-relaxed">
+                                    {item.text}
+                                </p>
+                            )}
+                            <div className="flex items-center gap-2 mt-2">
                                 <span
                                     className={`text-xs px-2 py-0.5 rounded ${
                                         item.testament === 'old'
@@ -89,7 +96,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                                 <div className="flex items-center gap-1 text-gold-600 dark:text-gold-400">
                                     <Star className="w-3 h-3 fill-current" />
                                     <span className="text-sm font-semibold">{item.favorites.toLocaleString()}</span>
-                                    <span className="text-xs text-bible-500 dark:text-bible-400">人收藏</span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">人收藏</span>
                                 </div>
                             </div>
                         </div>
