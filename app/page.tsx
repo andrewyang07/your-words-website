@@ -1221,7 +1221,7 @@ export default function HomePage() {
                         </div>
                     ) : displayVerses.length > 0 ? (
                         <MasonryLayout
-                            key={isInitialLoad ? 'initial' : shuffleKey}
+                            key={shuffleKey}
                             verses={displayVerses}
                             defaultRevealed={showAllContent}
                             onViewInBible={handleViewInBible}
