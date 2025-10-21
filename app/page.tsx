@@ -96,8 +96,12 @@ export default function HomePage() {
     };
     const [visibleCount, setVisibleCount] = useState(getInitialCount);
 
-    // 全局统计数据
-    const [globalStats, setGlobalStats] = useState<{ totalUsers: number; totalFavorites: number; totalClicks: number } | null>(null);
+    // 全局统计数据（默认显示 0，方便本地开发）
+    const [globalStats, setGlobalStats] = useState<{ totalUsers: number; totalFavorites: number; totalClicks: number }>({
+        totalUsers: 0,
+        totalFavorites: 0,
+        totalClicks: 0,
+    });
 
     // 滚动监听 - 懒加载更多卡片
     useEffect(() => {
@@ -1139,22 +1143,28 @@ export default function HomePage() {
                                         </div>
 
                                         {/* 全局统计 */}
-                                        {globalStats && (globalStats.totalUsers > 0 || globalStats.totalFavorites > 0) && (
-                                            <div className="mt-3 pt-3 border-t border-bible-200/50 dark:border-gray-700">
+                                        <div className="mt-3 pt-3 border-t border-bible-200/50 dark:border-gray-700">
                                                 <div className="bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-700/50 dark:to-gray-600/50 rounded-lg p-3 border border-gold-200 dark:border-gold-700/30">
                                                     <p className="text-center text-sm font-semibold text-bible-800 dark:text-bible-200 mb-2 font-chinese">
                                                         🙏 你並不孤單
                                                     </p>
                                                     <p className="text-center text-xs text-bible-700 dark:text-bible-300 font-chinese leading-relaxed">
-                                                        已有 <span className="font-bold text-bible-900 dark:text-bible-100">{globalStats.totalUsers.toLocaleString()}</span> 位弟兄姊妹在此背誦神的話語
+                                                        已有{' '}
+                                                        <span className="font-bold text-bible-900 dark:text-bible-100">
+                                                            {globalStats.totalUsers.toLocaleString()}
+                                                        </span>{' '}
+                                                        位弟兄姊妹在此背誦神的話語
                                                         <br />
-                                                        共收藏 <span className="font-bold text-gold-600 dark:text-gold-400">{globalStats.totalFavorites.toLocaleString()}</span> 節寶貴經文 ⭐
+                                                        共收藏{' '}
+                                                        <span className="font-bold text-gold-600 dark:text-gold-400">
+                                                            {globalStats.totalFavorites.toLocaleString()}
+                                                        </span>{' '}
+                                                        節寶貴經文 ⭐
                                                         <br />
                                                         <span className="text-bible-600 dark:text-bible-400">一同將主的話藏在心裡</span>
                                                     </p>
                                                 </div>
-                                            </div>
-                                        )}
+                                        </div>
 
                                         {/* iPhone App 推薦 */}
                                         <div className="mt-3 pt-3 border-t border-bible-200/50 dark:border-gray-700">
@@ -1349,32 +1359,34 @@ export default function HomePage() {
                 {/* 页脚 */}
                 <footer className="border-t border-bible-200 dark:border-gray-700 mt-12">
                     {/* 全局统计栏 */}
-                    {globalStats && (globalStats.totalUsers > 0 || globalStats.totalFavorites > 0) && (
-                        <div className="border-b border-bible-200 dark:border-gray-700 bg-bible-50/30 dark:bg-gray-800/30">
+                    <div className="border-b border-bible-200 dark:border-gray-700 bg-bible-50/30 dark:bg-gray-800/30">
                             <div className="max-w-7xl mx-auto px-4 py-4">
-                                <p className="text-center text-xs text-bible-600 dark:text-bible-400 mb-2 font-chinese">
-                                    📊 全球使用數據
-                                </p>
+                                <p className="text-center text-xs text-bible-600 dark:text-bible-400 mb-2 font-chinese">📊 全球使用數據</p>
                                 <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm font-chinese">
                                     <div className="flex items-center gap-1.5">
                                         <span>👥</span>
-                                        <span className="font-bold text-bible-800 dark:text-bible-200">{globalStats.totalUsers.toLocaleString()}</span>
+                                        <span className="font-bold text-bible-800 dark:text-bible-200">
+                                            {globalStats.totalUsers.toLocaleString()}
+                                        </span>
                                         <span className="text-xs text-bible-600 dark:text-bible-400">位用戶</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <span>⭐</span>
-                                        <span className="font-bold text-gold-600 dark:text-gold-400">{globalStats.totalFavorites.toLocaleString()}</span>
+                                        <span className="font-bold text-gold-600 dark:text-gold-400">
+                                            {globalStats.totalFavorites.toLocaleString()}
+                                        </span>
                                         <span className="text-xs text-bible-600 dark:text-bible-400">次收藏</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <span>👆</span>
-                                        <span className="font-bold text-bible-800 dark:text-bible-200">{globalStats.totalClicks.toLocaleString()}</span>
+                                        <span className="font-bold text-bible-800 dark:text-bible-200">
+                                            {globalStats.totalClicks.toLocaleString()}
+                                        </span>
                                         <span className="text-xs text-bible-600 dark:text-bible-400">次點擊</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                    </div>
 
                     <div className="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
                         <p>願神的話語常在你心中 🙏</p>
