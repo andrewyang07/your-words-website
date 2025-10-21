@@ -21,14 +21,25 @@ interface TopVerse {
 }
 
 export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: SideMenuProps) {
-    const [topVerses, setTopVerses] = useState<TopVerse[]>([]);
+    // 默认显示 Mock 数据，方便本地开发
+    const [topVerses, setTopVerses] = useState<TopVerse[]>([
+        { verseId: '43-3-16', book: '約翰福音', chapter: 3, verse: 16, favorites: 0 },
+        { verseId: '19-23-1', book: '詩篇', chapter: 23, verse: 1, favorites: 0 },
+        { verseId: '50-4-13', book: '腓立比書', chapter: 4, verse: 13, favorites: 0 },
+        { verseId: '45-8-28', book: '羅馬書', chapter: 8, verse: 28, favorites: 0 },
+        { verseId: '20-3-5', book: '箴言', chapter: 3, verse: 5, favorites: 0 },
+    ]);
 
     // 获取热门经文排行榜
     useEffect(() => {
         if (isOpen) {
             fetch('/api/stats/top-verses')
                 .then((res) => res.json())
-                .then((data) => setTopVerses(data.topVerses || []))
+                .then((data) => {
+                    if (data.topVerses && data.topVerses.length > 0) {
+                        setTopVerses(data.topVerses);
+                    }
+                })
                 .catch((err) => console.error('Failed to fetch top verses:', err));
         }
     }, [isOpen]);
@@ -70,8 +81,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
                         {/* 菜单项 */}
                         <nav className="flex-1 overflow-y-auto p-4">
                             {/* 热门经文排行榜 */}
-                            {topVerses.length > 0 && (
-                                <div className="mb-6 bg-gradient-to-br from-gold-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-4 border border-gold-200 dark:border-gold-700/30">
+                            <div className="mb-6 bg-gradient-to-br from-gold-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-4 border border-gold-200 dark:border-gold-700/30">
                                     <div className="flex items-center gap-2 mb-3">
                                         <TrendingUp className="w-5 h-5 text-gold-600 dark:text-gold-400" />
                                         <h3 className="text-sm font-bold text-bible-800 dark:text-bible-200 font-chinese">
@@ -100,8 +110,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
                                             </div>
                                         ))}
                                     </div>
-                                </div>
-                            )}
+                            </div>
 
                             <div className="space-y-4">
                                 {/* 背经文 */}
