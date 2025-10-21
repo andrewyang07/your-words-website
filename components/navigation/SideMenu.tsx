@@ -235,7 +235,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
                                                         <p className="text-gold-600 dark:text-gold-400 flex items-center gap-1 mt-1">
                                                             <span>⭐</span>
                                                             <span className="font-semibold">{verse.favorites.toLocaleString()}</span>
-                                                            <span className="text-bible-500 dark:text-bible-400">人收藏</span>
+                                                            <span className="text-gray-600 dark:text-gray-400">人收藏</span>
                                                         </p>
                                                     </div>
                                                     {/* 查看章节按钮 */}
