@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { safeRedisScan, safeRedisMget } from '@/lib/redisUtils';
 import { decodeVerseRef } from '@/lib/bibleBookMapping';
 import booksData from '@/public/data/books.json';
+import bibleDataTraditional from '@/public/data/CUVT_bible.json';
 
 export const dynamic = 'force-dynamic'; // 强制动态渲染
 export const revalidate = 3600; // 缓存1小时
@@ -72,30 +73,37 @@ export async function GET() {
         // 按收藏数降序排序
         rankings.sort((a, b) => b.favorites - a.favorites);
 
-        // 动态导入 dataLoader 并加载经文内容
-        const { loadChapterVerses } = await import('@/lib/dataLoader');
+        // 为每个经文加载内容（从 JSON 直接读取）
+        const rankingsWithText = rankings.map((item) => {
+            const decoded = decodeVerseRef(item.verseId);
+            if (!decoded) {
+                return { ...item, text: '' };
+            }
 
-        // 为每个经文加载内容
-        const rankingsWithText = await Promise.all(
-            rankings.map(async (item) => {
-                const decoded = decodeVerseRef(item.verseId);
-                if (!decoded) {
+            try {
+                const bookData = (bibleDataTraditional as any)[decoded.bookKey];
+                if (!bookData) {
+                    console.error(`Book not found: ${decoded.bookKey}`);
                     return { ...item, text: '' };
                 }
 
-                try {
-                    const chapterVerses = await loadChapterVerses(decoded.bookKey, decoded.chapter, 'traditional');
-                    const verseData = chapterVerses.find((v) => v.verse === decoded.verse);
-                    return {
-                        ...item,
-                        text: verseData?.text || '',
-                    };
-                } catch (error) {
-                    console.error(`Failed to load verse ${item.verseId}:`, error);
+                const chapterData = bookData[decoded.chapter];
+                if (!chapterData) {
+                    console.error(`Chapter not found: ${decoded.bookKey} ${decoded.chapter}`);
                     return { ...item, text: '' };
                 }
-            })
-        );
+
+                const verseText = chapterData[decoded.verse];
+
+                return {
+                    ...item,
+                    text: verseText || '',
+                };
+            } catch (error) {
+                console.error(`Failed to load verse ${item.verseId}:`, error);
+                return { ...item, text: '' };
+            }
+        });
 
         return NextResponse.json({
             rankings: rankingsWithText,

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { safeRedisScan, safeRedisMget } from '@/lib/redisUtils';
 import { decodeVerseRef } from '@/lib/bibleBookMapping';
 import booksData from '@/public/data/books.json';
+import bibleDataTraditional from '@/public/data/CUVT_bible.json';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,43 +102,28 @@ export async function GET() {
         // 按收藏数排序，取 Top 7
         const sorted = versesWithCounts.sort((a, b) => b.favorites - a.favorites).slice(0, 7);
 
-        // 动态导入 dataLoader（避免在 edge runtime 中出错）
-        const { loadChapterVerses } = await import('@/lib/dataLoader');
-
         // 将 verseId 转换为书卷名称并加载经文内容
-        const topVerses: TopVerse[] = await Promise.all(
-            sorted.map(async (item) => {
-                const decoded = decodeVerseRef(item.verseId);
-                if (!decoded) {
-                    return {
-                        verseId: item.verseId,
-                        book: '未知',
-                        chapter: 0,
-                        verse: 0,
-                        favorites: item.favorites,
-                        text: '',
-                    };
-                }
+        const topVerses: TopVerse[] = sorted.map((item) => {
+            const decoded = decodeVerseRef(item.verseId);
+            if (!decoded) {
+                return {
+                    verseId: item.verseId,
+                    book: '未知',
+                    chapter: 0,
+                    verse: 0,
+                    favorites: item.favorites,
+                    text: '',
+                };
+            }
 
-                // 查找书卷名称（使用繁体中文）
-                const book = booksData.books.find((b) => b.key === decoded.bookKey);
+            // 查找书卷名称（使用繁体中文）
+            const book = booksData.books.find((b) => b.key === decoded.bookKey);
 
-                // 尝试加载经文内容
-                try {
-                    const chapterVerses = await loadChapterVerses(decoded.bookKey, decoded.chapter, 'traditional');
-                    const verseData = chapterVerses.find((v) => v.verse === decoded.verse);
-
-                    return {
-                        verseId: item.verseId,
-                        book: book?.nameTraditional || '未知',
-                        chapter: decoded.chapter,
-                        verse: decoded.verse,
-                        favorites: item.favorites,
-                        text: verseData?.text || '',
-                    };
-                } catch (error) {
-                    console.error(`Failed to load verse ${item.verseId}:`, error);
-                    // 加载失败时返回不带文本的数据
+            // 从 JSON 直接读取经文内容
+            try {
+                const bookData = (bibleDataTraditional as any)[decoded.bookKey];
+                if (!bookData) {
+                    console.error(`Book not found: ${decoded.bookKey}`);
                     return {
                         verseId: item.verseId,
                         book: book?.nameTraditional || '未知',
@@ -147,8 +133,42 @@ export async function GET() {
                         text: '',
                     };
                 }
-            })
-        );
+
+                const chapterData = bookData[decoded.chapter];
+                if (!chapterData) {
+                    console.error(`Chapter not found: ${decoded.bookKey} ${decoded.chapter}`);
+                    return {
+                        verseId: item.verseId,
+                        book: book?.nameTraditional || '未知',
+                        chapter: decoded.chapter,
+                        verse: decoded.verse,
+                        favorites: item.favorites,
+                        text: '',
+                    };
+                }
+
+                const verseText = chapterData[decoded.verse];
+
+                return {
+                    verseId: item.verseId,
+                    book: book?.nameTraditional || '未知',
+                    chapter: decoded.chapter,
+                    verse: decoded.verse,
+                    favorites: item.favorites,
+                    text: verseText || '',
+                };
+            } catch (error) {
+                console.error(`Failed to load verse ${item.verseId}:`, error);
+                return {
+                    verseId: item.verseId,
+                    book: book?.nameTraditional || '未知',
+                    chapter: decoded.chapter,
+                    verse: decoded.verse,
+                    favorites: item.favorites,
+                    text: '',
+                };
+            }
+        });
 
         return NextResponse.json({ topVerses });
     } catch (error) {
