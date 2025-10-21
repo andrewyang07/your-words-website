@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Star, ChevronRight } from 'lucide-react';
-import books from '@/data/books.json';
+import books from '@/public/data/books.json';
 
 interface RankingItem {
     verseId: string;
