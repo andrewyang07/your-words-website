@@ -85,24 +85,24 @@ export default function AboutPageClient() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
                                     <Image
-                                        src="/sketch-1.jpeg"
+                                        src="/sketch-1.jpg"
                                         alt="網站構思草圖 1"
                                         width={600}
                                         height={450}
                                         loading="lazy"
-                                        quality={75}
+                                        quality={85}
                                         className="w-full h-auto object-cover"
                                     />
                                     <p className="p-2 text-xs text-center text-bible-500 dark:text-bible-400">構思草圖（一）</p>
                                 </div>
                                 <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
                                     <Image
-                                        src="/sketch-2.jpeg"
+                                        src="/sketch-2.jpg"
                                         alt="網站構思草圖 2"
                                         width={600}
                                         height={450}
                                         loading="lazy"
-                                        quality={75}
+                                        quality={85}
                                         className="w-full h-auto object-cover"
                                     />
                                     <p className="p-2 text-xs text-center text-bible-500 dark:text-bible-400">構思草圖（二）</p>
@@ -142,12 +142,12 @@ export default function AboutPageClient() {
                                 <div className="flex items-start gap-4">
                                     <div className="flex-shrink-0">
                                         <Image
-                                            src="/xinban-logo.png"
+                                            src="/xinban-logo.jpg"
                                             alt="心版 App"
                                             width={80}
                                             height={80}
                                             loading="lazy"
-                                            quality={80}
+                                            quality={85}
                                             className="rounded-xl shadow-md"
                                         />
                                     </div>

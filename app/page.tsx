@@ -1266,12 +1266,12 @@ export default function HomePage() {
                                         <div className="flex-shrink-0">
                                             <div className="w-14 h-14 md:w-16 md:h-16 bg-white dark:bg-gray-700 rounded-[18%] shadow-md flex items-center justify-center p-2.5 overflow-hidden">
                                                 <Image
-                                                    src="/xinban-logo.png"
+                                                    src="/xinban-logo.jpg"
                                                     alt="心版 App Logo"
                                                     width={64}
                                                     height={64}
                                                     loading="lazy"
-                                                    quality={80}
+                                                    quality={85}
                                                     className="w-full h-full object-contain"
                                                 />
                                             </div>
