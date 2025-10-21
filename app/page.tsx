@@ -805,10 +805,10 @@ export default function HomePage() {
                                 )}
                             </button>
 
-                            {/* 帮助按钮 */}
+                            {/* 帮助按钮 - 只在平板/桌面端显示 */}
                             <button
                                 onClick={handleOpenGuide}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="显示使用帮助"
                                 aria-label="显示使用帮助"
@@ -817,10 +817,10 @@ export default function HomePage() {
                                 <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">帮助</span>
                             </button>
 
-                            {/* 简繁体切换 */}
+                            {/* 简繁体切换 - 只在平板/桌面端显示 */}
                             <button
                                 onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
                                 aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}

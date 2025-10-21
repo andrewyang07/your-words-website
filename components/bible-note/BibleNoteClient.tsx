@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences } from '@/lib/verseParser';
@@ -39,6 +38,7 @@ export default function BibleNoteClient() {
     });
     const [lastViewedBook, setLastViewedBook] = useState<string>('');
     const [lastViewedChapter, setLastViewedChapter] = useState<number>(1);
+    const [showSaveIndicator, setShowSaveIndicator] = useState(false);
 
     // 从 localStorage 恢复内容
     useEffect(() => {
@@ -81,11 +81,15 @@ export default function BibleNoteClient() {
         }
     }, [lastViewedBook, lastViewedChapter]);
 
-    // 自动保存到 localStorage
+    // 自动保存到 localStorage（带保存提示）
     useEffect(() => {
         const timer = setTimeout(() => {
             if (content) {
                 localStorage.setItem('bible-note-content', content);
+                setShowSaveIndicator(true);
+                
+                // 2秒后隐藏提示
+                setTimeout(() => setShowSaveIndicator(false), 2000);
             }
         }, 1000);
 
@@ -302,6 +306,13 @@ export default function BibleNoteClient() {
                 }
                 rightContent={
                     <>
+                        {/* 自动保存提示 */}
+                        {showSaveIndicator && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400 font-chinese animate-fade-in">
+                                💾 已自動保存
+                            </span>
+                        )}
+                        
                         {/* 导出按钮（下拉菜单） */}
                         <div className="relative">
                             <button
@@ -374,12 +385,7 @@ export default function BibleNoteClient() {
 
                 {/* 使用说明 - 条件显示 */}
                 {showHelp && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-4 md:p-6"
-                    >
+                    <div className="mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-4 md:p-6 animate-fade-in">
                         <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 <HelpCircle className="w-6 h-6 text-bible-600 dark:text-bible-400" />
@@ -463,7 +469,7 @@ export default function BibleNoteClient() {
                                 </ul>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 )}
 
                 {/* 移动端 Tab 导航 - 超紧凑版 */}
@@ -538,18 +544,11 @@ export default function BibleNoteClient() {
                 </div>
 
                 {/* Toast 提示 */}
-                <AnimatePresence>
-                    {toastMessage && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 50 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 50 }}
-                            className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-lg z-50 font-chinese text-sm max-w-md"
-                        >
-                            {toastMessage}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {toastMessage && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-lg z-50 font-chinese text-sm max-w-md animate-fade-in">
+                        {toastMessage}
+                    </div>
+                )}
 
                 {/* 章节查看器 */}
                 <ChapterViewer

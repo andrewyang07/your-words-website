@@ -439,7 +439,12 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                             onKeyDown={handleKeyDown}
                             placeholder={placeholder}
                             className="w-full h-full p-4 bg-transparent text-bible-800 dark:text-bible-200 font-chinese text-base resize-none focus:outline-none"
-                            style={{ minHeight: '400px', fontSize: '16px' }}
+                            style={{ 
+                                minHeight: typeof window !== 'undefined' && window.innerWidth < 768 
+                                    ? 'calc(100vh - 320px)' 
+                                    : '400px', 
+                                fontSize: '16px' 
+                            }}
                         />
                         {/* 自动补全 */}
                         {suggestions.length > 0 && (
