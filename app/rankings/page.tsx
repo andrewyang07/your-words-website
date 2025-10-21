@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Languages, HelpCircle, Eye, EyeOff, Menu, TrendingUp, ArrowLeft } from 'lucide-react';
+import { Languages, HelpCircle, Eye, EyeOff, Menu, TrendingUp, ArrowLeft, Filter, ChevronDown, Check } from 'lucide-react';
+import { Listbox, Transition } from '@headlessui/react';
 import { useAppStore } from '@/stores/useAppStore';
 import RankingsList from '@/components/rankings/RankingsList';
+import booksData from '@/public/data/books.json';
 import dynamic from 'next/dynamic';
 
 // 动态导入侧边栏
@@ -18,6 +20,8 @@ const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
  * 排行榜页面（客户端渲染）
  * 确保在 Redis 不可用时也能正常显示
  */
+type BookFilterType = 'all' | 'old' | 'new' | string;
+
 export default function RankingsPage() {
     const router = useRouter();
     const { language, theme, setLanguage, toggleTheme } = useAppStore();
@@ -26,6 +30,7 @@ export default function RankingsPage() {
     const [error, setError] = useState<string | null>(null);
     const [showSideMenu, setShowSideMenu] = useState(false);
     const [showAllContent, setShowAllContent] = useState(false);
+    const [bookFilter, setBookFilter] = useState<BookFilterType>('all');
 
     // 客户端获取排行榜数据
     useEffect(() => {
@@ -48,6 +53,44 @@ export default function RankingsPage() {
 
         fetchRankings();
     }, []);
+    
+    // 筛选排行榜
+    const filteredRankings = useMemo(() => {
+        if (bookFilter === 'all') return rankings;
+        
+        return rankings.filter((item: any) => {
+            const [bookIndexStr] = item.verseId.split('-');
+            const bookIndex = parseInt(bookIndexStr);
+            const book = booksData.books.find(b => b.order === bookIndex);
+            
+            if (bookFilter === 'old') return book?.testament === 'old';
+            if (bookFilter === 'new') return book?.testament === 'new';
+            return book?.key === bookFilter;
+        });
+    }, [rankings, bookFilter]);
+    
+    // 计算筛选选项的经文数量
+    const rankingsBookCounts = useMemo(() => {
+        const counts = {
+            all: rankings.length,
+            old: 0,
+            new: 0,
+            books: {} as Record<string, number>
+        };
+        
+        rankings.forEach((item: any) => {
+            const [bookIndexStr] = item.verseId.split('-');
+            const bookIndex = parseInt(bookIndexStr);
+            const book = booksData.books.find(b => b.order === bookIndex);
+            if (book) {
+                if (book.testament === 'old') counts.old++;
+                if (book.testament === 'new') counts.new++;
+                counts.books[book.key] = (counts.books[book.key] || 0) + 1;
+            }
+        });
+        
+        return counts;
+    }, [rankings]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-bible-100 dark:from-gray-900 dark:to-gray-800">
@@ -172,6 +215,120 @@ export default function RankingsPage() {
                         📊 最多收藏的聖經經文（按收藏次數排序） · 每小時更新
                     </p>
                 </div>
+                
+                {/* 筛选工具栏 */}
+                {rankings.length > 0 && !loading && !error && (
+                    <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
+                        <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
+                            共 <span className="font-semibold text-bible-700 dark:text-bible-300">{filteredRankings.length}</span> 节
+                        </span>
+                        
+                        {/* 筛选按钮 */}
+                        <Listbox value={bookFilter} onChange={setBookFilter}>
+                            <div className="relative">
+                                <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bible-50 dark:bg-gray-800 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors">
+                                    <Filter className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                    <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">篩選</span>
+                                    <ChevronDown className="w-3 h-3 text-bible-500 dark:text-bible-400" />
+                                </Listbox.Button>
+                                <Transition
+                                    enter="transition duration-100 ease-out"
+                                    enterFrom="transform scale-95 opacity-0"
+                                    enterTo="transform scale-100 opacity-100"
+                                    leave="transition duration-75 ease-out"
+                                    leaveFrom="transform scale-100 opacity-100"
+                                    leaveTo="transform scale-95 opacity-0"
+                                >
+                                    <Listbox.Options className="absolute right-0 mt-2 w-64 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-50 scrollbar-thin">
+                                        {/* 全部 / 旧约 / 新约 */}
+                                        <Listbox.Option value="all">
+                                            {({ active, selected }) => (
+                                                <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                            全部
+                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                ({rankingsBookCounts.all})
+                                                            </span>
+                                                            {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </Listbox.Option>
+
+                                        <Listbox.Option value="old">
+                                            {({ active, selected }) => (
+                                                <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                            舊約
+                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                ({rankingsBookCounts.old})
+                                                            </span>
+                                                            {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </Listbox.Option>
+                                        
+                                        <Listbox.Option value="new">
+                                            {({ active, selected }) => (
+                                                <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                            新約
+                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                ({rankingsBookCounts.new})
+                                                            </span>
+                                                            {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </Listbox.Option>
+
+                                        {/* 分隔线 */}
+                                        <div className="border-t border-bible-200 dark:border-gray-700 my-1" />
+
+                                        {/* 各书卷 */}
+                                        {booksData.books.map((book) => {
+                                            const count = rankingsBookCounts.books[book.key] || 0;
+                                            if (count === 0) return null;
+
+                                            return (
+                                                <Listbox.Option key={book.key} value={book.key}>
+                                                    {({ active, selected }) => (
+                                                        <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                                    {book.nameTraditional}
+                                                                </span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                        ({count})
+                                                                    </span>
+                                                                    {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </Listbox.Option>
+                                            );
+                                        })}
+                                    </Listbox.Options>
+                                </Transition>
+                            </div>
+                        </Listbox>
+                    </div>
+                )}
 
                 {/* 加载状态 */}
                 {loading ? (
@@ -189,8 +346,18 @@ export default function RankingsPage() {
                             返回主頁
                         </Link>
                     </div>
+                ) : filteredRankings.length > 0 ? (
+                    <RankingsList rankings={filteredRankings} />
                 ) : rankings.length > 0 ? (
-                    <RankingsList rankings={rankings} />
+                    <div className="text-center py-12">
+                        <p className="text-bible-500 dark:text-bible-400 font-chinese mb-2">該篩選條件下沒有經文</p>
+                        <button
+                            onClick={() => setBookFilter('all')}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors font-chinese"
+                        >
+                            查看全部
+                        </button>
+                    </div>
                 ) : (
                     <div className="text-center py-12">
                         <p className="text-bible-500 dark:text-bible-400 font-chinese mb-2">暫無排行榜數據</p>

@@ -66,7 +66,13 @@ export default function RankingsList({ rankings }: RankingsListProps) {
     };
 
     return (
-        <div className="space-y-3">
+        <div 
+            className="space-y-3"
+            style={{ 
+                contentVisibility: 'auto',
+                containIntrinsicSize: '150px'
+            }}
+        >
             {enrichedRankings.map((item, index) => {
                 const rank = index + 1;
                 const medal = getMedalIcon(rank);
