@@ -6,17 +6,56 @@ import './globals.css';
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://www.yourwords.me'),
-    title: '你的話語 - 背聖經',
-    description: '你的話語 - 免費聖經背誦工具，114節精選經文，Flash Card背誦模式。你的话语 - 免费圣经背诵工具，让神的话语常在心中。',
+    title: '你的话语 - 背圣经，记笔记',
+    description: '免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能。繁体中文、简体中文双语支持，让神的话语常在心中。',
     keywords: [
-        // 繁体关键词
-        '聖經', '背誦', '經文', '背聖經', '聖經背誦', '背經文', '聖經app', '靈修', '背經', '經文背誦',
+        // 繁体关键词（主要）
+        '背聖經',
+        '聖經背誦',
+        '聖經筆記',
+        '聖經app',
+        '免費聖經',
+        '聖經學習',
+        '靈修',
+        '背經文',
+        '聖經工具',
+        '聖經筆記本',
+        '靈修筆記',
         // 简体关键词
-        '圣经', '背诵', '经文', '背圣经', '圣经背诵', '背经文', '圣经app', '灵修', '背经', '经文背诵',
+        '背圣经',
+        '圣经背诵',
+        '圣经笔记',
+        '圣经app',
+        '免费圣经',
+        '圣经学习',
+        '灵修',
+        '背经文',
+        '圣经工具',
+        '圣经笔记本',
+        '灵修笔记',
         // 品牌关键词
-        '你的話語', '你的话语', 'your words', 'yourwords', '你的話語app', '你的话语app',
+        '你的話語',
+        '你的话语',
+        'your words',
+        'yourwords',
+        '你的話語app',
+        '你的话语app',
+        // 功能关键词
+        'Flash Card',
+        '聖經卡片',
+        '圣经卡片',
+        '經文收藏',
+        '经文收藏',
+        '聖經分享',
+        '圣经分享',
         // 通用词
-        'Bible', '記憶經文', '记忆经文', '基督教', '基督教app', '聖經學習', '圣经学习',
+        'Bible',
+        '基督教',
+        '基督教app',
+        '聖經助手',
+        '圣经助手',
+        '記憶經文',
+        '记忆经文',
     ],
     authors: [{ name: 'Your Words Team' }],
     creator: 'Your Words',
@@ -25,7 +64,7 @@ export const metadata: Metadata = {
         languages: {
             'zh-TW': 'https://www.yourwords.me',
             'zh-CN': 'https://www.yourwords.me',
-            'zh': 'https://www.yourwords.me',
+            zh: 'https://www.yourwords.me',
         },
     },
     robots: {
@@ -70,9 +109,39 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "你的话语",
+        "alternateName": "Your Words",
+        "description": "免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能",
+        "url": "https://www.yourwords.me",
+        "applicationCategory": "EducationApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "inLanguage": ["zh-TW", "zh-CN"],
+        "featureList": [
+            "圣经背诵",
+            "Flash Card模式",
+            "圣经笔记本",
+            "经文收藏",
+            "经文分享"
+        ]
+    };
+
     return (
         <html lang="zh-CN" suppressHydrationWarning>
             <head>
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(structuredData),
+                    }}
+                />
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `
