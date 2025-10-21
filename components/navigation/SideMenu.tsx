@@ -58,9 +58,12 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
         }
     }, [isOpen]);
 
-    // 查看章节功能
+    // 查看章节功能（添加调试日志）
     const handleViewChapter = (book: string, chapter: number) => {
-        router.push(`/?book=${encodeURIComponent(book)}&chapter=${chapter}`);
+        console.log('查看章节 - 书卷:', book, '章节:', chapter);
+        const url = `/?book=${encodeURIComponent(book)}&chapter=${chapter}`;
+        console.log('跳转URL:', url);
+        router.push(url);
         onClose();
     };
 
@@ -208,7 +211,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
                                     <div className="bg-gradient-to-br from-gold-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-4 border border-gold-200 dark:border-gold-700/30">
                                         <div className="flex items-center gap-2 mb-3">
                                             <TrendingUp className="w-5 h-5 text-gold-600 dark:text-gold-400" />
-                                            <h3 className="text-sm font-bold text-bible-800 dark:text-bible-200 font-chinese">🏆 最受歡迎的經文</h3>
+                                            <h3 className="text-sm font-bold text-bible-800 dark:text-bible-200 font-chinese">🏆 最多收藏經文</h3>
                                         </div>
                                         <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-thin">
                                             {topVerses.slice(0, 7).map((verse, index) => (

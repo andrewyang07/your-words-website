@@ -263,6 +263,8 @@ export default function HomePage() {
         const bookParam = urlParams.get('book');
         const chapterParam = urlParams.get('chapter');
 
+        console.log('URL参数 - book:', bookParam, 'chapter:', chapterParam);
+
         if (bookParam && chapterParam) {
             // 查找对应的书卷
             const book = books.find(
@@ -270,18 +272,26 @@ export default function HomePage() {
                     b.nameTraditional === bookParam ||
                     b.nameSimplified === bookParam ||
                     b.key === bookParam ||
-                    b.nameEnglish === bookParam
+                    b.nameEnglish === bookParam ||
+                    b.name === bookParam
             );
+
+            console.log('找到的书卷:', book);
 
             if (book) {
                 const chapter = parseInt(chapterParam);
                 if (!isNaN(chapter) && chapter > 0 && chapter <= book.chapters) {
+                    console.log('设置书卷和章节:', book.name, chapter);
                     setSelectedBook(book);
                     setSelectedChapter(chapter);
                     setShowAllContent(true); // 自动切换到阅读模式
                     // 清除 URL 参数
                     window.history.replaceState({}, '', window.location.pathname);
+                } else {
+                    console.log('章节号无效:', chapter);
                 }
+            } else {
+                console.log('未找到匹配的书卷');
             }
         }
     }, [books]);

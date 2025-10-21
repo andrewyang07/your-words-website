@@ -64,7 +64,7 @@ export default function RankingsPage() {
                 {/* 说明文字 */}
                 <div className="mb-6 p-4 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-gold-200 dark:border-gold-700/30">
                     <p className="text-sm text-bible-700 dark:text-bible-300 font-chinese text-center">
-                        📊 最受歡迎的聖經經文（按收藏次數排序） · 每小時更新
+                        📊 最多收藏的聖經經文（按收藏次數排序） · 每小時更新
                     </p>
                 </div>
 
