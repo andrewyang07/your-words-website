@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { Languages, HelpCircle, Eye, EyeOff, Menu, TrendingUp, ArrowLeft } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
