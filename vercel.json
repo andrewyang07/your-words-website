@@ -1,0 +1,9 @@
+{
+    "crons": [
+        {
+            "path": "/api/stats/reset-daily",
+            "schedule": "0 0 * * *"
+        }
+    ]
+}
+

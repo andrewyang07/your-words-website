@@ -8,6 +8,7 @@ import { Star, BookOpen } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { maskVerseText } from '@/lib/utils';
+import { getVerseNumericId, sendStats } from '@/lib/statsUtils';
 
 interface VerseCardProps {
     verse: Verse;
@@ -58,6 +59,10 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             return;
         }
         setIsRevealed(!isRevealed);
+
+        // 发送点击统计
+        const verseId = getVerseNumericId(verse);
+        sendStats('click', verseId);
     };
 
     // 键盘导航支持
@@ -80,7 +85,12 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
 
     const handleToggleFavorite = (e: React.MouseEvent) => {
         e.stopPropagation();
+        const wasFavorite = isFav;
         toggleFavorite(verse.id);
+
+        // 发送收藏统计
+        const verseId = getVerseNumericId(verse);
+        sendStats(wasFavorite ? 'unfavorite' : 'favorite', verseId);
     };
 
     // 显示预览文本或完整文本

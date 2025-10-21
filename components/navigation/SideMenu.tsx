@@ -1,8 +1,9 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen, HelpCircle } from 'lucide-react';
+import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen, HelpCircle, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 interface SideMenuProps {
     isOpen: boolean;
@@ -11,7 +12,26 @@ interface SideMenuProps {
     onThemeChange: () => void;
 }
 
+interface TopVerse {
+    verseId: string;
+    book: string;
+    chapter: number;
+    verse: number;
+    favorites: number;
+}
+
 export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: SideMenuProps) {
+    const [topVerses, setTopVerses] = useState<TopVerse[]>([]);
+
+    // 获取热门经文排行榜
+    useEffect(() => {
+        if (isOpen) {
+            fetch('/api/stats/top-verses')
+                .then((res) => res.json())
+                .then((data) => setTopVerses(data.topVerses || []))
+                .catch((err) => console.error('Failed to fetch top verses:', err));
+        }
+    }, [isOpen]);
 
     return (
         <AnimatePresence>
@@ -49,6 +69,40 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
 
                         {/* 菜单项 */}
                         <nav className="flex-1 overflow-y-auto p-4">
+                            {/* 热门经文排行榜 */}
+                            {topVerses.length > 0 && (
+                                <div className="mb-6 bg-gradient-to-br from-gold-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-4 border border-gold-200 dark:border-gold-700/30">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <TrendingUp className="w-5 h-5 text-gold-600 dark:text-gold-400" />
+                                        <h3 className="text-sm font-bold text-bible-800 dark:text-bible-200 font-chinese">
+                                            🏆 最受歡迎的經文
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {topVerses.map((verse, index) => (
+                                            <div
+                                                key={verse.verseId}
+                                                className="flex items-start gap-2 text-xs bg-white dark:bg-gray-900 rounded-lg p-2 border border-gold-100 dark:border-gray-700"
+                                            >
+                                                <span className="flex-shrink-0 w-5 h-5 bg-gold-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                                    {index + 1}
+                                                </span>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-semibold text-bible-800 dark:text-bible-200 font-chinese truncate">
+                                                        {verse.book} {verse.chapter}:{verse.verse}
+                                                    </p>
+                                                    <p className="text-gold-600 dark:text-gold-400 flex items-center gap-1">
+                                                        <span>⭐</span>
+                                                        <span className="font-semibold">{verse.favorites.toLocaleString()}</span>
+                                                        <span className="text-bible-500 dark:text-bible-400">次收藏</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="space-y-4">
                                 {/* 背经文 */}
                                 <Link
