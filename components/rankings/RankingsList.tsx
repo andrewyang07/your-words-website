@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Star, ChevronRight } from 'lucide-react';
-import books from '@/public/data/books.json';
+import booksData from '@/public/data/books.json';
 
 interface RankingItem {
     verseId: string;
@@ -26,7 +26,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
             const verse = parseInt(verseStr);
 
             // 根据 bookIndex 找到对应的书卷
-            const book = books.find((b) => b.order === bookIndex);
+            const book = booksData.books.find((b) => b.order === bookIndex);
 
             return {
                 ...item,
