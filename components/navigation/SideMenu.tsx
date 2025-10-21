@@ -1,9 +1,10 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen, HelpCircle, TrendingUp } from 'lucide-react';
+import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen, HelpCircle, TrendingUp, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface SideMenuProps {
     isOpen: boolean;
@@ -21,28 +22,43 @@ interface TopVerse {
 }
 
 export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: SideMenuProps) {
-    // 默认显示 Mock 数据，方便本地开发
+    const router = useRouter();
+
+    // 默认显示 Mock 数据（Top 7），方便本地开发
     const [topVerses, setTopVerses] = useState<TopVerse[]>([
         { verseId: '43-3-16', book: '約翰福音', chapter: 3, verse: 16, favorites: 0 },
         { verseId: '19-23-1', book: '詩篇', chapter: 23, verse: 1, favorites: 0 },
         { verseId: '50-4-13', book: '腓立比書', chapter: 4, verse: 13, favorites: 0 },
         { verseId: '45-8-28', book: '羅馬書', chapter: 8, verse: 28, favorites: 0 },
         { verseId: '20-3-5', book: '箴言', chapter: 3, verse: 5, favorites: 0 },
+        { verseId: '58-11-1', book: '希伯來書', chapter: 11, verse: 1, favorites: 0 },
+        { verseId: '40-5-16', book: '馬太福音', chapter: 5, verse: 16, favorites: 0 },
     ]);
 
-    // 获取热门经文排行榜
+    // 获取热门经文排行榜（带错误处理）
     useEffect(() => {
         if (isOpen) {
-            fetch('/api/stats/top-verses')
-                .then((res) => res.json())
-                .then((data) => {
-                    if (data.topVerses && data.topVerses.length > 0) {
-                        setTopVerses(data.topVerses);
+            const fetchTopVerses = async () => {
+                try {
+                    const response = await fetch('/api/stats/top-verses');
+                    if (response.ok) {
+                        const data = await response.json();
+                        setTopVerses(data.topVerses || []);
                     }
-                })
-                .catch((err) => console.error('Failed to fetch top verses:', err));
+                } catch (error) {
+                    console.error('Failed to fetch top verses:', error);
+                    setTopVerses([]); // 降级为空数组
+                }
+            };
+            fetchTopVerses();
         }
     }, [isOpen]);
+
+    // 查看章节功能
+    const handleViewChapter = (book: string, chapter: number) => {
+        router.push(`/?book=${encodeURIComponent(book)}&chapter=${chapter}`);
+        onClose();
+    };
 
     return (
         <AnimatePresence>
@@ -80,38 +96,6 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
 
                         {/* 菜单项 */}
                         <nav className="flex-1 overflow-y-auto p-4">
-                            {/* 热门经文排行榜 */}
-                            <div className="mb-6 bg-gradient-to-br from-gold-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-4 border border-gold-200 dark:border-gold-700/30">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <TrendingUp className="w-5 h-5 text-gold-600 dark:text-gold-400" />
-                                        <h3 className="text-sm font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                                            🏆 最受歡迎的經文
-                                        </h3>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {topVerses.map((verse, index) => (
-                                            <div
-                                                key={verse.verseId}
-                                                className="flex items-start gap-2 text-xs bg-white dark:bg-gray-900 rounded-lg p-2 border border-gold-100 dark:border-gray-700"
-                                            >
-                                                <span className="flex-shrink-0 w-5 h-5 bg-gold-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                                                    {index + 1}
-                                                </span>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="font-semibold text-bible-800 dark:text-bible-200 font-chinese truncate">
-                                                        {verse.book} {verse.chapter}:{verse.verse}
-                                                    </p>
-                                                    <p className="text-gold-600 dark:text-gold-400 flex items-center gap-1">
-                                                        <span>⭐</span>
-                                                        <span className="font-semibold">{verse.favorites.toLocaleString()}</span>
-                                                        <span className="text-bible-500 dark:text-bible-400">次收藏</span>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                            </div>
-
                             <div className="space-y-4">
                                 {/* 背经文 */}
                                 <Link
@@ -215,6 +199,55 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange }: Side
                                     </div>
                                 </div>
 
+                                {/* 热门经文排行榜 - 移到底部 */}
+                                <div className="mt-6 pt-4 border-t border-bible-200 dark:border-gray-700">
+                                    <div className="bg-gradient-to-br from-gold-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-4 border border-gold-200 dark:border-gold-700/30">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <TrendingUp className="w-5 h-5 text-gold-600 dark:text-gold-400" />
+                                            <h3 className="text-sm font-bold text-bible-800 dark:text-bible-200 font-chinese">🏆 最受歡迎的經文</h3>
+                                        </div>
+                                        <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-thin">
+                                            {topVerses.slice(0, 7).map((verse, index) => (
+                                                <div
+                                                    key={verse.verseId}
+                                                    className="flex items-center justify-between gap-2 text-xs bg-white dark:bg-gray-900 rounded-lg p-2 border border-gold-100 dark:border-gray-700"
+                                                >
+                                                    <span className="flex-shrink-0 w-5 h-5 bg-gold-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                                        {index + 1}
+                                                    </span>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-semibold text-bible-800 dark:text-bible-200 font-chinese truncate">
+                                                            {verse.book} {verse.chapter}:{verse.verse}
+                                                        </p>
+                                                        <p className="text-gold-600 dark:text-gold-400 flex items-center gap-1">
+                                                            <span>⭐</span>
+                                                            <span className="font-semibold">{verse.favorites.toLocaleString()}</span>
+                                                            <span className="text-bible-500 dark:text-bible-400">人收藏</span>
+                                                        </p>
+                                                    </div>
+                                                    {/* 查看章节按钮 */}
+                                                    <button
+                                                        onClick={() => handleViewChapter(verse.book, verse.chapter)}
+                                                        className="shrink-0 p-1.5 rounded hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
+                                                        title="查看章节"
+                                                        aria-label={`查看 ${verse.book} ${verse.chapter}章`}
+                                                    >
+                                                        <ChevronRight className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {/* 总排行榜链接 */}
+                                        <Link
+                                            href="/rankings"
+                                            onClick={onClose}
+                                            className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-bible-500 hover:bg-bible-600 dark:bg-bible-600 dark:hover:bg-bible-700 text-white transition-colors font-chinese text-sm font-medium"
+                                        >
+                                            <TrendingUp className="w-4 h-4" />
+                                            <span>📊 查看總排行榜</span>
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         </nav>
 

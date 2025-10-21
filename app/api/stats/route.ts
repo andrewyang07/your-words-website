@@ -1,39 +1,41 @@
 import { NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
+import { safeRedisGet } from '@/lib/redisUtils';
 
 export const runtime = 'edge';
 
+// 本地开发环境检测
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isRedisConfigured = !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+
 /**
- * 获取全局统计数据
+ * GET /api/stats
+ * 获取全局统计数据（总用户、总收藏、总点击）
  */
 export async function GET() {
+    // 本地开发且未配置 Redis，返回模拟数据
+    if (isDevelopment && !isRedisConfigured) {
+        return NextResponse.json({
+            totalUsers: 10,
+            totalFavorites: 50,
+            totalClicks: 200,
+        });
+    }
+
     try {
-        // 只在有 Upstash 环境变量时返回真实数据
-        if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-            // 本地开发返回 Mock 数据
-            return NextResponse.json({
-                totalUsers: 0,
-                totalFavorites: 0,
-                totalClicks: 0,
-            });
-        }
-
-        const redis = Redis.fromEnv();
-
         const [totalUsers, totalFavorites, totalClicks] = await Promise.all([
-            redis.get<number>('stats:total_users'),
-            redis.get<number>('stats:total_favorites'),
-            redis.get<number>('stats:total_clicks'),
+            safeRedisGet('total_users', '0'),
+            safeRedisGet('total_favorites', '0'),
+            safeRedisGet('total_clicks', '0'),
         ]);
 
         return NextResponse.json({
-            totalUsers: totalUsers || 0,
-            totalFavorites: totalFavorites || 0,
-            totalClicks: totalClicks || 0,
+            totalUsers: parseInt(totalUsers),
+            totalFavorites: parseInt(totalFavorites),
+            totalClicks: parseInt(totalClicks),
         });
     } catch (error) {
-        console.error('Failed to fetch stats:', error);
-        // 失败时返回 0
+        console.error('Stats API error:', error);
+        // 返回默认值，不让 API 失败
         return NextResponse.json({
             totalUsers: 0,
             totalFavorites: 0,
@@ -41,4 +43,3 @@ export async function GET() {
         });
     }
 }
-

@@ -14,13 +14,13 @@ interface TopVerse {
 }
 
 /**
- * 获取热门经文排行榜（Top 5）
+ * 获取热门经文排行榜（Top 7）
  */
 export async function GET() {
     try {
         // 只在有 Upstash 环境变量时返回真实数据
         if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-            // 本地开发返回 Mock 数据
+            // 本地开发返回 Mock 数据（Top 7）
             return NextResponse.json({
                 topVerses: [
                     { verseId: '43-3-16', book: '約翰福音', chapter: 3, verse: 16, favorites: 0 },
@@ -28,6 +28,8 @@ export async function GET() {
                     { verseId: '50-4-13', book: '腓立比書', chapter: 4, verse: 13, favorites: 0 },
                     { verseId: '45-8-28', book: '羅馬書', chapter: 8, verse: 28, favorites: 0 },
                     { verseId: '20-3-5', book: '箴言', chapter: 3, verse: 5, favorites: 0 },
+                    { verseId: '58-11-1', book: '希伯來書', chapter: 11, verse: 1, favorites: 0 },
+                    { verseId: '40-5-16', book: '馬太福音', chapter: 5, verse: 16, favorites: 0 },
                 ],
             });
         }

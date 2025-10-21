@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { Verse } from '@/types/verse';
 import VerseCard from './VerseCard';
 import { getCardSize } from '@/lib/utils';

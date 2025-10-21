@@ -124,9 +124,11 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         >
             {/* 经文引用 */}
             <div className="flex items-start justify-between mb-3">
-                <span className="text-bible-600 dark:text-bible-400 font-medium font-chinese text-sm">
-                    {verse.book} {verse.chapter}:{verse.verse}
-                </span>
+                <div className="flex-1">
+                    <span className="text-bible-600 dark:text-bible-400 font-medium font-chinese text-sm">
+                        {verse.book} {verse.chapter}:{verse.verse}
+                    </span>
+                </div>
                 {/* 收藏星标 */}
                 <button
                     onClick={handleToggleFavorite}
