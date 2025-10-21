@@ -39,15 +39,10 @@ export async function POST(request: Request) {
                 redis.incr('daily_command_count'), // 记录命令数
             ]);
         } else if (type === 'favorite') {
+            // 只统计"收藏"动作，不统计"取消收藏"
             await Promise.all([
                 redis.incr('stats:total_favorites'),
                 redis.incr(`verse:${verseId}:favorites`),
-                redis.incr('daily_command_count'),
-            ]);
-        } else if (type === 'unfavorite') {
-            await Promise.all([
-                redis.decr('stats:total_favorites'),
-                redis.decr(`verse:${verseId}:favorites`),
                 redis.incr('daily_command_count'),
             ]);
         } else {

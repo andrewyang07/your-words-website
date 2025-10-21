@@ -88,9 +88,11 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         const wasFavorite = isFav;
         toggleFavorite(verse.id);
 
-        // 发送收藏统计
-        const verseId = getVerseNumericId(verse);
-        sendStats(wasFavorite ? 'unfavorite' : 'favorite', verseId);
+        // 只统计"收藏"动作，不统计"取消收藏"
+        if (!wasFavorite) {
+            const verseId = getVerseNumericId(verse);
+            sendStats('favorite', verseId);
+        }
     };
 
     // 显示预览文本或完整文本
