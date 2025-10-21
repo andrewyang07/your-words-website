@@ -1,18 +1,30 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, TrendingUp } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Languages, HelpCircle, Eye, EyeOff, Menu, TrendingUp, ArrowLeft } from 'lucide-react';
+import { useAppStore } from '@/stores/useAppStore';
 import RankingsList from '@/components/rankings/RankingsList';
+import dynamic from 'next/dynamic';
+
+// 动态导入侧边栏
+const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
+    ssr: false,
+});
 
 /**
  * 排行榜页面（客户端渲染）
  * 确保在 Redis 不可用时也能正常显示
  */
 export default function RankingsPage() {
+    const router = useRouter();
+    const { language, theme, setLanguage, toggleTheme } = useAppStore();
     const [rankings, setRankings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showSideMenu, setShowSideMenu] = useState(false);
+    const [showAllContent, setShowAllContent] = useState(false);
 
     // 客户端获取排行榜数据
     useEffect(() => {
@@ -38,26 +50,118 @@ export default function RankingsPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-bible-100 dark:from-gray-900 dark:to-gray-800">
-            {/* 顶部导航 */}
-            <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700">
-                <div className="max-w-4xl mx-auto px-4 py-4">
-                    <div className="flex items-center gap-3">
-                        <Link
-                            href="/"
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors"
-                            title="返回主页"
-                        >
-                            <ArrowLeft className="w-5 h-5 text-bible-600 dark:text-bible-400" />
-                            <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">返回主頁</span>
-                        </Link>
-                        <div className="flex-1" />
+            {/* 顶部导航栏 - 与主页保持一致 */}
+            <header
+                className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700"
+                role="banner"
+            >
+                <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
+                    {/* 标题行 */}
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                            <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity" title="首頁">
+                                <Image
+                                    src="/logo-light.png"
+                                    alt="你的話語 Logo"
+                                    width={40}
+                                    height={40}
+                                    priority
+                                    className="w-8 h-8 md:w-10 md:h-10 dark:brightness-90 dark:contrast-125"
+                                />
+                                <h1
+                                    className="text-2xl md:text-3xl font-extrabold font-chinese text-bible-700 dark:text-bible-300 tracking-wide"
+                                    style={{
+                                        textShadow: '0 0 12px rgba(190,158,93,0.3), 0 0 24px rgba(190,158,93,0.15), 0 1px 2px rgba(0,0,0,0.05)',
+                                    }}
+                                >
+                                    你的話語
+                                </h1>
+                            </a>
+                        </div>
+
                         <div className="flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-gold-600 dark:text-gold-400" />
-                            <h1 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">總排行榜</h1>
+                            {/* 帮助按钮 */}
+                            <button
+                                onClick={() => router.push('/help')}
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                title="显示使用帮助"
+                                aria-label="显示使用帮助"
+                            >
+                                <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">帮助</span>
+                            </button>
+
+                            {/* 简繁体切换 */}
+                            <button
+                                onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
+                                aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
+                            >
+                                <Languages className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                                    {language === 'simplified' ? '繁' : '簡'}
+                                </span>
+                            </button>
+
+                            {/* 阅读/背诵模式切换 */}
+                            <button
+                                onClick={() => setShowAllContent(!showAllContent)}
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                                aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                                aria-pressed={showAllContent}
+                            >
+                                {showAllContent ? (
+                                    <>
+                                        <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">背诵</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">阅读</span>
+                                    </>
+                                )}
+                            </button>
+
+                            {/* 汉堡菜单按钮 */}
+                            <button
+                                onClick={() => setShowSideMenu(true)}
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                title="菜单"
+                                aria-label="打开菜单"
+                            >
+                                <Menu className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">菜單</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* 副标题 - 显示当前页面 */}
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => router.push('/')}
+                            className="flex items-center gap-1 text-sm text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 transition-colors font-chinese"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            <span>返回主頁</span>
+                        </button>
+                        <span className="text-bible-400 dark:text-gray-600">/</span>
+                        <div className="flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4 text-gold-600 dark:text-gold-400" />
+                            <span className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">總排行榜</span>
                         </div>
                     </div>
                 </div>
             </header>
+
+            {/* 侧边栏菜单 */}
+            <SideMenu isOpen={showSideMenu} onClose={() => setShowSideMenu(false)} theme={theme} onThemeChange={toggleTheme} />
 
             {/* 主内容 */}
             <main className="max-w-4xl mx-auto px-4 py-8">

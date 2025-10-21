@@ -154,6 +154,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             text-gray-800 dark:text-gray-100 font-medium leading-relaxed font-chinese
             flex-1
             transition-opacity duration-200
+            break-words overflow-wrap-anywhere
           `}
             >
                 {displayText}

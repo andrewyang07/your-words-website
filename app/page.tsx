@@ -258,6 +258,38 @@ export default function HomePage() {
     // 检测 URL 参数（分享和来源）
     const fromBibleNote = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('from') === 'bible-note';
 
+    // 检测 URL 参数：书卷和章节（从总排行榜跳转）
+    useEffect(() => {
+        if (typeof window === 'undefined' || books.length === 0) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookParam = urlParams.get('book');
+        const chapterParam = urlParams.get('chapter');
+
+        if (bookParam && chapterParam) {
+            // 查找对应的书卷
+            const book = books.find(
+                (b) =>
+                    b.nameTraditional === bookParam ||
+                    b.nameSimplified === bookParam ||
+                    b.key === bookParam ||
+                    b.nameEnglish === bookParam ||
+                    b.name === bookParam
+            );
+
+            if (book) {
+                const chapter = parseInt(chapterParam);
+                if (!isNaN(chapter) && chapter > 0 && chapter <= book.chapters) {
+                    setSelectedBook(book);
+                    setSelectedChapter(chapter);
+                    setShowAllContent(true); // 自动切换到阅读模式
+                    // 清除 URL 参数
+                    window.history.replaceState({}, '', window.location.pathname);
+                }
+            }
+        }
+    }, [books]);
+
     // 检测URL分享参数并加载分享的经文
     useEffect(() => {
         if (typeof window === 'undefined' || books.length === 0) return;
