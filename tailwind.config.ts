@@ -28,7 +28,7 @@ const config: Config = {
                 chinese: ['PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'],
             },
             animation: {
-                'fade-in': 'fadeIn 0.6s ease-out',
+                'fade-in': 'fadeIn 0.4s ease-out forwards',
                 'slide-in': 'slideIn 0.6s ease-out',
                 'card-hover': 'cardHover 0.3s ease-out',
             },

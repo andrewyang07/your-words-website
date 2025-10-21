@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
     Filter,
     Shuffle,
@@ -85,6 +84,49 @@ export default function HomePage() {
 
     // 侧边栏菜单显示状态
     const [showSideMenu, setShowSideMenu] = useState(false);
+
+    // 懒加载状态 - 根据设备响应式显示
+    const getInitialCount = () => {
+        if (typeof window === 'undefined') return 24; // SSR 时默认
+        const width = window.innerWidth;
+        if (width < 768) return 12; // 手机：12 张（单列）
+        if (width < 1024) return 18; // 平板：18 张（2列）
+        return 24; // 桌面：24 张（4列）
+    };
+    const [visibleCount, setVisibleCount] = useState(getInitialCount);
+
+    // 滚动监听 - 懒加载更多卡片
+    useEffect(() => {
+        let isLoading = false;
+
+        const handleScroll = () => {
+            // 防止频繁触发
+            if (isLoading) return;
+
+            // 检测是否滚动到接近底部（距离底部 500px 时加载）
+            const scrollHeight = document.documentElement.scrollHeight;
+            const scrollTop = document.documentElement.scrollTop;
+            const clientHeight = document.documentElement.clientHeight;
+
+            if (scrollHeight - scrollTop - clientHeight < 500) {
+                isLoading = true;
+                setVisibleCount((prev) => {
+                    // 根据设备调整每次加载数量
+                    const width = window.innerWidth;
+                    const increment = width < 768 ? 12 : width < 1024 ? 18 : 24;
+
+                    // 加载完成后重置标志
+                    setTimeout(() => {
+                        isLoading = false;
+                    }, 300);
+                    return prev + increment;
+                });
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     // 从 localStorage 读取引导卡片状态
     useEffect(() => {
@@ -895,129 +937,105 @@ export default function HomePage() {
             {/* 主内容区域 */}
             <main role="main" aria-label="圣经经文内容">
                 {/* 分享横幅 */}
-                <AnimatePresence>
-                    {showShareBanner && sharedVerses.length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-200 dark:border-blue-800 py-4"
-                            role="alert"
-                            aria-live="polite"
-                            aria-atomic="true"
-                        >
-                            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                                <div className="flex items-center gap-3 text-center sm:text-left">
-                                    <div
-                                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                                            hasAddedAllShared ? 'bg-green-500 dark:bg-green-600' : 'bg-blue-500 dark:bg-blue-600'
-                                        }`}
-                                    >
-                                        {hasAddedAllShared ? (
-                                            <Star className="w-5 h-5 text-white fill-white" />
-                                        ) : (
-                                            <Share2 className="w-5 h-5 text-white" />
-                                        )}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
-                                            {hasAddedAllShared
-                                                ? `已成功收藏 ${sharedVerses.length} 节经文 ✨`
-                                                : `这是分享的收藏列表（共 ${sharedVerses.length} 节经文）`}
-                                        </p>
-                                        <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
-                                            {hasAddedAllShared
-                                                ? '所有卡片已标记为收藏，可以点击"取消"关闭此提示'
-                                                : '您可以一键将这些经文添加到自己的收藏中'}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    {!hasAddedAllShared && (
-                                        <button
-                                            onClick={handleAddAllShared}
-                                            className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg transition-colors font-chinese text-sm font-medium shadow-sm touch-manipulation min-h-[44px]"
-                                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        >
-                                            一键全部收藏
-                                        </button>
+                {showShareBanner && sharedVerses.length > 0 && (
+                    <div
+                        className="bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-200 dark:border-blue-800 py-4 transition-all duration-300"
+                        role="alert"
+                        aria-live="polite"
+                        aria-atomic="true"
+                    >
+                        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 text-center sm:text-left">
+                                <div
+                                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                                        hasAddedAllShared ? 'bg-green-500 dark:bg-green-600' : 'bg-blue-500 dark:bg-blue-600'
+                                    }`}
+                                >
+                                    {hasAddedAllShared ? (
+                                        <Star className="w-5 h-5 text-white fill-white" />
+                                    ) : (
+                                        <Share2 className="w-5 h-5 text-white" />
                                     )}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
+                                        {hasAddedAllShared
+                                            ? `已成功收藏 ${sharedVerses.length} 节经文 ✨`
+                                            : `这是分享的收藏列表（共 ${sharedVerses.length} 节经文）`}
+                                    </p>
+                                    <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
+                                        {hasAddedAllShared
+                                            ? '所有卡片已标记为收藏，可以点击"取消"关闭此提示'
+                                            : '您可以一键将这些经文添加到自己的收藏中'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {!hasAddedAllShared && (
                                     <button
-                                        onClick={handleCancelShare}
-                                        className="px-4 py-2 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-600 rounded-lg transition-colors font-chinese text-sm border border-blue-200 dark:border-blue-700 touch-manipulation min-h-[44px]"
+                                        onClick={handleAddAllShared}
+                                        className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg transition-colors font-chinese text-sm font-medium shadow-sm touch-manipulation min-h-[44px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                     >
-                                        {hasAddedAllShared ? '关闭' : '取消'}
+                                        一键全部收藏
                                     </button>
-                                </div>
+                                )}
+                                <button
+                                    onClick={handleCancelShare}
+                                    className="px-4 py-2 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-600 rounded-lg transition-colors font-chinese text-sm border border-blue-200 dark:border-blue-700 touch-manipulation min-h-[44px]"
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                >
+                                    {hasAddedAllShared ? '关闭' : '取消'}
+                                </button>
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                        </div>
+                    </div>
+                )}
 
                 {/* 分享Toast通知 */}
-                <AnimatePresence>
-                    {shareToast.show && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4"
-                        >
-                            <div className="p-4 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 text-blue-900 dark:text-blue-100 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
-                                <div className="flex-shrink-0 w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center">
-                                    <Share2 className="w-5 h-5 text-white" />
-                                </div>
-                                <span>{shareToast.message}</span>
+                {shareToast.show && (
+                    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4 animate-fade-in">
+                        <div className="p-4 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 text-blue-900 dark:text-blue-100 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
+                            <div className="flex-shrink-0 w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center">
+                                <Share2 className="w-5 h-5 text-white" />
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            <span>{shareToast.message}</span>
+                        </div>
+                    </div>
+                )}
 
                 {/* 侧边栏菜单 */}
                 <SideMenu isOpen={showSideMenu} onClose={() => setShowSideMenu(false)} theme={theme} onThemeChange={toggleTheme} />
 
                 {/* 关闭引导提示 - 浮动通知 */}
-                <AnimatePresence>
-                    {showGuideHint && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4"
-                        >
-                            <div className="p-4 bg-bible-50 dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 text-bible-800 dark:text-bible-200 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3 relative">
-                                <div className="flex-shrink-0 w-8 h-8 bg-bible-500 dark:bg-bible-600 rounded-full flex items-center justify-center">
-                                    <HelpCircle className="w-5 h-5 text-white" />
-                                </div>
-                                <span className="flex-1">
-                                    引导已关闭。如需再次查看，请点击右上角的{' '}
-                                    <span className="font-semibold text-bible-700 dark:text-bible-300">「帮助」</span> 按钮
-                                </span>
-                                <button
-                                    onClick={() => setShowGuideHint(false)}
-                                    className="flex-shrink-0 p-1 hover:bg-bible-100 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation"
-                                    title="关闭提示"
-                                    aria-label="关闭提示"
-                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                >
-                                    <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                </button>
+                {showGuideHint && (
+                    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4 animate-fade-in">
+                        <div className="p-4 bg-bible-50 dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 text-bible-800 dark:text-bible-200 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3 relative">
+                            <div className="flex-shrink-0 w-8 h-8 bg-bible-500 dark:bg-bible-600 rounded-full flex items-center justify-center">
+                                <HelpCircle className="w-5 h-5 text-white" />
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            <span className="flex-1">
+                                引导已关闭。如需再次查看，请点击右上角的{' '}
+                                <span className="font-semibold text-bible-700 dark:text-bible-300">「帮助」</span> 按钮
+                            </span>
+                            <button
+                                onClick={() => setShowGuideHint(false)}
+                                className="flex-shrink-0 p-1 hover:bg-bible-100 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation"
+                                title="关闭提示"
+                                aria-label="关闭提示"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            >
+                                <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* 使用提示和统计信息 */}
-                <motion.div className="max-w-7xl mx-auto px-4 py-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <div className="max-w-7xl mx-auto px-4 py-3">
                     {/* 引导说明 */}
                     {showGuide && (
-                        <motion.div
-                            className="mb-3 p-5 bg-gradient-to-br from-bible-50 via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-xl border-2 border-bible-300/50 dark:border-gray-700 shadow-lg"
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                        >
+                        <div className="mb-3 p-5 bg-gradient-to-br from-bible-50 via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-xl border-2 border-bible-300/50 dark:border-gray-700 shadow-lg animate-fade-in">
                             <div className="flex items-start gap-4">
                                 <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-bible-500 to-blue-600 dark:from-bible-600 dark:to-blue-700 rounded-full flex items-center justify-center shadow-md">
                                     <span className="text-white text-xl">💡</span>
@@ -1140,7 +1158,7 @@ export default function HomePage() {
                                     </div>
                                 </div>
                             </div>
-                        </motion.div>
+                        </div>
                     )}
 
                     {/* 状态标签和统计 */}
@@ -1175,7 +1193,7 @@ export default function HomePage() {
                             </span>
                         </div>
                     </div>
-                </motion.div>
+                </div>
 
                 {/* 经文卡片区域 */}
                 <div className="max-w-7xl mx-auto">
@@ -1205,28 +1223,37 @@ export default function HomePage() {
                             {/* 章节按钮网格 */}
                             <div className="max-w-4xl mx-auto grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 md:gap-3">
                                 {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapterNum) => (
-                                    <motion.button
+                                    <button
                                         key={chapterNum}
                                         onClick={() => handleChapterSelect(chapterNum)}
-                                        className="aspect-square flex items-center justify-center bg-bible-100 dark:bg-gray-700 text-bible-800 dark:text-bible-200 rounded-lg font-semibold shadow-sm touch-manipulation transition-colors duration-200"
+                                        className="aspect-square flex items-center justify-center bg-bible-100 dark:bg-gray-700 text-bible-800 dark:text-bible-200 hover:bg-bible-400 hover:text-white hover:shadow-md rounded-lg font-semibold shadow-sm touch-manipulation transition-all duration-200 hover:scale-105 active:scale-95"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        whileHover={{
-                                            scale: 1.05,
-                                            backgroundColor: 'rgb(190, 158, 93)',
-                                            color: '#ffffff',
-                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                                        }}
-                                        whileTap={{ scale: 0.95 }}
-                                        transition={{ duration: 0.15 }}
                                         title={`第 ${chapterNum} 章`}
                                     >
                                         {chapterNum}
-                                    </motion.button>
+                                    </button>
                                 ))}
                             </div>
                         </div>
                     ) : displayVerses.length > 0 ? (
-                        <MasonryLayout key={shuffleKey} verses={displayVerses} defaultRevealed={showAllContent} onViewInBible={handleViewInBible} />
+                        <>
+                            <MasonryLayout
+                                key={shuffleKey}
+                                verses={displayVerses.slice(0, visibleCount)}
+                                defaultRevealed={showAllContent}
+                                onViewInBible={handleViewInBible}
+                            />
+                            {visibleCount < displayVerses.length && (
+                                <div className="text-center py-8">
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-bible-100 dark:bg-gray-700 rounded-lg">
+                                        <div className="w-4 h-4 border-2 border-bible-400 dark:border-bible-300 border-t-transparent rounded-full animate-spin"></div>
+                                        <span className="text-sm text-bible-600 dark:text-bible-300 font-chinese">
+                                            正在加载更多... ({visibleCount} / {displayVerses.length})
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <div className="text-center py-20">
                             <p className="text-bible-600 dark:text-bible-400 font-chinese">暂无经文</p>
@@ -1235,75 +1262,67 @@ export default function HomePage() {
                 </div>
 
                 {/* iOS App 推广区块 - Mini版 */}
-                <AnimatePresence>
-                    {showAppPromo && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="max-w-7xl mx-auto px-4 py-6 mt-4"
-                        >
-                            <div className="relative bg-gradient-to-r from-bible-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-xl shadow-md border border-bible-200 dark:border-gray-600 overflow-hidden">
-                                {/* 关闭按钮 */}
-                                <button
-                                    onClick={() => setShowAppPromo(false)}
-                                    className="absolute top-2 right-2 p-1.5 hover:bg-bible-200/50 dark:hover:bg-gray-600 rounded-lg transition-colors z-10"
-                                    title="关闭推广"
-                                    aria-label="关闭心版推广"
-                                >
-                                    <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                </button>
+                {showAppPromo && (
+                    <div className="max-w-7xl mx-auto px-4 py-6 mt-4 animate-fade-in">
+                        <div className="relative bg-gradient-to-r from-bible-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-xl shadow-md border border-bible-200 dark:border-gray-600 overflow-hidden">
+                            {/* 关闭按钮 */}
+                            <button
+                                onClick={() => setShowAppPromo(false)}
+                                className="absolute top-2 right-2 p-1.5 hover:bg-bible-200/50 dark:hover:bg-gray-600 rounded-lg transition-colors z-10"
+                                title="关闭推广"
+                                aria-label="关闭心版推广"
+                            >
+                                <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                            </button>
 
-                                <a
-                                    href="https://apps.apple.com/app/6744570052"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block p-4 md:p-5 hover:bg-bible-100/30 dark:hover:bg-gray-700/30 transition-colors"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        {/* Logo */}
-                                        <div className="flex-shrink-0">
-                                            <div className="w-14 h-14 md:w-16 md:h-16 bg-white dark:bg-gray-700 rounded-[18%] shadow-md flex items-center justify-center p-2.5 overflow-hidden">
-                                                <Image
-                                                    src="/xinban-logo.jpg"
-                                                    alt="心版 App Logo"
-                                                    width={64}
-                                                    height={64}
-                                                    loading="lazy"
-                                                    quality={85}
-                                                    className="w-full h-full object-contain"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* 内容 */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h4 className="text-lg md:text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">心版</h4>
-                                                <span className="px-1.5 py-0.5 bg-bible-500 text-white text-[10px] font-semibold rounded">iOS</span>
-                                                <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                                    <span>⭐</span>
-                                                    <span className="font-medium">5.0</span>
-                                                </div>
-                                            </div>
-                                            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 font-chinese line-clamp-2">
-                                                將經文系在指頭上，刻在心版上 · 主屏幕小組件 · 雙語對照 · 免費下載
-                                            </p>
-                                        </div>
-
-                                        {/* 按钮 */}
-                                        <div className="flex-shrink-0 hidden md:block">
-                                            <div className="px-4 py-2 bg-bible-600 hover:bg-bible-700 text-white text-sm font-semibold rounded-lg transition-colors font-chinese whitespace-nowrap">
-                                                前往 App Store →
-                                            </div>
+                            <a
+                                href="https://apps.apple.com/app/6744570052"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block p-4 md:p-5 hover:bg-bible-100/30 dark:hover:bg-gray-700/30 transition-colors"
+                            >
+                                <div className="flex items-center gap-4">
+                                    {/* Logo */}
+                                    <div className="flex-shrink-0">
+                                        <div className="w-14 h-14 md:w-16 md:h-16 bg-white dark:bg-gray-700 rounded-[18%] shadow-md flex items-center justify-center p-2.5 overflow-hidden">
+                                            <Image
+                                                src="/xinban-logo.jpg"
+                                                alt="心版 App Logo"
+                                                width={64}
+                                                height={64}
+                                                loading="lazy"
+                                                quality={85}
+                                                className="w-full h-full object-contain"
+                                            />
                                         </div>
                                     </div>
-                                </a>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+
+                                    {/* 内容 */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <h4 className="text-lg md:text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">心版</h4>
+                                            <span className="px-1.5 py-0.5 bg-bible-500 text-white text-[10px] font-semibold rounded">iOS</span>
+                                            <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                                <span>⭐</span>
+                                                <span className="font-medium">5.0</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 font-chinese line-clamp-2">
+                                            將經文系在指頭上，刻在心版上 · 主屏幕小組件 · 雙語對照 · 免費下載
+                                        </p>
+                                    </div>
+
+                                    {/* 按钮 */}
+                                    <div className="flex-shrink-0 hidden md:block">
+                                        <div className="px-4 py-2 bg-bible-600 hover:bg-bible-700 text-white text-sm font-semibold rounded-lg transition-colors font-chinese whitespace-nowrap">
+                                            前往 App Store →
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                )}
 
                 {/* 页脚 */}
                 <footer className="border-t border-bible-200 dark:border-gray-700 mt-12">

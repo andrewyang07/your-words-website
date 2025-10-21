@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useMemo, useState, useEffect } from 'react';
 import { Verse } from '@/types/verse';
 import VerseCard from './VerseCard';
@@ -71,24 +70,15 @@ export default function MasonryLayout({ verses, onViewInBible, defaultRevealed =
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
             {masonryColumns.map((column, columnIndex) => (
                 <div key={columnIndex} className="flex flex-col gap-4">
-                    {column.map(({ verse, originalIndex }, indexInColumn) => (
-                        <motion.div
-                            key={verse.id}
-                            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{
-                                duration: 0.5,
-                                delay: originalIndex * 0.02,
-                                ease: [0.4, 0, 0.2, 1], // cubic-bezier 优雅缓动
-                            }}
-                        >
+                    {column.map(({ verse }) => (
+                        <div key={verse.id} className="animate-fade-in">
                             <VerseCard
                                 verse={verse}
                                 size={getCardSize(verse)}
                                 onViewInBible={() => onViewInBible?.(verse)}
                                 defaultRevealed={defaultRevealed}
                             />
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
             ))}
