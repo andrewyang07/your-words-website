@@ -63,12 +63,12 @@ export async function GET() {
                 };
             }
 
-            // 查找书卷名称
+            // 查找书卷名称（使用繁体中文）
             const book = booksData.books.find((b) => b.key === decoded.bookKey);
 
             return {
                 verseId: item.verseId,
-                book: book?.name || '未知',
+                book: book?.nameTraditional || '未知',
                 chapter: decoded.chapter,
                 verse: decoded.verse,
                 favorites: item.favorites,
