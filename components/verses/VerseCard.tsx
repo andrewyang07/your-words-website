@@ -59,10 +59,6 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             return;
         }
         setIsRevealed(!isRevealed);
-
-        // 发送点击统计
-        const verseId = getVerseNumericId(verse);
-        sendStats('click', verseId);
     };
 
     // 键盘导航支持

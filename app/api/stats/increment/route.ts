@@ -25,11 +25,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
         }
 
-        // 更新统计（移除了服务端限流以节省 Redis 命令数）
+        // 更新统计（移除了服务端限流和点击追踪以节省 Redis 命令数）
         // 客户端已经有 throttling 机制，足够防止滥用
-        if (action === 'click') {
-            await safeRedisIncr('total_clicks');
-        } else if (action === 'favorite') {
+        if (action === 'favorite') {
             // 只统计"收藏"动作，不统计"取消收藏"
             await Promise.all([safeRedisIncr('total_favorites'), safeRedisIncr(`verse:${verseId}`)]);
         } else {

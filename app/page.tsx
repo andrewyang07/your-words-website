@@ -62,7 +62,7 @@ export default function HomePage() {
 
     // 筛选状态
     const [bookFilter, setBookFilter] = useState<BookFilterType>('all');
-    
+
     // 收藏模式的筛选状态
     const [favoritesBookFilter, setFavoritesBookFilter] = useState<BookFilterType>('all');
 
@@ -105,10 +105,9 @@ export default function HomePage() {
     const [visibleCount, setVisibleCount] = useState(getInitialCount);
 
     // 全局统计数据（默认显示 0，方便本地开发）
-    const [globalStats, setGlobalStats] = useState<{ totalUsers: number; totalFavorites: number; totalClicks: number }>({
+    const [globalStats, setGlobalStats] = useState<{ totalUsers: number; totalFavorites: number }>({
         totalUsers: 0,
         totalFavorites: 0,
-        totalClicks: 0,
     });
     const [statsLoading, setStatsLoading] = useState(true);
     const [showStatsModal, setShowStatsModal] = useState(false); // 移动端统计 modal
@@ -455,26 +454,26 @@ export default function HomePage() {
         // 如果是收藏模式，显示所有收藏的经文
         if (filterType === 'favorites') {
             let favFiltered = [...favoritesVersesData];
-            
+
             // 按书卷筛选
             if (favoritesBookFilter === 'old') {
-                favFiltered = favFiltered.filter(v => {
-                    const book = books.find(b => b.key === v.book || b.nameTraditional === v.book);
+                favFiltered = favFiltered.filter((v) => {
+                    const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
                     return book?.testament === 'old';
                 });
             } else if (favoritesBookFilter === 'new') {
-                favFiltered = favFiltered.filter(v => {
-                    const book = books.find(b => b.key === v.book || b.nameTraditional === v.book);
+                favFiltered = favFiltered.filter((v) => {
+                    const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
                     return book?.testament === 'new';
                 });
             } else if (favoritesBookFilter !== 'all') {
                 // 具体书卷
-                favFiltered = favFiltered.filter(v => {
-                    const book = books.find(b => b.key === favoritesBookFilter);
+                favFiltered = favFiltered.filter((v) => {
+                    const book = books.find((b) => b.key === favoritesBookFilter);
                     return v.book === favoritesBookFilter || v.book === book?.nameTraditional;
                 });
             }
-            
+
             // 收藏模式也支持随机排序
             if (shuffleKey > 0) {
                 const shuffled = [...favFiltered];
@@ -703,25 +702,25 @@ export default function HomePage() {
 
     // 使用 getFavoritesList 获取真实的收藏总数（不受当前筛选影响）
     const favoritesCount = getFavoritesList().length;
-    
+
     // 计算收藏筛选选项的经文数量
     const favoritesBookCounts = useMemo(() => {
         const counts = {
             all: favoritesVersesData.length,
             old: 0,
             new: 0,
-            books: {} as Record<string, number>
+            books: {} as Record<string, number>,
         };
-        
-        favoritesVersesData.forEach(verse => {
-            const book = books.find(b => b.key === verse.book || b.nameTraditional === verse.book);
+
+        favoritesVersesData.forEach((verse) => {
+            const book = books.find((b) => b.key === verse.book || b.nameTraditional === verse.book);
             if (book) {
                 if (book.testament === 'old') counts.old++;
                 if (book.testament === 'new') counts.new++;
                 counts.books[book.key] = (counts.books[book.key] || 0) + 1;
             }
         });
-        
+
         return counts;
     }, [favoritesVersesData, books]);
 
@@ -762,38 +761,49 @@ export default function HomePage() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {/* 全局统计 - 桌面端 */}
+                            {/* 全局统计 - 桌面端（完整信息）*/}
                             <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-700/50 dark:to-gray-600/50 rounded-lg border border-gold-200 dark:border-gold-700/30">
                                 {statsLoading ? (
-                                    <span className="h-4 w-32 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
+                                    <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
                                     <span className="text-xs text-bible-700 dark:text-bible-300 whitespace-nowrap font-chinese">
-                                        🙏 {globalStats.totalUsers.toLocaleString()} 位弟兄姊妹
+                                        👥 已有 {globalStats.totalUsers.toLocaleString()} 位弟兄姊妹 · ⭐ 共收藏 {globalStats.totalFavorites.toLocaleString()} 节经文
                                     </span>
                                 )}
                             </div>
                             
-                            {/* 全局统计 - 平板端（简化）*/}
-                            <div className="hidden md:flex lg:hidden items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-700/50 dark:to-gray-600/50 rounded-lg border border-gold-200 dark:border-gold-700/30">
+                            {/* 全局统计 - 平板端（简化，可点击）*/}
+                            <button
+                                onClick={() => setShowStatsModal(true)}
+                                className="hidden md:flex lg:hidden items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-700/50 dark:to-gray-600/50 rounded-lg border border-gold-200 dark:border-gold-700/30 hover:shadow-md transition-shadow"
+                                title="点击查看详情"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            >
+                                {statsLoading ? (
+                                    <span className="h-4 w-24 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
+                                ) : (
+                                    <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">
+                                        👥 {globalStats.totalUsers.toLocaleString()} 人 · ⭐ {globalStats.totalFavorites.toLocaleString()} 节
+                                    </span>
+                                )}
+                            </button>
+                            
+                            {/* 全局统计 - 移动端（紧凑，可点击）*/}
+                            <button
+                                onClick={() => setShowStatsModal(true)}
+                                className="flex md:hidden items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-700/50 dark:to-gray-600/50 rounded-lg border border-gold-200 dark:border-gold-700/30 hover:shadow-md transition-shadow"
+                                title="查看统计"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            >
                                 {statsLoading ? (
                                     <span className="h-4 w-16 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
                                     <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">
-                                        🙏 {globalStats.totalUsers.toLocaleString()}
+                                        👥 {globalStats.totalUsers.toLocaleString()} · ⭐ {globalStats.totalFavorites.toLocaleString()}
                                     </span>
                                 )}
-                            </div>
-                            
-                            {/* 全局统计 - 移动端（仅图标，点击展开）*/}
-                            <button
-                                onClick={() => setShowStatsModal(true)}
-                                className="md:hidden p-2 rounded-lg hover:bg-bible-50 dark:hover:bg-gray-800 transition-colors"
-                                title="查看统计"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                            >
-                                <Users className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                             </button>
-                            
+
                             {/* 帮助按钮 */}
                             <button
                                 onClick={handleOpenGuide}
@@ -1196,26 +1206,21 @@ export default function HomePage() {
                     onThemeChange={toggleTheme}
                     onViewChapter={handleViewChapterFromMenu}
                 />
-                
+
                 {/* 移动端统计 modal */}
                 {showStatsModal && (
-                    <div 
-                        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" 
-                        onClick={() => setShowStatsModal(false)}
-                    >
-                        <div 
-                            className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full" 
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <h3 className="text-center text-lg font-semibold text-bible-800 dark:text-bible-200 mb-4 font-chinese">
-                                🙏 你並不孤單
-                            </h3>
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowStatsModal(false)}>
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+                            <h3 className="text-center text-lg font-semibold text-bible-800 dark:text-bible-200 mb-4 font-chinese">📊 全球統計</h3>
                             <p className="text-center text-sm text-bible-700 dark:text-bible-300 leading-relaxed font-chinese">
-                                已有 <span className="font-bold text-bible-900 dark:text-bible-100">{globalStats.totalUsers.toLocaleString()}</span> 位弟兄姊妹在此背誦神的話語
+                                已有 <span className="font-bold text-bible-900 dark:text-bible-100">{globalStats.totalUsers.toLocaleString()}</span>{' '}
+                                位弟兄姊妹在此背誦神的話語
                                 <br />
-                                共收藏 <span className="font-bold text-bible-900 dark:text-bible-100">{globalStats.totalFavorites.toLocaleString()}</span> 次經文
-                                <br />
-                                共點擊 <span className="font-bold text-bible-900 dark:text-bible-100">{globalStats.totalClicks.toLocaleString()}</span> 次卡片
+                                共收藏{' '}
+                                <span className="font-bold text-bible-900 dark:text-bible-100">
+                                    {globalStats.totalFavorites.toLocaleString()}
+                                </span>{' '}
+                                次經文
                             </p>
                             <button
                                 onClick={() => setShowStatsModal(false)}
@@ -1558,7 +1563,7 @@ export default function HomePage() {
                                     </Listbox>
                                 </>
                             )}
-                            
+
                             {/* 收藏模式下显示筛选按钮 */}
                             {filterType === 'favorites' && favoritesCount > 0 && (
                                 <>
@@ -1603,9 +1608,7 @@ export default function HomePage() {
                                                     <Listbox.Option value="old">
                                                         {({ active, selected }) => (
                                                             <div
-                                                                className={`px-4 py-2 cursor-pointer ${
-                                                                    active ? 'bg-bible-50 dark:bg-gray-700' : ''
-                                                                }`}
+                                                                className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}
                                                             >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
@@ -1615,9 +1618,7 @@ export default function HomePage() {
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
                                                                             ({favoritesBookCounts.old})
                                                                         </span>
-                                                                        {selected && (
-                                                                            <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                                        )}
+                                                                        {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1626,9 +1627,7 @@ export default function HomePage() {
                                                     <Listbox.Option value="new">
                                                         {({ active, selected }) => (
                                                             <div
-                                                                className={`px-4 py-2 cursor-pointer ${
-                                                                    active ? 'bg-bible-50 dark:bg-gray-700' : ''
-                                                                }`}
+                                                                className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}
                                                             >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
@@ -1638,9 +1637,7 @@ export default function HomePage() {
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
                                                                             ({favoritesBookCounts.new})
                                                                         </span>
-                                                                        {selected && (
-                                                                            <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                                        )}
+                                                                        {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1836,11 +1833,6 @@ export default function HomePage() {
                                     <span>⭐</span>
                                     <span className="font-bold text-gold-600 dark:text-gold-400">{globalStats.totalFavorites.toLocaleString()}</span>
                                     <span className="text-xs text-bible-600 dark:text-bible-400">次收藏</span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <span>👆</span>
-                                    <span className="font-bold text-bible-800 dark:text-bible-200">{globalStats.totalClicks.toLocaleString()}</span>
-                                    <span className="text-xs text-bible-600 dark:text-bible-400">次點擊</span>
                                 </div>
                             </div>
                         </div>

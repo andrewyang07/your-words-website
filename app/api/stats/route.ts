@@ -17,21 +17,18 @@ export async function GET() {
         return NextResponse.json({
             totalUsers: 10,
             totalFavorites: 50,
-            totalClicks: 200,
         });
     }
 
     try {
-        const [totalUsers, totalFavorites, totalClicks] = await Promise.all([
+        const [totalUsers, totalFavorites] = await Promise.all([
             safeRedisGet('total_users', '0'),
             safeRedisGet('total_favorites', '0'),
-            safeRedisGet('total_clicks', '0'),
         ]);
 
         return NextResponse.json({
             totalUsers: parseInt(totalUsers),
             totalFavorites: parseInt(totalFavorites),
-            totalClicks: parseInt(totalClicks),
         });
     } catch (error) {
         console.error('Stats API error:', error);
@@ -39,7 +36,6 @@ export async function GET() {
         return NextResponse.json({
             totalUsers: 0,
             totalFavorites: 0,
-            totalClicks: 0,
         });
     }
 }
