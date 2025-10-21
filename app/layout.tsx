@@ -6,8 +6,8 @@ import './globals.css';
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://www.yourwords.me'),
-    title: '你的话语 - 背圣经，记笔记',
-    description: '免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能。繁体中文、简体中文双语支持，让神的话语常在心中。',
+    title: '你的話語 - 背聖經，記筆記 | 你的话语 - 背圣经，记笔记',
+    description: '免費聖經背誦工具，支持Flash Card背誦模式和聖經筆記本功能。免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能。繁體中文、簡體中文雙語支持，讓神的話語常在心中。',
     keywords: [
         // 繁体关键词（主要）
         '背聖經',
@@ -84,8 +84,8 @@ export const metadata: Metadata = {
         alternateLocale: ['zh_CN'],
         url: 'https://www.yourwords.me',
         siteName: '你的話語',
-        title: '你的話語 - 背聖經',
-        description: '免費聖經背誦工具，114節精選經文，Flash Card背誦模式，支持收藏分享。',
+        title: '你的話語 - 背聖經，記筆記 | 你的话语 - 背圣经，记笔记',
+        description: '免費聖經背誦工具，支持Flash Card背誦模式和聖經筆記本功能。免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能。',
         images: [
             {
                 url: '/logo-light.png',
@@ -97,8 +97,8 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary',
-        title: '你的話語 - 背聖經',
-        description: '免費聖經背誦工具，114節精選經文，Flash Card背誦模式。',
+        title: '你的話語 - 背聖經，記筆記 | 你的话语 - 背圣经，记笔记',
+        description: '免費聖經背誦工具，支持Flash Card背誦模式和聖經筆記本功能。免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能。',
         images: ['/logo-light.png'],
     },
     icons: {
@@ -110,27 +110,21 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const structuredData = {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "你的话语",
-        "alternateName": "Your Words",
-        "description": "免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能",
-        "url": "https://www.yourwords.me",
-        "applicationCategory": "EducationApplication",
-        "operatingSystem": "Web Browser",
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: '你的话语',
+        alternateName: 'Your Words',
+        description: '免費聖經背誦工具，支持Flash Card背誦模式和聖經筆記本功能。免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能',
+        url: 'https://www.yourwords.me',
+        applicationCategory: 'EducationApplication',
+        operatingSystem: 'Web Browser',
+        offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
         },
-        "inLanguage": ["zh-TW", "zh-CN"],
-        "featureList": [
-            "圣经背诵",
-            "Flash Card模式",
-            "圣经笔记本",
-            "经文收藏",
-            "经文分享"
-        ]
+        inLanguage: ['zh-TW', 'zh-CN'],
+        featureList: ['圣经背诵', 'Flash Card模式', '圣经笔记本', '经文收藏', '经文分享'],
     };
 
     return (
