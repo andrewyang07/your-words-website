@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
@@ -88,7 +87,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     const displayText = isRevealed ? verse.text : maskVerseText(verse.text, maskMode, visibleChars);
 
     return (
-        <motion.div
+        <div
             className={`
         ${sizeClasses[size]}
         bg-white dark:bg-gray-800 rounded-xl shadow-md
@@ -100,11 +99,11 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         relative
         touch-manipulation
         transition-all duration-200
+        active:scale-[0.98]
         focus:outline-none focus:ring-2 focus:ring-bible-500 dark:focus:ring-bible-400
       `}
             onClick={handleCardClick}
             onKeyDown={handleKeyDown}
-            whileTap={{ scale: 0.98 }}
             style={{ WebkitTapHighlightColor: 'transparent' }}
             role="article"
             aria-label={`${verse.book} ${verse.chapter}章${verse.verse}节，${isRevealed ? '已展开' : '已收起'}，按Enter或空格键切换`}
@@ -134,18 +133,17 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 </button>
             </div>
 
-            {/* 经文内容 - 带展开动画 */}
-            <motion.p
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
+            {/* 经文内容 */}
+            <p
                 className={`
             ${textSizes[size]}
             text-gray-800 dark:text-gray-100 font-medium leading-relaxed font-chinese
             flex-1
+            transition-opacity duration-200
           `}
             >
                 {displayText}
-            </motion.p>
+            </p>
 
             {/* 底部信息栏 */}
             <div className="mt-3 pt-2 border-t border-bible-100 dark:border-gray-700 flex items-center justify-between">
@@ -163,6 +161,6 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                     <span className="font-chinese">查看整章</span>
                 </button>
             </div>
-        </motion.div>
+        </div>
     );
 }
