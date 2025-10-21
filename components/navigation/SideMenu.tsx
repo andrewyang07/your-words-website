@@ -23,33 +23,27 @@ interface TopVerse {
 }
 
 export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onViewChapter }: SideMenuProps) {
-    // 默认显示 Mock 数据（Top 7），方便本地开发
-    const [topVerses, setTopVerses] = useState<TopVerse[]>([
-        { verseId: '43-3-16', book: '約翰福音', chapter: 3, verse: 16, favorites: 0, text: '神愛世人，甚至將他的獨生子賜給他們，叫一切信他的，不至滅亡，反得永生。' },
-        { verseId: '19-23-1', book: '詩篇', chapter: 23, verse: 1, favorites: 0, text: '耶和華是我的牧者，我必不至缺乏。' },
-        { verseId: '50-4-13', book: '腓立比書', chapter: 4, verse: 13, favorites: 0, text: '我靠著那加給我力量的，凡事都能做。' },
-        { verseId: '45-8-28', book: '羅馬書', chapter: 8, verse: 28, favorites: 0, text: '我們曉得萬事都互相效力，叫愛神的人得益處，就是按他旨意被召的人。' },
-        { verseId: '20-3-5', book: '箴言', chapter: 3, verse: 5, favorites: 0, text: '你要專心仰賴耶和華，不可倚靠自己的聰明。' },
-        { verseId: '58-11-1', book: '希伯來書', chapter: 11, verse: 1, favorites: 0, text: '信就是所望之事的實底，是未見之事的確據。' },
-        { verseId: '40-5-16', book: '馬太福音', chapter: 5, verse: 16, favorites: 0, text: '你們的光也當這樣照在人前，叫他們看見你們的好行為，便將榮耀歸給你們在天上的父。' },
-    ]);
+    const [topVerses, setTopVerses] = useState<TopVerse[]>([]);
+    const [topVersesLoading, setTopVersesLoading] = useState(true);
 
-    // 获取热门经文排行榜（带错误处理，失败时保留默认数据）
+    // 获取热门经文排行榜（带加载状态和错误处理）
     useEffect(() => {
         if (isOpen) {
+            setTopVersesLoading(true);
             const fetchTopVerses = async () => {
                 try {
                     const response = await fetch('/api/stats/top-verses');
                     if (response.ok) {
                         const data = await response.json();
-                        if (data.topVerses && data.topVerses.length > 0) {
-                            setTopVerses(data.topVerses);
-                        }
-                        // 如果返回空数组，保留默认的 Mock 数据
+                        setTopVerses(data.topVerses || []);
+                    } else {
+                        setTopVerses([]);
                     }
                 } catch (error) {
                     console.error('Failed to fetch top verses:', error);
-                    // 失败时保留默认的 Mock 数据，不设置为空数组
+                    setTopVerses([]);
+                } finally {
+                    setTopVersesLoading(false);
                 }
             };
             fetchTopVerses();
@@ -211,7 +205,24 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                             <h3 className="text-sm font-bold text-bible-800 dark:text-bible-200 font-chinese">🏆 最多收藏經文</h3>
                                         </div>
                                         <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-thin">
-                                            {topVerses.slice(0, 7).map((verse, index) => (
+                                            {topVersesLoading ? (
+                                                // 加载骨架屏
+                                                <div className="space-y-2">
+                                                    {[1, 2, 3].map((i) => (
+                                                        <div key={i} className="bg-white dark:bg-gray-900 rounded-lg p-2 border border-gold-100 dark:border-gray-700">
+                                                            <div className="flex items-start gap-2">
+                                                                <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse-slow"></div>
+                                                                <div className="flex-1 space-y-1.5">
+                                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse-slow"></div>
+                                                                    <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded w-full animate-pulse-slow"></div>
+                                                                    <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded w-1/2 animate-pulse-slow"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : topVerses.length > 0 ? (
+                                                topVerses.slice(0, 7).map((verse, index) => (
                                                 <div
                                                     key={verse.verseId}
                                                     className="flex items-start justify-between gap-2 text-xs bg-white dark:bg-gray-900 rounded-lg p-2 border border-gold-100 dark:border-gray-700"
@@ -245,7 +256,13 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                                         <ChevronRight className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                                                     </button>
                                                 </div>
-                                            ))}
+                                                ))
+                                            ) : (
+                                                // 空状态
+                                                <div className="text-center py-4">
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-chinese">暫無數據</p>
+                                                </div>
+                                            )}
                                         </div>
                                         {/* 总排行榜链接 */}
                                         <Link

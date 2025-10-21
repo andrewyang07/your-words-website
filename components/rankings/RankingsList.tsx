@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Star, ChevronRight } from 'lucide-react';
+import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import booksData from '@/public/data/books.json';
 
 interface RankingItem {
@@ -17,6 +18,7 @@ interface RankingsListProps {
 
 export default function RankingsList({ rankings }: RankingsListProps) {
     const router = useRouter();
+    const { isFavorite, toggleFavorite } = useFavoritesStore();
 
     // 解析 verseId 并获取书卷信息
     const enrichedRankings = useMemo(() => {
@@ -29,19 +31,30 @@ export default function RankingsList({ rankings }: RankingsListProps) {
             // 根据 bookIndex 找到对应的书卷
             const book = booksData.books.find((b) => b.order === bookIndex);
 
+            // 构建 verseId 用于收藏功能（格式：bookKey-chapter-verse）
+            const bookKey = book?.key || 'unknown';
+            const fullVerseId = `${bookKey}-${chapter}-${verse}`;
+
             return {
                 ...item,
                 bookIndex,
                 chapter,
                 verse,
                 bookName: book?.nameTraditional || '未知',
+                bookKey,
                 testament: book?.testament || 'unknown',
+                fullVerseId, // 用于收藏功能
             };
         });
     }, [rankings]);
 
     const handleViewChapter = (bookName: string, chapter: number) => {
         router.push(`/?book=${encodeURIComponent(bookName)}&chapter=${chapter}`);
+    };
+
+    const handleToggleFavorite = (e: React.MouseEvent, verseId: string) => {
+        e.stopPropagation();
+        toggleFavorite(verseId);
     };
 
     // 前3名的图标
@@ -57,6 +70,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
             {enrichedRankings.map((item, index) => {
                 const rank = index + 1;
                 const medal = getMedalIcon(rank);
+                const isFav = isFavorite(item.fullVerseId);
 
                 return (
                     <div
@@ -101,17 +115,37 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                             </div>
                         </div>
 
-                        {/* 查看章节按钮 */}
-                        <button
-                            onClick={() => handleViewChapter(item.bookName, item.chapter)}
-                            className="flex-shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 transition-colors touch-manipulation"
-                            title={`查看 ${item.bookName} ${item.chapter}章`}
-                            aria-label={`查看 ${item.bookName} ${item.chapter}章`}
-                            style={{ WebkitTapHighlightColor: 'transparent' }}
-                        >
-                            <span className="text-sm font-chinese text-bible-700 dark:text-bible-300 hidden sm:inline">查看章節</span>
-                            <ChevronRight className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                        </button>
+                        {/* 操作按钮组 */}
+                        <div className="flex-shrink-0 flex items-center gap-2">
+                            {/* 收藏按钮 */}
+                            <button
+                                onClick={(e) => handleToggleFavorite(e, item.fullVerseId)}
+                                className="p-2 rounded-lg hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors touch-manipulation"
+                                title={isFav ? '取消收藏' : '收藏'}
+                                aria-label={isFav ? '取消收藏' : '收藏'}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
+                            >
+                                <Star
+                                    className={`w-5 h-5 transition-colors ${
+                                        isFav
+                                            ? 'text-gold-500 fill-gold-500 dark:text-gold-400 dark:fill-gold-400'
+                                            : 'text-gray-300 dark:text-gray-600'
+                                    }`}
+                                />
+                            </button>
+
+                            {/* 查看章节按钮 */}
+                            <button
+                                onClick={() => handleViewChapter(item.bookName, item.chapter)}
+                                className="flex items-center gap-1 px-3 py-2 rounded-lg bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 transition-colors touch-manipulation"
+                                title={`查看 ${item.bookName} ${item.chapter}章`}
+                                aria-label={`查看 ${item.bookName} ${item.chapter}章`}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
+                            >
+                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300 hidden sm:inline">查看章節</span>
+                                <ChevronRight className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                            </button>
+                        </div>
                     </div>
                 );
             })}
