@@ -767,7 +767,7 @@ export default function HomePage() {
                                     <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
                                     <span className="text-xs text-bible-700 dark:text-bible-300 whitespace-nowrap font-chinese">
-                                        👥 已有 {globalStats.totalUsers.toLocaleString()} 位弟兄姊妹 · ⭐ 共收藏{' '}
+                                        👥 已有 {globalStats.totalUsers.toLocaleString()} 位访客 · ⭐ 共收藏{' '}
                                         {globalStats.totalFavorites.toLocaleString()} 节经文
                                     </span>
                                 )}
@@ -1217,7 +1217,7 @@ export default function HomePage() {
                             <h3 className="text-center text-lg font-semibold text-bible-800 dark:text-bible-200 mb-4 font-chinese">📊 全球統計</h3>
                             <p className="text-center text-sm text-bible-700 dark:text-bible-300 leading-relaxed font-chinese">
                                 已有 <span className="font-bold text-bible-900 dark:text-bible-100">{globalStats.totalUsers.toLocaleString()}</span>{' '}
-                                位弟兄姊妹在此背誦神的話語
+                                位访客在此背誦神的話語
                                 <br />
                                 共收藏{' '}
                                 <span className="font-bold text-bible-900 dark:text-bible-100">
