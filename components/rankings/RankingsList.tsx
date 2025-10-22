@@ -113,9 +113,9 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                                 >
                                     {item.testament === 'old' ? '舊約' : '新約'}
                                 </span>
-                                <div className="flex items-center gap-1 text-gold-600 dark:text-gold-400">
-                                    <Star className="w-3 h-3 fill-current" />
-                                    <span className="text-sm font-semibold">{item.favorites.toLocaleString()}</span>
+                                <div className="flex items-center gap-1">
+                                    <Star className="w-3 h-3 fill-current text-gold-600 dark:text-gold-400" />
+                                    <span className="text-sm font-semibold text-gold-600 dark:text-gold-400">{item.favorites.toLocaleString()}</span>
                                     <span className="text-xs text-gray-600 dark:text-gray-400">人收藏</span>
                                 </div>
                             </div>

@@ -278,9 +278,9 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                                                 {verse.text}
                                                             </p>
                                                         )}
-                                                        <p className="text-gold-600 dark:text-gold-400 flex items-center gap-1 mt-1">
-                                                            <span>⭐</span>
-                                                            <span className="font-semibold">{verse.favorites.toLocaleString()}</span>
+                                                        <p className="flex items-center gap-1 mt-1">
+                                                            <span className="text-gold-600 dark:text-gold-400">⭐</span>
+                                                            <span className="font-semibold text-gold-600 dark:text-gold-400">{verse.favorites.toLocaleString()}</span>
                                                             <span className="text-gray-600 dark:text-gray-400">人收藏</span>
                                                         </p>
                                                     </div>
