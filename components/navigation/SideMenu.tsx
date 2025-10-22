@@ -11,6 +11,8 @@ interface SideMenuProps {
     theme: 'light' | 'dark' | 'system';
     onThemeChange: () => void;
     onViewChapter?: (bookName: string, chapter: number) => void;
+    language: 'simplified' | 'traditional';
+    onLanguageChange: (lang: 'simplified' | 'traditional') => void;
 }
 
 interface TopVerse {
@@ -22,7 +24,7 @@ interface TopVerse {
     text?: string; // 经文内容
 }
 
-export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onViewChapter }: SideMenuProps) {
+export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onViewChapter, language, onLanguageChange }: SideMenuProps) {
     const [topVerses, setTopVerses] = useState<TopVerse[]>([]);
     const [topVersesLoading, setTopVersesLoading] = useState(true);
 
@@ -193,6 +195,42 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                                 <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">自動</span>
                                             </div>
                                             {theme === 'system' && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* 语言设置 */}
+                                <div className="mt-4">
+                                    <div className="px-4 py-2">
+                                        <p className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese">🌐 語言</p>
+                                    </div>
+                                    <div className="space-y-1 mt-2">
+                                        {/* 简体 */}
+                                        <button
+                                            onClick={() => language !== 'simplified' && onLanguageChange('simplified')}
+                                            disabled={language === 'simplified'}
+                                            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
+                                                language === 'simplified'
+                                                    ? 'bg-bible-100 dark:bg-gray-800 cursor-default'
+                                                    : 'hover:bg-bible-50 dark:hover:bg-gray-800/50 cursor-pointer'
+                                            }`}
+                                        >
+                                            <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">简体中文</span>
+                                            {language === 'simplified' && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                        </button>
+
+                                        {/* 繁体 */}
+                                        <button
+                                            onClick={() => language !== 'traditional' && onLanguageChange('traditional')}
+                                            disabled={language === 'traditional'}
+                                            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
+                                                language === 'traditional'
+                                                    ? 'bg-bible-100 dark:bg-gray-800 cursor-default'
+                                                    : 'hover:bg-bible-50 dark:hover:bg-gray-800/50 cursor-pointer'
+                                            }`}
+                                        >
+                                            <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">繁體中文</span>
+                                            {language === 'traditional' && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
                                         </button>
                                     </div>
                                 </div>

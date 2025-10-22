@@ -205,7 +205,14 @@ export default function RankingsPage() {
             </header>
 
             {/* 侧边栏菜单 */}
-            <SideMenu isOpen={showSideMenu} onClose={() => setShowSideMenu(false)} theme={theme} onThemeChange={toggleTheme} />
+            <SideMenu 
+                isOpen={showSideMenu} 
+                onClose={() => setShowSideMenu(false)} 
+                theme={theme} 
+                onThemeChange={toggleTheme}
+                language={language}
+                onLanguageChange={setLanguage}
+            />
 
             {/* 主内容 */}
             <main className="max-w-4xl mx-auto px-4 py-8">

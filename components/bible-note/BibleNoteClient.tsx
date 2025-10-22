@@ -23,7 +23,7 @@ const ChapterViewer = dynamic(() => import('./ChapterViewer'), {
 export default function BibleNoteClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { theme, toggleTheme } = useAppStore();
+    const { theme, toggleTheme, language, setLanguage } = useAppStore();
     const [content, setContent] = useState('');
     const [activeTab, setActiveTab] = useState<'edit' | 'preview' | 'references'>('edit');
     const [isExpanding, setIsExpanding] = useState(false);
@@ -381,6 +381,8 @@ export default function BibleNoteClient() {
                     onClose={() => setShowSideMenu(false)}
                     theme={theme}
                     onThemeChange={toggleTheme}
+                    language={language}
+                    onLanguageChange={setLanguage}
                 />
 
                 {/* 使用说明 - 条件显示 */}

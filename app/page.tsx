@@ -1206,6 +1206,8 @@ export default function HomePage() {
                     theme={theme}
                     onThemeChange={toggleTheme}
                     onViewChapter={handleViewChapterFromMenu}
+                    language={language}
+                    onLanguageChange={setLanguage}
                 />
 
                 {/* 移动端统计 modal */}
