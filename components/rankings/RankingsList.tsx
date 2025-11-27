@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Star, ChevronRight } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import booksData from '@/public/data/books.json';
+import { useTranslation } from '@/lib/i18n';
 
 interface RankingItem {
     verseId: string;
@@ -17,6 +18,7 @@ interface RankingsListProps {
 }
 
 export default function RankingsList({ rankings }: RankingsListProps) {
+    const { t } = useTranslation();
     const router = useRouter();
     const { isFavorite, toggleFavorite } = useFavoritesStore();
 
@@ -40,7 +42,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                 bookIndex,
                 chapter,
                 verse,
-                bookName: book?.nameTraditional || '未知',
+                bookName: book?.nameTraditional || t('rankings.unknownBook'),
                 bookKey,
                 testament: book?.testament || 'unknown',
                 fullVerseId, // 用于收藏功能
@@ -111,12 +113,12 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                                             : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                                     }`}
                                 >
-                                    {item.testament === 'old' ? '舊約' : '新約'}
+                                    {item.testament === 'old' ? t('rankings.oldTestament') : t('rankings.newTestament')}
                                 </span>
                                 <div className="flex items-center gap-1">
                                     <Star className="w-3 h-3 fill-current text-gold-600 dark:text-gold-400" />
                                     <span className="text-sm font-semibold text-gold-600 dark:text-gold-400">{item.favorites.toLocaleString()}</span>
-                                    <span className="text-xs text-gray-600 dark:text-gray-400">人收藏</span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">{t('rankings.favoritesCount')}</span>
                                 </div>
                             </div>
                         </div>
@@ -127,8 +129,8 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                             <button
                                 onClick={(e) => handleToggleFavorite(e, item.fullVerseId)}
                                 className="p-2 rounded-lg hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors touch-manipulation"
-                                title={isFav ? '取消收藏' : '收藏'}
-                                aria-label={isFav ? '取消收藏' : '收藏'}
+                                title={isFav ? t('common.unfavorite') : t('common.favorite')}
+                                aria-label={isFav ? t('common.unfavorite') : t('common.favorite')}
                                 style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
                                 <Star
@@ -144,11 +146,11 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                             <button
                                 onClick={() => handleViewChapter(item.bookName, item.chapter)}
                                 className="flex items-center gap-1 px-3 py-2 rounded-lg bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 transition-colors touch-manipulation"
-                                title={`查看 ${item.bookName} ${item.chapter}章`}
-                                aria-label={`查看 ${item.bookName} ${item.chapter}章`}
+                                title={t('rankings.viewChapterTooltip', { book: item.bookName, chapter: item.chapter })}
+                                aria-label={t('rankings.viewChapterTooltip', { book: item.bookName, chapter: item.chapter })}
                                 style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
-                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300 hidden sm:inline">查看章節</span>
+                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300 hidden sm:inline">{t('rankings.viewChapter')}</span>
                                 <ChevronRight className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                             </button>
                         </div>

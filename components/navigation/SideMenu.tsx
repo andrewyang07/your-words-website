@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen, HelpCircle, TrendingUp, ChevronRight } from 'lucide-react';
+import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen, HelpCircle, Settings, ChevronRight, ChevronDown, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -11,8 +11,8 @@ interface SideMenuProps {
     theme: 'light' | 'dark' | 'system';
     onThemeChange: () => void;
     onViewChapter?: (bookName: string, chapter: number) => void;
-    language: 'simplified' | 'traditional';
-    onLanguageChange: (lang: 'simplified' | 'traditional') => void;
+    language: 'simplified' | 'traditional' | 'en';
+    onLanguageChange: (lang: 'simplified' | 'traditional' | 'en') => void;
 }
 
 interface TopVerse {
@@ -24,7 +24,10 @@ interface TopVerse {
     text?: string; // 经文内容
 }
 
+import { useTranslation } from '@/lib/i18n';
+
 export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onViewChapter, language, onLanguageChange }: SideMenuProps) {
+    const { t } = useTranslation();
     const [topVerses, setTopVerses] = useState<TopVerse[]>([]);
     const [topVersesLoading, setTopVersesLoading] = useState(true);
 
@@ -84,7 +87,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                     >
                         {/* 头部 */}
                         <div className="flex items-center justify-between p-4 border-b border-bible-200 dark:border-gray-700">
-                            <h2 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese">菜單</h2>
+                            <h2 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese">{t('menu.settings')}</h2>
                             <button
                                 onClick={onClose}
                                 className="p-2 hover:bg-bible-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
@@ -104,7 +107,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
                                 >
                                     <BookOpen className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
-                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">背經文</span>
+                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">{t('menu.home')}</span>
                                 </Link>
 
                                 {/* 圣经笔记本 */}
@@ -114,7 +117,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
                                 >
                                     <FileText className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
-                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">筆記本</span>
+                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">{t('menu.notebook')}</span>
                                 </Link>
 
                                 {/* 帮助 */}
@@ -124,7 +127,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
                                 >
                                     <HelpCircle className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
-                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">幫助</span>
+                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">{t('menu.help')}</span>
                                 </Link>
 
                                 {/* 关于 */}
@@ -134,7 +137,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
                                 >
                                     <Info className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
-                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">關於</span>
+                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">{t('menu.about')}</span>
                                 </Link>
 
                                 {/* 分隔线 */}
@@ -143,7 +146,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                 {/* 外观设置 */}
                                 <div>
                                     <div className="px-4 py-2">
-                                        <p className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese">🎨 外觀</p>
+                                        <p className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese">🎨 {t('settings.theme')}</p>
                                     </div>
                                     <div className="space-y-1 mt-2">
                                         {/* 浅色模式 */}
@@ -158,7 +161,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                         >
                                             <div className="flex items-center gap-3">
                                                 <Sun className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">淺色</span>
+                                                <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">{t('settings.theme.light')}</span>
                                             </div>
                                             {theme === 'light' && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
                                         </button>
@@ -175,7 +178,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                         >
                                             <div className="flex items-center gap-3">
                                                 <Moon className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">深色</span>
+                                                <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">{t('settings.theme.dark')}</span>
                                             </div>
                                             {theme === 'dark' && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
                                         </button>
@@ -192,7 +195,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                         >
                                             <div className="flex items-center gap-3">
                                                 <Monitor className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">自動</span>
+                                                <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">{t('settings.theme.system')}</span>
                                             </div>
                                             {theme === 'system' && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
                                         </button>
@@ -202,36 +205,23 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                 {/* 语言设置 */}
                                 <div className="mt-4">
                                     <div className="px-4 py-2">
-                                        <p className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese">🌐 語言</p>
+                                        <p className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese">🌐 {t('settings.language')}</p>
                                     </div>
                                     <div className="space-y-1 mt-2">
-                                        {/* 简体 */}
-                                        <button
-                                            onClick={() => language !== 'simplified' && onLanguageChange('simplified')}
-                                            disabled={language === 'simplified'}
-                                            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
-                                                language === 'simplified'
-                                                    ? 'bg-bible-100 dark:bg-gray-800 cursor-default'
-                                                    : 'hover:bg-bible-50 dark:hover:bg-gray-800/50 cursor-pointer'
-                                            }`}
-                                        >
-                                            <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">简体中文</span>
-                                            {language === 'simplified' && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
-                                        </button>
-
-                                        {/* 繁体 */}
-                                        <button
-                                            onClick={() => language !== 'traditional' && onLanguageChange('traditional')}
-                                            disabled={language === 'traditional'}
-                                            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
-                                                language === 'traditional'
-                                                    ? 'bg-bible-100 dark:bg-gray-800 cursor-default'
-                                                    : 'hover:bg-bible-50 dark:hover:bg-gray-800/50 cursor-pointer'
-                                            }`}
-                                        >
-                                            <span className="text-bible-800 dark:text-bible-200 font-chinese text-sm">繁體中文</span>
-                                            {language === 'traditional' && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
-                                        </button>
+                                        <div className="relative">
+                                            <select
+                                                value={language}
+                                                onChange={(e) => onLanguageChange(e.target.value as 'simplified' | 'traditional' | 'en')}
+                                                className="w-full appearance-none bg-bible-50 dark:bg-gray-800 border border-bible-200 dark:border-gray-700 rounded-lg py-2.5 pl-4 pr-10 text-bible-900 dark:text-bible-100 focus:outline-none focus:ring-2 focus:ring-bible-500 transition-colors cursor-pointer font-chinese"
+                                            >
+                                                <option value="simplified">简体中文</option>
+                                                <option value="traditional">繁體中文</option>
+                                                <option value="en">English</option>
+                                            </select>
+                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-bible-500 dark:text-gray-400">
+                                                <ChevronDown className="w-4 h-4" />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 

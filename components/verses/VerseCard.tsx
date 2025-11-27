@@ -4,11 +4,13 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
 import { CardSize } from '@/types/common';
-import { Star, BookOpen } from 'lucide-react';
+import { Star, BookOpen, Check } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
+import { useAppStore } from '@/stores/useAppStore';
 import { maskVerseText } from '@/lib/utils';
 import { getVerseNumericId, sendStats } from '@/lib/statsUtils';
+import { useTranslation } from '@/lib/i18n';
 
 interface VerseCardProps {
     verse: Verse;
@@ -20,9 +22,11 @@ interface VerseCardProps {
 export default function VerseCard({ verse, size = 'medium', onViewInBible, defaultRevealed = false }: VerseCardProps) {
     const router = useRouter();
     const { isFavorite, toggleFavorite } = useFavoritesStore();
+    const { language } = useAppStore();
     const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
     const [isRevealed, setIsRevealed] = useState(defaultRevealed);
     const isFav = isFavorite(verse.id);
+    const { t } = useTranslation();
 
     // 当 defaultRevealed 改变时，更新 isRevealed
     useEffect(() => {
@@ -92,7 +96,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     };
 
     // 显示预览文本或完整文本
-    const displayText = isRevealed ? verse.text : maskVerseText(verse.text, maskMode, visibleChars);
+    const displayText = isRevealed ? verse.text : maskVerseText(verse.text, maskMode, visibleChars, language);
 
     return (
         <div
@@ -114,7 +118,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             onKeyDown={handleKeyDown}
             style={{ WebkitTapHighlightColor: 'transparent' }}
             role="article"
-            aria-label={`${verse.book} ${verse.chapter}章${verse.verse}节，${isRevealed ? '已展开' : '已收起'}，按Enter或空格键切换`}
+            aria-label={`${verse.book} ${verse.chapter}:${verse.verse}，${isRevealed ? t('verse.revealed') : t('verse.hidden')}，${t('verse.toggle')}`}
             aria-pressed={isRevealed}
             tabIndex={0}
         >
@@ -129,9 +133,9 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 <button
                     onClick={handleToggleFavorite}
                     className="transition-transform hover:scale-110 p-2 -m-2 touch-manipulation"
-                    title={isFav ? '取消收藏' : '收藏'}
+                    title={isFav ? t('verse.unfavorite') : t('verse.favorite')}
                     aria-label={
-                        isFav ? `取消收藏 ${verse.book} ${verse.chapter}:${verse.verse}` : `收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
+                        isFav ? `${t('verse.unfavorite')} ${verse.book} ${verse.chapter}:${verse.verse}` : `${t('verse.favorite')} ${verse.book} ${verse.chapter}:${verse.verse}`
                     }
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
@@ -158,18 +162,18 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
 
             {/* 底部信息栏 */}
             <div className="mt-3 pt-2 border-t border-bible-100 dark:border-gray-700 flex items-center justify-between">
-                <span className="text-xs text-bible-500 dark:text-gray-400 font-chinese">{verse.testament === 'old' ? '旧约' : '新约'}</span>
+                <span className="text-xs text-bible-500 dark:text-gray-400 font-chinese">{verse.testament === 'old' ? t('common.oldTestament') : t('common.newTestament')}</span>
 
                 {/* 查看整章按钮 */}
                 <button
                     onClick={handleViewInBible}
                     className="flex items-center gap-1 px-2 py-1 text-xs text-bible-600 dark:text-bible-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-bible-50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation min-h-[44px] min-w-[44px] justify-center"
-                    title="查看本章所有经文"
-                    aria-label={`查看 ${verse.book} 第${verse.chapter}章所有经文`}
+                    title={t('common.viewChapter')}
+                    aria-label={`${t('common.viewChapter')} ${verse.book} ${verse.chapter}`}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                     <BookOpen className="w-3 h-3" />
-                    <span className="font-chinese">查看整章</span>
+                    <span className="font-chinese">{t('common.viewChapter')}</span>
                 </button>
             </div>
         </div>

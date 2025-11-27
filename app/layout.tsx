@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Noto_Sans_SC } from 'next/font/google';
+import LanguageInit from '@/components/LanguageInit';
 import './globals.css';
 
 const notoSans = Noto_Sans_SC({
@@ -176,6 +177,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 />
             </head>
             <body className={`${notoSans.className} antialiased`} suppressHydrationWarning>
+                <LanguageInit />
                 <ErrorBoundary>{children}</ErrorBoundary>
                 <Analytics />
                 <SpeedInsights />

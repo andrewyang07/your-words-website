@@ -6,9 +6,11 @@ import Image from 'next/image';
 import PageHeader from '@/components/layout/PageHeader';
 import SideMenu from '@/components/navigation/SideMenu';
 import { useAppStore } from '@/stores/useAppStore';
+import { useTranslation } from '@/lib/i18n';
 
 export default function AboutPageClient() {
     const { theme, toggleTheme, language, setLanguage } = useAppStore();
+    const { t } = useTranslation();
     const [showSideMenu, setShowSideMenu] = useState(false);
 
     return (
@@ -36,8 +38,8 @@ export default function AboutPageClient() {
                                 <Heart className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-bible-800 dark:text-bible-200 font-chinese">你的話語</h2>
-                                <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">聖經背誦助手</p>
+                                <h2 className="text-2xl md:text-3xl font-bold text-bible-800 dark:text-bible-200 font-chinese">{t('about.title')}</h2>
+                                <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">{t('about.subtitle')}</p>
                             </div>
                         </div>
                     </div>
@@ -48,37 +50,28 @@ export default function AboutPageClient() {
                         <section className="space-y-4">
                             <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese flex items-center gap-2">
                                 <span className="text-2xl">📖</span>
-                                項目簡介
+                                {t('about.intro.title')}
                             </h3>
                             <div className="text-bible-700 dark:text-bible-300 font-chinese leading-relaxed space-y-3">
-                                <p>
-                                    「你的話語」是一個專為幫助基督徒背誦聖經經文而設計的網頁應用。 通過卡片式學習、智能遮罩提示、收藏分享等功能，
-                                    讓背誦聖經變得更加輕鬆有效。
-                                </p>
-                                <p>我們精選了 114 節核心經文，涵蓋信仰的基本真理。 你也可以自由選擇聖經 66 卷中的任意章節進行學習。</p>
+                                <p>{t('about.intro.p1')}</p>
+                                <p>{t('about.intro.p2')}</p>
                             </div>
                         </section>
 
                         {/* 开发故事 */}
                         <section className="space-y-4">
                             <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese flex items-center gap-2">
-                                <span className="text-2xl">📱</span>從 App 到 Web 的旅程
+                                <span className="text-2xl">📱</span>{t('about.journey.title')}
                             </h3>
                             <div className="space-y-3 text-bible-700 dark:text-bible-300 font-chinese leading-relaxed">
+                                <p>{t('about.journey.p1')}</p>
+                                <p>{t('about.journey.p2')}</p>
                                 <p>
-                                    最初，我投入大量心血開發了一款名為「你的話語」的 iOS App，並成功在全球 App Store 上架。 雖然這款 App
-                                    採用卡片形式幫助弟兄姊妹背誦經文，但效果並不如預期。
-                                </p>
-                                <p>
-                                    然而，隨著時間推移，我逐漸意識到 App 的局限性：許多基督徒並不經常使用手機，
-                                    而網站的使用門檻更低，無需下載安裝，任何設備都能輕鬆訪問。
-                                </p>
-                                <p>
-                                    在一次主日講道中，我突然有了新的想法（
+                                    {t('about.journey.p3')}
                                     <span className="text-amber-600 dark:text-amber-400 font-medium">
-                                        友情提醒：請不要效法我，還是要好好聽講道 😊
+                                        {t('about.journey.reminder')}
                                     </span>
-                                    ），決定將這個概念轉化為網站。這兩張潦草的草圖，見證了從想法到現實的第一步。
+                                    {t('about.journey.p3end')}
                                 </p>
                             </div>
                         </section>
@@ -87,32 +80,32 @@ export default function AboutPageClient() {
                         <section className="space-y-4">
                             <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese flex items-center gap-2">
                                 <span className="text-2xl">✏️</span>
-                                構思草圖
+                                {t('about.sketch.title')}
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
                                     <Image
                                         src="/sketch-1.jpg"
-                                        alt="網站構思草圖 1"
+                                        alt={t('about.sketch.caption1')}
                                         width={600}
                                         height={450}
                                         loading="lazy"
                                         quality={85}
                                         className="w-full h-auto object-cover"
                                     />
-                                    <p className="p-2 text-xs text-center text-bible-500 dark:text-bible-400">構思草圖（一）</p>
+                                    <p className="p-2 text-xs text-center text-bible-500 dark:text-bible-400">{t('about.sketch.caption1')}</p>
                                 </div>
                                 <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
                                     <Image
                                         src="/sketch-2.jpg"
-                                        alt="網站構思草圖 2"
+                                        alt={t('about.sketch.caption2')}
                                         width={600}
                                         height={450}
                                         loading="lazy"
                                         quality={85}
                                         className="w-full h-auto object-cover"
                                     />
-                                    <p className="p-2 text-xs text-center text-bible-500 dark:text-bible-400">構思草圖（二）</p>
+                                    <p className="p-2 text-xs text-center text-bible-500 dark:text-bible-400">{t('about.sketch.caption2')}</p>
                                 </div>
                             </div>
                         </section>
@@ -121,20 +114,19 @@ export default function AboutPageClient() {
                         <section className="space-y-4">
                             <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese flex items-center gap-2">
                                 <span className="text-2xl">✨</span>
-                                開發初衷
+                                {t('about.purpose.title')}
                             </h3>
                             <div className="bg-bible-50 dark:bg-gray-700 rounded-lg p-4 md:p-6 border border-bible-200 dark:border-gray-600">
                                 <p className="text-bible-700 dark:text-bible-300 font-chinese leading-relaxed mb-3">
-                                    這個項目的誕生源於對神話語的渴慕。作為開發者，我深信：
+                                    {t('about.purpose.intro')}
                                 </p>
                                 <blockquote className="border-l-4 border-bible-500 dark:border-bible-400 pl-4 italic text-bible-600 dark:text-bible-400 font-chinese">
-                                    「你的話是我腳前的燈，是我路上的光。」
+                                    {t('about.purpose.verse')}
                                     <br />
-                                    <span className="text-xs">— 詩篇 119:105</span>
+                                    <span className="text-xs">{t('about.purpose.verseRef')}</span>
                                 </blockquote>
                                 <p className="text-bible-700 dark:text-bible-300 font-chinese leading-relaxed mt-4">
-                                    我投入了大量心血開發這個工具，希望能幫助更多弟兄姐妹將神的話語藏在心裡。
-                                    這不僅是一個技術項目，更是一份屬靈的服事。
+                                    {t('about.purpose.mission')}
                                 </p>
                             </div>
                         </section>
@@ -143,14 +135,14 @@ export default function AboutPageClient() {
                         <section className="space-y-4">
                             <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese flex items-center gap-2">
                                 <span className="text-2xl">📱</span>
-                                心版 iOS App
+                                {t('about.app.title')}
                             </h3>
                             <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 rounded-lg p-4 md:p-6 border border-blue-200 dark:border-gray-600">
                                 <div className="flex items-start gap-4">
                                     <div className="flex-shrink-0">
                                         <Image
                                             src="/xinban-logo.jpg"
-                                            alt="心版 App"
+                                            alt={t('about.app.title')}
                                             width={80}
                                             height={80}
                                             loading="lazy"
@@ -159,13 +151,12 @@ export default function AboutPageClient() {
                                         />
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese mb-2">iPhone 用戶推薦</h4>
+                                        <h4 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese mb-2">{t('about.app.recommend')}</h4>
                                         <p className="text-sm text-bible-700 dark:text-bible-300 font-chinese leading-relaxed mb-3">
-                                            使用 iPhone？試試「心版」iOS App！ 將經文以小組件形式展示在主屏幕上， 每次解鎖手機，第一眼就看到神的話語。
+                                            {t('about.app.desc')}
                                         </p>
                                         <p className="text-xs text-bible-600 dark:text-bible-400 font-chinese mb-3">
-                                            我也為這個 App 付出了大量心血，並讓它全球上架。
-                                            雖然功能很豐富，但對於不太常用手機的基督徒來說可能略顯複雜。 因此，我開發了這個更簡潔易用的網頁版本。
+                                            {t('about.app.note')}
                                         </p>
                                         <a
                                             href="https://apps.apple.com/app/6744570052"
@@ -173,7 +164,7 @@ export default function AboutPageClient() {
                                             rel="noopener noreferrer"
                                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-chinese text-sm shadow-md"
                                         >
-                                            前往 App Store 下載
+                                            {t('about.app.download')}
                                             <span>→</span>
                                         </a>
                                     </div>
@@ -185,12 +176,12 @@ export default function AboutPageClient() {
                         <section className="space-y-4">
                             <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese flex items-center gap-2">
                                 <Github className="w-6 h-6" />
-                                開源項目
+                                {t('about.opensource.title')}
                             </h3>
                             <div className="space-y-4">
                                 <div className="text-bible-700 dark:text-bible-300 font-chinese leading-relaxed">
                                     <p className="mb-3">
-                                        這個項目已經開源！歡迎志同道合的開發者一起參與。 無論是代碼貢獻、功能建議，還是發現問題，都歡迎聯繫我。
+                                        {t('about.opensource.intro')}
                                     </p>
                                 </div>
 
@@ -199,7 +190,7 @@ export default function AboutPageClient() {
                                     <div className="flex items-start gap-3">
                                         <Github className="w-8 h-8 text-gray-700 dark:text-gray-300 flex-shrink-0 mt-1" />
                                         <div className="flex-1">
-                                            <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200 font-chinese mb-2">GitHub 倉庫</h4>
+                                            <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200 font-chinese mb-2">{t('about.opensource.repo')}</h4>
                                             <a
                                                 href="https://github.com/andrewyang07/your-words-website"
                                                 target="_blank"
@@ -227,7 +218,7 @@ export default function AboutPageClient() {
                                                     className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                                                 >
                                                     <span>🐛</span>
-                                                    <span>報告 Bug</span>
+                                                    <span>{t('about.opensource.reportBug')}</span>
                                                 </a>
                                                 <a
                                                     href="https://github.com/andrewyang07/your-words-website/issues"
@@ -236,7 +227,7 @@ export default function AboutPageClient() {
                                                     className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                                                 >
                                                     <span>💡</span>
-                                                    <span>功能建議</span>
+                                                    <span>{t('about.opensource.suggest')}</span>
                                                 </a>
                                                 <a
                                                     href="https://github.com/andrewyang07/your-words-website"
@@ -245,7 +236,7 @@ export default function AboutPageClient() {
                                                     className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                                                 >
                                                     <span>⭐</span>
-                                                    <span>給個 Star</span>
+                                                    <span>{t('about.opensource.star')}</span>
                                                 </a>
                                             </div>
                                         </div>
@@ -255,7 +246,7 @@ export default function AboutPageClient() {
                                 {/* 联系方式 */}
                                 <div className="flex items-center gap-2 text-bible-600 dark:text-bible-400">
                                     <Mail className="w-5 h-5" />
-                                    <span className="text-sm">聯繫郵箱：</span>
+                                    <span className="text-sm">{t('about.contact')}</span>
                                     <a href="mailto:yy9577@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">
                                         yy9577@gmail.com
                                     </a>
@@ -266,7 +257,7 @@ export default function AboutPageClient() {
                         {/* 版权信息 */}
                         <section className="pt-6 border-t border-bible-200 dark:border-gray-700">
                             <p className="text-center text-sm text-bible-500 dark:text-bible-400 font-chinese">
-                                © 2025 你的話語 · 願神的話語照亮你的人生道路
+                                {t('about.copyright')}
                             </p>
                         </section>
                     </div>

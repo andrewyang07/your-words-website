@@ -11,6 +11,7 @@ export const useAppStore = create<AppState>()(
       error: null,
       language: 'traditional', // 默认繁体中文
       theme: 'system', // 默认跟随系统
+      hasInitializedLanguage: false,
 
       // Actions
       setCurrentMode: (mode) => set({ currentMode: mode }),
@@ -22,6 +23,7 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           theme: state.theme === 'light' ? 'dark' : state.theme === 'dark' ? 'system' : 'light',
         })),
+      setHasInitializedLanguage: (hasInitialized) => set({ hasInitializedLanguage: hasInitialized }),
     }),
     {
       name: 'your-words-app',
@@ -29,8 +31,8 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         language: state.language,
         theme: state.theme,
+        hasInitializedLanguage: state.hasInitializedLanguage,
       }),
     }
   )
 );
-
