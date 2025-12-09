@@ -36,6 +36,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
 import { trackUser, getVerseNumericId } from '@/lib/statsUtils';
+import { useTranslation } from '@/lib/i18n';
 
 // 动态导入非关键组件以提升性能
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -49,6 +50,7 @@ export default function HomePage() {
     const { language, theme, setLanguage, toggleTheme } = useAppStore();
     const { verses, books, loadVerses, loadBooks } = useVerseStore();
     const { isFavorite, addFavorites, getFavoritesList } = useFavoritesStore();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -767,8 +769,7 @@ export default function HomePage() {
                                     <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
                                     <span className="text-xs text-bible-700 dark:text-bible-300 whitespace-nowrap font-chinese">
-                                        👥 已有 {globalStats.totalUsers.toLocaleString()} 位访客 · ⭐ 共收藏{' '}
-                                        {globalStats.totalFavorites.toLocaleString()} 节经文
+                                        👥 {language === 'en' ? globalStats.totalUsers.toLocaleString() + t('header.visitors') : `已有 ${globalStats.totalUsers.toLocaleString()} 位访客`} · ⭐ {language === 'en' ? globalStats.totalFavorites.toLocaleString() + t('header.favorites') : `共收藏 ${globalStats.totalFavorites.toLocaleString()} 节经文`}
                                     </span>
                                 )}
                             </div>
@@ -793,7 +794,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowStatsModal(true)}
                                 className="flex md:hidden items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-700/50 dark:to-gray-600/50 rounded-lg border border-gold-200 dark:border-gold-700/30 hover:shadow-md transition-shadow"
-                                title="查看统计"
+                                title={t('header.stats')}
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 {statsLoading ? (
@@ -810,45 +811,48 @@ export default function HomePage() {
                                 onClick={handleOpenGuide}
                                 className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="显示使用帮助"
-                                aria-label="显示使用帮助"
+                                title={t('header.help')}
+                                aria-label={t('header.help')}
                             >
                                 <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">帮助</span>
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">{t('menu.help')}</span>
                             </button>
 
-                            {/* 简繁体切换 - 只在平板/桌面端显示 */}
-                            <button
-                                onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
-                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
-                                aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
-                            >
-                                <Languages className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                                    {language === 'simplified' ? '繁' : '簡'}
-                                </span>
-                            </button>
+                            {/* 语言选择器 - 只在平板/桌面端显示 */}
+                            <div className="hidden md:block relative">
+                                <select
+                                    value={language}
+                                    onChange={(e) => setLanguage(e.target.value as 'simplified' | 'traditional' | 'en')}
+                                    className="appearance-none w-auto px-3 md:px-4 py-2 pr-10 md:pr-11 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer font-chinese text-bible-700 dark:text-bible-300 text-sm border-none focus:outline-none focus:ring-2 focus:ring-bible-500 min-h-[44px] touch-manipulation"
+                                    title={t('header.language')}
+                                    aria-label={t('header.language')}
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                >
+                                    <option value="simplified">简体</option>
+                                    <option value="traditional">繁體</option>
+                                    <option value="en">EN</option>
+                                </select>
+                                <ChevronDown className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-700 dark:text-bible-300 pointer-events-none" />
+                            </div>
 
                             {/* 阅读/背诵模式切换（始终显示） */}
                             <button
                                 onClick={() => setShowAllContent(!showAllContent)}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
-                                aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                                title={showAllContent ? t('header.reciteMode') : t('header.readMode')}
+                                aria-label={showAllContent ? t('header.reciteMode') : t('header.readMode')}
                                 aria-pressed={showAllContent}
                             >
                                 {showAllContent ? (
                                     <>
                                         <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">背诵</span>
+                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">{t('header.recite')}</span>
                                     </>
                                 ) : (
                                     <>
                                         <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">阅读</span>
+                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">{t('header.read')}</span>
                                     </>
                                 )}
                             </button>
@@ -858,11 +862,11 @@ export default function HomePage() {
                                 onClick={() => setShowSideMenu(true)}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="菜单"
-                                aria-label="打开菜单"
+                                title={t('menu.menu')}
+                                aria-label={t('menu.menu')}
                             >
                                 <Menu className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">菜單</span>
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">{t('menu.menu')}</span>
                             </button>
                         </div>
                     </div>
@@ -877,10 +881,10 @@ export default function HomePage() {
                                     ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
                                     : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
                             }`}
-                            title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
+                            title={filterType === 'favorites' ? t('filter.showAll') : t('filter.showFavorites')}
                         >
                             <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
-                            <span className="hidden sm:inline font-chinese text-sm">{filterType === 'favorites' ? '已收藏' : '收藏'}</span>
+                            <span className="hidden sm:inline font-chinese text-sm">{filterType === 'favorites' ? t('filter.favorited') : t('filter.favorites')}</span>
                         </button>
 
                         {/* 分享收藏按钮 - 只在收藏筛选模式下显示 */}
@@ -893,11 +897,11 @@ export default function HomePage() {
                                         ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                                         : 'bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
                                 }`}
-                                title={favoritesCount > 200 ? '收藏过多（超过200节），无法生成分享链接' : '点击生成分享链接，可将您的收藏分享给他人'}
+                                title={favoritesCount > 200 ? t('filter.shareTooMany') : t('filter.shareTooltip')}
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 <Share2 className="w-4 h-4" />
-                                <span className="hidden sm:inline font-chinese text-sm">分享</span>
+                                <span className="hidden sm:inline font-chinese text-sm">{t('filter.share')}</span>
                             </button>
                         )}
 
@@ -906,7 +910,7 @@ export default function HomePage() {
                             {({ open }) => (
                                 <div className="relative">
                                     <Listbox.Button className="relative w-full px-4 py-2 pr-10 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 text-left cursor-pointer touch-manipulation min-h-[44px]">
-                                        <span className="block">{selectedBook?.name || '选择书卷'}</span>
+                                        <span className="block">{selectedBook?.name || t('filter.selectBook')}</span>
                                         <ChevronDown
                                             className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-700 dark:text-bible-300 transition-transform ${
                                                 open ? 'rotate-180' : ''
@@ -934,7 +938,7 @@ export default function HomePage() {
                                             >
                                                 {({ selected }) => (
                                                     <>
-                                                        <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>选择书卷</span>
+                                                        <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>{t('filter.selectBook')}</span>
                                                         {selected && (
                                                             <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
                                                         )}
@@ -944,7 +948,7 @@ export default function HomePage() {
 
                                             {/* 旧约 */}
                                             <div className="px-3 py-1 text-xs font-semibold text-bible-500 dark:text-bible-400 bg-bible-50 dark:bg-gray-900/50 border-t border-b border-bible-100 dark:border-gray-700 font-chinese">
-                                                旧约
+                                                {t('common.oldTestament')}
                                             </div>
                                             {books
                                                 .filter((b) => b.testament === 'old')
@@ -975,7 +979,7 @@ export default function HomePage() {
 
                                             {/* 新约 */}
                                             <div className="px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-t border-b border-blue-100 dark:border-blue-800 font-chinese mt-1">
-                                                新约
+                                                {t('common.newTestament')}
                                             </div>
                                             {books
                                                 .filter((b) => b.testament === 'new')
@@ -1016,7 +1020,7 @@ export default function HomePage() {
                                     {({ open }) => (
                                         <div className="relative">
                                             <Listbox.Button className="relative w-full px-4 py-2 pr-10 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 text-left cursor-pointer touch-manipulation min-h-[44px]">
-                                                <span className="block">{selectedChapter ? `第 ${selectedChapter} 章` : '所有章节'}</span>
+                                                <span className="block">{selectedChapter ? t('filter.chapter').replace('{num}', selectedChapter.toString()) : t('filter.allChapters')}</span>
                                                 <ChevronDown
                                                     className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400 transition-transform ${
                                                         open ? 'rotate-180' : ''
@@ -1045,7 +1049,7 @@ export default function HomePage() {
                                                         {({ selected }) => (
                                                             <>
                                                                 <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
-                                                                    所有章节
+                                                                    {t('filter.allChapters')}
                                                                 </span>
                                                                 {selected && (
                                                                     <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
@@ -1068,7 +1072,7 @@ export default function HomePage() {
                                                             {({ selected }) => (
                                                                 <>
                                                                     <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
-                                                                        第 {ch} 章
+                                                                        {t('filter.chapter').replace('{num}', ch.toString())}
                                                                     </span>
                                                                     {selected && (
                                                                         <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
@@ -1089,10 +1093,10 @@ export default function HomePage() {
                                         href="/bible-note"
                                         className="flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors shadow-sm touch-manipulation min-h-[44px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        title="返回聖經筆記本"
+                                        title={t('filter.backToNoteTitle')}
                                     >
                                         <ArrowLeft className="w-4 h-4" />
-                                        <span className="font-chinese text-sm">返回筆記</span>
+                                        <span className="font-chinese text-sm">{t('filter.backToNote')}</span>
                                     </a>
                                 )}
 
@@ -1102,11 +1106,11 @@ export default function HomePage() {
                                         onClick={selectedChapter ? () => handleChapterSelect(null) : handleClearFilters}
                                         className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        title={selectedChapter ? '返回章节选择' : '返回精选经文'}
+                                        title={selectedChapter ? t('filter.rechapter') : t('filter.backToSelectedTitle')}
                                     >
                                         <RotateCcw className="w-4 h-4 text-bible-700 dark:text-bible-300" />
                                         <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                                            {selectedChapter ? '重选章节' : '返回'}
+                                            {selectedChapter ? t('filter.rechapter') : t('filter.backToSelected')}
                                         </span>
                                     </button>
                                 )}
@@ -1119,10 +1123,10 @@ export default function HomePage() {
                                 onClick={handleShuffle}
                                 className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="重新排列"
+                                title={t('filter.shuffleTitle')}
                             >
                                 <Shuffle className="w-4 h-4 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">随机</span>
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">{t('filter.shuffle')}</span>
                             </button>
                         )}
                     </div>

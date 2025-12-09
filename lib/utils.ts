@@ -91,7 +91,61 @@ export function delay(ms: number): Promise<void> {
 }
 
 // 遮罩经文文本
-export function maskVerseText(text: string, mode: 'punctuation' | 'prefix', visibleChars: number): string {
+export function maskVerseText(text: string, mode: 'punctuation' | 'prefix', visibleChars: number, language: 'simplified' | 'traditional' | 'en' = 'traditional'): string {
+    // English masking logic
+    if (language === 'en') {
+        const words = text.split(' ');
+        
+        if (visibleChars <= 0) {
+            return words.map(word => '░'.repeat(word.length)).join(' ');
+        }
+
+        if (mode === 'prefix') {
+            // Prefix mode: show first N words
+            if (words.length <= visibleChars) return text;
+            return words.map((word, index) => {
+                if (index < visibleChars) return word;
+                return /[.,!?;:]/.test(word) ? word : '░'.repeat(word.length);
+            }).join(' ');
+        }
+
+        // Punctuation mode: show first N words of each sentence/segment
+        // For simplicity, we'll split by punctuation or just count words after punctuation
+        // Actually, let's just use a simple logic: show first N words, then mask until punctuation
+        // But English punctuation is attached to words.
+        
+        const result: string[] = [];
+        let wordsShownInSegment = 0;
+        let isAfterPunctuation = true;
+
+        for (const word of words) {
+            const hasPunctuation = /[.,!?;:]/.test(word);
+            
+            if (isAfterPunctuation && wordsShownInSegment < visibleChars) {
+                result.push(word);
+                wordsShownInSegment++;
+            } else {
+                // Mask the word but keep punctuation if present
+                if (hasPunctuation) {
+                    const punctuation = word.match(/[.,!?;:]/)?.[0] || '';
+                    const wordPart = word.replace(/[.,!?;:]/, '');
+                    result.push('░'.repeat(wordPart.length) + punctuation);
+                } else {
+                    result.push('░'.repeat(word.length));
+                }
+            }
+
+            if (hasPunctuation) {
+                wordsShownInSegment = 0;
+                isAfterPunctuation = true;
+            } else if (wordsShownInSegment >= visibleChars) {
+                isAfterPunctuation = false;
+            }
+        }
+        return result.join(' ');
+    }
+
+    // Chinese masking logic (existing)
     if (visibleChars <= 0) {
         return text
             .split('')

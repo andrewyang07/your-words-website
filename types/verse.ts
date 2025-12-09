@@ -1,7 +1,8 @@
 // 核心经文类型定义
 
+export type BookName = string;
 export type Testament = 'old' | 'new';
-export type Language = 'simplified' | 'traditional';
+export type Language = 'simplified' | 'traditional' | 'en';
 export type SortBy = 'order' | 'random' | 'priority';
 
 // 经文接口
@@ -31,7 +32,7 @@ export interface Book {
 
 // 预设经文引用（用于生成preset-verses.json）
 export interface VerseReference {
-    book: string;
+    book: BookName;
     chapter: number;
     verse: number | number[]; // 可以是单节或多节
     priority?: number;

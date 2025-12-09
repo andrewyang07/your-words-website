@@ -9,6 +9,7 @@ export interface AppState {
     error: string | null;
     language: Language;
     theme: 'light' | 'dark' | 'system';
+    hasInitializedLanguage: boolean;
 
     setCurrentMode: (mode: 'preset' | 'chapter') => void;
     setLoading: (loading: boolean) => void;
@@ -16,6 +17,7 @@ export interface AppState {
     setLanguage: (language: Language) => void;
     setTheme: (theme: 'light' | 'dark' | 'system') => void;
     toggleTheme: () => void;
+    setHasInitializedLanguage: (hasInitialized: boolean) => void;
 }
 
 // 经文数据状态

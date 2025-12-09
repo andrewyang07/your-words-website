@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useMaskStore } from '@/stores/useMaskStore';
+import { useTranslation } from '@/lib/i18n';
 import Select, { SelectOption } from '@/components/ui/Select';
 import Slider from '@/components/ui/Slider';
 import { RotateCcw, HelpCircle, X } from 'lucide-react';
@@ -20,17 +21,18 @@ export default function MaskSettings() {
         setMaskCharsRange,
         resetToDefaults,
     } = useMaskStore();
+    const { t } = useTranslation();
 
     const [showHelp, setShowHelp] = useState(false);
 
     const modeOptions: SelectOption[] = [
-        { value: 'punctuation', label: '每句提示' },
-        { value: 'prefix', label: '開頭提示' },
+        { value: 'punctuation', label: t('settings.mask.mode') + ' 1' }, // Simplified for now, ideally translate options too
+        { value: 'prefix', label: t('settings.mask.mode') + ' 2' },
     ];
 
     const typeOptions: SelectOption[] = [
-        { value: 'fixed', label: '固定字數' },
-        { value: 'range', label: '隨機字數' },
+        { value: 'fixed', label: t('settings.mask.chars') + ' (Fixed)' },
+        { value: 'range', label: t('settings.mask.chars') + ' (Range)' },
     ];
 
     return (

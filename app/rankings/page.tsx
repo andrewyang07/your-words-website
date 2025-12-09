@@ -10,6 +10,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import RankingsList from '@/components/rankings/RankingsList';
 import booksData from '@/public/data/books.json';
 import dynamic from 'next/dynamic';
+import { useTranslation } from '@/lib/i18n';
 
 // 动态导入侧边栏
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -23,6 +24,7 @@ const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
 type BookFilterType = 'all' | 'old' | 'new' | string;
 
 export default function RankingsPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const { language, theme, setLanguage, toggleTheme } = useAppStore();
     const [rankings, setRankings] = useState([]);
@@ -41,11 +43,11 @@ export default function RankingsPage() {
                     const data = await response.json();
                     setRankings(data.rankings || []);
                 } else {
-                    setError('加載失敗，請稍後重試');
+                    setError(t('rankings.error'));
                 }
             } catch (err) {
                 console.error('Failed to fetch rankings:', err);
-                setError('網絡連接失敗');
+                setError(t('common.networkError'));
             } finally {
                 setLoading(false);
             }
@@ -118,7 +120,7 @@ export default function RankingsPage() {
                                         textShadow: '0 0 12px rgba(190,158,93,0.3), 0 0 24px rgba(190,158,93,0.15), 0 1px 2px rgba(0,0,0,0.05)',
                                     }}
                                 >
-                                    你的話語
+                                    {t('common.appName')}
                                 </h1>
                             </a>
                         </div>
@@ -129,11 +131,11 @@ export default function RankingsPage() {
                                 onClick={() => router.push('/help')}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="显示使用帮助"
-                                aria-label="显示使用帮助"
+                                title={t('common.showHelp')}
+                                aria-label={t('common.showHelp')}
                             >
                                 <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">帮助</span>
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">{t('common.help')}</span>
                             </button>
 
                             {/* 简繁体切换 */}
@@ -141,8 +143,8 @@ export default function RankingsPage() {
                                 onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
-                                aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
+                                title={language === 'simplified' ? t('common.switchToTraditional') : t('common.switchToSimplified')}
+                                aria-label={language === 'simplified' ? t('common.switchToTraditional') : t('common.switchToSimplified')}
                             >
                                 <Languages className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
                                 <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
@@ -155,19 +157,19 @@ export default function RankingsPage() {
                                 onClick={() => setShowAllContent(!showAllContent)}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
-                                aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                                title={showAllContent ? t('common.switchToRecite') : t('common.switchToRead')}
+                                aria-label={showAllContent ? t('common.switchToRecite') : t('common.switchToRead')}
                                 aria-pressed={showAllContent}
                             >
                                 {showAllContent ? (
                                     <>
                                         <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">背诵</span>
+                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">{t('common.recite')}</span>
                                     </>
                                 ) : (
                                     <>
                                         <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">阅读</span>
+                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">{t('common.read')}</span>
                                     </>
                                 )}
                             </button>
@@ -177,11 +179,11 @@ export default function RankingsPage() {
                                 onClick={() => setShowSideMenu(true)}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="菜单"
-                                aria-label="打开菜单"
+                                title={t('common.menu')}
+                                aria-label={t('common.menu')}
                             >
                                 <Menu className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">菜單</span>
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">{t('common.menu')}</span>
                             </button>
                         </div>
                     </div>
@@ -193,12 +195,12 @@ export default function RankingsPage() {
                             className="flex items-center gap-1 text-sm text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 transition-colors font-chinese"
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            <span>返回主頁</span>
+                            <span>{t('common.backHome')}</span>
                         </button>
                         <span className="text-bible-400 dark:text-gray-600">/</span>
                         <div className="flex items-center gap-2">
                             <TrendingUp className="w-4 h-4 text-gold-600 dark:text-gold-400" />
-                            <span className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">總排行榜</span>
+                            <span className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">{t('rankings.title')}</span>
                         </div>
                     </div>
                 </div>
@@ -219,7 +221,7 @@ export default function RankingsPage() {
                 {/* 说明文字 */}
                 <div className="mb-6 p-4 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-gold-200 dark:border-gold-700/30">
                     <p className="text-sm text-bible-700 dark:text-bible-300 font-chinese text-center">
-                        📊 最多收藏的聖經經文（按收藏次數排序） · 每小時更新
+                        {t('rankings.description')}
                     </p>
                 </div>
                 
@@ -227,7 +229,7 @@ export default function RankingsPage() {
                 {rankings.length > 0 && !loading && !error && (
                     <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
                         <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
-                            共 <span className="font-semibold text-bible-700 dark:text-bible-300">{filteredRankings.length}</span> 节
+                            {t('rankings.totalVerses', { count: filteredRankings.length })}
                         </span>
                         
                         {/* 筛选按钮 */}
@@ -235,7 +237,7 @@ export default function RankingsPage() {
                             <div className="relative">
                                 <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bible-50 dark:bg-gray-800 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors">
                                     <Filter className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                    <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">篩選</span>
+                                    <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">{t('rankings.filter')}</span>
                                     <ChevronDown className="w-3 h-3 text-bible-500 dark:text-bible-400" />
                                 </Listbox.Button>
                                 <Transition
@@ -253,7 +255,7 @@ export default function RankingsPage() {
                                                 <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
-                                                            全部
+                                                            {t('rankings.filter.all')}
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -271,7 +273,7 @@ export default function RankingsPage() {
                                                 <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
-                                                            舊約
+                                                            {t('rankings.filter.old')}
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -289,7 +291,7 @@ export default function RankingsPage() {
                                                 <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
-                                                            新約
+                                                            {t('rankings.filter.new')}
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-gray-500 dark:text-gray-400">

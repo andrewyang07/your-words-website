@@ -3,10 +3,13 @@
 import { Verse, Book, Language } from '@/types/verse';
 import { PRESET_VERSE_REFERENCES } from './constants';
 import { logError, logWarning } from './errorHandler';
+import booksData from '@/public/data/books.json';
 
 // 从完整圣经 JSON 中提取指定的经文
 export async function loadPresetVerses(language: Language): Promise<Verse[]> {
-    const fileName = language === 'simplified' ? 'CUV_bible.json' : 'CUVT_bible.json';
+    let fileName = 'CUVT_bible.json';
+    if (language === 'simplified') fileName = 'CUV_bible.json';
+    if (language === 'en') fileName = 'WEB_bible.json';
 
     try {
         const response = await fetch(`/data/${fileName}`);
@@ -14,10 +17,23 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
 
         const verses: Verse[] = [];
 
+        // Create a mapping from Chinese name to English name if needed
+        const bookMapping: Record<string, string> = {};
+        if (language === 'en') {
+            booksData.books.forEach((b: any) => {
+                bookMapping[b.key] = b.nameEnglish;
+            });
+        }
+
         PRESET_VERSE_REFERENCES.forEach((ref, index) => {
-            const bookData = bibleData[ref.book];
+            let bookKey = ref.book;
+            if (language === 'en' && bookMapping[ref.book]) {
+                bookKey = bookMapping[ref.book];
+            }
+
+            const bookData = bibleData[bookKey];
             if (!bookData) {
-                logWarning('loadPresetVerses', `书卷不存在: ${ref.book}`);
+                logWarning('loadPresetVerses', `书卷不存在: ${bookKey} (original: ${ref.book})`);
                 return;
             }
 
@@ -37,7 +53,7 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
 
             verses.push({
                 id: `${ref.book}-${ref.chapter}-${ref.verse}`,
-                book: ref.book,
+                book: bookKey,
                 bookKey: ref.book,
                 chapter: ref.chapter,
                 verse: ref.verse,
@@ -56,7 +72,9 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
 
 // 从完整圣经 JSON 中加载指定书卷的所有经文
 export async function loadChapterVerses(bookKey: string, chapter: number, language: Language): Promise<Verse[]> {
-    const fileName = language === 'simplified' ? 'CUV_bible.json' : 'CUVT_bible.json';
+    let fileName = 'CUVT_bible.json';
+    if (language === 'simplified') fileName = 'CUV_bible.json';
+    if (language === 'en') fileName = 'WEB_bible.json';
 
     try {
         const response = await fetch(`/data/${fileName}`);
@@ -114,7 +132,7 @@ export async function loadBooks(language: Language = 'traditional'): Promise<Boo
         return data.books.map((book: any) => ({
             ...book,
             id: book.key,
-            name: language === 'simplified' ? book.nameSimplified : book.nameTraditional,
+            name: language === 'simplified' ? book.nameSimplified : (language === 'en' ? book.nameEnglish : book.nameTraditional),
         }));
     } catch (error) {
         logError('loadBooks', error);
