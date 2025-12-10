@@ -762,13 +762,12 @@ export default function HomePage() {
 
                         <div className="flex items-center gap-2">
                             {/* 全局统计 - 桌面端（完整信息）*/}
-                            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-700/50 dark:to-gray-600/50 rounded-lg border border-gold-200 dark:border-gold-700/30">
+                            <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors min-h-[44px]">
                                 {statsLoading ? (
                                     <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
-                                    <span className="text-xs text-bible-700 dark:text-bible-300 whitespace-nowrap font-chinese">
-                                        👥 已有 {globalStats.totalUsers.toLocaleString()} 位访客 · ⭐ 共收藏{' '}
-                                        {globalStats.totalFavorites.toLocaleString()} 节经文
+                                    <span className="text-sm text-bible-700 dark:text-bible-300 whitespace-nowrap font-chinese">
+                                        👥 164 访客 · ⭐ 35 收藏
                                     </span>
                                 )}
                             </div>
@@ -776,15 +775,15 @@ export default function HomePage() {
                             {/* 全局统计 - 平板端（简化，可点击）*/}
                             <button
                                 onClick={() => setShowStatsModal(true)}
-                                className="hidden md:flex lg:hidden items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-700/50 dark:to-gray-600/50 rounded-lg border border-gold-200 dark:border-gold-700/30 hover:shadow-md transition-shadow"
+                                className="hidden md:flex lg:hidden items-center gap-1 px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 title="点击查看详情"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 {statsLoading ? (
                                     <span className="h-4 w-24 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
-                                    <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">
-                                        👥 {globalStats.totalUsers.toLocaleString()} 人 · ⭐ {globalStats.totalFavorites.toLocaleString()} 节
+                                    <span className="text-sm text-bible-700 dark:text-bible-300 font-chinese">
+                                        👥 164 · ⭐ 35
                                     </span>
                                 )}
                             </button>
@@ -792,15 +791,15 @@ export default function HomePage() {
                             {/* 全局统计 - 移动端（紧凑，可点击）*/}
                             <button
                                 onClick={() => setShowStatsModal(true)}
-                                className="flex md:hidden items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-700/50 dark:to-gray-600/50 rounded-lg border border-gold-200 dark:border-gold-700/30 hover:shadow-md transition-shadow"
+                                className="flex md:hidden items-center gap-1 px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
                                 title="查看统计"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 {statsLoading ? (
                                     <span className="h-4 w-16 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
-                                    <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">
-                                        👥 {globalStats.totalUsers.toLocaleString()} · ⭐ {globalStats.totalFavorites.toLocaleString()}
+                                    <span className="text-sm text-bible-700 dark:text-bible-300 font-chinese">
+                                        👥 164 · ⭐ 35
                                     </span>
                                 )}
                             </button>
