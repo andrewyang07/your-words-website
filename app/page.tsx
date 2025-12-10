@@ -769,7 +769,7 @@ export default function HomePage() {
                                     <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
                                     <span className="text-xs text-bible-700 dark:text-bible-300 whitespace-nowrap font-chinese">
-                                        👥 {language === 'en' ? globalStats.totalUsers.toLocaleString() + t('header.visitors') : `已有 ${globalStats.totalUsers.toLocaleString()} 位访客`} · ⭐ {language === 'en' ? globalStats.totalFavorites.toLocaleString() + t('header.favorites') : `共收藏 ${globalStats.totalFavorites.toLocaleString()} 节经文`}
+                                        👥 {t('home.stats.modalVisitors', { count: globalStats.totalUsers.toLocaleString() })} · ⭐ {t('home.stats.modalFavorites', { count: globalStats.totalFavorites.toLocaleString() })}
                                     </span>
                                 )}
                             </div>
@@ -785,7 +785,7 @@ export default function HomePage() {
                                     <span className="h-4 w-24 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
                                     <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">
-                                        👥 {globalStats.totalUsers.toLocaleString()} 人 · ⭐ {globalStats.totalFavorites.toLocaleString()} 节
+                                        👥 {globalStats.totalUsers.toLocaleString()} · ⭐ {globalStats.totalFavorites.toLocaleString()}
                                     </span>
                                 )}
                             </button>
@@ -1159,13 +1159,13 @@ export default function HomePage() {
                                 <div>
                                     <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
                                         {hasAddedAllShared
-                                            ? `已成功收藏 ${sharedVerses.length} 节经文 ✨`
-                                            : `这是分享的收藏列表（共 ${sharedVerses.length} 节经文）`}
+                                            ? t('home.share.success', { count: sharedVerses.length })
+                                            : t('home.share.title', { count: sharedVerses.length })}
                                     </p>
                                     <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
                                         {hasAddedAllShared
-                                            ? '所有卡片已标记为收藏，可以点击"取消"关闭此提示'
-                                            : '您可以一键将这些经文添加到自己的收藏中'}
+                                            ? t('home.share.descSuccess')
+                                            : t('home.share.desc')}
                                     </p>
                                 </div>
                             </div>
@@ -1176,7 +1176,7 @@ export default function HomePage() {
                                         className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg transition-colors font-chinese text-sm font-medium shadow-sm touch-manipulation min-h-[44px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                     >
-                                        一键全部收藏
+                                        {t('home.share.addAll')}
                                     </button>
                                 )}
                                 <button
@@ -1184,7 +1184,7 @@ export default function HomePage() {
                                     className="px-4 py-2 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-600 rounded-lg transition-colors font-chinese text-sm border border-blue-200 dark:border-blue-700 touch-manipulation min-h-[44px]"
                                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 >
-                                    {hasAddedAllShared ? '关闭' : '取消'}
+                                    {hasAddedAllShared ? t('common.close') : t('common.cancel')}
                                 </button>
                             </div>
                         </div>
@@ -1218,22 +1218,17 @@ export default function HomePage() {
                 {showStatsModal && (
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowStatsModal(false)}>
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-                            <h3 className="text-center text-lg font-semibold text-bible-800 dark:text-bible-200 mb-4 font-chinese">📊 全球統計</h3>
+                            <h3 className="text-center text-lg font-semibold text-bible-800 dark:text-bible-200 mb-4 font-chinese">{t('home.stats.modalTitle')}</h3>
                             <p className="text-center text-sm text-bible-700 dark:text-bible-300 leading-relaxed font-chinese">
-                                已有 <span className="font-bold text-bible-900 dark:text-bible-100">{globalStats.totalUsers.toLocaleString()}</span>{' '}
-                                位访客在此背誦神的話語
+                                {t('home.stats.modalVisitors', { count: globalStats.totalUsers.toLocaleString() })}
                                 <br />
-                                共收藏{' '}
-                                <span className="font-bold text-bible-900 dark:text-bible-100">
-                                    {globalStats.totalFavorites.toLocaleString()}
-                                </span>{' '}
-                                次經文
+                                {t('home.stats.modalFavorites', { count: globalStats.totalFavorites.toLocaleString() })}
                             </p>
                             <button
                                 onClick={() => setShowStatsModal(false)}
                                 className="mt-4 w-full px-4 py-2 bg-bible-500 text-white rounded-lg hover:bg-bible-600 transition-colors font-chinese"
                             >
-                                關閉
+                                {t('common.close')}
                             </button>
                         </div>
                     </div>
@@ -1247,8 +1242,8 @@ export default function HomePage() {
                                 <HelpCircle className="w-5 h-5 text-white" />
                             </div>
                             <span className="flex-1">
-                                引导已关闭。如需再次查看，请点击右上角的{' '}
-                                <span className="font-semibold text-bible-700 dark:text-bible-300">「帮助」</span> 按钮
+                                {t('home.guide.closed')}{' '}
+                                <span className="font-semibold text-bible-700 dark:text-bible-300">{t('home.guide.helpBtn')}</span>
                             </span>
                             <button
                                 onClick={() => setShowGuideHint(false)}
@@ -1275,7 +1270,7 @@ export default function HomePage() {
                                 <div className="flex-1">
                                     <div className="flex items-start justify-between mb-2">
                                         <h3 className="text-base font-bold text-bible-900 dark:text-bible-100 font-chinese">
-                                            歡迎使用「你的話語」聖經背誦助手 ✨
+                                            {t('home.guide.welcome_msg')}
                                         </h3>
                                         <button
                                             onClick={handleCloseGuide}
@@ -1292,10 +1287,9 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">📖</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">經文選擇</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">{t('home.guide.select.title')}</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    <span className="font-semibold">精選 114 節</span>核心經文，或選擇
-                                                    <span className="font-semibold">聖經 66 卷</span>任意章節瀏覽。
+                                                    {t('home.guide.select.desc')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1304,11 +1298,9 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🎯</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">背誦模式</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">{t('home.guide.recite.title')}</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    <span className="font-semibold">點擊卡片</span>顯示/隱藏經文內容。 點擊
-                                                    <span className="font-semibold">眼睛圖標</span>切換閱讀/背誦模式，
-                                                    <span className="font-semibold">洗牌按鈕</span>隨機排序。
+                                                    {t('home.guide.recite.desc')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1317,11 +1309,9 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🎨</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">遮罩提示</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">{t('home.guide.mask.title')}</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    點擊卡片顯示/隱藏經文內容。支持
-                                                    <span className="font-semibold">每句提示</span>/<span className="font-semibold">開頭提示</span>
-                                                    兩種模式， 可設置固定或隨機字數，每次點擊隨機顯示不同提示字數。
+                                                    {t('home.guide.mask.desc')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1330,10 +1320,9 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">⭐</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏分享</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">{t('home.guide.share.title')}</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    點擊<span className="font-semibold">星標</span>收藏經文， 點擊
-                                                    <span className="font-semibold">分享按鈕</span>生成鏈接。
+                                                    {t('home.guide.share.desc')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1343,13 +1332,10 @@ export default function HomePage() {
                                             <span className="text-base">📝</span>
                                             <div>
                                                 <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">
-                                                    筆記本 <span className="px-1.5 py-0.5 text-xs bg-gold-500 text-white rounded-full">BETA</span>
+                                                    {t('home.guide.note.title')} <span className="px-1.5 py-0.5 text-xs bg-gold-500 text-white rounded-full">BETA</span>
                                                 </p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    右上角菜單 → 筆記本，
-                                                    <span className="font-semibold">自動補全</span>經文引用，
-                                                    <span className="font-semibold">一鍵展開</span>內容，
-                                                    <span className="font-semibold">Markdown</span>編輯。
+                                                    {t('home.guide.note.desc')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1358,10 +1344,9 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🌓</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">主題語言</p>
+                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">{t('home.guide.theme.title')}</p>
                                                 <p className="text-bible-600 dark:text-bible-400">
-                                                    支持<span className="font-semibold">繁簡切換</span>、
-                                                    <span className="font-semibold">深色模式</span>（淺色/深色/自動）。
+                                                    {t('home.guide.theme.desc')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1371,17 +1356,16 @@ export default function HomePage() {
                                             <div className="flex items-start gap-2">
                                                 <span className="text-base">📱</span>
                                                 <div>
-                                                    <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">心版 iOS App</p>
+                                                    <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">{t('home.guide.app.title')}</p>
                                                     <p className="text-bible-600 dark:text-bible-400">
-                                                        將經文以<span className="font-semibold">小組件</span>形式展示在主屏幕，
-                                                        每次解鎖第一眼看到神的話語。
+                                                        {t('home.guide.app.desc')}
                                                         <a
                                                             href="https://apps.apple.com/app/6744570052"
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="inline-flex items-center ml-1 text-blue-600 dark:text-blue-400 font-semibold hover:underline"
                                                         >
-                                                            前往下載 →
+                                                            {t('home.guide.app.link')}
                                                         </a>
                                                     </p>
                                                 </div>
@@ -1398,17 +1382,17 @@ export default function HomePage() {
                         <div className="flex items-center gap-2 flex-wrap">
                             {/* 默认精选经文提示 */}
                             {!selectedBook && filterType !== 'favorites' && !showShareBanner && (
-                                <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">📖 精選 114 節經文</span>
+                                <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">{t('home.preset.title')}</span>
                             )}
 
                             {filterType === 'favorites' && (
                                 <>
                                     <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
                                         <Star className="w-3 h-3 fill-current" />
-                                        已收藏
+                                        {t('filter.favorited')}
                                     </span>
                                     {favoritesCount > 0 && (
-                                        <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">💡 可生成鏈接分享</span>
+                                        <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">{t('home.share.hint')}</span>
                                     )}
                                 </>
                             )}
@@ -1432,7 +1416,7 @@ export default function HomePage() {
                                         <div className="relative">
                                             <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bible-50 dark:bg-gray-800 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors">
                                                 <Filter className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">篩選</span>
+                                                <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">{t('home.filter.label')}</span>
                                                 <ChevronDown className="w-3 h-3 text-bible-500 dark:text-bible-400" />
                                             </Listbox.Button>
                                             <Transition
@@ -1452,7 +1436,7 @@ export default function HomePage() {
                                                             >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
-                                                                        全部
+                                                                        {t('rankings.filter.all')}
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -1487,7 +1471,7 @@ export default function HomePage() {
                                                                         >
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
-                                                                                    舊約
+                                                                                    {t('common.oldTestament')}
                                                                                 </span>
                                                                                 <div className="flex items-center gap-2">
                                                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -1510,7 +1494,7 @@ export default function HomePage() {
                                                                         >
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
-                                                                                    新約
+                                                                                    {t('common.newTestament')}
                                                                                 </span>
                                                                                 <div className="flex items-center gap-2">
                                                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -1579,7 +1563,7 @@ export default function HomePage() {
                                         <div className="relative">
                                             <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bible-50 dark:bg-gray-800 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors">
                                                 <Filter className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">篩選</span>
+                                                <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">{t('home.filter.label')}</span>
                                                 <ChevronDown className="w-3 h-3 text-bible-500 dark:text-bible-400" />
                                             </Listbox.Button>
                                             <Transition
@@ -1599,7 +1583,7 @@ export default function HomePage() {
                                                             >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
-                                                                        全部
+                                                                        {t('rankings.filter.all')}
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -1619,7 +1603,7 @@ export default function HomePage() {
                                                             >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
-                                                                        舊約
+                                                                        {t('common.oldTestament')}
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -1638,7 +1622,7 @@ export default function HomePage() {
                                                             >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
-                                                                        新約
+                                                                        {t('common.newTestament')}
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -1700,7 +1684,7 @@ export default function HomePage() {
                     {loadingChapter || loadingFavorites ? (
                         <div className="text-center py-12">
                             <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
-                            <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加载经文中...</p>
+                            <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">{t('home.loadingVerses')}</p>
                         </div>
                     ) : selectedBook && selectedChapter === null ? (
                         // 选择了书卷但未选择章节，显示章节选择器
@@ -1714,7 +1698,7 @@ export default function HomePage() {
                                     loading="lazy"
                                     className="w-16 h-16 mx-auto mb-4 opacity-60 dark:brightness-90 dark:contrast-125"
                                 />
-                                <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">请选择章节</h3>
+                                <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">{t('home.selectChapter')}</h3>
                                 <p className="text-bible-600 dark:text-bible-400 font-chinese">
                                     {selectedBook.name} 共有 {selectedBook.chapters} 章
                                 </p>
@@ -1769,8 +1753,8 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowAppPromo(false)}
                                 className="absolute top-2 right-2 p-1.5 hover:bg-bible-200/50 dark:hover:bg-gray-600 rounded-lg transition-colors z-10"
-                                title="关闭推广"
-                                aria-label="关闭心版推广"
+                                title={t('home.app.close')}
+                                aria-label={t('home.app.close')}
                             >
                                 <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             </button>
@@ -1787,7 +1771,7 @@ export default function HomePage() {
                                         <div className="w-14 h-14 md:w-16 md:h-16 bg-white dark:bg-gray-700 rounded-[18%] shadow-md flex items-center justify-center p-2.5 overflow-hidden">
                                             <Image
                                                 src="/xinban-logo.jpg"
-                                                alt="心版 App Logo"
+                                                alt={t('home.app.logoAlt')}
                                                 width={64}
                                                 height={64}
                                                 loading="lazy"
@@ -1800,7 +1784,7 @@ export default function HomePage() {
                                     {/* 内容 */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <h4 className="text-lg md:text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">心版</h4>
+                                            <h4 className="text-lg md:text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">{t('home.app.title')}</h4>
                                             <span className="px-1.5 py-0.5 bg-bible-500 text-white text-[10px] font-semibold rounded">iOS</span>
                                             <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                                                 <span>⭐</span>
@@ -1808,14 +1792,14 @@ export default function HomePage() {
                                             </div>
                                         </div>
                                         <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 font-chinese line-clamp-2">
-                                            將經文系在指頭上，刻在心版上 · 主屏幕小組件 · 雙語對照 · 免費下載
+                                            {t('home.app.desc')}
                                         </p>
                                     </div>
 
                                     {/* 按钮 */}
                                     <div className="flex-shrink-0 hidden md:block">
                                         <div className="px-4 py-2 bg-bible-600 hover:bg-bible-700 text-white text-sm font-semibold rounded-lg transition-colors font-chinese whitespace-nowrap">
-                                            前往 App Store →
+                                            {t('home.app.action')}
                                         </div>
                                     </div>
                                 </div>
@@ -1829,25 +1813,25 @@ export default function HomePage() {
                     {/* 全局统计栏 */}
                     <div className="border-b border-bible-200 dark:border-gray-700 bg-bible-50/30 dark:bg-gray-800/30">
                         <div className="max-w-7xl mx-auto px-4 py-4">
-                            <p className="text-center text-xs text-bible-600 dark:text-bible-400 mb-2 font-chinese">📊 全球使用數據</p>
+                            <p className="text-center text-xs text-bible-600 dark:text-bible-400 mb-2 font-chinese">{t('home.footer.statsTitle')}</p>
                             <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm font-chinese">
                                 <div className="flex items-center gap-1.5">
                                     <span>👥</span>
                                     <span className="font-bold text-bible-800 dark:text-bible-200">{globalStats.totalUsers.toLocaleString()}</span>
-                                    <span className="text-xs text-bible-600 dark:text-bible-400">位用戶</span>
+                                    <span className="text-xs text-bible-600 dark:text-bible-400">{t('home.footer.users')}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span>⭐</span>
                                     <span className="font-bold text-gold-600 dark:text-gold-400">{globalStats.totalFavorites.toLocaleString()}</span>
-                                    <span className="text-xs text-bible-600 dark:text-bible-400">次收藏</span>
+                                    <span className="text-xs text-bible-600 dark:text-bible-400">{t('home.footer.favorites')}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
-                        <p>願神的話語常在你心中 🙏</p>
-                        <p className="mt-2 text-xs">© 2025 你的話語 · Made with ❤️ for Christ</p>
+                        <p>{t('rankings.footer.blessing')}</p>
+                        <p className="mt-2 text-xs">{t('rankings.footer.copyright')}</p>
                     </div>
                 </footer>
             </main>

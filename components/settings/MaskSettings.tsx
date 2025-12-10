@@ -48,8 +48,8 @@ export default function MaskSettings() {
                 <button
                     onClick={() => setShowHelp(!showHelp)}
                     className="flex-shrink-0 w-7 h-7 flex items-center justify-center text-bible-500 hover:text-bible-700 dark:text-bible-400 dark:hover:text-bible-200 hover:bg-bible-100 dark:hover:bg-gray-700 rounded-full transition-colors touch-manipulation"
-                    title="查看提示模式說明"
-                    aria-label="查看提示模式說明"
+                    title={t('settings.mask.help.title')}
+                    aria-label={t('settings.mask.help.title')}
                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                 >
                     <HelpCircle className="w-4 h-4" />
@@ -68,7 +68,7 @@ export default function MaskSettings() {
             {maskCharsType === 'fixed' ? (
                 <Slider
                     id="mask-slider"
-                    label="顯示:"
+                    label={t('settings.mask.label.display')}
                     min={1}
                     max={10}
                     value={maskCharsFixed}
@@ -79,7 +79,7 @@ export default function MaskSettings() {
                 <div className="flex flex-row items-center gap-1.5 w-full sm:w-auto max-w-[320px]">
                     <Slider
                         id="mask-min"
-                        label="最少:"
+                        label={t('settings.mask.label.min')}
                         min={1}
                         max={10}
                         value={maskCharsMin}
@@ -90,7 +90,7 @@ export default function MaskSettings() {
                     <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese flex-shrink-0">-</span>
                     <Slider
                         id="mask-max"
-                        label="最多:"
+                        label={t('settings.mask.label.max')}
                         min={1}
                         max={10}
                         value={maskCharsMax}
@@ -99,7 +99,7 @@ export default function MaskSettings() {
                         showValue={false}
                     />
                     <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese font-semibold flex-shrink-0">
-                        {maskCharsMin}-{maskCharsMax}字
+                        {maskCharsMin}-{maskCharsMax} {t('settings.mask.unit.chars')}
                     </span>
                 </div>
             )}
@@ -108,11 +108,11 @@ export default function MaskSettings() {
             <button
                 onClick={resetToDefaults}
                 className="flex items-center gap-1 px-2.5 py-2 text-xs text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors touch-manipulation border border-bible-200 dark:border-gray-700"
-                title="恢復默認設置"
-                aria-label="恢復默認設置"
+                title={t('settings.mask.resetFull')}
+                aria-label={t('settings.mask.resetFull')}
             >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline font-chinese">恢復默認</span>
+                <span className="hidden sm:inline font-chinese">{t('settings.mask.reset')}</span>
             </button>
 
             {/* 帮助提示框 */}
@@ -140,14 +140,14 @@ export default function MaskSettings() {
                                 <div className="flex items-center gap-2">
                                     <span className="text-xl">📖</span>
                                     <h3 className="text-base font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                                        提示模式說明
+                                        {t('settings.mask.help.title')}
                                     </h3>
                                 </div>
                                 <button
                                     onClick={() => setShowHelp(false)}
                                     className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:bg-bible-100 dark:hover:bg-gray-700 rounded-full transition-colors touch-manipulation"
                                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                    aria-label="關閉"
+                                    aria-label={t('settings.mask.help.close')}
                                 >
                                     <X className="w-5 h-5 text-bible-600 dark:text-bible-400" />
                                 </button>
@@ -158,26 +158,26 @@ export default function MaskSettings() {
                                 {/* 每句提示 */}
                                 <div className="p-2.5 sm:p-3 bg-bible-50 dark:bg-gray-700 rounded-lg">
                                     <p className="font-semibold text-bible-800 dark:text-bible-200 mb-1.5 sm:mb-2 text-sm">
-                                        • 每句提示
+                                        {t('settings.mask.help.mode1.title')}
                                     </p>
                                     <p className="text-xs mb-1.5 sm:mb-2 text-bible-600 dark:text-bible-400">
-                                        在每個句子開頭顯示提示字
+                                        {t('settings.mask.help.mode1.desc')}
                                     </p>
                                     <div className="p-1.5 sm:p-2 bg-white dark:bg-gray-800 rounded border border-bible-200 dark:border-gray-600 font-chinese text-xs">
-                                        <p>這律██，總要████（每句都有提示）</p>
+                                        <p>{t('settings.mask.help.mode1.example')}</p>
                                     </div>
                                 </div>
 
                                 {/* 开头提示 */}
                                 <div className="p-2.5 sm:p-3 bg-bible-50 dark:bg-gray-700 rounded-lg">
                                     <p className="font-semibold text-bible-800 dark:text-bible-200 mb-1.5 sm:mb-2 text-sm">
-                                        • 開頭提示
+                                        {t('settings.mask.help.mode2.title')}
                                     </p>
                                     <p className="text-xs mb-1.5 sm:mb-2 text-bible-600 dark:text-bible-400">
-                                        只在全文開頭顯示提示字
+                                        {t('settings.mask.help.mode2.desc')}
                                     </p>
                                     <div className="p-1.5 sm:p-2 bg-white dark:bg-gray-800 rounded border border-bible-200 dark:border-gray-600 font-chinese text-xs">
-                                        <p>這律██████████（只有開頭有提示）</p>
+                                        <p>{t('settings.mask.help.mode2.example')}</p>
                                     </div>
                                 </div>
 
@@ -185,9 +185,8 @@ export default function MaskSettings() {
                                 <div className="flex items-start gap-2 p-2.5 sm:p-3 bg-gold-50 dark:bg-gray-700 rounded-lg border border-gold-200 dark:border-gold-600">
                                     <span className="text-sm sm:text-base">💡</span>
                                     <p className="text-xs text-bible-700 dark:text-bible-300">
-                                        <span className="font-semibold">建議：</span>
-                                        初學者推薦「每句提示」，更容易記憶；
-                                        熟練後可使用「開頭提示」增加挑戰。
+                                        <span className="font-semibold">{t('settings.mask.help.tip.label')}</span>
+                                        {t('settings.mask.help.tip.text')}
                                     </p>
                                 </div>
                             </div>

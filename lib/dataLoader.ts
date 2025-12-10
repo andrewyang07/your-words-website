@@ -26,7 +26,7 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
         }
 
         PRESET_VERSE_REFERENCES.forEach((ref, index) => {
-            let bookKey = ref.book;
+            let bookKey: string = ref.book;
             if (language === 'en' && bookMapping[ref.book]) {
                 bookKey = bookMapping[ref.book];
             }

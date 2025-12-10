@@ -6,6 +6,7 @@ import { X, Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { getChapter, getBookMetadata } from '@/lib/verseLoader';
+import { useTranslation } from '@/lib/i18n';
 
 interface ChapterViewerProps {
     isOpen: boolean;
@@ -17,6 +18,7 @@ interface ChapterViewerProps {
 }
 
 export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsertVerses, onChapterChange }: ChapterViewerProps) {
+    const { t, language } = useTranslation();
     const [verses, setVerses] = useState<Record<number, string>>({});
     const [loading, setLoading] = useState(false);
     const [isInserting, setIsInserting] = useState(false);
@@ -59,7 +61,10 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
         getBookMetadata(currentBook)
             .then((bookData) => {
                 if (bookData) {
-                    setBookDisplayName(bookData.nameTraditional || currentBook);
+                    let name = bookData.nameTraditional;
+                    if (language === 'simplified') name = bookData.nameSimplified;
+                    else if (language === 'en') name = bookData.nameEnglish;
+                    setBookDisplayName(name || bookData.nameTraditional || currentBook);
                     setMaxChapter(bookData.chapters || 1);
                 } else {
                     // fallback 到 currentBook
@@ -82,7 +87,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                 console.error('Error loading chapter:', error);
                 setLoading(false);
             });
-    }, [isOpen, currentBook, currentChapter]);
+    }, [isOpen, currentBook, currentChapter, language]);
 
     // ESC 键关闭
     useEffect(() => {
@@ -203,6 +208,13 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
     const canGoPrev = currentChapter > 1 || allBooks.findIndex((b) => b.key === currentBook) > 0;
     const canGoNext = currentChapter < maxChapter || allBooks.findIndex((b) => b.key === currentBook) < allBooks.length - 1;
 
+    // Helper to get localized book name
+    const getLocalizedBookName = (book: any) => {
+        if (language === 'simplified') return book.nameSimplified;
+        if (language === 'en') return book.nameEnglish;
+        return book.nameTraditional;
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -244,7 +256,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                                 }`
                                                             }
                                                         >
-                                                            {book.nameTraditional}
+                                                            {getLocalizedBookName(book)}
                                                         </Listbox.Option>
                                                     ))}
                                                 </Listbox.Options>
@@ -256,7 +268,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                     <Listbox value={currentChapter} onChange={handleChapterChange}>
                                         <div className="relative">
                                             <Listbox.Button className="min-h-[44px] min-w-[60px] px-3 py-2 bg-white dark:bg-gray-700 border border-bible-300 dark:border-gray-600 rounded-lg text-sm md:text-base font-chinese text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-600 transition-colors touch-manipulation">
-                                                第 {currentChapter} 章
+                                                {t('note.viewer.chapterPrefix')} {currentChapter} {t('note.viewer.chapterSuffix')}
                                             </Listbox.Button>
                                             <Transition
                                                 as={Fragment}
@@ -277,7 +289,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                                 }`
                                                             }
                                                         >
-                                                            第 {ch} 章
+                                                            {t('note.viewer.chapterPrefix')} {ch} {t('note.viewer.chapterSuffix')}
                                                         </Listbox.Option>
                                                     ))}
                                                 </Listbox.Options>
@@ -291,8 +303,8 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                         disabled={!canGoPrev}
                                         className="min-h-[44px] min-w-[44px] p-2 bg-bible-100 hover:bg-bible-200 disabled:bg-gray-200 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600 dark:disabled:bg-gray-800 rounded-lg transition-colors touch-manipulation"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        title="上一章"
-                                        aria-label="上一章"
+                                        title={t('note.viewer.prev')}
+                                        aria-label={t('note.viewer.prev')}
                                     >
                                         <ChevronLeft className="w-5 h-5 text-bible-700 dark:text-bible-300" />
                                     </button>
@@ -301,8 +313,8 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                         disabled={!canGoNext}
                                         className="min-h-[44px] min-w-[44px] p-2 bg-bible-100 hover:bg-bible-200 disabled:bg-gray-200 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600 dark:disabled:bg-gray-800 rounded-lg transition-colors touch-manipulation"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        title="下一章"
-                                        aria-label="下一章"
+                                        title={t('note.viewer.next')}
+                                        aria-label={t('note.viewer.next')}
                                     >
                                         <ChevronRight className="w-5 h-5 text-bible-700 dark:text-bible-300" />
                                     </button>
@@ -312,14 +324,14 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                     onClick={onClose}
                                     className="min-h-[44px] min-w-[44px] p-2 hover:bg-bible-200 dark:hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
                                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                    title="關閉"
-                                    aria-label="關閉章節查看器"
+                                    title={t('note.viewer.close')}
+                                    aria-label={t('note.viewer.close')}
                                 >
                                     <X className="w-6 h-6 text-bible-600 dark:text-bible-400" />
                                 </button>
                             </div>
 
-                            <p className="text-xs md:text-sm text-bible-600 dark:text-bible-400 font-chinese">{Object.keys(verses).length} 節經文</p>
+                            <p className="text-xs md:text-sm text-bible-600 dark:text-bible-400 font-chinese">{Object.keys(verses).length} {t('note.viewer.verseCountSuffix')}</p>
                         </div>
 
                         {/* 内容区域 */}
@@ -327,7 +339,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                             {loading ? (
                                 <div className="flex items-center justify-center py-12">
                                     <Loader2 className="w-8 h-8 animate-spin text-bible-600 dark:text-bible-400" />
-                                    <span className="ml-3 text-bible-600 dark:text-bible-400 font-chinese text-sm md:text-base">加載中...</span>
+                                    <span className="ml-3 text-bible-600 dark:text-bible-400 font-chinese text-sm md:text-base">{t('note.viewer.loading')}</span>
                                 </div>
                             ) : (
                                 <div className="space-y-2">
@@ -362,7 +374,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                             checked={isSelected}
                                                             onChange={() => {}}
                                                             className="mt-1 w-5 h-5 md:w-4 md:h-4 rounded border-bible-300 text-bible-500 focus:ring-bible-500 pointer-events-none"
-                                                            aria-label={`選擇第 ${verseNum} 節`}
+                                                            aria-label={`${t('note.viewer.selectHint')} ${verseNum}`}
                                                         />
 
                                                         {/* 节数标记 */}
@@ -385,11 +397,11 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                             disabled={isInserting}
                                                             className="flex-shrink-0 min-h-[44px] min-w-[44px] md:min-w-0 md:px-3 py-2 bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 text-white rounded-lg transition-colors shadow-sm touch-manipulation flex items-center justify-center gap-1"
                                                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                                            title="插入此節"
-                                                            aria-label="插入此節"
+                                                            title={t('note.viewer.insertSingle')}
+                                                            aria-label={t('note.viewer.insertSingle')}
                                                         >
                                                             <Plus className="w-4 h-4 md:w-5 md:h-5" />
-                                                            <span className="hidden md:inline text-xs font-chinese">插入</span>
+                                                            <span className="hidden md:inline text-xs font-chinese">{t('note.viewer.insert')}</span>
                                                         </button>
                                                     </div>
                                                 </motion.div>
@@ -403,7 +415,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                         <div className="min-h-[52px] p-2.5 md:p-3 border-t border-bible-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between gap-3">
                             {/* 左侧：选择提示 */}
                             <div className="text-xs md:text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                {selectedVerses.size > 0 ? `已選 ${selectedVerses.size} 節` : '點擊 ☑️ 多選'}
+                                {selectedVerses.size > 0 ? t('note.viewer.selectedCount').replace('{count}', selectedVerses.size.toString()) : t('note.viewer.selectHint')}
                             </div>
 
                             {/* 右侧：操作按钮 */}
@@ -415,7 +427,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                             className="min-h-[44px] px-3 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-bible-700 dark:text-bible-300 rounded-lg transition-colors font-chinese text-xs md:text-sm touch-manipulation"
                                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                         >
-                                            取消
+                                            {t('note.viewer.cancel')}
                                         </button>
                                         <button
                                             onClick={handleInsertSelected}
@@ -424,7 +436,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                         >
                                             {isInserting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                                            <span>插入選中 ({selectedVerses.size})</span>
+                                            <span>{t('note.viewer.insertSelected').replace('{count}', selectedVerses.size.toString())}</span>
                                         </button>
                                     </>
                                 )}

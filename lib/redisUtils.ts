@@ -27,6 +27,11 @@ export async function safeRedisGet(key: string, defaultValue: string = '0'): Pro
         const value = await redis.get(key);
         return value?.toString() || defaultValue;
     } catch (error) {
+        // Don't log error if it's just missing credentials (expected in local dev)
+        // Check string inclusion to be safe against different error object shapes
+        if (String(error).includes('Redis credentials not configured')) {
+            return defaultValue;
+        }
         console.error(`Redis GET failed for key ${key}:`, error);
         return defaultValue;
     }
@@ -43,6 +48,9 @@ export async function safeRedisIncr(key: string): Promise<boolean> {
         await redis.incr(key);
         return true;
     } catch (error) {
+        if (String(error).includes('Redis credentials not configured')) {
+            return false;
+        }
         console.error(`Redis INCR failed for key ${key}:`, error);
         return false;
     }
@@ -61,6 +69,9 @@ export async function safeRedisMget(keys: string[]): Promise<(string | null)[]> 
         const values = await redis.mget(...keys);
         return values.map((v) => v?.toString() || null);
     } catch (error) {
+        if (String(error).includes('Redis credentials not configured')) {
+            return keys.map(() => null);
+        }
         console.error(`Redis MGET failed:`, error);
         return keys.map(() => null);
     }
@@ -98,6 +109,9 @@ export async function safeRedisScan(pattern: string, maxScans: number = 100): Pr
 
         return allKeys;
     } catch (error) {
+        if (String(error).includes('Redis credentials not configured')) {
+            return [];
+        }
         console.error(`Redis SCAN failed for pattern ${pattern}:`, error);
         return [];
     }

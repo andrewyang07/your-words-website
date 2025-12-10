@@ -5,6 +5,7 @@ import { BookOpen, Loader2, Sparkles } from 'lucide-react';
 import { VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import VerseCard from './VerseCard';
+import { useTranslation } from '@/lib/i18n';
 
 interface VerseWithText extends VerseReference {
     text: string | null;
@@ -23,6 +24,7 @@ export default function VerseReferenceList({
     onExpandAll,
     isExpanding = false,
 }: VerseReferenceListProps) {
+    const { t } = useTranslation();
     const [versesWithText, setVersesWithText] = useState<VerseWithText[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -55,7 +57,7 @@ export default function VerseReferenceList({
                 <div className="flex items-center justify-center py-4 md:py-6">
                     <Loader2 className="w-6 h-6 animate-spin text-bible-600 dark:text-bible-400" />
                     <span className="ml-2 text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                        加載經文中...
+                        {t('note.refList.loading')}
                     </span>
                 </div>
             </div>
@@ -68,13 +70,13 @@ export default function VerseReferenceList({
                 <div className="flex items-center gap-2 mb-2 md:mb-3">
                     <BookOpen className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     <h3 className="font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                        引用的經文
+                        {t('note.refList.title')}
                     </h3>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4 md:py-6 font-chinese">
-                    尚未引用任何經文
+                    {t('note.refList.empty.title')}
                     <br />
-                    <span className="text-xs">試著輸入「约3:16」或「马太福音5:3」</span>
+                    <span className="text-xs">{t('note.refList.empty.desc')}</span>
                 </p>
             </div>
         );
@@ -87,7 +89,7 @@ export default function VerseReferenceList({
                 <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     <h3 className="font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                        引用的經文
+                        {t('note.refList.title')}
                         <span className="ml-2 text-sm font-normal text-bible-500 dark:text-bible-400">
                             ({versesWithText.length})
                         </span>
@@ -99,17 +101,17 @@ export default function VerseReferenceList({
                     onClick={onExpandAll}
                     disabled={isExpanding}
                     className="flex items-center gap-1 px-3 py-1.5 text-xs bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 text-white rounded-lg transition-colors touch-manipulation min-h-[32px]"
-                    title="將所有經文完整內容插入筆記"
+                    title={t('note.refList.expandAll.title')}
                 >
                     {isExpanding ? (
                         <>
                             <Loader2 className="w-3 h-3 animate-spin" />
-                            <span className="font-chinese">展開中...</span>
+                            <span className="font-chinese">{t('note.refList.expanding')}</span>
                         </>
                     ) : (
                         <>
                             <Sparkles className="w-3 h-3" />
-                            <span className="font-chinese">展開所有經文</span>
+                            <span className="font-chinese">{t('note.refList.expandAll')}</span>
                         </>
                     )}
                 </button>
@@ -132,4 +134,3 @@ export default function VerseReferenceList({
         </div>
     );
 }
-

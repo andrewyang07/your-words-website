@@ -3,6 +3,7 @@
 ## 项目概述
 这是一个帮助用户背诵圣经经文的前端应用，使用 Next.js + React + Tailwind CSS + Framer Motion + Zustand 技术栈。重点关注代码可读性和维护性。
 
+
 ## 核心开发原则
 
 ### 1. 代码简洁性原则
@@ -250,3 +251,14 @@ const LazyComponent = lazy(() => import('./HeavyComponent'));
 
 **记住：简单就是美！** 代码应该像说话一样清晰，让6个月后的自己也能轻松理解。
 
+## 国际化 (i18n) 开发规范
+- **❌ 严禁使用硬编码字符串**：所有用户可见的文本必须使用 `lib/i18n.ts` 中的翻译。
+- **✅ 立即添加翻译**：在添加新功能或文本时，必须同时在 `lib/i18n.ts` 的 `traditional`, `simplified`, `en` 三个部分添加对应的翻译键值。
+- **✅ 使用 useTranslation Hook**：
+  ```typescript
+  import { useTranslation } from '@/lib/i18n';
+  // Inside component
+  const { t } = useTranslation();
+  return <div>{t('common.hello')}</div>;
+  ```
+- **✅ 保持键名结构清晰**：使用点号分隔的层级结构，如 `feature.subfeature.action` (e.g., `note.toolbar.bold`).

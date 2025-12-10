@@ -4,7 +4,18 @@ import { useEffect } from 'react';
 import { useAppStore } from '@/stores/useAppStore';
 
 export default function LanguageInit() {
-    const { hasInitializedLanguage, setLanguage, setHasInitializedLanguage } = useAppStore();
+    const { language, hasInitializedLanguage, setLanguage, setHasInitializedLanguage } = useAppStore();
+
+    // Sync html lang attribute
+    useEffect(() => {
+        if (language === 'en') {
+            document.documentElement.lang = 'en';
+        } else if (language === 'simplified') {
+            document.documentElement.lang = 'zh-CN';
+        } else {
+            document.documentElement.lang = 'zh-TW';
+        }
+    }, [language]);
 
     useEffect(() => {
         // Only run if not initialized

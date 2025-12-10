@@ -5,6 +5,8 @@ import { Bold, Italic, Heading, Quote, List, ListOrdered, Link as LinkIcon, Eye,
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import VerseAutocomplete from './VerseAutocomplete';
+import { useTranslation } from '@/lib/i18n';
+import { useAppStore } from '@/stores/useAppStore';
 
 interface VerseSuggestion {
     display: string;
@@ -22,6 +24,8 @@ interface MarkdownEditorProps {
 }
 
 export default function MarkdownEditor({ value, onChange, placeholder, onExpandVerse }: MarkdownEditorProps) {
+    const { t } = useTranslation();
+    const { language } = useAppStore();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [showPreview, setShowPreview] = useState(false);
     const [suggestions, setSuggestions] = useState<VerseSuggestion[]>([]);
@@ -57,34 +61,52 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
         // 2. "路加福音2:" -> bookName="路加福音", chapter="2", verse=""
         // 3. "路加福音" -> bookName="路加福音", chapter="", verse=""
         // 4. "路1:1" -> bookName="路", chapter="1", verse="1" (模糊匹配)
-        const match = textBeforeCursor.match(/([\u4e00-\u9fa5]+)(\d+)?:?(\d+)?$/);
+        // 5. "Matt 1:1" -> bookName="Matt", chapter="1", verse="1"
+        // 支持中英文匹配
+        const match = textBeforeCursor.match(/([a-zA-Z\u4e00-\u9fa5\s]+)(\d+)?:?(\d+)?$/);
 
         if (!match) {
             setSuggestions([]);
             return;
         }
 
-        const [fullMatch, bookName, chapterNum, verseNum] = match;
+        const [fullMatch, bookNameRaw, chapterNum, verseNum] = match;
+        const bookName = bookNameRaw.trim();
+
+        if (!bookName) {
+            setSuggestions([]);
+            return;
+        }
 
         // 查找匹配的书卷 (支持模糊搜索)
         const matchedBooks = bibleBooks.filter((book: any) => {
             const traditional = book.nameTraditional || '';
             const simplified = book.nameSimplified || '';
+            const english = book.nameEnglish || '';
             const key = book.key || '';
             
             // 精确匹配
-            if (traditional.includes(bookName) || simplified.includes(bookName) || key.includes(bookName)) {
+            if (traditional.includes(bookName) || 
+                simplified.includes(bookName) || 
+                english.toLowerCase().includes(bookName.toLowerCase()) || 
+                key.toLowerCase().includes(bookName.toLowerCase())) {
                 return true;
             }
             
             // 模糊匹配：检查书名的第一个字符
             if (bookName.length === 1) {
-                return traditional.startsWith(bookName) || simplified.startsWith(bookName) || key.startsWith(bookName);
+                return traditional.startsWith(bookName) || 
+                       simplified.startsWith(bookName) || 
+                       english.toLowerCase().startsWith(bookName.toLowerCase()) || 
+                       key.toLowerCase().startsWith(bookName.toLowerCase());
             }
             
             // 模糊匹配：检查书名是否包含在完整书名中
             if (bookName.length >= 2) {
-                return traditional.includes(bookName) || simplified.includes(bookName) || key.includes(bookName);
+                return traditional.includes(bookName) || 
+                       simplified.includes(bookName) || 
+                       english.toLowerCase().includes(bookName.toLowerCase()) || 
+                       key.toLowerCase().includes(bookName.toLowerCase());
             }
             
             return false;
@@ -98,7 +120,16 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
         const newSuggestions: VerseSuggestion[] = [];
 
         matchedBooks.forEach((book: any) => {
-            const bookDisplayName = book.nameTraditional || book.key;
+            // 根据当前语言显示书卷名
+            let bookDisplayName = book.nameTraditional;
+            if (language === 'simplified') {
+                bookDisplayName = book.nameSimplified;
+            } else if (language === 'en') {
+                bookDisplayName = book.nameEnglish;
+            }
+            // Fallback
+            bookDisplayName = bookDisplayName || book.key;
+
             const bookKey = book.key;
 
             if (chapterNum) {
@@ -111,7 +142,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                         for (let v = startVerse; v <= startVerse + 19; v++) {
                             newSuggestions.push({
                                 display: `${bookDisplayName} ${chapter}:${v}`,
-                                insert: `${bookKey}${chapter}:${v}`,
+                                insert: `${bookDisplayName}${chapter}:${v}`, // 使用显示的语言插入
                                 book: bookKey,
                                 chapter,
                                 verse: v,
@@ -122,7 +153,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                         for (let v = 1; v <= 20; v++) {
                             newSuggestions.push({
                                 display: `${bookDisplayName} ${chapter}:${v}`,
-                                insert: `${bookKey}${chapter}:${v}`,
+                                insert: `${bookDisplayName}${chapter}:${v}`,
                                 book: bookKey,
                                 chapter,
                                 verse: v,
@@ -136,7 +167,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                 for (let v = 1; v <= 20; v++) {
                     newSuggestions.push({
                         display: `${bookDisplayName} ${chapter}:${v}`,
-                        insert: `${bookKey}${chapter}:${v}`,
+                        insert: `${bookDisplayName}${chapter}:${v}`,
                         book: bookKey,
                         chapter,
                         verse: v,
@@ -184,7 +215,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
 
             setAutocompletePosition({ top, left });
         }
-    }, [bibleBooks, value]);
+    }, [bibleBooks, value, language]);
 
     // 监听输入变化
     useEffect(() => {
@@ -221,8 +252,8 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
             const selectionStart = textarea.selectionStart;
             const textBeforeCursor = value.substring(0, selectionStart);
 
-            // 找到要替换的文本起始位置
-            const match = textBeforeCursor.match(/([\u4e00-\u9fa5]+)(\d+)?:?(\d+)?$/);
+            // 找到要替换的文本起始位置 (Updated regex to match english as well)
+            const match = textBeforeCursor.match(/([a-zA-Z\u4e00-\u9fa5\s]+)(\d+)?:?(\d+)?$/);
             if (!match) return;
 
             const matchStart = selectionStart - match[0].length;
@@ -289,49 +320,49 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                     <button
                         onClick={() => insertMarkdown('**', '**')}
                         className="p-2 hover:bg-bible-100 dark:hover:bg-gray-800 rounded transition-colors"
-                        title="粗体"
+                        title={t('note.toolbar.bold')}
                     >
                         <Bold className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     </button>
                     <button
                         onClick={() => insertMarkdown('*', '*')}
                         className="p-2 hover:bg-bible-100 dark:hover:bg-gray-800 rounded transition-colors"
-                        title="斜体"
+                        title={t('note.toolbar.italic')}
                     >
                         <Italic className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     </button>
                     <button
                         onClick={() => insertMarkdown('### ')}
                         className="p-2 hover:bg-bible-100 dark:hover:bg-gray-800 rounded transition-colors"
-                        title="标题"
+                        title={t('note.toolbar.heading')}
                     >
                         <Heading className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     </button>
                     <button
                         onClick={() => insertMarkdown('> ')}
                         className="p-2 hover:bg-bible-100 dark:hover:bg-gray-800 rounded transition-colors"
-                        title="引用"
+                        title={t('note.toolbar.quote')}
                     >
                         <Quote className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     </button>
                     <button
                         onClick={() => insertMarkdown('- ')}
                         className="p-2 hover:bg-bible-100 dark:hover:bg-gray-800 rounded transition-colors"
-                        title="无序列表"
+                        title={t('note.toolbar.list')}
                     >
                         <List className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     </button>
                     <button
                         onClick={() => insertMarkdown('1. ')}
                         className="p-2 hover:bg-bible-100 dark:hover:bg-gray-800 rounded transition-colors"
-                        title="有序列表"
+                        title={t('note.toolbar.orderedList')}
                     >
                         <ListOrdered className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     </button>
                     <button
                         onClick={() => insertMarkdown('[', '](url)')}
                         className="p-2 hover:bg-bible-100 dark:hover:bg-gray-800 rounded transition-colors"
-                        title="链接"
+                        title={t('note.toolbar.link')}
                     >
                         <LinkIcon className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     </button>
@@ -340,17 +371,17 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                 <button
                     onClick={() => setShowPreview(!showPreview)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-bible-100 dark:bg-gray-800 hover:bg-bible-200 dark:hover:bg-gray-700 rounded transition-colors"
-                    title={showPreview ? '编辑' : '预览'}
+                    title={showPreview ? t('note.tab.edit') : t('note.tab.preview')}
                 >
                     {showPreview ? (
                         <>
                             <EyeOff className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                            <span className="text-xs font-chinese text-bible-700 dark:text-bible-300">編輯</span>
+                            <span className="text-xs font-chinese text-bible-700 dark:text-bible-300">{t('note.tab.edit')}</span>
                         </>
                     ) : (
                         <>
                             <Eye className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                            <span className="text-xs font-chinese text-bible-700 dark:text-bible-300">預覽</span>
+                            <span className="text-xs font-chinese text-bible-700 dark:text-bible-300">{t('note.tab.preview')}</span>
                         </>
                     )}
                 </button>

@@ -343,7 +343,7 @@ export default function RankingsPage() {
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
-                        <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加載排行榜中...</p>
+                        <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">{t('rankings.loading.text')}</p>
                     </div>
                 ) : error ? (
                     <div className="text-center py-12">
@@ -352,25 +352,25 @@ export default function RankingsPage() {
                             href="/"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors font-chinese"
                         >
-                            返回主頁
+                            {t('common.backHome')}
                         </Link>
                     </div>
                 ) : filteredRankings.length > 0 ? (
                     <RankingsList rankings={filteredRankings} />
                 ) : rankings.length > 0 ? (
                     <div className="text-center py-12">
-                        <p className="text-bible-500 dark:text-bible-400 font-chinese mb-2">該篩選條件下沒有經文</p>
+                        <p className="text-bible-500 dark:text-bible-400 font-chinese mb-2">{t('rankings.empty.filter')}</p>
                         <button
                             onClick={() => setBookFilter('all')}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors font-chinese"
                         >
-                            查看全部
+                            {t('rankings.viewAll')}
                         </button>
                     </div>
                 ) : (
                     <div className="text-center py-12">
-                        <p className="text-bible-500 dark:text-bible-400 font-chinese mb-2">暫無排行榜數據</p>
-                        <p className="text-sm text-bible-400 dark:text-bible-500 font-chinese">開始收藏經文吧！</p>
+                        <p className="text-bible-500 dark:text-bible-400 font-chinese mb-2">{t('rankings.noData')}</p>
+                        <p className="text-sm text-bible-400 dark:text-bible-500 font-chinese">{t('rankings.startFavorites')}</p>
                     </div>
                 )}
             </main>
@@ -378,8 +378,8 @@ export default function RankingsPage() {
             {/* 页脚 */}
             <footer className="border-t border-bible-200 dark:border-gray-700 mt-12">
                 <div className="max-w-4xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
-                    <p>願神的話語常在你心中 🙏</p>
-                    <p className="mt-2 text-xs">© 2025 你的話語 · Made with ❤️ for Christ</p>
+                    <p>{t('rankings.footer.blessing')}</p>
+                    <p className="mt-2 text-xs">{t('rankings.footer.copyright')}</p>
                 </div>
             </footer>
         </div>
