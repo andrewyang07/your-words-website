@@ -81,15 +81,25 @@ const BOOK_ABBREVIATIONS: Record<string, string> = {
     '启': '启示录',
 };
 
-// 构建正则表达式（支持简称和全称）
-function buildBookPattern(): string {
+// 构建正则表达式（支持简称和全称）——缓存结果避免重复构建
+let cachedVersePattern: RegExp | null = null;
+
+function getVersePattern(): RegExp {
+    if (cachedVersePattern) {
+        return new RegExp(cachedVersePattern.source, cachedVersePattern.flags);
+    }
     const allBooks = [
         ...Object.keys(BOOK_ABBREVIATIONS),
         ...Object.values(BOOK_ABBREVIATIONS),
     ];
     // 按长度降序排序，确保长的先匹配（如"撒母耳记上"先于"撒上"）
     allBooks.sort((a, b) => b.length - a.length);
-    return allBooks.join('|');
+    const bookPattern = allBooks.join('|');
+    cachedVersePattern = new RegExp(
+        `(${bookPattern})\\s*(\\d{1,3})[:：](\\d{1,3})(?:[-\\-到至](\\d{1,3}))?`,
+        'g'
+    );
+    return new RegExp(cachedVersePattern.source, cachedVersePattern.flags);
 }
 
 /**
@@ -97,14 +107,10 @@ function buildBookPattern(): string {
  */
 export function parseVerseReferences(text: string): VerseReference[] {
     const refs: VerseReference[] = [];
-    const bookPattern = buildBookPattern();
 
     // 匹配格式：书卷名 + 章节 + : + 经文节数（可选范围）
     // 例如：约3:16, 约翰福音3:16, 创1:1-3
-    const pattern = new RegExp(
-        `(${bookPattern})\\s*(\\d{1,3})[:：](\\d{1,3})(?:[-\\-到至](\\d{1,3}))?`,
-        'g'
-    );
+    const pattern = getVersePattern();
 
     let match;
     while ((match = pattern.exec(text)) !== null) {

@@ -5,6 +5,7 @@ import { Bold, Italic, Heading, Quote, List, ListOrdered, Link as LinkIcon, Eye,
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import VerseAutocomplete from './VerseAutocomplete';
+import { getChapterVerseCount } from '@/lib/verseLoader';
 
 interface VerseSuggestion {
     display: string;
@@ -42,8 +43,11 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
             });
     }, []);
 
+    // 经文节数缓存：bookKey-chapter → verseCount
+    const verseCountCache = useRef<Map<string, number>>(new Map());
+
     // 检测经文引用模式并生成建议
-    const updateSuggestions = useCallback(() => {
+    const updateSuggestions = useCallback(async () => {
         const textarea = textareaRef.current;
         if (!textarea || !bibleBooks) {
             return;
@@ -52,11 +56,6 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
         const selectionStart = textarea.selectionStart;
         const textBeforeCursor = value.substring(0, selectionStart);
 
-        // 匹配模式: 
-        // 1. "路加福音2:1" -> bookName="路加福音", chapter="2", verse="1"
-        // 2. "路加福音2:" -> bookName="路加福音", chapter="2", verse=""
-        // 3. "路加福音" -> bookName="路加福音", chapter="", verse=""
-        // 4. "路1:1" -> bookName="路", chapter="1", verse="1" (模糊匹配)
         const match = textBeforeCursor.match(/([\u4e00-\u9fa5]+)(\d+)?:?(\d+)?$/);
 
         if (!match) {
@@ -64,29 +63,26 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
             return;
         }
 
-        const [fullMatch, bookName, chapterNum, verseNum] = match;
+        const [, bookName, chapterNum, verseNum] = match;
 
         // 查找匹配的书卷 (支持模糊搜索)
         const matchedBooks = bibleBooks.filter((book: any) => {
             const traditional = book.nameTraditional || '';
             const simplified = book.nameSimplified || '';
             const key = book.key || '';
-            
-            // 精确匹配
+
             if (traditional.includes(bookName) || simplified.includes(bookName) || key.includes(bookName)) {
                 return true;
             }
-            
-            // 模糊匹配：检查书名的第一个字符
+
             if (bookName.length === 1) {
                 return traditional.startsWith(bookName) || simplified.startsWith(bookName) || key.startsWith(bookName);
             }
-            
-            // 模糊匹配：检查书名是否包含在完整书名中
+
             if (bookName.length >= 2) {
                 return traditional.includes(bookName) || simplified.includes(bookName) || key.includes(bookName);
             }
-            
+
             return false;
         });
 
@@ -97,18 +93,29 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
 
         const newSuggestions: VerseSuggestion[] = [];
 
-        matchedBooks.forEach((book: any) => {
+        // 辅助函数：获取某章的真实节数（带缓存）
+        const getRealVerseCount = async (bookKey: string, chapter: number): Promise<number> => {
+            const cacheKey = `${bookKey}-${chapter}`;
+            const cached = verseCountCache.current.get(cacheKey);
+            if (cached !== undefined) return cached;
+            const count = await getChapterVerseCount(bookKey, chapter);
+            verseCountCache.current.set(cacheKey, count);
+            return count;
+        };
+
+        for (const book of matchedBooks) {
             const bookDisplayName = book.nameTraditional || book.key;
             const bookKey = book.key;
 
             if (chapterNum) {
-                // 如果输入了章节号
                 const chapter = parseInt(chapterNum, 10);
                 if (chapter >= 1 && chapter <= book.chapters) {
+                    const totalVerses = await getRealVerseCount(bookKey, chapter);
+                    const maxVerse = totalVerses || 20; // fallback
+
                     if (verseNum) {
-                        // 如果还输入了节数，从该节数开始推荐
                         const startVerse = parseInt(verseNum, 10);
-                        for (let v = startVerse; v <= startVerse + 19; v++) {
+                        for (let v = startVerse; v <= Math.min(startVerse + 19, maxVerse); v++) {
                             newSuggestions.push({
                                 display: `${bookDisplayName} ${chapter}:${v}`,
                                 insert: `${bookKey}${chapter}:${v}`,
@@ -118,8 +125,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                             });
                         }
                     } else {
-                        // 只输入了章节号，从第1节开始推荐
-                        for (let v = 1; v <= 20; v++) {
+                        for (let v = 1; v <= Math.min(20, maxVerse); v++) {
                             newSuggestions.push({
                                 display: `${bookDisplayName} ${chapter}:${v}`,
                                 insert: `${bookKey}${chapter}:${v}`,
@@ -131,9 +137,10 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                     }
                 }
             } else {
-                // 如果只输入了书卷名，默认显示第1章的经文（1-20节）
                 const chapter = 1;
-                for (let v = 1; v <= 20; v++) {
+                const totalVerses = await getRealVerseCount(bookKey, chapter);
+                const maxVerse = totalVerses || 20;
+                for (let v = 1; v <= Math.min(20, maxVerse); v++) {
                     newSuggestions.push({
                         display: `${bookDisplayName} ${chapter}:${v}`,
                         insert: `${bookKey}${chapter}:${v}`,
@@ -143,44 +150,38 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                     });
                 }
             }
-        });
+        }
 
-        // 限制显示数量
         const finalSuggestions = newSuggestions.slice(0, 20);
 
         setSuggestions(finalSuggestions);
         setSelectedSuggestionIndex(0);
 
-        // 计算 autocomplete 位置
+        // 计算 autocomplete 位置（考虑 textarea 滚动偏移）
         if (finalSuggestions.length > 0) {
-            // 获取光标在 textarea 中的位置
             const textareaRect = textarea.getBoundingClientRect();
             const textareaStyle = window.getComputedStyle(textarea);
 
-            // 计算字符宽度和行高
             const fontSize = parseInt(textareaStyle.fontSize, 10);
-            const lineHeight = fontSize * 1.2; // 假设行高是字体的1.2倍
-            const charWidth = fontSize * 0.6; // 中文字符宽度大约是字体的0.6倍
+            const lineHeight = fontSize * 1.2;
+            const charWidth = fontSize * 0.6;
 
-            // 获取光标位置
             const cursorPos = textarea.selectionStart;
-            const textBeforeCursor = value.substring(0, cursorPos);
+            const cursorText = value.substring(0, cursorPos);
 
-            // 计算光标所在的行和列
-            const lines = textBeforeCursor.split('\n');
+            const lines = cursorText.split('\n');
             const currentLineIndex = lines.length - 1;
             const currentLineText = lines[currentLineIndex];
 
-            // 计算光标在 textarea 中的相对位置
             const paddingTop = parseInt(textareaStyle.paddingTop, 10) || 0;
             const paddingLeft = parseInt(textareaStyle.paddingLeft, 10) || 0;
 
             const cursorX = paddingLeft + currentLineText.length * charWidth;
             const cursorY = paddingTop + (currentLineIndex + 1) * lineHeight;
 
-            // 转换为页面坐标
-            const top = textareaRect.top + cursorY + window.scrollY + 2;
-            const left = textareaRect.left + cursorX + window.scrollX;
+            // 减去 textarea 的滚动偏移量
+            const top = textareaRect.top + cursorY - textarea.scrollTop + window.scrollY + 2;
+            const left = textareaRect.left + cursorX - textarea.scrollLeft + window.scrollX;
 
             setAutocompletePosition({ top, left });
         }

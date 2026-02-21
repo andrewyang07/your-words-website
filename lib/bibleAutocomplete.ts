@@ -1,6 +1,7 @@
 // 圣经经文自动补全逻辑
 
 import { getStandardBookName } from './verseParser';
+import { getChapterVerseCount } from './verseLoader';
 
 export interface AutocompleteOption {
     label: string; // 显示文本
@@ -123,16 +124,16 @@ function suggestBooksWithChapters(
  * 建议章节内的经文节数
  * 例如：输入 "马太福音3" → 返回 ["马太福音3:1", "马太福音3:2", ...]
  */
-function suggestVersesForChapter(
+async function suggestVersesForChapter(
     book: Book,
     chapter: number,
     language: 'simplified' | 'traditional'
-): AutocompleteOption[] {
+): Promise<AutocompleteOption[]> {
     const bookName = language === 'simplified' ? book.nameSimplified : book.nameTraditional;
 
-    // 由于我们不知道每章有多少节，先假设最多 50 节
-    // 实际使用时可以从 CUVT_bible.json 动态加载
-    const maxVerses = 50;
+    // 从圣经数据获取真实节数
+    const realCount = await getChapterVerseCount(book.key, chapter);
+    const maxVerses = realCount || 20; // fallback
     const options: AutocompleteOption[] = [];
 
     for (let verse = 1; verse <= Math.min(maxVerses, 20); verse++) {

@@ -111,6 +111,23 @@ export async function getChapter(
 }
 
 /**
+ * 获取某章的经文节数
+ */
+export async function getChapterVerseCount(
+    book: string,
+    chapter: number
+): Promise<number> {
+    try {
+        const data = await loadFullBible();
+        const chapterData = data[book]?.[chapter];
+        if (!chapterData) return 0;
+        return Object.keys(chapterData).length;
+    } catch {
+        return 0;
+    }
+}
+
+/**
  * 预加载常用书卷（可选，用于性能优化）
  */
 export async function preloadCommonBooks(bookNames: string[]): Promise<void> {

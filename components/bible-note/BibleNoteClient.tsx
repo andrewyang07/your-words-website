@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search } from 'lucide-react';
@@ -39,6 +39,7 @@ export default function BibleNoteClient() {
     const [lastViewedBook, setLastViewedBook] = useState<string>('');
     const [lastViewedChapter, setLastViewedChapter] = useState<number>(1);
     const [showSaveIndicator, setShowSaveIndicator] = useState(false);
+    const contentLoadedRef = useRef(false);
 
     // 从 localStorage 恢复内容
     useEffect(() => {
@@ -46,6 +47,10 @@ export default function BibleNoteClient() {
         if (saved) {
             setContent(saved);
         }
+        // 标记初始加载完成，延迟一个 tick 避免首次 content 变化触发保存
+        requestAnimationFrame(() => {
+            contentLoadedRef.current = true;
+        });
     }, []);
 
     // 从 localStorage 恢复上次查看的章节
@@ -83,18 +88,23 @@ export default function BibleNoteClient() {
 
     // 自动保存到 localStorage（带保存提示）
     useEffect(() => {
+        // 跳过初始加载引起的变化
+        if (!contentLoadedRef.current) return;
+
         const timer = setTimeout(() => {
-            if (content) {
-                localStorage.setItem('bible-note-content', content);
-                setShowSaveIndicator(true);
-                
-                // 2秒后隐藏提示
-                setTimeout(() => setShowSaveIndicator(false), 2000);
-            }
+            localStorage.setItem('bible-note-content', content);
+            setShowSaveIndicator(true);
         }, 1000);
 
         return () => clearTimeout(timer);
     }, [content]);
+
+    // 保存提示自动隐藏
+    useEffect(() => {
+        if (!showSaveIndicator) return;
+        const timer = setTimeout(() => setShowSaveIndicator(false), 2000);
+        return () => clearTimeout(timer);
+    }, [showSaveIndicator]);
 
     // Toast 自动消失
     useEffect(() => {
@@ -167,7 +177,10 @@ export default function BibleNoteClient() {
 
     // 展开所有经文（跳过已展开的）
     const handleExpandAll = useCallback(async () => {
-        if (references.length === 0) {
+        // 使用全量引用（含重复），以正确处理每个出现位置
+        const allRefs = parseVerseReferences(content);
+
+        if (allRefs.length === 0) {
             showToast('⚠️ 未檢測到經文引用');
             return;
         }
@@ -175,29 +188,12 @@ export default function BibleNoteClient() {
         setIsExpanding(true);
 
         try {
-            // 检测已展开的经文（格式：> 约3:16: ...）
-            // 需要检查引用后面紧跟着换行和 > 引用块
-            const expandedRefs = new Set<string>();
-
-            // 遍历所有引用，检查其后面是否紧跟着展开的内容
-            references.forEach((ref) => {
-                // 查找引用在内容中的位置
+            // 逐个检查每个出现位置是否已展开
+            const toExpand = allRefs.filter((ref) => {
                 const refEnd = ref.position + ref.original.length;
-                // 获取引用后的内容（接下来的 200 个字符）
                 const afterRef = content.slice(refEnd, refEnd + 200);
-
-                // 检查是否紧跟着换行和 > 引用块，且包含相同的引用
-                // 格式：\n> 约3:16: 经文内容
-                const expandedPattern = new RegExp(`^\\s*\\n>\\s*${ref.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[:：]`, 'm');
-
-                if (expandedPattern.test(afterRef)) {
-                    expandedRefs.add(ref.original.trim());
-                }
-            });
-
-            // 过滤出未展开的经文
-            const toExpand = references.filter((ref) => {
-                return !expandedRefs.has(ref.original.trim());
+                const escaped = ref.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                return !new RegExp(`^\\s*\\n>\\s*${escaped}[:：]`, 'm').test(afterRef);
             });
 
             if (toExpand.length === 0) {
@@ -212,22 +208,18 @@ export default function BibleNoteClient() {
             let newContent = content;
 
             for (const ref of sortedRefs) {
-                // 获取经文内容
                 const text = await getVerseText(ref.book, ref.chapter, ref.startVerse);
 
                 if (text) {
-                    // 在引用后插入完整经文
                     const insertion = `\n> ${ref.original}: ${text}\n`;
                     const pos = ref.position + ref.original.length;
-
                     newContent = newContent.slice(0, pos) + insertion + newContent.slice(pos);
                 }
             }
 
             setContent(newContent);
 
-            // 给用户反馈
-            const skipped = references.length - toExpand.length;
+            const skipped = allRefs.length - toExpand.length;
             if (skipped > 0) {
                 showToast(`✅ 已展開 ${toExpand.length} 節，跳過 ${skipped} 節`);
             } else {
@@ -239,7 +231,7 @@ export default function BibleNoteClient() {
         } finally {
             setIsExpanding(false);
         }
-    }, [content, references, showToast]);
+    }, [content, showToast]);
 
     // 查看整章（打开浮动面板而不是跳转）
     const handleViewChapter = useCallback((book: string, chapter: number) => {
