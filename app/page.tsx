@@ -97,6 +97,9 @@ export default function HomePage() {
     // 侧边栏菜单显示状态
     const [showSideMenu, setShowSideMenu] = useState(false);
 
+    // 移动端搜索展开状态
+    const [showMobileSearch, setShowMobileSearch] = useState(false);
+
     // 搜索状态
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -833,348 +836,117 @@ export default function HomePage() {
 
     const hasActiveFilters = filterType !== 'all' || selectedBook !== null;
 
+    // Google-style: 是否处于"首页"模式（居中大搜索框）
+    const isHomePage = !selectedBook && filterType !== 'favorites'
+        && !searchQuery && !(showShareBanner && sharedVerses.length > 0);
+
     if (loading) return <LoadingSpinner />;
     if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-bible-50 to-bible-100 dark:from-gray-900 dark:to-gray-800">
+        <div className={`min-h-screen transition-colors duration-300 ${isHomePage ? 'bg-gradient-to-br from-blue-50 via-purple-50/30 to-amber-50/20 dark:bg-gray-950 dark:from-gray-950 dark:via-gray-950 dark:to-gray-950' : 'bg-gray-50 dark:bg-gray-950'}`}>
             {/* 顶部导航栏 */}
             <header
-                className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700"
+                className={`sticky top-0 z-10 backdrop-blur-md border-b transition-colors duration-300 ${isHomePage ? 'bg-white/80 dark:bg-gray-950/80 border-transparent' : 'bg-white/90 dark:bg-gray-950/90 border-gray-200/60 dark:border-gray-800'}`}
                 role="banner"
             >
                 <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
-                    {/* 标题行 */}
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                            <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity" title="首頁">
-                                <Image
-                                    src="/logo-light.png"
-                                    alt="你的話語 Logo"
-                                    width={40}
-                                    height={40}
-                                    priority
-                                    className="w-8 h-8 md:w-10 md:h-10 dark:brightness-90 dark:contrast-125"
-                                />
-                                <h1
-                                    className="text-2xl md:text-3xl font-extrabold font-chinese text-bible-700 dark:text-bible-300 tracking-wide"
-                                    style={{
-                                        textShadow: '0 0 12px rgba(190,158,93,0.3), 0 0 24px rgba(190,158,93,0.15), 0 1px 2px rgba(0,0,0,0.05)',
+                    <div className="flex items-center justify-between gap-3">
+                        {/* Logo */}
+                        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0" title="首頁">
+                            <Image
+                                src="/logo-light.png"
+                                alt="你的話語 Logo"
+                                width={40}
+                                height={40}
+                                priority
+                                className="w-8 h-8 dark:brightness-90 dark:contrast-125"
+                            />
+                            <h1 className={`font-semibold font-chinese text-gray-900 dark:text-gray-100 tracking-tight ${isHomePage ? 'text-lg' : 'text-base md:text-lg'}`}>
+                                你的話語
+                            </h1>
+                        </a>
+
+                        {/* 结果页模式：header 内嵌搜索框 + 筛选按钮 */}
+                        {!isHomePage && (
+                            <div className="flex items-center gap-2 flex-1 justify-end">
+                                {/* 搜索输入框 - 桌面端 */}
+                                <div className="relative hidden md:flex items-center">
+                                    <Search className="absolute left-3 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => handleSearchChange(e.target.value)}
+                                        onFocus={initSearchEngine}
+                                        placeholder="搜索经文..."
+                                        className="w-44 focus:w-56 transition-all duration-200 pl-9 pr-8 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 focus:bg-white dark:focus:bg-gray-900 rounded-full text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-400/30 border border-transparent focus:border-gray-300 dark:focus:border-gray-600 font-chinese min-h-[40px]"
+                                        aria-label="搜索经文"
+                                    />
+                                    {searchQuery && (
+                                        <button
+                                            onClick={handleClearSearch}
+                                            className="absolute right-2 p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                                            title="清除搜索"
+                                            aria-label="清除搜索"
+                                        >
+                                            <X className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* 搜索 icon - 移动端 */}
+                                <button
+                                    onClick={() => {
+                                        setShowMobileSearch(!showMobileSearch);
+                                        if (!showMobileSearch) initSearchEngine();
                                     }}
-                                >
-                                    你的話語
-                                </h1>
-                            </a>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            {/* 全局统计 - 桌面端（完整信息）*/}
-                            <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors min-h-[44px]">
-                                {statsLoading ? (
-                                    <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
-                                ) : (
-                                    <span className="text-sm text-bible-700 dark:text-bible-300 whitespace-nowrap font-chinese">
-                                        👥 164 访客 · ⭐ 35 收藏
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* 全局统计 - 平板端（简化，可点击）*/}
-                            <button
-                                onClick={() => setShowStatsModal(true)}
-                                className="hidden md:flex lg:hidden items-center gap-1 px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                title="点击查看详情"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                            >
-                                {statsLoading ? (
-                                    <span className="h-4 w-24 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
-                                ) : (
-                                    <span className="text-sm text-bible-700 dark:text-bible-300 font-chinese">
-                                        👥 164 · ⭐ 35
-                                    </span>
-                                )}
-                            </button>
-
-                            {/* 全局统计 - 移动端（紧凑，可点击）*/}
-                            <button
-                                onClick={() => setShowStatsModal(true)}
-                                className="flex md:hidden items-center gap-1 px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                title="查看统计"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                            >
-                                {statsLoading ? (
-                                    <span className="h-4 w-16 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
-                                ) : (
-                                    <span className="text-sm text-bible-700 dark:text-bible-300 font-chinese">
-                                        👥 164 · ⭐ 35
-                                    </span>
-                                )}
-                            </button>
-
-                            {/* 搜索输入框 - 桌面端在 header 行内显示 */}
-                            <div className="relative hidden md:flex items-center">
-                                <Search className="absolute left-3 w-4 h-4 text-bible-500 dark:text-bible-400 pointer-events-none" />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => handleSearchChange(e.target.value)}
-                                    onFocus={initSearchEngine}
-                                    placeholder="搜索..."
-                                    className="w-36 focus:w-52 transition-all duration-200 pl-9 pr-8 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-800 rounded-lg text-sm text-bible-700 dark:text-bible-300 placeholder-bible-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-bible-400 dark:focus:ring-bible-500 border border-transparent focus:border-bible-300 dark:focus:border-gray-600 font-chinese min-h-[44px]"
+                                    className="flex md:hidden items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors touch-manipulation min-h-[44px] min-w-[44px]"
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                    title="搜索"
                                     aria-label="搜索经文"
-                                />
-                                {searchQuery && (
+                                >
+                                    <Search className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                </button>
+
+                                {/* 收藏筛选 */}
+                                <button
+                                    onClick={handleToggleFavorites}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition-all touch-manipulation min-h-[40px] text-sm ${
+                                        filterType === 'favorites'
+                                            ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
+                                            : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
+                                    }`}
+                                    title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
+                                >
+                                    <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
+                                    <span className="hidden sm:inline font-chinese">{filterType === 'favorites' ? '已收藏' : '收藏'}</span>
+                                </button>
+
+                                {/* 分享收藏按钮 */}
+                                {filterType === 'favorites' && favoritesCount > 0 && (
                                     <button
-                                        onClick={handleClearSearch}
-                                        className="absolute right-2 p-0.5 hover:bg-bible-200 dark:hover:bg-gray-600 rounded transition-colors"
-                                        title="清除搜索"
-                                        aria-label="清除搜索"
+                                        onClick={handleShareFavorites}
+                                        disabled={favoritesCount > 200}
+                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition-all touch-manipulation min-h-[40px] text-sm ${
+                                            favoritesCount > 200
+                                                ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-blue-600 dark:text-blue-400'
+                                        }`}
+                                        title={favoritesCount > 200 ? '收藏过多（超过200节），无法生成分享链接' : '分享收藏'}
+                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                     >
-                                        <X className="w-3.5 h-3.5 text-bible-500 dark:text-bible-400" />
+                                        <Share2 className="w-4 h-4" />
                                     </button>
                                 )}
-                            </div>
 
-                            {/* 帮助按钮 - 只在平板/桌面端显示 */}
-                            <button
-                                onClick={handleOpenGuide}
-                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="显示使用帮助"
-                                aria-label="显示使用帮助"
-                            >
-                                <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">帮助</span>
-                            </button>
-
-                            {/* 简繁体切换 - 只在平板/桌面端显示 */}
-                            <button
-                                onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
-                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
-                                aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
-                            >
-                                <Languages className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                                    {language === 'simplified' ? '繁' : '簡'}
-                                </span>
-                            </button>
-
-                            {/* 阅读/背诵模式切换（始终显示） */}
-                            <button
-                                onClick={() => setShowAllContent(!showAllContent)}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
-                                aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
-                                aria-pressed={showAllContent}
-                            >
-                                {showAllContent ? (
-                                    <>
-                                        <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">背诵</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">阅读</span>
-                                    </>
-                                )}
-                            </button>
-
-                            {/* 汉堡菜单按钮 - 移到最右侧 */}
-                            <button
-                                onClick={() => setShowSideMenu(true)}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="菜单"
-                                aria-label="打开菜单"
-                            >
-                                <Menu className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">菜單</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* 搜索输入框 - 移动端独占一行 */}
-                    <div className="flex md:hidden mb-3">
-                        <div className="relative flex items-center w-full">
-                            <Search className="absolute left-3 w-4 h-4 text-bible-500 dark:text-bible-400 pointer-events-none" />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => handleSearchChange(e.target.value)}
-                                onFocus={initSearchEngine}
-                                placeholder="搜索经文（中文、英文、拼音）"
-                                className="w-full pl-9 pr-8 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-800 rounded-lg text-sm text-bible-700 dark:text-bible-300 placeholder-bible-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-bible-400 dark:focus:ring-bible-500 border border-transparent focus:border-bible-300 dark:focus:border-gray-600 font-chinese min-h-[44px]"
-                                aria-label="搜索经文"
-                            />
-                            {searchQuery && (
-                                <button
-                                    onClick={handleClearSearch}
-                                    className="absolute right-2 p-0.5 hover:bg-bible-200 dark:hover:bg-gray-600 rounded transition-colors"
-                                    title="清除搜索"
-                                    aria-label="清除搜索"
-                                >
-                                    <X className="w-3.5 h-3.5 text-bible-500 dark:text-bible-400" />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* 筛选工具栏 */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                        {/* 已收藏筛选 - 始终显示 */}
-                        <button
-                            onClick={handleToggleFavorites}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
-                                filterType === 'favorites'
-                                    ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
-                                    : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
-                            }`}
-                            title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
-                        >
-                            <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
-                            <span className="hidden sm:inline font-chinese text-sm">{filterType === 'favorites' ? '已收藏' : '收藏'}</span>
-                        </button>
-
-                        {/* 分享收藏按钮 - 只在收藏筛选模式下显示 */}
-                        {filterType === 'favorites' && favoritesCount > 0 && (
-                            <button
-                                onClick={handleShareFavorites}
-                                disabled={favoritesCount > 200}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
-                                    favoritesCount > 200
-                                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                                        : 'bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
-                                }`}
-                                title={favoritesCount > 200 ? '收藏过多（超过200节），无法生成分享链接' : '点击生成分享链接，可将您的收藏分享给他人'}
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                            >
-                                <Share2 className="w-4 h-4" />
-                                <span className="hidden sm:inline font-chinese text-sm">分享</span>
-                            </button>
-                        )}
-
-                        {/* 书卷选择器 */}
-                        <Listbox value={selectedBook} onChange={handleBookSelect}>
-                            {({ open }) => (
-                                <div className="relative">
-                                    <Listbox.Button className="relative w-full px-4 py-2 pr-10 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 text-left cursor-pointer touch-manipulation min-h-[44px]">
-                                        <span className="block">{selectedBook?.name || '选择书卷'}</span>
-                                        <ChevronDown
-                                            className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-700 dark:text-bible-300 transition-transform ${
-                                                open ? 'rotate-180' : ''
-                                            }`}
-                                        />
-                                    </Listbox.Button>
-                                    <Transition
-                                        enter="transition duration-100 ease-out"
-                                        enterFrom="transform scale-95 opacity-0"
-                                        enterTo="transform scale-100 opacity-100"
-                                        leave="transition duration-75 ease-out"
-                                        leaveFrom="transform scale-100 opacity-100"
-                                        leaveTo="transform scale-95 opacity-0"
-                                    >
-                                        <Listbox.Options className="absolute z-20 mt-1 min-w-full w-max max-h-[70vh] overflow-auto rounded-lg bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none scrollbar-thin">
-                                            <Listbox.Option
-                                                value={null}
-                                                className={({ active }) =>
-                                                    `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
-                                                        active
-                                                            ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
-                                                            : 'text-bible-700 dark:text-bible-300'
-                                                    }`
-                                                }
-                                            >
-                                                {({ selected }) => (
-                                                    <>
-                                                        <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>选择书卷</span>
-                                                        {selected && (
-                                                            <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                        )}
-                                                    </>
-                                                )}
-                                            </Listbox.Option>
-
-                                            {/* 旧约 */}
-                                            <div className="px-3 py-1 text-xs font-semibold text-bible-500 dark:text-bible-400 bg-bible-50 dark:bg-gray-900/50 border-t border-b border-bible-100 dark:border-gray-700 font-chinese">
-                                                旧约
-                                            </div>
-                                            {books
-                                                .filter((b) => b.testament === 'old')
-                                                .map((book) => (
-                                                    <Listbox.Option
-                                                        key={book.key}
-                                                        value={book}
-                                                        className={({ active }) =>
-                                                            `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
-                                                                active
-                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
-                                                                    : 'text-bible-700 dark:text-bible-300'
-                                                            }`
-                                                        }
-                                                    >
-                                                        {({ selected }) => (
-                                                            <>
-                                                                <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
-                                                                    {book.name}
-                                                                </span>
-                                                                {selected && (
-                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                                )}
-                                                            </>
-                                                        )}
-                                                    </Listbox.Option>
-                                                ))}
-
-                                            {/* 新约 */}
-                                            <div className="px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-t border-b border-blue-100 dark:border-blue-800 font-chinese mt-1">
-                                                新约
-                                            </div>
-                                            {books
-                                                .filter((b) => b.testament === 'new')
-                                                .map((book) => (
-                                                    <Listbox.Option
-                                                        key={book.key}
-                                                        value={book}
-                                                        className={({ active }) =>
-                                                            `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
-                                                                active
-                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
-                                                                    : 'text-bible-700 dark:text-bible-300'
-                                                            }`
-                                                        }
-                                                    >
-                                                        {({ selected }) => (
-                                                            <>
-                                                                <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
-                                                                    {book.name}
-                                                                </span>
-                                                                {selected && (
-                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                                )}
-                                                            </>
-                                                        )}
-                                                    </Listbox.Option>
-                                                ))}
-                                        </Listbox.Options>
-                                    </Transition>
-                                </div>
-                            )}
-                        </Listbox>
-
-                        {/* 章节选择器 */}
-                        {selectedBook && (
-                            <>
-                                <Listbox value={selectedChapter} onChange={handleChapterSelect}>
+                                {/* 书卷选择器 */}
+                                <Listbox value={selectedBook} onChange={handleBookSelect}>
                                     {({ open }) => (
                                         <div className="relative">
-                                            <Listbox.Button className="relative w-full px-4 py-2 pr-10 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 text-left cursor-pointer touch-manipulation min-h-[44px]">
-                                                <span className="block">{selectedChapter ? `第 ${selectedChapter} 章` : '所有章节'}</span>
+                                            <Listbox.Button className="relative px-3 py-2 pr-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors font-chinese text-sm text-gray-600 dark:text-gray-400 cursor-pointer touch-manipulation min-h-[40px]">
+                                                <span>{selectedBook?.name || '书卷'}</span>
                                                 <ChevronDown
-                                                    className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400 transition-transform ${
+                                                    className={`absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500 transition-transform ${
                                                         open ? 'rotate-180' : ''
                                                     }`}
                                                 />
@@ -1200,88 +972,269 @@ export default function HomePage() {
                                                     >
                                                         {({ selected }) => (
                                                             <>
-                                                                <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
-                                                                    所有章节
-                                                                </span>
+                                                                <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>选择书卷</span>
                                                                 {selected && (
                                                                     <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
                                                                 )}
                                                             </>
                                                         )}
                                                     </Listbox.Option>
-                                                    {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
-                                                        <Listbox.Option
-                                                            key={ch}
-                                                            value={ch}
-                                                            className={({ active }) =>
-                                                                `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
-                                                                    active
-                                                                        ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
-                                                                        : 'text-bible-700 dark:text-bible-300'
-                                                                }`
-                                                            }
-                                                        >
-                                                            {({ selected }) => (
-                                                                <>
-                                                                    <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
-                                                                        第 {ch} 章
-                                                                    </span>
-                                                                    {selected && (
-                                                                        <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        </Listbox.Option>
-                                                    ))}
+
+                                                    {/* 旧约 */}
+                                                    <div className="px-3 py-1 text-xs font-semibold text-bible-500 dark:text-bible-400 bg-bible-50 dark:bg-gray-900/50 border-t border-b border-bible-100 dark:border-gray-700 font-chinese">
+                                                        旧约
+                                                    </div>
+                                                    {books
+                                                        .filter((b) => b.testament === 'old')
+                                                        .map((book) => (
+                                                            <Listbox.Option
+                                                                key={book.key}
+                                                                value={book}
+                                                                className={({ active }) =>
+                                                                    `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                                        active
+                                                                            ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                            : 'text-bible-700 dark:text-bible-300'
+                                                                    }`
+                                                                }
+                                                            >
+                                                                {({ selected }) => (
+                                                                    <>
+                                                                        <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                                                            {book.name}
+                                                                        </span>
+                                                                        {selected && (
+                                                                            <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            </Listbox.Option>
+                                                        ))}
+
+                                                    {/* 新约 */}
+                                                    <div className="px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-t border-b border-blue-100 dark:border-blue-800 font-chinese mt-1">
+                                                        新约
+                                                    </div>
+                                                    {books
+                                                        .filter((b) => b.testament === 'new')
+                                                        .map((book) => (
+                                                            <Listbox.Option
+                                                                key={book.key}
+                                                                value={book}
+                                                                className={({ active }) =>
+                                                                    `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                                        active
+                                                                            ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                            : 'text-bible-700 dark:text-bible-300'
+                                                                    }`
+                                                                }
+                                                            >
+                                                                {({ selected }) => (
+                                                                    <>
+                                                                        <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                                                            {book.name}
+                                                                        </span>
+                                                                        {selected && (
+                                                                            <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            </Listbox.Option>
+                                                        ))}
                                                 </Listbox.Options>
                                             </Transition>
                                         </div>
                                     )}
                                 </Listbox>
 
-                                {/* 返回笔记按钮 - 当从笔记本跳转过来时显示 */}
-                                {fromBibleNote && (
-                                    <a
-                                        href="/bible-note"
-                                        className="flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors shadow-sm touch-manipulation min-h-[44px]"
-                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        title="返回聖經筆記本"
-                                    >
-                                        <ArrowLeft className="w-4 h-4" />
-                                        <span className="font-chinese text-sm">返回筆記</span>
-                                    </a>
+                                {/* 章节选择器 */}
+                                {selectedBook && (
+                                    <>
+                                        <Listbox value={selectedChapter} onChange={handleChapterSelect}>
+                                            {({ open }) => (
+                                                <div className="relative">
+                                                    <Listbox.Button className="relative px-3 py-2 pr-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors font-chinese text-sm text-gray-600 dark:text-gray-400 cursor-pointer touch-manipulation min-h-[40px]">
+                                                        <span>{selectedChapter ? `第 ${selectedChapter} 章` : '章节'}</span>
+                                                        <ChevronDown
+                                                            className={`absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500 transition-transform ${
+                                                                open ? 'rotate-180' : ''
+                                                            }`}
+                                                        />
+                                                    </Listbox.Button>
+                                                    <Transition
+                                                        enter="transition duration-100 ease-out"
+                                                        enterFrom="transform scale-95 opacity-0"
+                                                        enterTo="transform scale-100 opacity-100"
+                                                        leave="transition duration-75 ease-out"
+                                                        leaveFrom="transform scale-100 opacity-100"
+                                                        leaveTo="transform scale-95 opacity-0"
+                                                    >
+                                                        <Listbox.Options className="absolute z-20 mt-1 min-w-full w-max max-h-[70vh] overflow-auto rounded-lg bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none scrollbar-thin">
+                                                            <Listbox.Option
+                                                                value={null}
+                                                                className={({ active }) =>
+                                                                    `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                                        active
+                                                                            ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                            : 'text-bible-700 dark:text-bible-300'
+                                                                    }`
+                                                                }
+                                                            >
+                                                                {({ selected }) => (
+                                                                    <>
+                                                                        <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                                                            所有章节
+                                                                        </span>
+                                                                        {selected && (
+                                                                            <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            </Listbox.Option>
+                                                            {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
+                                                                <Listbox.Option
+                                                                    key={ch}
+                                                                    value={ch}
+                                                                    className={({ active }) =>
+                                                                        `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                                            active
+                                                                                ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                                : 'text-bible-700 dark:text-bible-300'
+                                                                        }`
+                                                                    }
+                                                                >
+                                                                    {({ selected }) => (
+                                                                        <>
+                                                                            <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                                                                第 {ch} 章
+                                                                            </span>
+                                                                            {selected && (
+                                                                                <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                            )}
+                                                                        </>
+                                                                    )}
+                                                                </Listbox.Option>
+                                                            ))}
+                                                        </Listbox.Options>
+                                                    </Transition>
+                                                </div>
+                                            )}
+                                        </Listbox>
+
+                                        {/* 返回笔记按钮 */}
+                                        {fromBibleNote && (
+                                            <a
+                                                href="/bible-note"
+                                                className="flex items-center gap-1.5 px-3 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-full transition-colors shadow-sm touch-manipulation min-h-[40px] text-sm"
+                                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                                title="返回聖經筆記本"
+                                            >
+                                                <ArrowLeft className="w-4 h-4" />
+                                                <span className="font-chinese">返回筆記</span>
+                                            </a>
+                                        )}
+
+                                        {/* 返回按钮 */}
+                                        <button
+                                            onClick={selectedChapter ? () => handleChapterSelect(null) : handleClearFilters}
+                                            className="flex items-center gap-1.5 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors touch-manipulation min-h-[40px]"
+                                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                            title={selectedChapter ? '返回章节选择' : '返回精选经文'}
+                                        >
+                                            <RotateCcw className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                            <span className="hidden sm:inline font-chinese text-gray-600 dark:text-gray-400 text-sm">
+                                                {selectedChapter ? '重选' : '返回'}
+                                            </span>
+                                        </button>
+                                    </>
                                 )}
 
-                                {/* 返回按钮 - 智能显示 */}
-                                {selectedBook && (
+                                {/* 随机按钮 */}
+                                {!selectedBook && (
                                     <button
-                                        onClick={selectedChapter ? () => handleChapterSelect(null) : handleClearFilters}
-                                        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
+                                        onClick={handleShuffle}
+                                        className="flex items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors touch-manipulation min-h-[40px] min-w-[40px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        title={selectedChapter ? '返回章节选择' : '返回精选经文'}
+                                        title="重新排列"
                                     >
-                                        <RotateCcw className="w-4 h-4 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                                            {selectedChapter ? '重选章节' : '返回'}
-                                        </span>
+                                        <Shuffle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                     </button>
                                 )}
-                            </>
+
+                                {/* 阅读/背诵模式切换 */}
+                                <button
+                                    onClick={() => setShowAllContent(!showAllContent)}
+                                    className="hidden md:flex items-center gap-1.5 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors touch-manipulation min-h-[40px]"
+                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                    title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                                    aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                                    aria-pressed={showAllContent}
+                                >
+                                    {showAllContent ? (
+                                        <EyeOff className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                    ) : (
+                                        <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                    )}
+                                    <span className="font-chinese text-gray-600 dark:text-gray-400 text-sm">{showAllContent ? '背诵' : '阅读'}</span>
+                                </button>
+                            </div>
                         )}
 
-                        {/* 随机按钮 - 在精选经文和收藏界面显示，选择书卷/章节时隐藏 */}
-                        {!selectedBook && (
-                            <button
-                                onClick={handleShuffle}
-                                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="重新排列"
-                            >
-                                <Shuffle className="w-4 h-4 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">随机</span>
-                            </button>
-                        )}
+                        {/* 汉堡菜单按钮 - 始终显示 */}
+                        <button
+                            onClick={() => setShowSideMenu(true)}
+                            className="flex items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex-shrink-0"
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            title="菜单"
+                            aria-label="打开菜单"
+                        >
+                            <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        </button>
                     </div>
+
+                    {/* 移动端搜索框展开 - 结果页模式 */}
+                    {!isHomePage && showMobileSearch && (
+                        <div className="flex md:hidden mt-3">
+                            <div className="relative flex items-center w-full">
+                                <Search className="absolute left-3 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => handleSearchChange(e.target.value)}
+                                    onFocus={initSearchEngine}
+                                    onBlur={() => {
+                                        if (!searchQuery) setShowMobileSearch(false);
+                                    }}
+                                    autoFocus
+                                    placeholder="搜索经文（中文、英文、拼音）"
+                                    className="w-full pl-9 pr-8 py-2 bg-white dark:bg-gray-900 rounded-full text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 outline-none ring-2 ring-blue-400/30 border border-gray-200 dark:border-gray-700 font-chinese min-h-[44px]"
+                                    aria-label="搜索经文"
+                                />
+                                {searchQuery ? (
+                                    <button
+                                        onClick={() => {
+                                            handleClearSearch();
+                                            setShowMobileSearch(false);
+                                        }}
+                                        className="absolute right-2 p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                        title="清除搜索"
+                                        aria-label="清除搜索"
+                                    >
+                                        <X className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => setShowMobileSearch(false)}
+                                        className="absolute right-2 p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                        title="关闭搜索"
+                                        aria-label="关闭搜索"
+                                    >
+                                        <X className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </header>
 
@@ -1364,6 +1317,9 @@ export default function HomePage() {
                     onViewChapter={handleViewChapterFromMenu}
                     language={language}
                     onLanguageChange={setLanguage}
+                    globalStats={globalStats}
+                    showAllContent={showAllContent}
+                    onToggleShowAllContent={() => setShowAllContent(!showAllContent)}
                 />
 
                 {/* 移动端统计 modal */}
@@ -1410,6 +1366,164 @@ export default function HomePage() {
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Hero 居中区域 - 首页模式 */}
+                {isHomePage && (
+                    <div className="flex flex-col items-center justify-center pt-12 md:pt-20 pb-6 px-4">
+                        <Image
+                            src="/logo-light.png"
+                            alt="你的話語"
+                            width={80}
+                            height={80}
+                            priority
+                            className="w-16 h-16 md:w-20 md:h-20 mb-4 dark:brightness-90 dark:contrast-125"
+                        />
+                        <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 font-chinese mb-6">
+                            你的話語
+                        </h2>
+
+                        {/* 居中大搜索框 */}
+                        <div className="max-w-xl w-full mx-auto">
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => handleSearchChange(e.target.value)}
+                                    onFocus={initSearchEngine}
+                                    placeholder="搜索经文（中文、英文、拼音）"
+                                    className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-gray-900 rounded-2xl text-base text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 outline-none ring-1 ring-gray-200 dark:ring-gray-700 focus:ring-2 focus:ring-blue-400/50 shadow-sm hover:shadow-md focus:shadow-md transition-all font-chinese min-h-[52px]"
+                                    aria-label="搜索经文"
+                                />
+                            </div>
+                        </div>
+
+                        {/* 副标题 */}
+                        <p className="text-sm text-gray-400 dark:text-gray-500 mt-4 font-chinese">
+                            精選 {verses.length} 節經文 · 點擊卡片開始背誦
+                        </p>
+
+                        {/* 筛选按钮行 */}
+                        <div className="flex items-center justify-center gap-3 mt-4">
+                            <button
+                                onClick={handleToggleFavorites}
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-full transition-all touch-manipulation min-h-[40px] text-sm bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 ring-1 ring-gray-200 dark:ring-gray-700"
+                                title="收藏"
+                            >
+                                <Star className="w-4 h-4" />
+                                <span className="font-chinese">收藏</span>
+                            </button>
+
+                            <Listbox value={selectedBook} onChange={handleBookSelect}>
+                                {({ open }) => (
+                                    <div className="relative">
+                                        <Listbox.Button className="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full ring-1 ring-gray-200 dark:ring-gray-700 transition-colors font-chinese text-sm text-gray-600 dark:text-gray-400 cursor-pointer touch-manipulation min-h-[40px]">
+                                            <span>书卷</span>
+                                            <ChevronDown
+                                                className={`w-3.5 h-3.5 text-gray-400 dark:text-gray-500 transition-transform ${
+                                                    open ? 'rotate-180' : ''
+                                                }`}
+                                            />
+                                        </Listbox.Button>
+                                        <Transition
+                                            enter="transition duration-100 ease-out"
+                                            enterFrom="transform scale-95 opacity-0"
+                                            enterTo="transform scale-100 opacity-100"
+                                            leave="transition duration-75 ease-out"
+                                            leaveFrom="transform scale-100 opacity-100"
+                                            leaveTo="transform scale-95 opacity-0"
+                                        >
+                                            <Listbox.Options className="absolute z-20 mt-1 min-w-full w-max max-h-[70vh] overflow-auto rounded-lg bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none scrollbar-thin">
+                                                <Listbox.Option
+                                                    value={null}
+                                                    className={({ active }) =>
+                                                        `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                            active
+                                                                ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                : 'text-bible-700 dark:text-bible-300'
+                                                        }`
+                                                    }
+                                                >
+                                                    {({ selected }) => (
+                                                        <>
+                                                            <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>选择书卷</span>
+                                                            {selected && (
+                                                                <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </Listbox.Option>
+                                                <div className="px-3 py-1 text-xs font-semibold text-bible-500 dark:text-bible-400 bg-bible-50 dark:bg-gray-900/50 border-t border-b border-bible-100 dark:border-gray-700 font-chinese">
+                                                    旧约
+                                                </div>
+                                                {books
+                                                    .filter((b) => b.testament === 'old')
+                                                    .map((book) => (
+                                                        <Listbox.Option
+                                                            key={book.key}
+                                                            value={book}
+                                                            className={({ active }) =>
+                                                                `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                                    active
+                                                                        ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                        : 'text-bible-700 dark:text-bible-300'
+                                                                }`
+                                                            }
+                                                        >
+                                                            {({ selected }) => (
+                                                                <>
+                                                                    <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>{book.name}</span>
+                                                                    {selected && (
+                                                                        <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </Listbox.Option>
+                                                    ))}
+                                                <div className="px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-t border-b border-blue-100 dark:border-blue-800 font-chinese mt-1">
+                                                    新约
+                                                </div>
+                                                {books
+                                                    .filter((b) => b.testament === 'new')
+                                                    .map((book) => (
+                                                        <Listbox.Option
+                                                            key={book.key}
+                                                            value={book}
+                                                            className={({ active }) =>
+                                                                `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
+                                                                    active
+                                                                        ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
+                                                                        : 'text-bible-700 dark:text-bible-300'
+                                                                }`
+                                                            }
+                                                        >
+                                                            {({ selected }) => (
+                                                                <>
+                                                                    <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>{book.name}</span>
+                                                                    {selected && (
+                                                                        <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </Listbox.Option>
+                                                    ))}
+                                            </Listbox.Options>
+                                        </Transition>
+                                    </div>
+                                )}
+                            </Listbox>
+
+                            <button
+                                onClick={handleShuffle}
+                                className="flex items-center justify-center p-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full ring-1 ring-gray-200 dark:ring-gray-700 transition-colors touch-manipulation min-h-[40px] min-w-[40px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                title="随机排列"
+                            >
+                                <Shuffle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                             </button>
                         </div>
                     </div>
@@ -1548,9 +1662,9 @@ export default function HomePage() {
                     {/* 状态标签和统计 */}
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center gap-2 flex-wrap">
-                            {/* 默认精选经文提示 */}
-                            {!selectedBook && filterType !== 'favorites' && !showShareBanner && (
-                                <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">📖 精選 114 節經文</span>
+                            {/* 默认精选经文提示 - 首页模式下已在 Hero 显示 */}
+                            {!isHomePage && !selectedBook && filterType !== 'favorites' && !showShareBanner && (
+                                <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">📖 精選 {verses.length} 節經文</span>
                             )}
 
                             {filterType === 'favorites' && (
@@ -1938,7 +2052,7 @@ export default function HomePage() {
                 {/* iOS App 推广区块 - Mini版 */}
                 {showAppPromo && (
                     <div className="max-w-7xl mx-auto px-4 py-6 mt-4 animate-fade-in">
-                        <div className="relative bg-gradient-to-r from-bible-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-xl shadow-md border border-bible-200 dark:border-gray-600 overflow-hidden">
+                        <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/50 overflow-hidden">
                             {/* 关闭按钮 */}
                             <button
                                 onClick={() => setShowAppPromo(false)}
@@ -1999,21 +2113,21 @@ export default function HomePage() {
                 )}
 
                 {/* 页脚 */}
-                <footer className="border-t border-bible-200 dark:border-gray-700 mt-12">
+                <footer className="border-t border-gray-200/60 dark:border-gray-800 mt-12">
                     {/* 全局统计栏 */}
-                    <div className="border-b border-bible-200 dark:border-gray-700 bg-bible-50/30 dark:bg-gray-800/30">
+                    <div className="border-b border-gray-200/60 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
                         <div className="max-w-7xl mx-auto px-4 py-4">
-                            <p className="text-center text-xs text-bible-600 dark:text-bible-400 mb-2 font-chinese">📊 全球使用數據</p>
+                            <p className="text-center text-xs text-gray-500 dark:text-gray-400 mb-2 font-chinese">全球使用數據</p>
                             <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm font-chinese">
                                 <div className="flex items-center gap-1.5">
                                     <span>👥</span>
-                                    <span className="font-bold text-bible-800 dark:text-bible-200">{globalStats.totalUsers.toLocaleString()}</span>
-                                    <span className="text-xs text-bible-600 dark:text-bible-400">位用戶</span>
+                                    <span className="font-bold text-gray-800 dark:text-gray-200">{globalStats.totalUsers.toLocaleString()}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">位用戶</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span>⭐</span>
                                     <span className="font-bold text-gold-600 dark:text-gold-400">{globalStats.totalFavorites.toLocaleString()}</span>
-                                    <span className="text-xs text-bible-600 dark:text-bible-400">次收藏</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">次收藏</span>
                                 </div>
                             </div>
                         </div>
