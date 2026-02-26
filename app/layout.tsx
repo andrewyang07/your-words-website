@@ -14,9 +14,9 @@ const notoSans = Noto_Sans_SC({
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://www.yourwords.me'),
-    title: '你的話語 - 背聖經，記筆記 | 你的话语 - 背圣经，记笔记',
+    title: '你的話語 - 聖經背誦與搜索 | 你的话语 - 圣经背诵与搜索',
     description:
-        '免費聖經背誦工具，支持Flash Card背誦模式和聖經筆記本功能。免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能。繁體中文、簡體中文雙語支持，讓神的話語常在心中。',
+        '免費聖經背誦與搜索工具，支持中文、英文、拼音快速搜索經文，Flash Card背誦模式和聖經筆記本功能。免费圣经背诵与搜索工具，支持中文、英文、拼音快速搜索经文，Flash Card背诵模式和圣经笔记本功能。繁體中文、簡體中文雙語支持，讓神的話語常在心中。',
     keywords: [
         // 繁体关键词（主要）
         '背聖經',
@@ -57,6 +57,15 @@ export const metadata: Metadata = {
         '经文收藏',
         '聖經分享',
         '圣经分享',
+        // 搜索关键词
+        '聖經搜索',
+        '經文搜索',
+        '搜索聖經',
+        '圣经搜索',
+        '经文搜索',
+        '搜索圣经',
+        'Bible search',
+        '拼音搜索',
         // 通用词
         'Bible',
         '基督教',
@@ -93,21 +102,21 @@ export const metadata: Metadata = {
         alternateLocale: ['zh_CN'],
         url: 'https://www.yourwords.me',
         siteName: '你的話語',
-        title: '你的話語 - 背聖經，記筆記 | 你的话语 - 背圣经，记笔记',
-        description: '免費聖經背誦工具，支持Flash Card背誦模式和聖經筆記本功能。免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能。',
+        title: '你的話語 - 聖經背誦與搜索 | 你的话语 - 圣经背诵与搜索',
+        description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速搜索經文，Flash Card背誦模式和聖經筆記本功能。免费圣经背诵与搜索工具，支持中文、英文、拼音快速搜索经文，Flash Card背诵模式和圣经笔记本功能。',
         images: [
             {
                 url: '/logo-light.png',
                 width: 1024,
                 height: 1024,
-                alt: '你的話語 - 背聖經',
+                alt: '你的話語 - 聖經背誦與搜索',
             },
         ],
     },
     twitter: {
         card: 'summary',
-        title: '你的話語 - 背聖經，記筆記 | 你的话语 - 背圣经，记笔记',
-        description: '免費聖經背誦工具，支持Flash Card背誦模式和聖經筆記本功能。免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能。',
+        title: '你的話語 - 聖經背誦與搜索 | 你的话语 - 圣经背诵与搜索',
+        description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速搜索經文，Flash Card背誦模式和聖經筆記本功能。免费圣经背诵与搜索工具，支持中文、英文、拼音快速搜索经文，Flash Card背诵模式和圣经笔记本功能。',
         images: ['/logo-light.png'],
     },
     icons: {
@@ -123,7 +132,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         '@type': 'WebApplication',
         name: '你的话语',
         alternateName: 'Your Words',
-        description: '免費聖經背誦工具，支持Flash Card背誦模式和聖經筆記本功能。免费圣经背诵工具，支持Flash Card背诵模式和圣经笔记本功能',
+        description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速搜索經文，Flash Card背誦模式和聖經筆記本功能。免费圣经背诵与搜索工具，支持中文、英文、拼音快速搜索经文，Flash Card背诵模式和圣经笔记本功能',
         url: 'https://www.yourwords.me',
         applicationCategory: 'EducationApplication',
         operatingSystem: 'Web Browser',
@@ -133,7 +142,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             priceCurrency: 'USD',
         },
         inLanguage: ['zh-TW', 'zh-CN'],
-        featureList: ['圣经背诵', 'Flash Card模式', '圣经笔记本', '经文收藏', '经文分享'],
+        featureList: ['圣经背诵', 'Flash Card模式', '圣经笔记本', '经文收藏', '经文分享', '快速經文搜索', 'Fast Bible Search'],
     };
 
     return (
