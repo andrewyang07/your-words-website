@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
@@ -13,7 +13,7 @@ import LanguageToggle from '@/components/search/LanguageToggle';
 import ContextViewer from '@/components/search/ContextViewer';
 import SearchHelp from '@/components/search/SearchHelp';
 
-export default function SearchPage() {
+function SearchPageInner() {
   const searchParams = useSearchParams();
   const { setQuery, setEngineReady, engineReady, setResults, setLoading, results, query } =
     useSearchStore();
@@ -115,5 +115,13 @@ export default function SearchPage() {
         <ContextViewer />
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense>
+      <SearchPageInner />
+    </Suspense>
   );
 }
