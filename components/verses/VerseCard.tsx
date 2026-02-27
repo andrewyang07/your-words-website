@@ -107,7 +107,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         flex flex-col justify-between
         relative
         touch-manipulation
-        transition-all duration-200
+        transition-[border-color,box-shadow] duration-200
         active:scale-[0.98]
         focus:outline-none focus:ring-2 focus:ring-bible-500 dark:focus:ring-bible-400
       `}
@@ -148,10 +148,10 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             <AnimatePresence mode="wait" initial={false}>
                 <motion.p
                     key={isRevealed ? 'r' : 'm'}
-                    initial={{ opacity: 0, filter: 'blur(3px)' }}
-                    animate={{ opacity: 1, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, filter: 'blur(3px)' }}
-                    transition={{ duration: 0.18 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
                     className={`
             ${textSizes[size]}
             text-gray-800 dark:text-gray-100 font-medium leading-relaxed font-chinese
