@@ -11,7 +11,12 @@ const PLACEHOLDER_EXAMPLES = [
   'Ps 23 · 诗篇23 · David · 平安',
 ];
 
-export default function SearchBox() {
+interface SearchBoxProps {
+  variant?: 'hero' | 'compact';
+  autoFocus?: boolean;
+}
+
+export default function SearchBox({ variant = 'hero', autoFocus = true }: SearchBoxProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const placeholderIndexRef = useRef(0);
@@ -21,6 +26,7 @@ export default function SearchBox() {
     setQuery,
     setResults,
     setLoading,
+    setEngineReady,
     selectedIndex,
     setSelectedIndex,
     results,
@@ -30,8 +36,10 @@ export default function SearchBox() {
 
   // Auto-focus on mount
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    if (autoFocus) {
+      inputRef.current?.focus();
+    }
+  }, [autoFocus]);
 
   // Rotate placeholder
   useEffect(() => {
@@ -50,11 +58,16 @@ export default function SearchBox() {
     async (searchQuery: string) => {
       if (!searchQuery.trim()) {
         setResults([]);
+        setLoading(false);
         return;
       }
       setLoading(true);
       try {
         const engine = getSearchEngine();
+        if (!engine.initialized) {
+          await engine.initialize();
+          setEngineReady(true);
+        }
         const results = await engine.search(searchQuery);
         setResults(results);
       } catch (error) {
@@ -115,9 +128,17 @@ export default function SearchBox() {
   );
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto">
+    <div
+      className={`relative w-full mx-auto ${
+        variant === 'hero' ? 'max-w-2xl' : 'max-w-3xl'
+      }`}
+    >
       <div className="relative flex items-center">
-        <Search className="absolute left-4 w-5 h-5 text-bible-400 dark:text-bible-500 pointer-events-none" />
+        <Search
+          className={`absolute pointer-events-none text-bible-400 dark:text-gray-500 ${
+            variant === 'hero' ? 'left-4 w-5 h-5' : 'left-4 w-4 h-4'
+          }`}
+        />
         <input
           ref={inputRef}
           type="text"
@@ -125,8 +146,11 @@ export default function SearchBox() {
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder={PLACEHOLDER_EXAMPLES[0]}
-          disabled={!engineReady}
-          className="w-full pl-12 pr-10 py-4 rounded-2xl border-2 border-bible-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-bible-900 dark:text-bible-100 text-lg placeholder:text-bible-300 dark:placeholder:text-gray-600 focus:outline-none focus:border-bible-500 dark:focus:border-bible-400 transition-colors disabled:opacity-50 disabled:cursor-wait font-chinese"
+          className={`w-full border bg-white dark:bg-gray-800 text-bible-800 dark:text-bible-200 placeholder:text-bible-400 dark:placeholder:text-gray-500 focus:outline-none transition-all font-chinese ${
+            variant === 'hero'
+              ? 'pl-12 pr-10 py-4 text-lg rounded-full border-bible-200 dark:border-gray-700 shadow-sm hover:shadow-md focus:shadow-md focus:border-bible-400 dark:focus:border-bible-500'
+              : 'pl-11 pr-10 py-3 text-base rounded-full border-bible-200 dark:border-gray-700 hover:shadow-sm focus:border-bible-400 dark:focus:border-bible-500 focus:shadow-sm'
+          }`}
         />
         {query && (
           <button
@@ -134,16 +158,16 @@ export default function SearchBox() {
               clearSearch();
               inputRef.current?.focus();
             }}
-            className="absolute right-4 p-1 rounded-full hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors"
+            className="absolute right-3 p-1 rounded-full hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
             aria-label="清除搜索"
           >
-            <X className="w-4 h-4 text-bible-400 dark:text-bible-500" />
+            <X className="w-4 h-4 text-bible-500 dark:text-bible-400" />
           </button>
         )}
       </div>
       {!engineReady && (
-        <p className="mt-2 text-center text-sm text-bible-400 dark:text-bible-500 font-chinese">
-          正在加载搜索引擎...
+        <p className="mt-2 text-center text-sm text-bible-500 dark:text-bible-400 font-chinese">
+          正在准备搜索引擎，您可以直接输入，完成后会自动搜索...
         </p>
       )}
     </div>

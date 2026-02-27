@@ -114,7 +114,9 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors group"
                                 >
                                     <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 group-hover:text-bible-700 dark:group-hover:text-bible-300" />
-                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">搜索</span>
+                                    <span className="text-bible-800 dark:text-bible-200 font-chinese font-medium">
+                                        {language === 'traditional' ? '經文搜索' : '经文搜索'}
+                                    </span>
                                 </Link>
 
                                 {/* 圣经笔记本 */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, BookOpen, Share2, Check, Star } from 'lucide-react';
+import { Copy, Check, Star, BookOpen, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
@@ -111,15 +111,15 @@ export default function SearchResultCard({
 
   return (
     <div
-      className={`group rounded-xl border-2 p-4 transition-all cursor-pointer ${
+      className={`group rounded-2xl border p-5 transition-all cursor-pointer ${
         isSelected
-          ? 'border-bible-500 dark:border-bible-400 bg-bible-50 dark:bg-gray-800/80 shadow-md'
-          : 'border-bible-100 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-bible-300 dark:hover:border-gray-600 hover:shadow-sm'
+          ? 'border-bible-400 dark:border-bible-500 bg-bible-50/80 dark:bg-gray-800 shadow-sm'
+          : 'border-bible-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-bible-300 dark:hover:border-gray-600'
       }`}
       onClick={() => setSelectedIndex(index)}
     >
       {/* Reference header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           {showChinese && (
             <span className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese">
@@ -127,14 +127,13 @@ export default function SearchResultCard({
             </span>
           )}
           {showEnglish && (
-            <span className="text-sm font-medium text-bible-500 dark:text-bible-400">
+            <span className="text-sm font-medium text-bible-600 dark:text-bible-300">
               {result.bookEnglish} {result.chapter}:{result.verse}
             </span>
           )}
         </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -165,31 +164,11 @@ export default function SearchResultCard({
               <Copy className="w-4 h-4 text-bible-500 dark:text-bible-400" />
             )}
           </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleContext();
-            }}
-            className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
-            title="查看上下文"
-          >
-            <BookOpen className="w-4 h-4 text-bible-500 dark:text-bible-400" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleShare();
-            }}
-            className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
-            title="分享"
-          >
-            <Share2 className="w-4 h-4 text-bible-500 dark:text-bible-400" />
-          </button>
         </div>
       </div>
 
       {/* Verse text */}
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 mb-3">
         {showChinese && (
           <p className="text-bible-800 dark:text-bible-200 font-chinese leading-relaxed">
             <HighlightedText segments={zhSegments} />
@@ -200,6 +179,30 @@ export default function SearchResultCard({
             <HighlightedText segments={enSegments} />
           </p>
         )}
+      </div>
+
+      {/* Secondary actions */}
+      <div className="flex items-center gap-3 text-xs">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleContext();
+          }}
+          className="inline-flex items-center gap-1 text-bible-500 dark:text-bible-400 hover:text-bible-700 dark:hover:text-bible-300 transition-colors"
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          <span className="font-chinese">上下文</span>
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleShare();
+          }}
+          className="inline-flex items-center gap-1 text-bible-500 dark:text-bible-400 hover:text-bible-700 dark:hover:text-bible-300 transition-colors"
+        >
+          <Share2 className="w-3.5 h-3.5" />
+          <span className="font-chinese">分享</span>
+        </button>
       </div>
     </div>
   );
