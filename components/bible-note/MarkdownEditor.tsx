@@ -207,43 +207,6 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
         updateSuggestions();
     }, [value, updateSuggestions]);
 
-    // 处理键盘导航
-    const handleKeyDown = useCallback(
-        (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-            // Slash command: /v 约3:16 or /verse 约3:16
-            if (e.key === 'Enter') {
-                const textarea = textareaRef.current;
-                if (textarea) {
-                    const cursor = textarea.selectionStart;
-                    const lineStart = value.lastIndexOf('\n', cursor - 1) + 1;
-                    const currentLine = value.slice(lineStart, cursor).trim();
-                    const commandMatch = currentLine.match(/^\/v(?:erse)?\s+(.+)$/i);
-                    if (commandMatch) {
-                        e.preventDefault();
-                        void insertReferenceAtCursor(commandMatch[1], true, true);
-                        return;
-                    }
-                }
-            }
-
-            if (suggestions.length === 0) return;
-
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                setSelectedSuggestionIndex((prev) => (prev + 1) % suggestions.length);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                setSelectedSuggestionIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
-            } else if (e.key === 'Enter' && suggestions.length > 0) {
-                e.preventDefault();
-                handleSelectSuggestion(suggestions[selectedSuggestionIndex]);
-            } else if (e.key === 'Escape') {
-                setSuggestions([]);
-            }
-        },
-        [suggestions, selectedSuggestionIndex, value, insertReferenceAtCursor]
-    );
-
     // 选择建议
     const handleSelectSuggestion = useCallback(
         async (suggestion: VerseSuggestion) => {
@@ -350,6 +313,43 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
             showTransientMessage(`已插入 ${ref.original}`);
         },
         [insertTextAtCursor, onExpandVerse, showTransientMessage]
+    );
+
+    // 处理键盘导航
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+            // Slash command: /v 约3:16 or /verse 约3:16
+            if (e.key === 'Enter') {
+                const textarea = textareaRef.current;
+                if (textarea) {
+                    const cursor = textarea.selectionStart;
+                    const lineStart = value.lastIndexOf('\n', cursor - 1) + 1;
+                    const currentLine = value.slice(lineStart, cursor).trim();
+                    const commandMatch = currentLine.match(/^\/v(?:erse)?\s+(.+)$/i);
+                    if (commandMatch) {
+                        e.preventDefault();
+                        void insertReferenceAtCursor(commandMatch[1], true, true);
+                        return;
+                    }
+                }
+            }
+
+            if (suggestions.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setSelectedSuggestionIndex((prev) => (prev + 1) % suggestions.length);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setSelectedSuggestionIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
+            } else if (e.key === 'Enter' && suggestions.length > 0) {
+                e.preventDefault();
+                handleSelectSuggestion(suggestions[selectedSuggestionIndex]);
+            } else if (e.key === 'Escape') {
+                setSuggestions([]);
+            }
+        },
+        [suggestions, selectedSuggestionIndex, value, insertReferenceAtCursor, handleSelectSuggestion]
     );
 
     // Markdown 工具栏按钮
