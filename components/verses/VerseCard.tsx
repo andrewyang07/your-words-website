@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
 import { CardSize } from '@/types/common';
@@ -144,17 +145,23 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             </div>
 
             {/* 经文内容 */}
-            <p
-                className={`
+            <AnimatePresence mode="wait" initial={false}>
+                <motion.p
+                    key={isRevealed ? 'r' : 'm'}
+                    initial={{ opacity: 0, filter: 'blur(3px)' }}
+                    animate={{ opacity: 1, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, filter: 'blur(3px)' }}
+                    transition={{ duration: 0.18 }}
+                    className={`
             ${textSizes[size]}
             text-gray-800 dark:text-gray-100 font-medium leading-relaxed font-chinese
             flex-1
-            transition-opacity duration-200
             break-words overflow-wrap-anywhere
           `}
-            >
-                {displayText}
-            </p>
+                >
+                    {displayText}
+                </motion.p>
+            </AnimatePresence>
 
             {/* 底部信息栏 */}
             <div className="mt-3 pt-2 border-t border-bible-100 dark:border-gray-700 flex items-center justify-between">

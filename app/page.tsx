@@ -40,6 +40,7 @@ import MaskSettings from '@/components/settings/MaskSettings';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
+import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import { trackUser, getVerseNumericId } from '@/lib/statsUtils';
 
 // 动态导入非关键组件以提升性能
@@ -1409,12 +1410,12 @@ export default function HomePage() {
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
                             <h3 className="text-center text-lg font-semibold text-bible-800 dark:text-bible-200 mb-4 font-chinese">📊 全球統計</h3>
                             <p className="text-center text-sm text-bible-700 dark:text-bible-300 leading-relaxed font-chinese">
-                                已有 <span className="font-bold text-bible-900 dark:text-bible-100">{globalStats.totalUsers.toLocaleString()}</span>{' '}
+                                已有 <span className="font-bold text-bible-900 dark:text-bible-100"><AnimatedCounter value={globalStats.totalUsers} /></span>{' '}
                                 位访客在此背誦神的話語
                                 <br />
                                 共收藏{' '}
                                 <span className="font-bold text-bible-900 dark:text-bible-100">
-                                    {globalStats.totalFavorites.toLocaleString()}
+                                    <AnimatedCounter value={globalStats.totalFavorites} />
                                 </span>{' '}
                                 次經文
                             </p>
@@ -2056,12 +2057,12 @@ export default function HomePage() {
                             <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm font-chinese">
                                 <div className="flex items-center gap-1.5">
                                     <span>👥</span>
-                                    <span className="font-bold text-bible-800 dark:text-bible-200">{globalStats.totalUsers.toLocaleString()}</span>
+                                    <span className="font-bold text-bible-800 dark:text-bible-200"><AnimatedCounter value={globalStats.totalUsers} /></span>
                                     <span className="text-xs text-bible-600 dark:text-bible-400">位用戶</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span>⭐</span>
-                                    <span className="font-bold text-gold-600 dark:text-gold-400">{globalStats.totalFavorites.toLocaleString()}</span>
+                                    <span className="font-bold text-gold-600 dark:text-gold-400"><AnimatedCounter value={globalStats.totalFavorites} /></span>
                                     <span className="text-xs text-bible-600 dark:text-bible-400">次收藏</span>
                                 </div>
                             </div>
