@@ -5,12 +5,13 @@ import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
-import { parseVerseReferences } from '@/lib/verseParser';
+import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import PageHeader from '@/components/layout/PageHeader';
 import MarkdownEditor from './MarkdownEditor';
 import UsageGuide from './UsageGuide';
 import VerseReferenceList from './VerseReferenceList';
+import OcrImporter from './OcrImporter';
 
 // 动态导入非关键组件以提升性能
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -291,6 +292,31 @@ export default function BibleNoteClient() {
         [showToast]
     );
 
+    // 从 OCR 识别引用并插入笔记
+    const handleInsertFromOcr = useCallback(
+        async (ocrRefs: VerseReference[], expand: boolean) => {
+            if (ocrRefs.length === 0) return;
+
+            let insertText = '';
+            for (const ref of ocrRefs) {
+                if (expand) {
+                    const verseText = await getVerseText(ref.book, ref.chapter, ref.startVerse);
+                    if (verseText) {
+                        insertText += `\n${ref.original}\n> ${ref.original}: ${verseText}\n`;
+                    } else {
+                        insertText += `\n${ref.original}\n`;
+                    }
+                } else {
+                    insertText += `\n${ref.original}\n`;
+                }
+            }
+
+            setContent((prev) => prev + insertText);
+            showToast(`✅ 已插入 ${ocrRefs.length} 条 OCR 识别引用`);
+        },
+        [showToast]
+    );
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
             {/* 共用头部 */}
@@ -312,6 +338,8 @@ export default function BibleNoteClient() {
                                 💾 已自動保存
                             </span>
                         )}
+
+                        <OcrImporter onInsertReferences={handleInsertFromOcr} />
                         
                         {/* 导出按钮（下拉菜单） */}
                         <div className="relative">
@@ -429,6 +457,19 @@ export default function BibleNoteClient() {
                                     </h4>
                                     <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
                                         輸入書卷名（如「马太」或「马1:2」）會自動彈出經文建議。選中後自動插入經文完整內容。支持模糊搜索，如「路1:1」會匹配「路加福音1:1」。
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 功能 2.5 */}
+                            <div className="flex items-start gap-3">
+                                <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
+                                <div>
+                                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                                        /v 命令快速插入
+                                    </h4>
+                                    <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                                        在编辑区输入「/v 约3:16」后按 Enter，可直接在光标处插入并展开该节经文；也可用工具栏📖按钮快速插入。
                                     </p>
                                 </div>
                             </div>

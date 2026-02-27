@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Bold, Italic, Heading, Quote, List, ListOrdered, Link as LinkIcon, Eye, EyeOff } from 'lucide-react';
+import { Bold, Italic, Heading, Quote, List, ListOrdered, Link as LinkIcon, Eye, EyeOff, BookOpen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import VerseAutocomplete from './VerseAutocomplete';
+import { parseVerseReferences } from '@/lib/verseParser';
 
 interface VerseSuggestion {
     display: string;
@@ -28,6 +29,14 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
     const [autocompletePosition, setAutocompletePosition] = useState({ top: 0, left: 0 });
     const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
     const [bibleBooks, setBibleBooks] = useState<any>(null);
+    const [showQuickInsert, setShowQuickInsert] = useState(false);
+    const [quickInsertText, setQuickInsertText] = useState('');
+    const [commandMessage, setCommandMessage] = useState<string | null>(null);
+
+    const showTransientMessage = useCallback((message: string) => {
+        setCommandMessage(message);
+        setTimeout(() => setCommandMessage(null), 2500);
+    }, []);
 
     // 加载书卷数据（用于自动补全）
     useEffect(() => {
@@ -194,6 +203,22 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
     // 处理键盘导航
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+            // Slash command: /v 约3:16 or /verse 约3:16
+            if (e.key === 'Enter') {
+                const textarea = textareaRef.current;
+                if (textarea) {
+                    const cursor = textarea.selectionStart;
+                    const lineStart = value.lastIndexOf('\n', cursor - 1) + 1;
+                    const currentLine = value.slice(lineStart, cursor).trim();
+                    const commandMatch = currentLine.match(/^\/v(?:erse)?\s+(.+)$/i);
+                    if (commandMatch) {
+                        e.preventDefault();
+                        void insertReferenceAtCursor(commandMatch[1], true, true);
+                        return;
+                    }
+                }
+            }
+
             if (suggestions.length === 0) return;
 
             if (e.key === 'ArrowDown') {
@@ -209,7 +234,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                 setSuggestions([]);
             }
         },
-        [suggestions, selectedSuggestionIndex]
+        [suggestions, selectedSuggestionIndex, value]
     );
 
     // 选择建议
@@ -257,6 +282,67 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
             setSuggestions([]);
         },
         [value, onChange, onExpandVerse]
+    );
+
+    const insertTextAtCursor = useCallback(
+        (insertText: string, replaceCurrentLine = false) => {
+            const textarea = textareaRef.current;
+            if (!textarea) return;
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+
+            if (replaceCurrentLine) {
+                const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+                const lineEndRaw = value.indexOf('\n', end);
+                const lineEnd = lineEndRaw === -1 ? value.length : lineEndRaw;
+                const newValue = value.slice(0, lineStart) + insertText + value.slice(lineEnd);
+                const newCursorPos = lineStart + insertText.length;
+                onChange(newValue);
+                setTimeout(() => {
+                    textarea.focus();
+                    textarea.setSelectionRange(newCursorPos, newCursorPos);
+                }, 0);
+                return;
+            }
+
+            const newValue = value.substring(0, start) + insertText + value.substring(end);
+            onChange(newValue);
+            setTimeout(() => {
+                const newCursorPos = start + insertText.length;
+                textarea.focus();
+                textarea.setSelectionRange(newCursorPos, newCursorPos);
+            }, 0);
+        },
+        [onChange, value]
+    );
+
+    const insertReferenceAtCursor = useCallback(
+        async (referenceText: string, expand = true, replaceCurrentLine = false) => {
+            const parsed = parseVerseReferences(referenceText);
+            if (parsed.length === 0) {
+                showTransientMessage('未识别到经文引用，请输入如 “约3:16”');
+                return;
+            }
+
+            const ref = parsed[0];
+            let insertText = ref.original;
+
+            if (expand && onExpandVerse) {
+                try {
+                    const verseText = await onExpandVerse(ref.book, ref.chapter, ref.startVerse);
+                    if (verseText) {
+                        insertText = `${ref.original}\n> ${ref.original}: ${verseText}\n`;
+                    }
+                } catch (error) {
+                    console.error('Error expanding verse from slash command:', error);
+                }
+            }
+
+            insertTextAtCursor(insertText, replaceCurrentLine);
+            showTransientMessage(`已插入 ${ref.original}`);
+        },
+        [insertTextAtCursor, onExpandVerse, showTransientMessage]
     );
 
     // Markdown 工具栏按钮
@@ -335,6 +421,13 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                     >
                         <LinkIcon className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                     </button>
+                    <button
+                        onClick={() => setShowQuickInsert(!showQuickInsert)}
+                        className="p-2 hover:bg-bible-100 dark:hover:bg-gray-800 rounded transition-colors"
+                        title="快速插入经文（/v 约3:16）"
+                    >
+                        <BookOpen className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                    </button>
                 </div>
 
                 <button
@@ -358,6 +451,46 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
 
             {/* 编辑器/预览区域 */}
             <div className="flex-1 overflow-hidden">
+                {showQuickInsert && (
+                    <div className="p-3 border-b border-bible-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col gap-2">
+                        <div className="flex gap-2">
+                            <input
+                                value={quickInsertText}
+                                onChange={(e) => setQuickInsertText(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        void insertReferenceAtCursor(quickInsertText, true);
+                                        setQuickInsertText('');
+                                    }
+                                }}
+                                placeholder="输入经文引用，如 约3:16"
+                                className="flex-1 px-3 py-2 rounded-lg border border-bible-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-bible-800 dark:text-bible-200 text-sm font-chinese focus:outline-none focus:border-bible-400"
+                            />
+                            <button
+                                onClick={() => {
+                                    void insertReferenceAtCursor(quickInsertText, true);
+                                    setQuickInsertText('');
+                                }}
+                                className="px-3 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg text-sm font-chinese transition-colors"
+                            >
+                                插入并展开
+                            </button>
+                            <button
+                                onClick={() => {
+                                    void insertReferenceAtCursor(quickInsertText, false);
+                                    setQuickInsertText('');
+                                }}
+                                className="px-3 py-2 bg-white dark:bg-gray-700 border border-bible-200 dark:border-gray-600 text-bible-700 dark:text-bible-300 rounded-lg text-sm font-chinese transition-colors hover:bg-bible-50 dark:hover:bg-gray-600"
+                            >
+                                仅插入引用
+                            </button>
+                        </div>
+                        <p className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
+                            提示：在编辑器中输入 <code>/v 约3:16</code> 后按 Enter 可直接快速插入。
+                        </p>
+                    </div>
+                )}
+
                 {showPreview ? (
                     <div className="h-full overflow-y-auto p-4 prose prose-sm dark:prose-invert max-w-none bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100">
                         <ReactMarkdown
@@ -446,6 +579,11 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                                 fontSize: '16px' 
                             }}
                         />
+                        {commandMessage && (
+                            <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-bible-800 text-white rounded-lg text-xs font-chinese shadow-lg">
+                                {commandMessage}
+                            </div>
+                        )}
                         {/* 自动补全 */}
                         {suggestions.length > 0 && (
                             <VerseAutocomplete
