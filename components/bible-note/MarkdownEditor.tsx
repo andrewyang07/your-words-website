@@ -32,6 +32,13 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
     const [showQuickInsert, setShowQuickInsert] = useState(false);
     const [quickInsertText, setQuickInsertText] = useState('');
     const [commandMessage, setCommandMessage] = useState<string | null>(null);
+    const quickInsertInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (showQuickInsert) {
+            setTimeout(() => quickInsertInputRef.current?.focus(), 50);
+        }
+    }, [showQuickInsert]);
 
     const showTransientMessage = useCallback((message: string) => {
         setCommandMessage(message);
@@ -234,7 +241,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                 setSuggestions([]);
             }
         },
-        [suggestions, selectedSuggestionIndex, value]
+        [suggestions, selectedSuggestionIndex, value, insertReferenceAtCursor]
     );
 
     // 选择建议
@@ -455,6 +462,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, onExpandV
                     <div className="p-3 border-b border-bible-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col gap-2">
                         <div className="flex gap-2">
                             <input
+                                ref={quickInsertInputRef}
                                 value={quickInsertText}
                                 onChange={(e) => setQuickInsertText(e.target.value)}
                                 onKeyDown={(e) => {

@@ -12,6 +12,8 @@ import MarkdownEditor from './MarkdownEditor';
 import UsageGuide from './UsageGuide';
 import VerseReferenceList from './VerseReferenceList';
 import OcrImporter from './OcrImporter';
+import NoteList from './NoteList';
+import { getAllNotes, getNote, saveNote, createNote, migrateFromLocalStorage, extractTitle, type Note } from '@/lib/noteStorage';
 
 // 动态导入非关键组件以提升性能
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -26,7 +28,10 @@ export default function BibleNoteClient() {
     const searchParams = useSearchParams();
     const { theme, toggleTheme, language, setLanguage } = useAppStore();
     const [content, setContent] = useState('');
-    const [activeTab, setActiveTab] = useState<'edit' | 'preview' | 'references'>('edit');
+    const [currentNoteId, setCurrentNoteId] = useState<string | null>(null);
+    const [currentNoteCreatedAt, setCurrentNoteCreatedAt] = useState<number>(Date.now());
+    const [showNoteList, setShowNoteList] = useState(false);
+    const [activeTab, setActiveTab] = useState<'edit' | 'references'>('edit');
     const [isExpanding, setIsExpanding] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -41,12 +46,26 @@ export default function BibleNoteClient() {
     const [lastViewedChapter, setLastViewedChapter] = useState<number>(1);
     const [showSaveIndicator, setShowSaveIndicator] = useState(false);
 
-    // 从 localStorage 恢复内容
+    // 初始化：迁移旧数据，加载最新笔记
     useEffect(() => {
-        const saved = localStorage.getItem('bible-note-content');
-        if (saved) {
-            setContent(saved);
-        }
+        const init = async () => {
+            await migrateFromLocalStorage();
+            const notes = await getAllNotes();
+            let id: string;
+            if (notes.length > 0) {
+                id = notes[0].id;
+            } else {
+                const note = await createNote();
+                id = note.id;
+            }
+            const note = await getNote(id);
+            if (note) {
+                setCurrentNoteId(note.id);
+                setCurrentNoteCreatedAt(note.createdAt);
+                setContent(note.content);
+            }
+        };
+        void init();
     }, []);
 
     // 从 localStorage 恢复上次查看的章节
@@ -82,20 +101,24 @@ export default function BibleNoteClient() {
         }
     }, [lastViewedBook, lastViewedChapter]);
 
-    // 自动保存到 localStorage（带保存提示）
+    // 自动保存到 IndexedDB（带保存提示）
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (content) {
-                localStorage.setItem('bible-note-content', content);
-                setShowSaveIndicator(true);
-                
-                // 2秒后隐藏提示
-                setTimeout(() => setShowSaveIndicator(false), 2000);
-            }
+        if (!currentNoteId) return;
+        const timer = setTimeout(async () => {
+            const note: Note = {
+                id: currentNoteId,
+                title: extractTitle(content),
+                content,
+                createdAt: currentNoteCreatedAt,
+                updatedAt: Date.now(),
+            };
+            await saveNote(note);
+            setShowSaveIndicator(true);
+            setTimeout(() => setShowSaveIndicator(false), 2000);
         }, 1000);
 
         return () => clearTimeout(timer);
-    }, [content]);
+    }, [content, currentNoteId, currentNoteCreatedAt]);
 
     // Toast 自动消失
     useEffect(() => {
@@ -110,6 +133,25 @@ export default function BibleNoteClient() {
     // 显示 Toast 提示
     const showToast = useCallback((message: string) => {
         setToastMessage(message);
+    }, []);
+
+    // 切换到指定笔记
+    const handleSelectNote = useCallback(async (id: string) => {
+        const note = await getNote(id);
+        if (note) {
+            setCurrentNoteId(note.id);
+            setCurrentNoteCreatedAt(note.createdAt);
+            setContent(note.content);
+        }
+    }, []);
+
+    // 新建笔记
+    const handleNewNote = useCallback(async () => {
+        const note = await createNote();
+        setCurrentNoteId(note.id);
+        setCurrentNoteCreatedAt(note.createdAt);
+        setContent(note.content);
+        setShowNoteList(false);
     }, []);
 
     // 解析经文引用（去重）
@@ -162,7 +204,6 @@ export default function BibleNoteClient() {
     const handleClear = useCallback(() => {
         if (confirm('確定要清空筆記嗎？此操作無法撤銷。')) {
             setContent('');
-            localStorage.removeItem('bible-note-content');
         }
     }, []);
 
@@ -339,8 +380,19 @@ export default function BibleNoteClient() {
                             </span>
                         )}
 
+                        {/* 笔记列表按钮 */}
+                        <button
+                            onClick={() => setShowNoteList(true)}
+                            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                            title="笔记列表"
+                            aria-label="打开笔记列表"
+                        >
+                            <FileText className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                            <span className="hidden sm:inline text-sm font-chinese text-bible-700 dark:text-bible-300">笔记</span>
+                        </button>
+
                         <OcrImporter onInsertReferences={handleInsertFromOcr} />
-                        
+
                         {/* 导出按钮（下拉菜单） */}
                         <div className="relative">
                             <button
@@ -411,6 +463,15 @@ export default function BibleNoteClient() {
                     onThemeChange={toggleTheme}
                     language={language}
                     onLanguageChange={setLanguage}
+                />
+
+                {/* 笔记列表抽屉 */}
+                <NoteList
+                    isOpen={showNoteList}
+                    onClose={() => setShowNoteList(false)}
+                    currentNoteId={currentNoteId}
+                    onSelectNote={handleSelectNote}
+                    onNewNote={handleNewNote}
                 />
 
                 {/* 使用说明 - 条件显示 */}
@@ -506,7 +567,7 @@ export default function BibleNoteClient() {
                                     ⚠️ 重要提示
                                 </p>
                                 <ul className="text-xs text-amber-700 dark:text-amber-300 font-chinese space-y-1 ml-4">
-                                    <li>• 僅支持一篇筆記，適合作為草稿使用</li>
+                                    <li>• 支持多篇笔记，点击顶部「笔记」按钮管理笔记列表</li>
                                     <li>• 數據保存在瀏覽器本地，清除瀏覽器數據會丟失</li>
                                     <li>• 建議定期導出備份（複製到剪貼板或下載 MD 文件）</li>
                                 </ul>
@@ -530,17 +591,6 @@ export default function BibleNoteClient() {
                             編輯
                         </button>
                         <button
-                            onClick={() => setActiveTab('preview')}
-                            className={`hidden md:flex flex-1 py-1.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[40px] ${
-                                activeTab === 'preview'
-                                    ? 'bg-bible-500 text-white shadow-sm'
-                                    : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
-                            }`}
-                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                        >
-                            預覽
-                        </button>
-                        <button
                             onClick={() => setActiveTab('references')}
                             className={`flex-1 py-1.5 rounded-lg font-chinese text-sm transition-all relative touch-manipulation min-h-[40px] ${
                                 activeTab === 'references'
@@ -562,7 +612,7 @@ export default function BibleNoteClient() {
                 {/* 主要内容区域 - 统一卡片样式 */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     {/* 编辑器区域（桌面端：2/3 宽度） */}
-                    <div className={`lg:col-span-2 ${activeTab === 'edit' || activeTab === 'preview' ? 'block' : 'hidden lg:block'}`}>
+                    <div className={`lg:col-span-2 ${activeTab === 'edit' ? 'block' : 'hidden lg:block'}`}>
                         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 overflow-hidden">
                             <MarkdownEditor
                                 value={content}

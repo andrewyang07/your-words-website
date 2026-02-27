@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { ImagePlus, Loader2, ScanText, Check, X } from 'lucide-react';
 import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
 
@@ -51,6 +51,28 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
     const [selectedRefs, setSelectedRefs] = useState<Set<string>>(new Set());
     const [expandOnInsert, setExpandOnInsert] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+
+    // 全局粘贴监听
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handlePaste = (e: ClipboardEvent) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    if (file) void handleImageUpload(file);
+                    break;
+                }
+            }
+        };
+
+        document.addEventListener('paste', handlePaste);
+        return () => document.removeEventListener('paste', handlePaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     const references = useMemo(() => parseVerseReferences(ocrText), [ocrText]);
 
@@ -87,7 +109,10 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                 },
             });
 
-            setOcrText(result.data.text || '');
+            const text = result.data.text || '';
+            setOcrText(text);
+            const autoRefs = parseVerseReferences(text);
+            setSelectedRefs(new Set(autoRefs.map((r) => r.original)));
         } catch (err) {
             console.error('OCR recognition error:', err);
             setError('OCR 识别失败，请尝试更清晰的图片或稍后重试。');
@@ -135,9 +160,23 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                         </button>
                     </div>
 
-                    <label className="flex items-center justify-center gap-2 h-24 rounded-lg border-2 border-dashed border-bible-300 dark:border-gray-600 cursor-pointer hover:bg-bible-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <label
+                        className={`flex items-center justify-center gap-2 h-24 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${
+                            isDragging
+                                ? 'border-bible-500 bg-bible-100/50 dark:bg-bible-900/30'
+                                : 'border-bible-300 dark:border-gray-600 hover:bg-bible-50 dark:hover:bg-gray-700/50'
+                        }`}
+                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={(e) => {
+                            e.preventDefault();
+                            setIsDragging(false);
+                            const file = e.dataTransfer.files[0];
+                            if (file) void handleImageUpload(file);
+                        }}
+                    >
                         <ImagePlus className="w-5 h-5 text-bible-600 dark:text-bible-400" />
-                        <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">上传笔记图片（jpg/png）</span>
+                        <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">上传 / 拖放 / 粘贴截图（jpg/png）</span>
                         <input
                             type="file"
                             accept="image/png,image/jpeg,image/jpg"
@@ -145,6 +184,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                             onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) void handleImageUpload(file);
+                                e.currentTarget.value = '';
                             }}
                         />
                     </label>
@@ -167,6 +207,23 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
 
                     {references.length > 0 && (
                         <div className="mt-3 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
+                                    识别到 {references.length} 条引用
+                                </span>
+                                <button
+                                    onClick={() => {
+                                        if (selectedRefs.size === references.length) {
+                                            setSelectedRefs(new Set());
+                                        } else {
+                                            setSelectedRefs(new Set(references.map((r) => r.original)));
+                                        }
+                                    }}
+                                    className="text-xs text-bible-600 dark:text-bible-400 hover:underline font-chinese"
+                                >
+                                    {selectedRefs.size === references.length ? '取消全选' : '全选'}
+                                </button>
+                            </div>
                             <div className="max-h-48 overflow-y-auto border border-bible-200 dark:border-gray-700 rounded-lg p-2 space-y-1">
                                 {references.map((ref, idx) => (
                                     <button
