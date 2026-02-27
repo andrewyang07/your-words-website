@@ -990,13 +990,15 @@ export default function HomePage() {
                                 )}
                             </button>
 
-                            {/* 提示设置 - 移动端抽屉入口 */}
+                            {/* 提示设置 - 移动端折叠入口 */}
                             <button
-                                onClick={() => setShowMaskSettingsMobile(true)}
+                                onClick={() => setShowMaskSettingsMobile(!showMaskSettingsMobile)}
                                 className="flex md:hidden items-center justify-center px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px] min-w-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={`提示设置（${maskSettingsSummary}）`}
                                 aria-label={`打开提示设置，当前${maskSettingsSummary}`}
+                                aria-expanded={showMaskSettingsMobile}
+                                aria-controls="mask-settings-mobile-panel"
                             >
                                 <SlidersHorizontal className="w-4 h-4 text-bible-700 dark:text-bible-300" />
                             </button>
@@ -1038,6 +1040,23 @@ export default function HomePage() {
                                     <X className="w-3.5 h-3.5 text-bible-500 dark:text-bible-400" />
                                 </button>
                             )}
+                        </div>
+                    </div>
+
+                    {/* 手机端提示设置折叠面板 */}
+                    <div
+                        id="mask-settings-mobile-panel"
+                        className={`md:hidden overflow-hidden transition-all duration-300 ${
+                            showMaskSettingsMobile ? 'max-h-[320px] opacity-100 mb-3' : 'max-h-0 opacity-0'
+                        }`}
+                        aria-hidden={!showMaskSettingsMobile}
+                    >
+                        <div className="rounded-xl border border-bible-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 p-3 shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">提示设置</p>
+                                <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">{maskSettingsSummary}</span>
+                            </div>
+                            <MaskSettings />
                         </div>
                     </div>
 
@@ -1383,31 +1402,6 @@ export default function HomePage() {
                     language={language}
                     onLanguageChange={setLanguage}
                 />
-
-                {/* 移动端提示设置抽屉 */}
-                {showMaskSettingsMobile && (
-                    <div className="fixed inset-0 z-50 md:hidden">
-                        <div className="absolute inset-0 bg-black/50" onClick={() => setShowMaskSettingsMobile(false)} />
-                        <div className="absolute inset-x-0 bottom-0 bg-white dark:bg-gray-900 rounded-t-2xl border-t-2 border-bible-200 dark:border-gray-700 shadow-2xl max-h-[85vh] overflow-y-auto">
-                            <div className="sticky top-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-4 py-3 border-b border-bible-200 dark:border-gray-700 flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">提示设置</p>
-                                    <p className="text-xs text-bible-600 dark:text-bible-400 font-chinese">{maskSettingsSummary}</p>
-                                </div>
-                                <button
-                                    onClick={() => setShowMaskSettingsMobile(false)}
-                                    className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors"
-                                    aria-label="关闭提示设置"
-                                >
-                                    <X className="w-5 h-5 text-bible-600 dark:text-bible-400" />
-                                </button>
-                            </div>
-                            <div className="p-4 pb-6">
-                                <MaskSettings />
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* 移动端统计 modal */}
                 {showStatsModal && (

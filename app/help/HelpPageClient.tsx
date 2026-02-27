@@ -206,6 +206,19 @@ export default function HelpPageClient() {
                                 <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">遮罩提示設置</h3>
                             </div>
                             <div className="pl-13 space-y-3 text-bible-700 dark:text-bible-300 font-chinese">
+                                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                                    <h4 className="font-semibold mb-2">📍 在哪裡調整提示設置？</h4>
+                                    <div className="space-y-1.5 text-sm">
+                                        <p>
+                                            <strong>桌面版：</strong>
+                                            點擊頂部工具列的<strong>「提示設置」</strong>，會展開折疊面板。
+                                        </p>
+                                        <p>
+                                            <strong>手機版：</strong>
+                                            點擊頂部的<strong>滑桿圖示</strong>（提示設置），會在<strong>搜索欄下方</strong>展開設置卡片。
+                                        </p>
+                                    </div>
+                                </div>
                                 <div className="bg-gold-50 dark:bg-gray-700 rounded-lg p-4 border-2 border-gold-300 dark:border-gold-600">
                                     <h4 className="font-semibold mb-3 flex items-center gap-2">💡 提示模式</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
