@@ -1,6 +1,9 @@
 import { Extension } from '@tiptap/core';
+import { PluginKey } from '@tiptap/pm/state';
 import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
 import type { SuggestionItem } from '@/lib/editorSearch';
+
+const BibleSuggestionPluginKey = new PluginKey('bibleSuggestion');
 
 export type BibleSuggestionOptions = {
   suggestion: Partial<SuggestionOptions<SuggestionItem>>;
@@ -15,6 +18,7 @@ export const BibleSuggestion = Extension.create<BibleSuggestionOptions>({
         char: '@',
         allowSpaces: true,
         startOfLine: false,
+        pluginKey: BibleSuggestionPluginKey,
       },
     };
   },
@@ -24,6 +28,7 @@ export const BibleSuggestion = Extension.create<BibleSuggestionOptions>({
       Suggestion<SuggestionItem>({
         editor: this.editor,
         ...this.options.suggestion,
+        pluginKey: BibleSuggestionPluginKey,
       }),
     ];
   },

@@ -1,6 +1,9 @@
 import { Extension } from '@tiptap/core';
+import { PluginKey } from '@tiptap/pm/state';
 import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
 import type { SlashCommandItem } from './SlashCommandList';
+
+const SlashCommandPluginKey = new PluginKey('slashCommand');
 
 export type SlashCommandOptions = {
   suggestion: Partial<SuggestionOptions<SlashCommandItem>>;
@@ -15,6 +18,7 @@ export const SlashCommand = Extension.create<SlashCommandOptions>({
         char: '/',
         allowSpaces: false,
         startOfLine: true,
+        pluginKey: SlashCommandPluginKey,
       },
     };
   },
@@ -24,6 +28,7 @@ export const SlashCommand = Extension.create<SlashCommandOptions>({
       Suggestion<SlashCommandItem>({
         editor: this.editor,
         ...this.options.suggestion,
+        pluginKey: SlashCommandPluginKey,
       }),
     ];
   },
