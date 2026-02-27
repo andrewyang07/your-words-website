@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { BubbleMenu, FloatingMenu } from '@tiptap/react/menus';
+import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Markdown } from 'tiptap-markdown';
@@ -167,48 +167,58 @@ export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEdi
         </BubbleButton>
       </BubbleMenu>
 
-      {/* Floating menu - appears on empty lines */}
-      <FloatingMenu
-        editor={editor}
-        options={{ placement: 'left' }}
-        className="flex items-center gap-0.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-1 opacity-50 hover:opacity-100 transition-opacity"
-      >
+      {/* Static toolbar */}
+      <div className="border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900 p-2 flex items-center gap-1">
+        <BubbleButton
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          isActive={editor.isActive('bold')}
+          title="粗体"
+        >
+          <Bold className="w-4 h-4" />
+        </BubbleButton>
+        <BubbleButton
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          isActive={editor.isActive('italic')}
+          title="斜体"
+        >
+          <Italic className="w-4 h-4" />
+        </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          isActive={false}
+          isActive={editor.isActive('heading', { level: 2 })}
           title="标题"
         >
-          <Heading2 className="w-3.5 h-3.5" />
-        </BubbleButton>
-        <BubbleButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          isActive={false}
-          title="列表"
-        >
-          <List className="w-3.5 h-3.5" />
-        </BubbleButton>
-        <BubbleButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          isActive={false}
-          title="有序列表"
-        >
-          <ListOrdered className="w-3.5 h-3.5" />
+          <Heading2 className="w-4 h-4" />
         </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          isActive={false}
+          isActive={editor.isActive('blockquote')}
           title="引用"
         >
-          <Quote className="w-3.5 h-3.5" />
+          <Quote className="w-4 h-4" />
+        </BubbleButton>
+        <BubbleButton
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          isActive={editor.isActive('bulletList')}
+          title="列表"
+        >
+          <List className="w-4 h-4" />
+        </BubbleButton>
+        <BubbleButton
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          isActive={editor.isActive('orderedList')}
+          title="有序列表"
+        >
+          <ListOrdered className="w-4 h-4" />
         </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
           isActive={false}
           title="分割线"
         >
-          <Minus className="w-3.5 h-3.5" />
+          <Minus className="w-4 h-4" />
         </BubbleButton>
-      </FloatingMenu>
+      </div>
 
       {/* Editor content */}
       <EditorContent editor={editor} className="flex-1 overflow-y-auto" />

@@ -423,96 +423,98 @@ export default function BibleNoteClient() {
                     onNewNote={handleNewNote}
                 />
 
-                {/* Usage guide */}
+                {/* Help modal */}
                 {showHelp && (
-                    <div className="mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-4 md:p-6 animate-fade-in">
-                        <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <HelpCircle className="w-6 h-6 text-bible-600 dark:text-bible-400" />
-                                <h2 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                                    如何使用聖經筆記本
-                                </h2>
-                            </div>
-                            <button
-                                onClick={() => setShowHelp(false)}
-                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                title="關閉"
-                                aria-label="關閉使用說明"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="flex items-start gap-3">
-                                <FileText className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
-                                <div>
-                                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
-                                        富文本編輯
-                                    </h4>
-                                    <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        所見即所得的編輯體驗，選中文字時會彈出格式工具欄。支持粗體、斜體、標題、列表、引用等格式。
-                                    </p>
+                    <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-start animate-fade-in" onClick={() => setShowHelp(false)}>
+                        <div className="max-w-lg w-full mx-4 mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-bible-200 dark:border-gray-700 p-4 md:p-6" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <HelpCircle className="w-6 h-6 text-bible-600 dark:text-bible-400" />
+                                    <h2 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese">
+                                        如何使用聖經筆記本
+                                    </h2>
                                 </div>
+                                <button
+                                    onClick={() => setShowHelp(false)}
+                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                    title="關閉"
+                                    aria-label="關閉使用說明"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
-                                <div>
-                                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
-                                        @ 搜索經文
-                                    </h4>
-                                    <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        輸入 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@</code> 後跟經文名稱（如 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@约3:16</code>）即可搜索並插入經文。支持拼音搜索（如 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@yuehan</code> 找到約翰福音）和模糊匹配。
-                                    </p>
+                            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                                <div className="flex items-start gap-3">
+                                    <FileText className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                        <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                                            富文本編輯
+                                        </h4>
+                                        <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                                            所見即所得的編輯體驗，選中文字時會彈出格式工具欄。支持粗體、斜體、標題、列表、引用等格式。
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="flex items-start gap-3">
-                                <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
-                                <div>
-                                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
-                                        / 斜杠命令
-                                    </h4>
-                                    <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        在空行開頭輸入 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">/</code> 可以快速插入經文、標題、引用、列表等塊級元素。
-                                    </p>
+                                <div className="flex items-start gap-3">
+                                    <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                        <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                                            @ 搜索經文
+                                        </h4>
+                                        <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                                            輸入 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@</code> 後跟經文名稱（如 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@约3:16</code>）即可搜索並插入經文。支持拼音搜索（如 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@yuehan</code> 找到約翰福音）和模糊匹配。
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="flex items-start gap-3">
-                                <BookOpen className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
-                                <div>
-                                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
-                                        查看引用的經文
-                                    </h4>
-                                    <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        右側（桌面端）或「引用」標籤（移動端）會顯示所有引用的經文完整內容。點擊「查看整章」會在底部彈出浮動窗口。
-                                    </p>
+                                <div className="flex items-start gap-3">
+                                    <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                        <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                                            / 斜杠命令
+                                        </h4>
+                                        <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                                            在空行開頭輸入 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">/</code> 可以快速插入經文、標題、引用、列表等塊級元素。
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="flex items-start gap-3">
-                                <Download className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
-                                <div>
-                                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
-                                        展開與導出
-                                    </h4>
-                                    <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        點擊「展開所有經文」可將完整經文內容插入筆記。完成後使用「導出」下載為 Markdown 文件。
-                                    </p>
+                                <div className="flex items-start gap-3">
+                                    <BookOpen className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                        <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                                            查看引用的經文
+                                        </h4>
+                                        <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                                            右側（桌面端）或「引用」標籤（移動端）會顯示所有引用的經文完整內容。點擊「查看整章」會在底部彈出浮動窗口。
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
-                                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 font-chinese mb-2">
-                                    重要提示
-                                </p>
-                                <ul className="text-xs text-amber-700 dark:text-amber-300 font-chinese space-y-1 ml-4">
-                                    <li>支持多篇笔记，点击顶部「笔记」按钮管理笔记列表</li>
-                                    <li>數據保存在瀏覽器本地，清除瀏覽器數據會丟失</li>
-                                    <li>建議定期導出備份（複製到剪貼板或下載 MD 文件）</li>
-                                </ul>
+                                <div className="flex items-start gap-3">
+                                    <Download className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                        <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                                            展開與導出
+                                        </h4>
+                                        <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                                            點擊「展開所有經文」可將完整經文內容插入筆記。完成後使用「導出」下載為 Markdown 文件。
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+                                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 font-chinese mb-2">
+                                        重要提示
+                                    </p>
+                                    <ul className="text-xs text-amber-700 dark:text-amber-300 font-chinese space-y-1 ml-4">
+                                        <li>支持多篇笔记，点击顶部「笔记」按钮管理笔记列表</li>
+                                        <li>數據保存在瀏覽器本地，清除瀏覽器數據會丟失</li>
+                                        <li>建議定期導出備份（複製到剪貼板或下載 MD 文件）</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
