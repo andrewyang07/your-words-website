@@ -8,12 +8,13 @@ import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import PageHeader from '@/components/layout/PageHeader';
-import MarkdownEditor from './MarkdownEditor';
+import NoteEditor from './NoteEditor';
 import UsageGuide from './UsageGuide';
 import VerseReferenceList from './VerseReferenceList';
 import OcrImporter from './OcrImporter';
 import NoteList from './NoteList';
 import { getAllNotes, getNote, saveNote, createNote, migrateFromLocalStorage, extractTitle, type Note } from '@/lib/noteStorage';
+import { initializeSearch } from '@/lib/editorSearch';
 
 // 动态导入非关键组件以提升性能
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -46,7 +47,7 @@ export default function BibleNoteClient() {
     const [lastViewedChapter, setLastViewedChapter] = useState<number>(1);
     const [showSaveIndicator, setShowSaveIndicator] = useState(false);
 
-    // 初始化：迁移旧数据，加载最新笔记
+    // 初始化：迁移旧数据，加载最新笔记，预加载搜索引擎
     useEffect(() => {
         const init = async () => {
             await migrateFromLocalStorage();
@@ -66,6 +67,9 @@ export default function BibleNoteClient() {
             }
         };
         void init();
+
+        // Eagerly initialize search engine (non-blocking)
+        void initializeSearch();
     }, []);
 
     // 从 localStorage 恢复上次查看的章节
@@ -82,7 +86,6 @@ export default function BibleNoteClient() {
                 setLastViewedChapter(1);
             }
         } else {
-            // 默认为创世记1章
             setLastViewedBook('GEN');
             setLastViewedChapter(1);
         }
@@ -130,12 +133,10 @@ export default function BibleNoteClient() {
         }
     }, [toastMessage]);
 
-    // 显示 Toast 提示
     const showToast = useCallback((message: string) => {
         setToastMessage(message);
     }, []);
 
-    // 切换到指定笔记
     const handleSelectNote = useCallback(async (id: string) => {
         const note = await getNote(id);
         if (note) {
@@ -145,7 +146,6 @@ export default function BibleNoteClient() {
         }
     }, []);
 
-    // 新建笔记
     const handleNewNote = useCallback(async () => {
         const note = await createNote();
         setCurrentNoteId(note.id);
@@ -157,50 +157,38 @@ export default function BibleNoteClient() {
     // 解析经文引用（去重）
     const references = useMemo(() => {
         const allRefs = parseVerseReferences(content);
-
-        // 去重：基于 original（如"约3:16"）
         const seen = new Set<string>();
-        const uniqueRefs = allRefs.filter((ref) => {
-            if (seen.has(ref.original)) {
-                return false;
-            }
+        return allRefs.filter((ref) => {
+            if (seen.has(ref.original)) return false;
             seen.add(ref.original);
             return true;
         });
-
-        return uniqueRefs;
     }, [content]);
 
-    // 导出到文件
     const handleExportToFile = useCallback(() => {
         const date = new Date().toISOString().split('T')[0];
         const filename = `圣经笔记_${date}.md`;
-
         const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
         const url = URL.createObjectURL(blob);
-
         const link = document.createElement('a');
         link.href = url;
         link.download = filename;
         link.click();
-
         URL.revokeObjectURL(url);
         setShowExportMenu(false);
     }, [content]);
 
-    // 复制到剪贴板
     const handleCopyToClipboard = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(content);
-            showToast('✅ 已複製到剪貼板');
+            showToast('已複製到剪貼板');
             setShowExportMenu(false);
         } catch (error) {
             console.error('Failed to copy:', error);
-            showToast('❌ 複製失敗，請稍後再試');
+            showToast('複製失敗，請稍後再試');
         }
     }, [content, showToast]);
 
-    // 清空笔记
     const handleClear = useCallback(() => {
         if (confirm('確定要清空筆記嗎？此操作無法撤銷。')) {
             setContent('');
@@ -210,93 +198,70 @@ export default function BibleNoteClient() {
     // 展开所有经文（跳过已展开的）
     const handleExpandAll = useCallback(async () => {
         if (references.length === 0) {
-            showToast('⚠️ 未檢測到經文引用');
+            showToast('未檢測到經文引用');
             return;
         }
 
         setIsExpanding(true);
 
         try {
-            // 检测已展开的经文（格式：> 约3:16: ...）
-            // 需要检查引用后面紧跟着换行和 > 引用块
             const expandedRefs = new Set<string>();
 
-            // 遍历所有引用，检查其后面是否紧跟着展开的内容
             references.forEach((ref) => {
-                // 查找引用在内容中的位置
                 const refEnd = ref.position + ref.original.length;
-                // 获取引用后的内容（接下来的 200 个字符）
                 const afterRef = content.slice(refEnd, refEnd + 200);
-
-                // 检查是否紧跟着换行和 > 引用块，且包含相同的引用
-                // 格式：\n> 约3:16: 经文内容
                 const expandedPattern = new RegExp(`^\\s*\\n>\\s*${ref.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[:：]`, 'm');
-
                 if (expandedPattern.test(afterRef)) {
                     expandedRefs.add(ref.original.trim());
                 }
             });
 
-            // 过滤出未展开的经文
-            const toExpand = references.filter((ref) => {
-                return !expandedRefs.has(ref.original.trim());
-            });
+            const toExpand = references.filter((ref) => !expandedRefs.has(ref.original.trim()));
 
             if (toExpand.length === 0) {
-                showToast('✅ 所有經文已展開');
+                showToast('所有經文已展開');
                 setIsExpanding(false);
                 return;
             }
 
-            // 从后往前处理，避免位置偏移
             const sortedRefs = [...toExpand].sort((a, b) => b.position - a.position);
-
             let newContent = content;
 
             for (const ref of sortedRefs) {
-                // 获取经文内容
                 const text = await getVerseText(ref.book, ref.chapter, ref.startVerse);
-
                 if (text) {
-                    // 在引用后插入完整经文
                     const insertion = `\n> ${ref.original}: ${text}\n`;
                     const pos = ref.position + ref.original.length;
-
                     newContent = newContent.slice(0, pos) + insertion + newContent.slice(pos);
                 }
             }
 
             setContent(newContent);
 
-            // 给用户反馈
             const skipped = references.length - toExpand.length;
             if (skipped > 0) {
-                showToast(`✅ 已展開 ${toExpand.length} 節，跳過 ${skipped} 節`);
+                showToast(`已展開 ${toExpand.length} 節，跳過 ${skipped} 節`);
             } else {
-                showToast(`✅ 已展開 ${toExpand.length} 節經文`);
+                showToast(`已展開 ${toExpand.length} 節經文`);
             }
         } catch (error) {
             console.error('Error expanding verses:', error);
-            showToast('❌ 展開失敗，請稍後再試');
+            showToast('展開失敗，請稍後再試');
         } finally {
             setIsExpanding(false);
         }
     }, [content, references, showToast]);
 
-    // 查看整章（打开浮动面板而不是跳转）
     const handleViewChapter = useCallback((book: string, chapter: number) => {
         setChapterViewerState({ isOpen: true, book, chapter });
         setLastViewedBook(book);
         setLastViewedChapter(chapter);
     }, []);
 
-    // 切换圣经查看器（打开/关闭）
     const handleOpenBible = useCallback(() => {
         if (chapterViewerState.isOpen) {
-            // 如果已打开，则关闭
             setChapterViewerState({ isOpen: false, book: '', chapter: 0 });
         } else {
-            // 如果未打开，则打开
             setChapterViewerState({
                 isOpen: true,
                 book: lastViewedBook || 'GEN',
@@ -305,16 +270,13 @@ export default function BibleNoteClient() {
         }
     }, [chapterViewerState.isOpen, lastViewedBook, lastViewedChapter]);
 
-    // 章节变化回调
     const handleChapterChange = useCallback((book: string, chapter: number) => {
         setLastViewedBook(book);
         setLastViewedChapter(chapter);
     }, []);
 
-    // 插入经文到笔记末尾
     const handleInsertVerses = useCallback(
         (verses: Array<{ book: string; chapter: number; verse: number; text: string }>) => {
-            // 格式化经文为 Markdown 引用格式
             const insertText = verses
                 .map((v) => {
                     const ref = `${v.book}${v.chapter}:${v.verse}`;
@@ -322,18 +284,13 @@ export default function BibleNoteClient() {
                 })
                 .join('');
 
-            // 插入到笔记末尾
             setContent((prevContent) => prevContent + insertText);
-
-            showToast(`✅ 已插入 ${verses.length} 節經文`);
-
-            // 关闭章节查看器，返回笔记
+            showToast(`已插入 ${verses.length} 節經文`);
             setChapterViewerState({ isOpen: false, book: '', chapter: 0 });
         },
         [showToast]
     );
 
-    // 从 OCR 识别引用并插入笔记
     const handleInsertFromOcr = useCallback(
         async (ocrRefs: VerseReference[], expand: boolean) => {
             if (ocrRefs.length === 0) return;
@@ -353,14 +310,14 @@ export default function BibleNoteClient() {
             }
 
             setContent((prev) => prev + insertText);
-            showToast(`✅ 已插入 ${ocrRefs.length} 条 OCR 识别引用`);
+            showToast(`已插入 ${ocrRefs.length} 条 OCR 识别引用`);
         },
         [showToast]
     );
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
-            {/* 共用头部 */}
+            {/* Header */}
             <PageHeader
                 onMenuClick={() => setShowSideMenu(true)}
                 onHelpClick={() => setShowHelp(true)}
@@ -373,14 +330,12 @@ export default function BibleNoteClient() {
                 }
                 rightContent={
                     <>
-                        {/* 自动保存提示 */}
                         {showSaveIndicator && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 font-chinese animate-fade-in">
-                                💾 已自動保存
+                            <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese animate-fade-in">
+                                已保存
                             </span>
                         )}
 
-                        {/* 笔记列表按钮 */}
                         <button
                             onClick={() => setShowNoteList(true)}
                             className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
@@ -393,7 +348,6 @@ export default function BibleNoteClient() {
 
                         <OcrImporter onInsertReferences={handleInsertFromOcr} />
 
-                        {/* 导出按钮（下拉菜单） */}
                         <div className="relative">
                             <button
                                 onClick={() => setShowExportMenu(!showExportMenu)}
@@ -408,12 +362,9 @@ export default function BibleNoteClient() {
                                 <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
                             </button>
 
-                            {/* 下拉菜单 */}
                             {showExportMenu && content && (
                                 <>
-                                    {/* 背景遮罩 */}
                                     <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
-                                    {/* 菜单内容 - 移动端底部弹出，桌面端下拉 */}
                                     <div className="fixed md:absolute bottom-0 md:bottom-auto left-0 right-0 md:right-0 md:left-auto md:mt-2 w-full md:w-48 bg-white dark:bg-gray-800 rounded-t-xl md:rounded-lg shadow-2xl border-t md:border border-bible-200 dark:border-gray-700 py-3 md:py-1 z-50">
                                         <button
                                             onClick={handleCopyToClipboard}
@@ -449,13 +400,12 @@ export default function BibleNoteClient() {
                 }
             />
 
-            {/* 主内容区域 - 根据 ChapterViewer 状态调整高度 */}
+            {/* Main content */}
             <div className={`max-w-7xl mx-auto px-4 py-4 md:py-6 transition-all duration-300 ${
-                chapterViewerState.isOpen 
-                    ? 'h-[calc(50vh-5rem)] overflow-y-auto' 
+                chapterViewerState.isOpen
+                    ? 'h-[calc(50vh-5rem)] overflow-y-auto'
                     : 'min-h-[calc(100vh-8rem)]'
             }`}>
-                {/* 侧边栏菜单 */}
                 <SideMenu
                     isOpen={showSideMenu}
                     onClose={() => setShowSideMenu(false)}
@@ -465,7 +415,6 @@ export default function BibleNoteClient() {
                     onLanguageChange={setLanguage}
                 />
 
-                {/* 笔记列表抽屉 */}
                 <NoteList
                     isOpen={showNoteList}
                     onClose={() => setShowNoteList(false)}
@@ -474,7 +423,7 @@ export default function BibleNoteClient() {
                     onNewNote={handleNewNote}
                 />
 
-                {/* 使用说明 - 条件显示 */}
+                {/* Usage guide */}
                 {showHelp && (
                     <div className="mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-4 md:p-6 animate-fade-in">
                         <div className="flex items-start justify-between mb-3">
@@ -494,48 +443,43 @@ export default function BibleNoteClient() {
                             </button>
                         </div>
 
-                        {/* 直接显示使用说明内容，不需要再点击 */}
                         <div className="space-y-3">
-                            {/* 功能 1 */}
                             <div className="flex items-start gap-3">
                                 <FileText className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
                                 <div>
                                     <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
-                                        Markdown 編輯
+                                        富文本編輯
                                     </h4>
                                     <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        支持基礎 Markdown 語法，使用工具欄快速插入格式。移動端可切換「编辑」和「预览」標籤查看效果。
+                                        所見即所得的編輯體驗，選中文字時會彈出格式工具欄。支持粗體、斜體、標題、列表、引用等格式。
                                     </p>
                                 </div>
                             </div>
 
-                            {/* 功能 2 */}
                             <div className="flex items-start gap-3">
                                 <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
                                 <div>
                                     <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
-                                        自動補全經文引用
+                                        @ 搜索經文
                                     </h4>
                                     <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        輸入書卷名（如「马太」或「马1:2」）會自動彈出經文建議。選中後自動插入經文完整內容。支持模糊搜索，如「路1:1」會匹配「路加福音1:1」。
+                                        輸入 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@</code> 後跟經文名稱（如 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@约3:16</code>）即可搜索並插入經文。支持拼音搜索（如 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@yuehan</code> 找到約翰福音）和模糊匹配。
                                     </p>
                                 </div>
                             </div>
 
-                            {/* 功能 2.5 */}
                             <div className="flex items-start gap-3">
                                 <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
                                 <div>
                                     <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
-                                        /v 命令快速插入
+                                        / 斜杠命令
                                     </h4>
                                     <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        在编辑区输入「/v 约3:16」后按 Enter，可直接在光标处插入并展开该节经文；也可用工具栏📖按钮快速插入。
+                                        在空行開頭輸入 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">/</code> 可以快速插入經文、標題、引用、列表等塊級元素。
                                     </p>
                                 </div>
                             </div>
 
-                            {/* 功能 3 */}
                             <div className="flex items-start gap-3">
                                 <BookOpen className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
                                 <div>
@@ -543,12 +487,11 @@ export default function BibleNoteClient() {
                                         查看引用的經文
                                     </h4>
                                     <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                        右側（桌面端）或「引用」標籤（移動端）會顯示所有引用的經文完整內容。點擊「查看整章」會在底部彈出浮動窗口，可同時查看整章和編輯筆記。
+                                        右側（桌面端）或「引用」標籤（移動端）會顯示所有引用的經文完整內容。點擊「查看整章」會在底部彈出浮動窗口。
                                     </p>
                                 </div>
                             </div>
 
-                            {/* 功能 4 */}
                             <div className="flex items-start gap-3">
                                 <Download className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
                                 <div>
@@ -561,22 +504,21 @@ export default function BibleNoteClient() {
                                 </div>
                             </div>
 
-                            {/* 重要提示 */}
                             <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
                                 <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 font-chinese mb-2">
-                                    ⚠️ 重要提示
+                                    重要提示
                                 </p>
                                 <ul className="text-xs text-amber-700 dark:text-amber-300 font-chinese space-y-1 ml-4">
-                                    <li>• 支持多篇笔记，点击顶部「笔记」按钮管理笔记列表</li>
-                                    <li>• 數據保存在瀏覽器本地，清除瀏覽器數據會丟失</li>
-                                    <li>• 建議定期導出備份（複製到剪貼板或下載 MD 文件）</li>
+                                    <li>支持多篇笔记，点击顶部「笔记」按钮管理笔记列表</li>
+                                    <li>數據保存在瀏覽器本地，清除瀏覽器數據會丟失</li>
+                                    <li>建議定期導出備份（複製到剪貼板或下載 MD 文件）</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* 移动端 Tab 导航 - 超紧凑版 */}
+                {/* Mobile tab navigation */}
                 <div className="lg:hidden mb-2">
                     <div className="flex gap-1 bg-white dark:bg-gray-800 rounded-lg p-1 shadow-lg border border-bible-200 dark:border-gray-700">
                         <button
@@ -609,23 +551,20 @@ export default function BibleNoteClient() {
                     </div>
                 </div>
 
-                {/* 主要内容区域 - 统一卡片样式 */}
+                {/* Main content area */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                    {/* 编辑器区域（桌面端：2/3 宽度） */}
+                    {/* Editor (desktop: 2/3 width) */}
                     <div className={`lg:col-span-2 ${activeTab === 'edit' ? 'block' : 'hidden lg:block'}`}>
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 overflow-hidden">
-                            <MarkdownEditor
-                                value={content}
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 overflow-hidden min-h-[400px]">
+                            <NoteEditor
+                                content={content}
                                 onChange={setContent}
-                                placeholder={`開始記錄你的靈修筆記...
-
-試試輸入經文引用，如「马太福音5:1」，系統會自動顯示補全建議。`}
                                 onExpandVerse={getVerseText}
                             />
                         </div>
                     </div>
 
-                    {/* 经文引用列表（桌面端：1/3 宽度） */}
+                    {/* Verse reference list (desktop: 1/3 width) */}
                     <div className={`lg:col-span-1 ${activeTab === 'references' ? 'block' : 'hidden lg:block'}`}>
                         <VerseReferenceList
                             references={references}
@@ -636,14 +575,14 @@ export default function BibleNoteClient() {
                     </div>
                 </div>
 
-                {/* Toast 提示 */}
+                {/* Toast */}
                 {toastMessage && (
                     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-lg z-50 font-chinese text-sm max-w-md animate-fade-in">
                         {toastMessage}
                     </div>
                 )}
 
-                {/* 章节查看器 */}
+                {/* Chapter viewer */}
                 <ChapterViewer
                     isOpen={chapterViewerState.isOpen}
                     onClose={() => setChapterViewerState({ isOpen: false, book: '', chapter: 0 })}
@@ -653,12 +592,12 @@ export default function BibleNoteClient() {
                     onChapterChange={handleChapterChange}
                 />
 
-                {/* 浮动按钮 - 位置根据 ChapterViewer 状态调整 */}
+                {/* Floating Bible button */}
                 <button
                     onClick={handleOpenBible}
                     className={`fixed ${
-                        chapterViewerState.isOpen 
-                            ? 'bottom-[52vh]' 
+                        chapterViewerState.isOpen
+                            ? 'bottom-[52vh]'
                             : 'bottom-20 lg:bottom-8'
                     } right-6 lg:left-8 min-h-[56px] min-w-[56px] lg:min-h-[48px] lg:min-w-[48px] bg-bible-500 hover:bg-bible-600 active:bg-bible-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-40 flex items-center justify-center touch-manipulation`}
                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
