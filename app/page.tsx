@@ -134,13 +134,11 @@ export default function HomePage() {
 
     // 滚动监听 - 懒加载更多卡片
     useEffect(() => {
+        let rafId: number | null = null;
         let isLoading = false;
 
-        const handleScroll = () => {
-            // 防止频繁触发
+        const checkScroll = () => {
             if (isLoading) return;
-
-            // 检测是否滚动到接近底部（距离底部 500px 时加载）
             const scrollHeight = document.documentElement.scrollHeight;
             const scrollTop = document.documentElement.scrollTop;
             const clientHeight = document.documentElement.clientHeight;
@@ -148,21 +146,27 @@ export default function HomePage() {
             if (scrollHeight - scrollTop - clientHeight < 500) {
                 isLoading = true;
                 setVisibleCount((prev) => {
-                    // 根据设备调整每次加载数量
                     const width = window.innerWidth;
                     const increment = width < 768 ? 12 : width < 1024 ? 18 : 24;
-
-                    // 加载完成后重置标志
-                    setTimeout(() => {
-                        isLoading = false;
-                    }, 300);
+                    setTimeout(() => { isLoading = false; }, 300);
                     return prev + increment;
                 });
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        const handleScroll = () => {
+            if (rafId !== null) return; // 每帧最多检查一次
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+                checkScroll();
+            });
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (rafId !== null) cancelAnimationFrame(rafId);
+        };
     }, []);
 
     // 从 localStorage 读取引导卡片状态

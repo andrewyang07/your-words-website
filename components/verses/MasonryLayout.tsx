@@ -1,10 +1,43 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { motion } from 'framer-motion';
 import { Verse } from '@/types/verse';
 import VerseCard from './VerseCard';
 import { getCardSize } from '@/lib/utils';
+
+interface MasonryCardProps {
+    verse: Verse;
+    originalIndex: number;
+    onViewInBible?: (verse: Verse) => void;
+    defaultRevealed: boolean;
+}
+
+const MasonryCard = memo(function MasonryCard({ verse, originalIndex, onViewInBible, defaultRevealed }: MasonryCardProps) {
+    const handleViewInBible = useCallback(() => {
+        onViewInBible?.(verse);
+    }, [onViewInBible, verse]);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "0px 0px -50px 0px" }}
+            transition={{
+                duration: 0.35,
+                delay: (originalIndex % 24) * 0.045,
+                ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+        >
+            <VerseCard
+                verse={verse}
+                size={getCardSize(verse)}
+                onViewInBible={handleViewInBible}
+                defaultRevealed={defaultRevealed}
+            />
+        </motion.div>
+    );
+});
 
 interface MasonryLayoutProps {
     verses: Verse[];
@@ -29,21 +62,29 @@ export default function MasonryLayout({ verses, onViewInBible, defaultRevealed =
         const updateColumnCount = () => {
             const width = window.innerWidth;
             if (width < 768) {
-                setColumnCount(1); // 手机端
+                setColumnCount(1);
             } else if (width < 1024) {
-                setColumnCount(2); // 平板端
+                setColumnCount(2);
             } else if (width < 1280) {
-                setColumnCount(3); // 小桌面
+                setColumnCount(3);
             } else {
-                setColumnCount(4); // 大桌面
+                setColumnCount(4);
             }
         };
 
-        // 立即执行一次
         updateColumnCount();
 
-        window.addEventListener('resize', updateColumnCount);
-        return () => window.removeEventListener('resize', updateColumnCount);
+        let timer: ReturnType<typeof setTimeout>;
+        const onResize = () => {
+            clearTimeout(timer);
+            timer = setTimeout(updateColumnCount, 150);
+        };
+
+        window.addEventListener('resize', onResize);
+        return () => {
+            window.removeEventListener('resize', onResize);
+            clearTimeout(timer);
+        };
     }, []);
 
     // 计算瀑布流布局，同时记录每张卡片的原始索引
@@ -72,24 +113,13 @@ export default function MasonryLayout({ verses, onViewInBible, defaultRevealed =
             {masonryColumns.map((column, columnIndex) => (
                 <div key={columnIndex} className="flex flex-col gap-4">
                     {column.map(({ verse, originalIndex }) => (
-                        <motion.div
+                        <MasonryCard
                             key={verse.id}
-                            initial={{ opacity: 0, y: 18 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-                            transition={{
-                                duration: 0.35,
-                                delay: (originalIndex % 24) * 0.045,
-                                ease: [0.25, 0.46, 0.45, 0.94],
-                            }}
-                        >
-                            <VerseCard
-                                verse={verse}
-                                size={getCardSize(verse)}
-                                onViewInBible={() => onViewInBible?.(verse)}
-                                defaultRevealed={defaultRevealed}
-                            />
-                        </motion.div>
+                            verse={verse}
+                            originalIndex={originalIndex}
+                            onViewInBible={onViewInBible}
+                            defaultRevealed={defaultRevealed}
+                        />
                     ))}
                 </div>
             ))}

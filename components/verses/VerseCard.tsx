@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
@@ -18,7 +18,7 @@ interface VerseCardProps {
     defaultRevealed?: boolean; // 是否默认展开
 }
 
-export default function VerseCard({ verse, size = 'medium', onViewInBible, defaultRevealed = false }: VerseCardProps) {
+function VerseCard({ verse, size = 'medium', onViewInBible, defaultRevealed = false }: VerseCardProps) {
     const router = useRouter();
     const { isFavorite, toggleFavorite } = useFavoritesStore();
     const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
@@ -182,3 +182,5 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         </div>
     );
 }
+
+export default memo(VerseCard);
