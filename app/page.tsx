@@ -23,12 +23,14 @@ import {
     ArrowLeft,
     Users,
     Search,
+    SlidersHorizontal,
 } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
+import { useMaskStore } from '@/stores/useMaskStore';
 import { Verse, Book } from '@/types/verse';
 import { encodeVerseList, decodeVerseList } from '@/lib/bibleBookMapping';
 import { logError } from '@/lib/errorHandler';
@@ -77,7 +79,7 @@ export default function HomePage() {
     const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     // 是否显示引导提示（从 localStorage 读取）
-    const [showGuide, setShowGuide] = useState(true);
+    const [showGuide, setShowGuide] = useState(false);
     const [showGuideHint, setShowGuideHint] = useState(false); // 关闭提示
 
     // 分享功能相关状态
@@ -96,6 +98,8 @@ export default function HomePage() {
 
     // 侧边栏菜单显示状态
     const [showSideMenu, setShowSideMenu] = useState(false);
+    const [showMaskSettingsDesktop, setShowMaskSettingsDesktop] = useState(false);
+    const [showMaskSettingsMobile, setShowMaskSettingsMobile] = useState(false);
 
     // 搜索状态
     const [searchQuery, setSearchQuery] = useState('');
@@ -122,6 +126,10 @@ export default function HomePage() {
     });
     const [statsLoading, setStatsLoading] = useState(true);
     const [showStatsModal, setShowStatsModal] = useState(false); // 移动端统计 modal
+    const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
+    const maskModeLabel = maskMode === 'punctuation' ? '每句' : '開頭';
+    const maskCharsLabel = maskCharsType === 'fixed' ? `固定${maskCharsFixed}字` : `隨機${maskCharsMin}-${maskCharsMax}字`;
+    const maskSettingsSummary = `${maskModeLabel}·${maskCharsLabel}`;
 
     // 滚动监听 - 懒加载更多卡片
     useEffect(() => {
@@ -898,42 +906,21 @@ export default function HomePage() {
                             {/* 全局统计 - 移动端（紧凑，可点击）*/}
                             <button
                                 onClick={() => setShowStatsModal(true)}
-                                className="flex md:hidden items-center gap-1 px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="flex md:hidden items-center justify-center px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px] min-w-[44px]"
                                 title="查看统计"
+                                aria-label={
+                                    statsLoading
+                                        ? '查看统计'
+                                        : `查看统计，访客 ${globalStats.totalUsers.toLocaleString()}，收藏 ${globalStats.totalFavorites.toLocaleString()}`
+                                }
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 {statsLoading ? (
-                                    <span className="h-4 w-16 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
+                                    <span className="h-4 w-4 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded-full animate-pulse-slow"></span>
                                 ) : (
-                                    <span className="text-sm text-bible-700 dark:text-bible-300 font-chinese">
-                                        👥 164 · ⭐ 35
-                                    </span>
+                                    <Users className="w-4 h-4 text-bible-700 dark:text-bible-300" />
                                 )}
                             </button>
-
-                            {/* 搜索输入框 - 桌面端在 header 行内显示 */}
-                            <div className="relative hidden md:flex items-center">
-                                <Search className="absolute left-3 w-4 h-4 text-bible-500 dark:text-bible-400 pointer-events-none" />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => handleSearchChange(e.target.value)}
-                                    onFocus={initSearchEngine}
-                                    placeholder="搜索..."
-                                    className="w-36 focus:w-52 transition-all duration-200 pl-9 pr-8 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-800 rounded-lg text-sm text-bible-700 dark:text-bible-300 placeholder-bible-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-bible-400 dark:focus:ring-bible-500 border border-transparent focus:border-bible-300 dark:focus:border-gray-600 font-chinese min-h-[44px]"
-                                    aria-label="搜索经文"
-                                />
-                                {searchQuery && (
-                                    <button
-                                        onClick={handleClearSearch}
-                                        className="absolute right-2 p-0.5 hover:bg-bible-200 dark:hover:bg-gray-600 rounded transition-colors"
-                                        title="清除搜索"
-                                        aria-label="清除搜索"
-                                    >
-                                        <X className="w-3.5 h-3.5 text-bible-500 dark:text-bible-400" />
-                                    </button>
-                                )}
-                            </div>
 
                             {/* 帮助按钮 - 只在平板/桌面端显示 */}
                             <button
@@ -945,6 +932,26 @@ export default function HomePage() {
                             >
                                 <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
                                 <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">帮助</span>
+                            </button>
+
+                            {/* 提示设置 - 桌面折叠面板入口 */}
+                            <button
+                                onClick={() => setShowMaskSettingsDesktop(!showMaskSettingsDesktop)}
+                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                title="打开提示设置"
+                                aria-label="打开提示设置"
+                                aria-expanded={showMaskSettingsDesktop}
+                                aria-controls="mask-settings-panel"
+                            >
+                                <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
+                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">提示设置</span>
+                                <span className="hidden lg:inline font-chinese text-xs text-bible-600 dark:text-bible-400">{maskSettingsSummary}</span>
+                                <ChevronDown
+                                    className={`hidden lg:inline w-3.5 h-3.5 text-bible-500 dark:text-bible-400 transition-transform ${
+                                        showMaskSettingsDesktop ? 'rotate-180' : ''
+                                    }`}
+                                />
                             </button>
 
                             {/* 简繁体切换 - 只在平板/桌面端显示 */}
@@ -983,6 +990,17 @@ export default function HomePage() {
                                 )}
                             </button>
 
+                            {/* 提示设置 - 移动端抽屉入口 */}
+                            <button
+                                onClick={() => setShowMaskSettingsMobile(true)}
+                                className="flex md:hidden items-center justify-center px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px] min-w-[44px]"
+                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                title={`提示设置（${maskSettingsSummary}）`}
+                                aria-label={`打开提示设置，当前${maskSettingsSummary}`}
+                            >
+                                <SlidersHorizontal className="w-4 h-4 text-bible-700 dark:text-bible-300" />
+                            </button>
+
                             {/* 汉堡菜单按钮 - 移到最右侧 */}
                             <button
                                 onClick={() => setShowSideMenu(true)}
@@ -997,8 +1015,8 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    {/* 搜索输入框 - 移动端独占一行 */}
-                    <div className="flex md:hidden mb-3">
+                    {/* 搜索输入框 - 全端独占一行 */}
+                    <div className="flex mb-3">
                         <div className="relative flex items-center w-full">
                             <Search className="absolute left-3 w-4 h-4 text-bible-500 dark:text-bible-400 pointer-events-none" />
                             <input
@@ -1366,6 +1384,31 @@ export default function HomePage() {
                     onLanguageChange={setLanguage}
                 />
 
+                {/* 移动端提示设置抽屉 */}
+                {showMaskSettingsMobile && (
+                    <div className="fixed inset-0 z-50 md:hidden">
+                        <div className="absolute inset-0 bg-black/50" onClick={() => setShowMaskSettingsMobile(false)} />
+                        <div className="absolute inset-x-0 bottom-0 bg-white dark:bg-gray-900 rounded-t-2xl border-t-2 border-bible-200 dark:border-gray-700 shadow-2xl max-h-[85vh] overflow-y-auto">
+                            <div className="sticky top-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-4 py-3 border-b border-bible-200 dark:border-gray-700 flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">提示设置</p>
+                                    <p className="text-xs text-bible-600 dark:text-bible-400 font-chinese">{maskSettingsSummary}</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowMaskSettingsMobile(false)}
+                                    className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-bible-100 dark:hover:bg-gray-800 transition-colors"
+                                    aria-label="关闭提示设置"
+                                >
+                                    <X className="w-5 h-5 text-bible-600 dark:text-bible-400" />
+                                </button>
+                            </div>
+                            <div className="p-4 pb-6">
+                                <MaskSettings />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* 移动端统计 modal */}
                 {showStatsModal && (
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowStatsModal(false)}>
@@ -1545,6 +1588,23 @@ export default function HomePage() {
                         </div>
                     )}
 
+                    {/* 桌面端提示设置折叠面板 */}
+                    <div
+                        id="mask-settings-panel"
+                        className={`hidden md:block overflow-hidden transition-all duration-300 ${
+                            showMaskSettingsDesktop ? 'max-h-[280px] opacity-100 mb-4' : 'max-h-0 opacity-0'
+                        }`}
+                        aria-hidden={!showMaskSettingsDesktop}
+                    >
+                        <div className="rounded-xl border border-bible-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 p-4 shadow-sm">
+                            <div className="flex items-center justify-between mb-3">
+                                <p className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">遮罩提示设置</p>
+                                <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">{maskSettingsSummary}</span>
+                            </div>
+                            <MaskSettings />
+                        </div>
+                    </div>
+
                     {/* 状态标签和统计 */}
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -1564,11 +1624,6 @@ export default function HomePage() {
                                     )}
                                 </>
                             )}
-                        </div>
-
-                        {/* 遮罩设置控制面板 */}
-                        <div className="w-full md:w-auto">
-                            <MaskSettings />
                         </div>
 
                         <div className="flex items-center gap-2 flex-wrap">
