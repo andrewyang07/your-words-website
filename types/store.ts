@@ -1,6 +1,6 @@
 // Zustand Store 类型定义
 
-import { Verse, Book, Testament, SortBy, Language } from './verse';
+import { Verse, Book, Language } from './verse';
 
 // 应用状态
 export interface AppState {
@@ -15,7 +15,6 @@ export interface AppState {
     setError: (error: string | null) => void;
     setLanguage: (language: Language) => void;
     setTheme: (theme: 'light' | 'dark' | 'system') => void;
-    toggleTheme: () => void;
 }
 
 // 经文数据状态
@@ -33,19 +32,3 @@ export interface VerseState {
     loadBooks: (language?: Language) => Promise<void>;
 }
 
-// 筛选状态
-export interface FilterState {
-    testament: Testament | 'all';
-    selectedBooks: string[];
-    sortBy: SortBy;
-    selectedBook: string | null;
-    selectedChapter: number | null;
-
-    setTestament: (testament: Testament | 'all') => void;
-    toggleBook: (book: string) => void;
-    clearBooks: () => void;
-    setSortBy: (sortBy: SortBy) => void;
-    setSelectedBook: (book: string | null) => void;
-    setSelectedChapter: (chapter: number | null) => void;
-    resetFilters: () => void;
-}

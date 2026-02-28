@@ -9,7 +9,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     theme: 'light' | 'dark' | 'system';
-    onThemeChange: () => void;
+    onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
     onViewChapter?: (bookName: string, chapter: number) => void;
     language: 'simplified' | 'traditional';
     onLanguageChange: (lang: 'simplified' | 'traditional') => void;
@@ -160,7 +160,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     <div className="space-y-1 mt-2">
                                         {/* 浅色模式 */}
                                         <button
-                                            onClick={theme !== 'light' ? onThemeChange : undefined}
+                                            onClick={theme !== 'light' ? () => onThemeChange('light') : undefined}
                                             disabled={theme === 'light'}
                                             className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                                 theme === 'light'
@@ -177,7 +177,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
 
                                         {/* 深色模式 */}
                                         <button
-                                            onClick={theme !== 'dark' ? onThemeChange : undefined}
+                                            onClick={theme !== 'dark' ? () => onThemeChange('dark') : undefined}
                                             disabled={theme === 'dark'}
                                             className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                                 theme === 'dark'
@@ -194,7 +194,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
 
                                         {/* 跟随系统 */}
                                         <button
-                                            onClick={theme !== 'system' ? onThemeChange : undefined}
+                                            onClick={theme !== 'system' ? () => onThemeChange('system') : undefined}
                                             disabled={theme === 'system'}
                                             className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                                 theme === 'system'

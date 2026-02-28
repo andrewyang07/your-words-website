@@ -34,6 +34,7 @@ import { useMaskStore } from '@/stores/useMaskStore';
 import { Verse, Book } from '@/types/verse';
 import { encodeVerseList, decodeVerseList } from '@/lib/bibleBookMapping';
 import { logError } from '@/lib/errorHandler';
+import { shuffleArray } from '@/lib/utils';
 import { getSearchEngine } from '@/lib/search/searchEngine';
 import type { SearchResult } from '@/types/search';
 import MaskSettings from '@/components/settings/MaskSettings';
@@ -51,7 +52,7 @@ type FilterType = 'all' | 'old' | 'new' | 'favorites';
 type BookFilterType = 'all' | 'old' | 'new' | string; // string 为具体书卷名
 
 export default function HomePage() {
-    const { language, theme, setLanguage, toggleTheme } = useAppStore();
+    const { language, theme, setLanguage, setTheme } = useAppStore();
     const { verses, books, loadVerses, loadBooks } = useVerseStore();
     const { isFavorite, addFavorites, getFavoritesList } = useFavoritesStore();
     const [loading, setLoading] = useState(true);
@@ -86,7 +87,7 @@ export default function HomePage() {
     const [sharedVerses, setSharedVerses] = useState<Array<{ bookKey: string; chapter: number; verse: number }>>([]);
     const [sharedVersesData, setSharedVersesData] = useState<Verse[]>([]); // 分享经文的完整数据
     const [showShareBanner, setShowShareBanner] = useState(false);
-    const [shareToast, setShareToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
+    const [shareToast, setShareToast] = useState<string | null>(null);
     const [hasAddedAllShared, setHasAddedAllShared] = useState(false); // 是否已一键收藏
 
     // 收藏经文的完整数据
@@ -369,11 +370,11 @@ export default function HomePage() {
 
     // 清理分享toast的timer
     useEffect(() => {
-        if (shareToast.show) {
-            const timer = setTimeout(() => setShareToast({ show: false, message: '' }), 3000);
+        if (shareToast) {
+            const timer = setTimeout(() => setShareToast(null), 3000);
             return () => clearTimeout(timer);
         }
-    }, [shareToast.show]);
+    }, [shareToast]);
 
     // 当选择章节时，重置筛选状态（因为进入了圣经阅读模式）
     useEffect(() => {
@@ -517,12 +518,7 @@ export default function HomePage() {
 
             // 收藏模式也支持随机排序
             if (shuffleKey > 0) {
-                const shuffled = [...favFiltered];
-                for (let i = shuffled.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                }
-                favFiltered = shuffled;
+                favFiltered = shuffleArray(favFiltered);
             }
             return favFiltered;
         }
@@ -548,13 +544,7 @@ export default function HomePage() {
 
         // 2. 随机或默认排序
         if (shuffleKey > 0) {
-            // 随机模式：完全随机
-            const shuffled = [...filtered];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-            filtered = shuffled;
+            filtered = shuffleArray(filtered);
         } else {
             // 默认按圣经顺序
             filtered = [...filtered].sort((a, b) => {
@@ -789,13 +779,10 @@ export default function HomePage() {
 
             // 立即复制到剪贴板（移动端和桌面端统一处理）
             await navigator.clipboard.writeText(shareUrl);
-            setShareToast({
-                show: true,
-                message: '链接已复制到剪贴板，发送给他人即可查看您的收藏',
-            });
+            setShareToast('链接已复制到剪贴板，发送给他人即可查看您的收藏');
         } catch (error) {
             logError('HomePage:handleShareFavorites', error);
-            setShareToast({ show: true, message: '复制失败，请稍后重试' });
+            setShareToast('复制失败，请稍后重试');
         }
     };
 
@@ -805,7 +792,7 @@ export default function HomePage() {
         const verseIds = sharedVersesData.map((v) => v.id);
         addFavorites(verseIds);
         setHasAddedAllShared(true); // 标记为已收藏
-        setShareToast({ show: true, message: `已添加 ${verseIds.length} 节经文到收藏` });
+        setShareToast(`已添加 ${verseIds.length} 节经文到收藏`);
         // 不立即清除横幅，让用户看到星星变化
         // 用户可以手动点击"取消"或刷新页面
     };
@@ -1381,13 +1368,13 @@ export default function HomePage() {
                 )}
 
                 {/* 分享Toast通知 */}
-                {shareToast.show && (
+                {shareToast && (
                     <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4 animate-fade-in">
                         <div className="p-4 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 text-blue-900 dark:text-blue-100 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
                             <div className="flex-shrink-0 w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center">
                                 <Share2 className="w-5 h-5 text-white" />
                             </div>
-                            <span>{shareToast.message}</span>
+                            <span>{shareToast}</span>
                         </div>
                     </div>
                 )}
@@ -1397,7 +1384,7 @@ export default function HomePage() {
                     isOpen={showSideMenu}
                     onClose={() => setShowSideMenu(false)}
                     theme={theme}
-                    onThemeChange={toggleTheme}
+                    onThemeChange={setTheme}
                     onViewChapter={handleViewChapterFromMenu}
                     language={language}
                     onLanguageChange={setLanguage}

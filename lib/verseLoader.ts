@@ -8,8 +8,6 @@ interface BibleData {
     };
 }
 
-// 内存缓存
-const bibleCache = new Map<string, BibleData>();
 let fullBibleData: BibleData | null = null;
 
 /**
@@ -52,37 +50,6 @@ export async function getVerseText(
 }
 
 /**
- * 获取经文范围内容
- */
-export async function getVerseRange(
-    book: string,
-    chapter: number,
-    startVerse: number,
-    endVerse: number
-): Promise<Record<number, string>> {
-    try {
-        const data = await loadFullBible();
-        const chapterData = data[book]?.[chapter];
-
-        if (!chapterData) {
-            return {};
-        }
-
-        const result: Record<number, string> = {};
-        for (let v = startVerse; v <= endVerse; v++) {
-            if (chapterData[v]) {
-                result[v] = chapterData[v];
-            }
-        }
-
-        return result;
-    } catch (error) {
-        console.error(`Error getting verse range ${book} ${chapter}:${startVerse}-${endVerse}:`, error);
-        return {};
-    }
-}
-
-/**
  * 获取整章经文
  */
 export async function getChapter(
@@ -108,26 +75,6 @@ export async function getChapter(
         console.error(`Error getting chapter ${book} ${chapter}:`, error);
         return {};
     }
-}
-
-/**
- * 预加载常用书卷（可选，用于性能优化）
- */
-export async function preloadCommonBooks(bookNames: string[]): Promise<void> {
-    try {
-        await loadFullBible();
-        // 数据已经全部加载到内存，无需额外处理
-    } catch (error) {
-        console.error('Error preloading books:', error);
-    }
-}
-
-/**
- * 清除缓存
- */
-export function clearCache(): void {
-    bibleCache.clear();
-    fullBibleData = null;
 }
 
 /**

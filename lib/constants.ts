@@ -173,17 +173,4 @@ export const PRESET_VERSE_REFERENCES = [
   { book: '启示录', chapter: 3, verse: 20, priority: 4 },
 ] as const;
 
-// 动画持续时间（毫秒）
-export const ANIMATION_DURATION = {
-  SHORT: 300,
-  MEDIUM: 600,
-  LONG: 1000,
-} as const;
-
-// 卡片尺寸映射
-export const CARD_SIZES = {
-  small: { width: 'w-48', height: 'min-h-[120px]', padding: 'p-4', text: 'text-sm' },
-  medium: { width: 'w-56', height: 'min-h-[160px]', padding: 'p-6', text: 'text-base' },
-  large: { width: 'w-64', height: 'min-h-[200px]', padding: 'p-8', text: 'text-lg' },
-} as const;
 

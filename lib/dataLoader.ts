@@ -156,10 +156,3 @@ function getTestament(bookName: string): 'old' | 'new' {
 
     return newTestamentBooks.includes(bookName) ? 'new' : 'old';
 }
-
-// 获取书卷的所有章节数
-export async function getBookChapters(book: string): Promise<number> {
-    const books = await loadBooks();
-    const bookInfo = books.find((b) => b.key === book);
-    return bookInfo?.chapters || 0;
-}

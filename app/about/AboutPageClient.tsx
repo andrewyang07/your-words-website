@@ -8,7 +8,7 @@ import SideMenu from '@/components/navigation/SideMenu';
 import { useAppStore } from '@/stores/useAppStore';
 
 export default function AboutPageClient() {
-    const { theme, toggleTheme, language, setLanguage } = useAppStore();
+    const { theme, setTheme, language, setLanguage } = useAppStore();
     const [showSideMenu, setShowSideMenu] = useState(false);
 
     return (
@@ -21,7 +21,7 @@ export default function AboutPageClient() {
                 isOpen={showSideMenu} 
                 onClose={() => setShowSideMenu(false)} 
                 theme={theme} 
-                onThemeChange={toggleTheme}
+                onThemeChange={setTheme}
                 language={language}
                 onLanguageChange={setLanguage}
             />

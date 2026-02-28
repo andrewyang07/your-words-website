@@ -92,17 +92,18 @@ function buildBookPattern(): string {
     return allBooks.join('|');
 }
 
+const BOOK_PATTERN = buildBookPattern();
+
 /**
  * 解析文本中的所有经文引用
  */
 export function parseVerseReferences(text: string): VerseReference[] {
     const refs: VerseReference[] = [];
-    const bookPattern = buildBookPattern();
 
     // 匹配格式：书卷名 + 章节 + : + 经文节数（可选范围）
     // 例如：约3:16, 约翰福音3:16, 创1:1-3
     const pattern = new RegExp(
-        `(${bookPattern})\\s*(\\d{1,3})[:：](\\d{1,3})(?:[-\\-到至](\\d{1,3}))?`,
+        `(${BOOK_PATTERN})\\s*(\\d{1,3})[:：](\\d{1,3})(?:[-\\-到至](\\d{1,3}))?`,
         'g'
     );
 
@@ -124,13 +125,6 @@ export function parseVerseReferences(text: string): VerseReference[] {
     }
 
     return refs;
-}
-
-/**
- * 检查文本中是否包含经文引用
- */
-export function hasVerseReferences(text: string): boolean {
-    return parseVerseReferences(text).length > 0;
 }
 
 /**

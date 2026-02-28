@@ -24,19 +24,3 @@ export function logWarning(context: string, message: string): void {
         console.warn(`[${context}]`, message);
     }
 }
-
-/**
- * 格式化错误消息，用于用户显示
- * @param error 错误对象
- * @returns 用户友好的错误消息
- */
-export function formatErrorMessage(error: unknown): string {
-    if (error instanceof Error) {
-        return error.message;
-    }
-    if (typeof error === 'string') {
-        return error;
-    }
-    return '發生未知錯誤，請稍後重試';
-}
-

@@ -24,7 +24,7 @@ type BookFilterType = 'all' | 'old' | 'new' | string;
 
 export default function RankingsPage() {
     const router = useRouter();
-    const { language, theme, setLanguage, toggleTheme } = useAppStore();
+    const { language, theme, setLanguage, setTheme } = useAppStore();
     const [rankings, setRankings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -209,7 +209,7 @@ export default function RankingsPage() {
                 isOpen={showSideMenu} 
                 onClose={() => setShowSideMenu(false)} 
                 theme={theme} 
-                onThemeChange={toggleTheme}
+                onThemeChange={setTheme}
                 language={language}
                 onLanguageChange={setLanguage}
             />

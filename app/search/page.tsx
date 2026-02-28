@@ -27,7 +27,7 @@ function SearchPageInner() {
     query,
     loading,
   } = useSearchStore();
-  const { theme, toggleTheme, language, setLanguage } = useAppStore();
+  const { theme, setTheme, language, setLanguage } = useAppStore();
 
   const [showSideMenu, setShowSideMenu] = useState(false);
   const [showHelpPanel, setShowHelpPanel] = useState(false);
@@ -97,7 +97,7 @@ function SearchPageInner() {
         isOpen={showSideMenu}
         onClose={() => setShowSideMenu(false)}
         theme={theme}
-        onThemeChange={toggleTheme}
+        onThemeChange={setTheme}
         language={language}
         onLanguageChange={setLanguage}
       />

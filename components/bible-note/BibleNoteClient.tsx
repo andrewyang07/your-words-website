@@ -27,7 +27,7 @@ const ChapterViewer = dynamic(() => import('./ChapterViewer'), {
 export default function BibleNoteClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { theme, toggleTheme, language, setLanguage } = useAppStore();
+    const { theme, setTheme, language, setLanguage } = useAppStore();
     const [content, setContent] = useState('');
     const [currentNoteId, setCurrentNoteId] = useState<string | null>(null);
     const [currentNoteCreatedAt, setCurrentNoteCreatedAt] = useState<number>(Date.now());
@@ -434,7 +434,7 @@ export default function BibleNoteClient() {
                     isOpen={showSideMenu}
                     onClose={() => setShowSideMenu(false)}
                     theme={theme}
-                    onThemeChange={toggleTheme}
+                    onThemeChange={setTheme}
                     language={language}
                     onLanguageChange={setLanguage}
                 />
