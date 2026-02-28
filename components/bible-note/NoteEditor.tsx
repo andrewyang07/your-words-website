@@ -6,13 +6,18 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Markdown } from 'tiptap-markdown';
-import { Bold, Italic, Heading2, Quote, List, ListOrdered, Minus } from 'lucide-react';
+import { Bold, Italic, Heading2, Quote, List, ListOrdered, Minus, Undo2, Redo2 } from 'lucide-react';
 import { BibleSuggestion } from './extensions/BibleSuggestion';
 import { SlashCommand } from './extensions/SlashCommand';
 import { getSlashCommandItems } from './extensions/SlashCommandList';
 import { searchVerses, isSearchReady, type SuggestionItem } from '@/lib/editorSearch';
 import { getVerseText } from '@/lib/verseLoader';
 import { renderSuggestionPopup, type SuggestionPopupRef } from './extensions/suggestionRenderer';
+
+function shortcutLabel(key: string): string {
+  if (typeof navigator === 'undefined') return `Ctrl+${key}`;
+  return /Mac|iPhone|iPad/.test(navigator.userAgent) ? `⌘${key}` : `Ctrl+${key}`;
+}
 
 interface NoteEditorProps {
   content: string;
@@ -127,7 +132,23 @@ export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEdi
     }
   }, [editor, isReady, content]);
 
-  if (!editor) return null;
+  if (!editor) {
+    return (
+      <div className="flex flex-col h-full animate-pulse">
+        <div className="border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900 p-2 flex items-center gap-1">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div key={i} className="w-7 h-7 rounded bg-bible-200 dark:bg-gray-700" />
+          ))}
+        </div>
+        <div className="flex-1 px-6 py-4 space-y-3">
+          <div className="h-4 bg-bible-200 dark:bg-gray-700 rounded w-3/4" />
+          <div className="h-4 bg-bible-200 dark:bg-gray-700 rounded w-full" />
+          <div className="h-4 bg-bible-200 dark:bg-gray-700 rounded w-5/6" />
+          <div className="h-4 bg-bible-200 dark:bg-gray-700 rounded w-2/3" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -140,74 +161,89 @@ export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEdi
         <BubbleButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
-          title="粗体"
+          title={`粗体 (${shortcutLabel('B')})`}
         >
           <Bold className="w-4 h-4" />
         </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().toggleItalic().run()}
           isActive={editor.isActive('italic')}
-          title="斜体"
+          title={`斜体 (${shortcutLabel('I')})`}
         >
           <Italic className="w-4 h-4" />
         </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           isActive={editor.isActive('heading', { level: 2 })}
-          title="标题"
+          title={`标题 (${shortcutLabel('Alt+2')})`}
         >
           <Heading2 className="w-4 h-4" />
         </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           isActive={editor.isActive('blockquote')}
-          title="引用"
+          title={`引用 (${shortcutLabel('Shift+B')})`}
         >
           <Quote className="w-4 h-4" />
         </BubbleButton>
       </BubbleMenu>
 
       {/* Static toolbar */}
-      <div className="border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900 p-2 flex items-center gap-1">
+      <div className="border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900 p-2 flex items-center gap-1 overflow-x-auto scrollbar-none">
+        <BubbleButton
+          onClick={() => editor.chain().focus().undo().run()}
+          isActive={false}
+          title={`撤銷 (${shortcutLabel('Z')})`}
+        >
+          <Undo2 className="w-4 h-4" />
+        </BubbleButton>
+        <BubbleButton
+          onClick={() => editor.chain().focus().redo().run()}
+          isActive={false}
+          title={`重做 (${shortcutLabel('Shift+Z')})`}
+        >
+          <Redo2 className="w-4 h-4" />
+        </BubbleButton>
+        <div className="w-px h-5 bg-bible-200 dark:bg-gray-700 mx-0.5" />
         <BubbleButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
-          title="粗体"
+          title={`粗体 (${shortcutLabel('B')})`}
         >
           <Bold className="w-4 h-4" />
         </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().toggleItalic().run()}
           isActive={editor.isActive('italic')}
-          title="斜体"
+          title={`斜体 (${shortcutLabel('I')})`}
         >
           <Italic className="w-4 h-4" />
         </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           isActive={editor.isActive('heading', { level: 2 })}
-          title="标题"
+          title={`标题 (${shortcutLabel('Alt+2')})`}
         >
           <Heading2 className="w-4 h-4" />
         </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           isActive={editor.isActive('blockquote')}
-          title="引用"
+          title={`引用 (${shortcutLabel('Shift+B')})`}
         >
           <Quote className="w-4 h-4" />
         </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           isActive={editor.isActive('bulletList')}
-          title="列表"
+          title={`列表 (${shortcutLabel('Shift+8')})`}
         >
           <List className="w-4 h-4" />
         </BubbleButton>
         <BubbleButton
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           isActive={editor.isActive('orderedList')}
-          title="有序列表"
+          title={`有序列表 (${shortcutLabel('Shift+7')})`}
         >
           <ListOrdered className="w-4 h-4" />
         </BubbleButton>

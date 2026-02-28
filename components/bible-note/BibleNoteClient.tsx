@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search } from 'lucide-react';
+import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search, Loader2, Check, AlertCircle } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
@@ -45,7 +45,7 @@ export default function BibleNoteClient() {
     });
     const [lastViewedBook, setLastViewedBook] = useState<string>('');
     const [lastViewedChapter, setLastViewedChapter] = useState<number>(1);
-    const [showSaveIndicator, setShowSaveIndicator] = useState(false);
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
     // 初始化：迁移旧数据，加载最新笔记，预加载搜索引擎
     useEffect(() => {
@@ -108,16 +108,16 @@ export default function BibleNoteClient() {
     useEffect(() => {
         if (!currentNoteId) return;
         const timer = setTimeout(async () => {
-            const note: Note = {
-                id: currentNoteId,
-                title: extractTitle(content),
-                content,
-                createdAt: currentNoteCreatedAt,
-                updatedAt: Date.now(),
-            };
-            await saveNote(note);
-            setShowSaveIndicator(true);
-            setTimeout(() => setShowSaveIndicator(false), 2000);
+            setSaveStatus('saving');
+            try {
+                await saveNote({ id: currentNoteId, title: extractTitle(content), content, createdAt: currentNoteCreatedAt, updatedAt: Date.now() });
+                setSaveStatus('saved');
+                setTimeout(() => setSaveStatus('idle'), 2000);
+            } catch (error) {
+                console.error('Save failed:', error);
+                setSaveStatus('error');
+                setTimeout(() => setSaveStatus('idle'), 5000);
+            }
         }, 1000);
 
         return () => clearTimeout(timer);
@@ -258,6 +258,18 @@ export default function BibleNoteClient() {
         setLastViewedChapter(chapter);
     }, []);
 
+    // ⌘N / Ctrl+N shortcut for new note
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+                e.preventDefault();
+                void handleNewNote();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleNewNote]);
+
     const handleOpenBible = useCallback(() => {
         if (chapterViewerState.isOpen) {
             setChapterViewerState({ isOpen: false, book: '', chapter: 0 });
@@ -330,9 +342,21 @@ export default function BibleNoteClient() {
                 }
                 rightContent={
                     <>
-                        {showSaveIndicator && (
-                            <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese animate-fade-in">
+                        {saveStatus === 'saving' && (
+                            <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese animate-fade-in flex items-center gap-1">
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                            </span>
+                        )}
+                        {saveStatus === 'saved' && (
+                            <span className="text-xs text-green-600 dark:text-green-400 font-chinese animate-fade-in flex items-center gap-1">
+                                <Check className="w-3 h-3" />
                                 已保存
+                            </span>
+                        )}
+                        {saveStatus === 'error' && (
+                            <span className="text-xs text-red-500 dark:text-red-400 font-chinese animate-fade-in flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                保存失敗
                             </span>
                         )}
 
@@ -579,7 +603,7 @@ export default function BibleNoteClient() {
 
                 {/* Toast */}
                 {toastMessage && (
-                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-lg z-50 font-chinese text-sm max-w-md animate-fade-in">
+                    <div role="status" aria-live="polite" className="fixed top-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-lg z-50 font-chinese text-sm max-w-md animate-fade-in">
                         {toastMessage}
                     </div>
                 )}

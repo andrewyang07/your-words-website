@@ -19,6 +19,9 @@
         scrollbar-width: none;
     }
 
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
     /* 下拉菜单滚动条样式 */
     .scrollbar-thin {
         scrollbar-width: thin;

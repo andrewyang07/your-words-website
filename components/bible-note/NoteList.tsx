@@ -29,6 +29,7 @@ function relativeTime(ts: number): string {
 
 export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote, onNewNote }: NoteListProps) {
     const [notes, setNotes] = useState<NoteSummary[]>([]);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     const loadNotes = useCallback(async () => {
         const all = await getAllNotes();
@@ -40,6 +41,7 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
     }, [isOpen, loadNotes]);
 
     const handleDelete = async (id: string) => {
+        setConfirmDeleteId(null);
         await deleteNote(id);
         const updated = await getAllNotes();
         setNotes(updated);
@@ -123,13 +125,30 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
                                                 {relativeTime(note.updatedAt)}
                                             </p>
                                         </div>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); void handleDelete(note.id); }}
-                                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all flex-shrink-0 mt-0.5"
-                                            aria-label="删除笔记"
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                                        </button>
+                                        {confirmDeleteId === note.id ? (
+                                            <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); void handleDelete(note.id); }}
+                                                    className="px-2 py-0.5 rounded text-xs font-chinese bg-red-500 hover:bg-red-600 text-white transition-colors"
+                                                >
+                                                    刪除
+                                                </button>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }}
+                                                    className="px-2 py-0.5 rounded text-xs font-chinese bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 transition-colors"
+                                                >
+                                                    取消
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(note.id); }}
+                                                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all flex-shrink-0 mt-0.5"
+                                                aria-label="删除笔记"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                            </button>
+                                        )}
                                     </div>
                                 ))
                             )}
