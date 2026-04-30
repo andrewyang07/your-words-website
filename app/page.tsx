@@ -35,7 +35,6 @@ import { Verse, Book } from '@/types/verse';
 import { encodeVerseList, decodeVerseList } from '@/lib/bibleBookMapping';
 import { logError } from '@/lib/errorHandler';
 import { shuffleArray } from '@/lib/utils';
-import { getSearchEngine } from '@/lib/search/searchEngine';
 import type { SearchResult } from '@/types/search';
 import MaskSettings from '@/components/settings/MaskSettings';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -108,6 +107,8 @@ export default function HomePage() {
     const [isSearching, setIsSearching] = useState(false);
     const [searchEngineInited, setSearchEngineInited] = useState(false);
     const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const searchRequestRef = useRef(0);
+    const searchEngineInitRef = useRef<Promise<void> | null>(null);
     const prevShowAllContentRef = useRef<boolean | null>(null);
 
     // 懒加载状态 - 根据设备响应式显示
@@ -649,33 +650,30 @@ export default function HomePage() {
         setShowAllContent(false); // 返回精选时切换到背诵模式
     };
 
-    // 页面加载完成后空闲时预加载搜索引擎
-    useEffect(() => {
-        if (loading) return;
-        const id = typeof requestIdleCallback !== 'undefined'
-            ? requestIdleCallback(() => initSearchEngine())
-            : setTimeout(() => initSearchEngine(), 2000) as unknown as number;
-        return () => {
-            typeof cancelIdleCallback !== 'undefined'
-                ? cancelIdleCallback(id) : clearTimeout(id);
-        };
-    }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    // 搜索引擎初始化
+    // 搜索引擎较重：只在真正搜索时动态加载，不要在聚焦输入框时阻塞首屏/键盘弹出
     const initSearchEngine = useCallback(async () => {
         if (searchEngineInited) return;
-        setSearchEngineInited(true);
-        try {
-            await getSearchEngine().initialize();
-        } catch (err) {
-            logError('HomePage:initSearchEngine', err);
-            setSearchEngineInited(false);
+
+        if (!searchEngineInitRef.current) {
+            searchEngineInitRef.current = import('@/lib/search/searchEngine')
+                .then(({ getSearchEngine }) => getSearchEngine().initialize())
+                .then(() => setSearchEngineInited(true))
+                .catch((err) => {
+                    searchEngineInitRef.current = null;
+                    setSearchEngineInited(false);
+                    logError('HomePage:initSearchEngine', err);
+                    throw err;
+                });
         }
+
+        await searchEngineInitRef.current;
     }, [searchEngineInited]);
 
     // 搜索处理（防抖 150ms）
     const handleSearchChange = useCallback((value: string) => {
         setSearchQuery(value);
+        searchRequestRef.current += 1;
+        const requestId = searchRequestRef.current;
 
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
 
@@ -692,24 +690,32 @@ export default function HomePage() {
 
         setIsSearching(true);
         searchTimerRef.current = setTimeout(async () => {
-            const engine = getSearchEngine();
-            if (!engine.initialized) {
-                setIsSearching(false);
-                return;
-            }
-            const results = await engine.search(value.trim());
-            setSearchResults(results);
-            setIsSearching(false);
+            try {
+                await initSearchEngine();
+                if (requestId !== searchRequestRef.current) return;
 
-            if (results.length > 0) {
-                // 记住之前的模式，自动切换到阅读模式
-                if (prevShowAllContentRef.current === null) {
-                    prevShowAllContentRef.current = showAllContent;
+                const { getSearchEngine } = await import('@/lib/search/searchEngine');
+                const results = await getSearchEngine().search(value.trim());
+                if (requestId !== searchRequestRef.current) return;
+
+                setSearchResults(results);
+                setIsSearching(false);
+
+                if (results.length > 0) {
+                    // 记住之前的模式，自动切换到阅读模式
+                    if (prevShowAllContentRef.current === null) {
+                        prevShowAllContentRef.current = showAllContent;
+                    }
+                    setShowAllContent(true);
                 }
-                setShowAllContent(true);
+            } catch (err) {
+                if (requestId !== searchRequestRef.current) return;
+                logError('HomePage:search', err);
+                setSearchResults([]);
+                setIsSearching(false);
             }
         }, 150);
-    }, [showAllContent]);
+    }, [initSearchEngine, showAllContent]);
 
     // 清除搜索
     const handleClearSearch = useCallback(() => {
@@ -1023,7 +1029,6 @@ export default function HomePage() {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => handleSearchChange(e.target.value)}
-                                onFocus={initSearchEngine}
                                 placeholder={language === 'traditional' ? '試試「約3:16」「愛」「yuehan」' : '试试「约3:16」「爱」「yuehan」'}
                                 className="w-full pl-9 pr-8 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-800 rounded-lg text-sm text-bible-700 dark:text-bible-300 placeholder-bible-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-bible-400 dark:focus:ring-bible-500 border border-transparent focus:border-bible-300 dark:focus:border-gray-600 font-chinese min-h-[44px]"
                                 aria-label="搜索经文"
@@ -1321,8 +1326,8 @@ export default function HomePage() {
                             </>
                         )}
 
-                        {/* 随机按钮 - 在精选经文和收藏界面显示，选择书卷/章节时隐藏 */}
-                        {!selectedBook && (
+                        {/* 随机按钮 - 在精选经文和收藏界面显示，选择书卷/章节/搜索时隐藏 */}
+                        {!selectedBook && !searchQuery && (
                             <button
                                 onClick={handleShuffle}
                                 className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
@@ -1597,24 +1602,6 @@ export default function HomePage() {
                         </div>
                     )}
 
-                    {!selectedBook && filterType !== 'favorites' && !showShareBanner && !searchQuery && (
-                        <section className="mb-4 overflow-hidden rounded-2xl border border-bible-200/80 dark:border-gray-700 bg-white/70 dark:bg-gray-900/55 shadow-sm backdrop-blur-sm">
-                            <div className="px-5 py-6 md:px-7 md:py-8">
-                                <p className="mb-2 text-xs tracking-[0.32em] text-bible-500 dark:text-bible-400 font-semibold font-chinese">
-                                    YOUR WORDS
-                                </p>
-                                <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-bible-900 dark:text-bible-100 font-chinese">
-                                    {language === 'traditional' ? '讓神的話語常在心中' : '让神的话语常在心中'}
-                                </h2>
-                                <p className="mt-3 max-w-2xl text-sm md:text-base leading-7 text-bible-700 dark:text-bible-300 font-chinese">
-                                    {language === 'traditional'
-                                        ? '搜索、背誦、收藏你正在默想的經文。先給你一點提示，其餘留給記憶。'
-                                        : '搜索、背诵、收藏你正在默想的经文。先给你一点提示，其余留给记忆。'}
-                                </p>
-                            </div>
-                        </section>
-                    )}
-
                     {/* 桌面端提示设置折叠面板 */}
                     <div
                         id="mask-settings-panel"
@@ -1635,8 +1622,17 @@ export default function HomePage() {
                     {/* 状态标签和统计 */}
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center gap-2 flex-wrap">
+                            {searchQuery && (
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">🔎 搜索「{searchQuery}」</span>
+                                    <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
+                                        {isSearching ? '正在加载搜索索引并匹配经文。' : `找到 ${searchResults.length} 条结果。`}
+                                    </span>
+                                </div>
+                            )}
+
                             {/* 默认精选经文提示 */}
-                            {!selectedBook && filterType !== 'favorites' && !showShareBanner && (
+                            {!searchQuery && !selectedBook && filterType !== 'favorites' && !showShareBanner && (
                                 <div className="flex flex-col gap-1">
                                     <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">📖 精選 114 節經文</span>
                                     <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
@@ -1666,7 +1662,7 @@ export default function HomePage() {
                             </span>
 
                             {/* 只在精选经文模式下显示筛选按钮 */}
-                            {!selectedChapter && filterType !== 'favorites' && !showShareBanner && (
+                            {!searchQuery && !selectedChapter && filterType !== 'favorites' && !showShareBanner && (
                                 <>
                                     {/* 筛选按钮 */}
                                     <Listbox value={bookFilter} onChange={setBookFilter}>
@@ -1986,20 +1982,13 @@ export default function HomePage() {
                     ) : searchQuery && searchResults.length === 0 && !isSearching ? (
                         <div className="text-center py-20">
                             <p className="text-bible-600 dark:text-bible-400 font-chinese">
-                                {searchEngineInited && getSearchEngine().initialized
+                                {searchEngineInited
                                     ? `未找到与「${searchQuery}」相关的经文`
-                                    : '搜索引擎加载中...'}
+                                    : '搜索索引加载中...'}
                             </p>
                         </div>
                     ) : displayVerses.length > 0 ? (
                         <>
-                            {searchResultsAsVerses.length > 0 && (
-                                <div className="mb-3">
-                                    <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
-                                        找到 {searchResults.length} 条结果
-                                    </span>
-                                </div>
-                            )}
                             <MasonryLayout
                                 key={searchResultsAsVerses.length > 0 ? `search-${searchQuery}` : String(shuffleKey)}
                                 verses={displayVerses.slice(0, visibleCount)}
