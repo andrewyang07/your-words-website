@@ -669,6 +669,67 @@ export default function HomePage() {
         await searchEngineInitRef.current;
     }, [searchEngineInited]);
 
+    // 页面可用后后台预热搜索索引：不进首屏 bundle，也尽量不让第一次关键词搜索硬等
+    useEffect(() => {
+        if (loading || searchEngineInited) return;
+
+        let cancelled = false;
+        const prewarm = () => {
+            if (cancelled) return;
+            initSearchEngine().catch((err) => logError('HomePage:prewarmSearchEngine', err));
+        };
+        const id = typeof requestIdleCallback !== 'undefined'
+            ? requestIdleCallback(prewarm, { timeout: 3500 })
+            : setTimeout(prewarm, 1800) as unknown as number;
+
+        return () => {
+            cancelled = true;
+            typeof cancelIdleCallback !== 'undefined' ? cancelIdleCallback(id) : clearTimeout(id);
+        };
+    }, [loading, searchEngineInited, initSearchEngine]);
+
+    const searchByReferenceOnly = useCallback(async (value: string): Promise<SearchResult[]> => {
+        if (!/[\d:：]/.test(value)) return [];
+
+        const { parseReference } = await import('@/lib/search/referenceParser');
+        const bookMappings = books.map((book) => ({ key: book.key, nameEnglish: book.nameEnglish }));
+        const ref = parseReference(value.trim(), bookMappings);
+        if (!ref?.bookChinese || !ref.chapter) return [];
+
+        const fileName = language === 'simplified' ? 'CUV_bible.json' : 'CUVT_bible.json';
+        const response = await fetch(`/data/${fileName}`);
+        if (!response.ok) return [];
+
+        const bookKey = ref.bookChinese;
+        const bibleData = await response.json() as Record<string, Record<string, Record<string, string>>>;
+        const chapterData = bibleData[bookKey]?.[String(ref.chapter)];
+        if (!chapterData) return [];
+
+        const book = books.find((b) => b.key === bookKey);
+        const bookTraditional = book?.nameTraditional || bookKey;
+        const bookEnglish = book?.nameEnglish || ref.bookEnglish || '';
+        const verseNumbers = ref.verse
+            ? [ref.verse]
+            : Object.keys(chapterData).map(Number).sort((a, b) => a - b).slice(0, 5);
+
+        return verseNumbers.flatMap((verseNumber, index) => {
+            const textChinese = chapterData[String(verseNumber)];
+            if (!textChinese) return [];
+            return [{
+                id: `${bookKey}-${ref.chapter}-${verseNumber}`,
+                bookKey,
+                bookTraditional,
+                bookEnglish,
+                chapter: ref.chapter!,
+                verse: verseNumber,
+                textChinese,
+                textEnglish: '',
+                score: 100 - index,
+                matchType: 'reference' as const,
+            }];
+        });
+    }, [books, language]);
+
     // 搜索处理（防抖 150ms）
     const handleSearchChange = useCallback((value: string) => {
         setSearchQuery(value);
@@ -691,6 +752,21 @@ export default function HomePage() {
         setIsSearching(true);
         searchTimerRef.current = setTimeout(async () => {
             try {
+                if (requestId !== searchRequestRef.current) return;
+
+                const referenceResults = await searchByReferenceOnly(value);
+                if (requestId !== searchRequestRef.current) return;
+
+                if (referenceResults.length > 0) {
+                    setSearchResults(referenceResults);
+                    setIsSearching(false);
+                    if (prevShowAllContentRef.current === null) {
+                        prevShowAllContentRef.current = showAllContent;
+                    }
+                    setShowAllContent(true);
+                    return;
+                }
+
                 await initSearchEngine();
                 if (requestId !== searchRequestRef.current) return;
 
@@ -715,7 +791,7 @@ export default function HomePage() {
                 setIsSearching(false);
             }
         }, 150);
-    }, [initSearchEngine, showAllContent]);
+    }, [initSearchEngine, searchByReferenceOnly, showAllContent]);
 
     // 清除搜索
     const handleClearSearch = useCallback(() => {
