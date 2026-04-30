@@ -94,8 +94,8 @@ export default function HomePage() {
     const [favoritesVersesData, setFavoritesVersesData] = useState<Verse[]>([]);
     const [loadingFavorites, setLoadingFavorites] = useState(false);
 
-    // 心版 App 推广卡片显示状态（每次刷新都显示）
-    const [showAppPromo, setShowAppPromo] = useState(true);
+    // 心版 App 推广卡片显示状态（关闭后记住，避免每次刷新打扰）
+    const [showAppPromo, setShowAppPromo] = useState(false);
 
     // 侧边栏菜单显示状态
     const [showSideMenu, setShowSideMenu] = useState(false);
@@ -171,6 +171,12 @@ export default function HomePage() {
         if (guideDismissed === 'true') {
             setShowGuide(false);
         }
+    }, []);
+
+    // 从 localStorage 读取 App 推广关闭状态
+    useEffect(() => {
+        const appPromoDismissed = localStorage.getItem('xinban-app-promo-dismissed');
+        setShowAppPromo(appPromoDismissed !== 'true');
     }, []);
 
     // 追踪用户访问和获取全局统计
@@ -802,6 +808,11 @@ export default function HomePage() {
         clearShareState();
     };
 
+    const handleDismissAppPromo = () => {
+        setShowAppPromo(false);
+        localStorage.setItem('xinban-app-promo-dismissed', 'true');
+    };
+
     // 使用 getFavoritesList 获取真实的收藏总数（不受当前筛选影响）
     const favoritesCount = getFavoritesList().length;
 
@@ -832,7 +843,7 @@ export default function HomePage() {
     if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-bible-50 to-bible-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(190,158,93,0.16),transparent_30rem),linear-gradient(135deg,#fffaf0_0%,#fff_45%,#fef7ed_100%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(190,158,93,0.12),transparent_28rem),linear-gradient(135deg,#111827_0%,#1f2937_55%,#111827_100%)]">
             {/* 顶部导航栏 */}
             <header
                 className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700"
@@ -1013,7 +1024,7 @@ export default function HomePage() {
                                 value={searchQuery}
                                 onChange={(e) => handleSearchChange(e.target.value)}
                                 onFocus={initSearchEngine}
-                                placeholder="搜索经文（中文、英文、拼音）"
+                                placeholder={language === 'traditional' ? '試試「約3:16」「愛」「yuehan」' : '试试「约3:16」「爱」「yuehan」'}
                                 className="w-full pl-9 pr-8 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-800 rounded-lg text-sm text-bible-700 dark:text-bible-300 placeholder-bible-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-bible-400 dark:focus:ring-bible-500 border border-transparent focus:border-bible-300 dark:focus:border-gray-600 font-chinese min-h-[44px]"
                                 aria-label="搜索经文"
                             />
@@ -1029,6 +1040,23 @@ export default function HomePage() {
                             )}
                         </div>
                     </div>
+
+                    {!searchQuery && (
+                        <div className="-mt-1 mb-3 flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1" aria-label="搜索示例">
+                            {(language === 'traditional' ? ['約3:16', '詩篇23', '愛', 'yuehan'] : ['约3:16', '诗篇23', '爱', 'yuehan']).map(
+                                (example) => (
+                                    <button
+                                        key={example}
+                                        onClick={() => handleSearchChange(example)}
+                                        className="shrink-0 rounded-full border border-bible-200/80 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 px-3 py-1.5 text-xs text-bible-600 dark:text-bible-300 hover:border-bible-400 hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors font-chinese"
+                                        type="button"
+                                    >
+                                        {example}
+                                    </button>
+                                )
+                            )}
+                        </div>
+                    )}
 
                     {/* 手机端提示设置折叠面板 */}
                     <div
@@ -1569,6 +1597,24 @@ export default function HomePage() {
                         </div>
                     )}
 
+                    {!selectedBook && filterType !== 'favorites' && !showShareBanner && !searchQuery && (
+                        <section className="mb-4 overflow-hidden rounded-2xl border border-bible-200/80 dark:border-gray-700 bg-white/70 dark:bg-gray-900/55 shadow-sm backdrop-blur-sm">
+                            <div className="px-5 py-6 md:px-7 md:py-8">
+                                <p className="mb-2 text-xs tracking-[0.32em] text-bible-500 dark:text-bible-400 font-semibold font-chinese">
+                                    YOUR WORDS
+                                </p>
+                                <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-bible-900 dark:text-bible-100 font-chinese">
+                                    {language === 'traditional' ? '讓神的話語常在心中' : '让神的话语常在心中'}
+                                </h2>
+                                <p className="mt-3 max-w-2xl text-sm md:text-base leading-7 text-bible-700 dark:text-bible-300 font-chinese">
+                                    {language === 'traditional'
+                                        ? '搜索、背誦、收藏你正在默想的經文。先給你一點提示，其餘留給記憶。'
+                                        : '搜索、背诵、收藏你正在默想的经文。先给你一点提示，其余留给记忆。'}
+                                </p>
+                            </div>
+                        </section>
+                    )}
+
                     {/* 桌面端提示设置折叠面板 */}
                     <div
                         id="mask-settings-panel"
@@ -1591,7 +1637,14 @@ export default function HomePage() {
                         <div className="flex items-center gap-2 flex-wrap">
                             {/* 默认精选经文提示 */}
                             {!selectedBook && filterType !== 'favorites' && !showShareBanner && (
-                                <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">📖 精選 114 節經文</span>
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">📖 精選 114 節經文</span>
+                                    <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
+                                        {showAllContent
+                                            ? '閱讀模式：完整顯示經文。'
+                                            : '背誦模式：部分字詞已隱藏，點擊卡片查看完整經文。'}
+                                    </span>
+                                </div>
                             )}
 
                             {filterType === 'favorites' && (
@@ -1977,7 +2030,7 @@ export default function HomePage() {
                         <div className="relative bg-gradient-to-r from-bible-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-xl shadow-md border border-bible-200 dark:border-gray-600 overflow-hidden">
                             {/* 关闭按钮 */}
                             <button
-                                onClick={() => setShowAppPromo(false)}
+                                onClick={handleDismissAppPromo}
                                 className="absolute top-2 right-2 p-1.5 hover:bg-bible-200/50 dark:hover:bg-gray-600 rounded-lg transition-colors z-10"
                                 title="关闭推广"
                                 aria-label="关闭心版推广"

@@ -98,11 +98,11 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         <div
             className={`
         ${sizeClasses[size]}
-        bg-white dark:bg-gray-800 rounded-xl shadow-md
+        bg-white/90 dark:bg-gray-800/90 rounded-2xl shadow-[0_10px_30px_rgba(120,86,38,0.08)] dark:shadow-none
         cursor-pointer
-        border-2 border-bible-200 dark:border-gray-700
-        [@media(hover:hover)]:hover:border-bible-500 [@media(hover:hover)]:dark:hover:border-bible-400
-        [@media(hover:hover)]:hover:shadow-[0_0_0_2px_rgba(190,158,93,0.3)]
+        border border-bible-200/80 dark:border-gray-700
+        [@media(hover:hover)]:hover:border-bible-400 [@media(hover:hover)]:dark:hover:border-bible-400
+        [@media(hover:hover)]:hover:shadow-[0_16px_42px_rgba(120,86,38,0.14)]
         flex flex-col justify-between
         relative
         touch-manipulation
@@ -128,7 +128,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 {/* 收藏星标 */}
                 <button
                     onClick={handleToggleFavorite}
-                    className="transition-transform hover:scale-110 p-2 -m-2 touch-manipulation"
+                    className="rounded-full bg-bible-50/80 dark:bg-gray-700/70 transition-all hover:scale-105 hover:bg-bible-100 dark:hover:bg-gray-700 p-2 -m-1 touch-manipulation"
                     title={isFav ? '取消收藏' : '收藏'}
                     aria-label={
                         isFav ? `取消收藏 ${verse.book} ${verse.chapter}:${verse.verse}` : `收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
@@ -157,13 +157,15 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             </p>
 
             {/* 底部信息栏 */}
-            <div className="mt-3 pt-2 border-t border-bible-100 dark:border-gray-700 flex items-center justify-between">
-                <span className="text-xs text-bible-500 dark:text-gray-400 font-chinese">{verse.testament === 'old' ? '旧约' : '新约'}</span>
+            <div className="mt-4 pt-3 border-t border-bible-100/80 dark:border-gray-700 flex items-center justify-between">
+                <span className="rounded-full bg-bible-50 dark:bg-gray-700/70 px-2 py-1 text-[11px] text-bible-500 dark:text-gray-400 font-chinese">
+                    {verse.testament === 'old' ? '旧约' : '新约'}
+                </span>
 
                 {/* 查看整章按钮 */}
                 <button
                     onClick={handleViewInBible}
-                    className="flex items-center gap-1 px-2 py-1 text-xs text-bible-600 dark:text-bible-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-bible-50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation min-h-[44px] min-w-[44px] justify-center"
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-bible-500 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-100 rounded transition-colors touch-manipulation min-h-[44px] min-w-[44px] justify-center"
                     title="查看本章所有经文"
                     aria-label={`查看 ${verse.book} 第${verse.chapter}章所有经文`}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
