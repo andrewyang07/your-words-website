@@ -98,16 +98,17 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         <div
             className={`
         ${sizeClasses[size]}
-        bg-white/90 dark:bg-gray-800/90 rounded-2xl shadow-[0_10px_30px_rgba(120,86,38,0.08)] dark:shadow-none
+        bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(255,251,235,0.86))] dark:bg-[linear-gradient(180deg,rgba(31,41,55,0.94),rgba(17,24,39,0.92))] rounded-[1.35rem] shadow-[0_18px_50px_rgba(120,53,15,0.10),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_18px_45px_rgba(0,0,0,0.22)]
         cursor-pointer
-        border border-bible-200/80 dark:border-gray-700
-        [@media(hover:hover)]:hover:border-bible-400 [@media(hover:hover)]:dark:hover:border-bible-400
-        [@media(hover:hover)]:hover:shadow-[0_16px_42px_rgba(120,86,38,0.14)]
+        border border-bible-200/75 dark:border-gray-700/85
+        [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-bible-400/90 [@media(hover:hover)]:dark:hover:border-bible-500/70
+        [@media(hover:hover)]:hover:shadow-[0_24px_60px_rgba(120,53,15,0.16),inset_0_1px_0_rgba(255,255,255,0.95)]
         flex flex-col justify-between
-        relative
+        relative overflow-hidden
+        before:pointer-events-none before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-bible-300/70 before:to-transparent dark:before:via-bible-500/30
         touch-manipulation
         transition-all duration-200
-        active:scale-[0.98]
+        active:scale-[0.985]
         focus:outline-none focus:ring-2 focus:ring-bible-500 dark:focus:ring-bible-400
       `}
             onClick={handleCardClick}
@@ -121,7 +122,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             {/* 经文引用 */}
             <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                    <span className="text-bible-600 dark:text-bible-400 font-medium font-chinese text-sm">
+                    <span className="inline-flex items-center rounded-full border border-bible-200/70 bg-bible-50/75 px-2.5 py-1 text-bible-700 dark:border-gray-700 dark:bg-gray-900/55 dark:text-bible-300 font-medium font-chinese text-sm">
                         {verse.book} {verse.chapter}:{verse.verse}
                     </span>
                 </div>
@@ -147,7 +148,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             <p
                 className={`
             ${textSizes[size]}
-            text-gray-800 dark:text-gray-100 font-medium leading-relaxed font-chinese
+            text-gray-900 dark:text-gray-100 font-medium leading-[1.85] font-chinese
             flex-1
             transition-opacity duration-200
             break-words overflow-wrap-anywhere
@@ -157,7 +158,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             </p>
 
             {/* 底部信息栏 */}
-            <div className="mt-4 pt-3 border-t border-bible-100/80 dark:border-gray-700 flex items-center justify-between">
+            <div className="mt-4 pt-3 border-t border-bible-200/70 dark:border-gray-700/80 flex items-center justify-between">
                 <span className="rounded-full bg-bible-50 dark:bg-gray-700/70 px-2 py-1 text-[11px] text-bible-500 dark:text-gray-400 font-chinese">
                     {verse.testament === 'old' ? '旧约' : '新约'}
                 </span>

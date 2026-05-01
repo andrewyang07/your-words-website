@@ -914,13 +914,13 @@ export default function HomePage() {
     if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
     return (
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(190,158,93,0.16),transparent_30rem),linear-gradient(135deg,#fffaf0_0%,#fff_45%,#fef7ed_100%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(190,158,93,0.12),transparent_28rem),linear-gradient(135deg,#111827_0%,#1f2937_55%,#111827_100%)]">
+        <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_12%_-10%,rgba(190,158,93,0.22),transparent_28rem),radial-gradient(circle_at_90%_8%,rgba(245,158,11,0.10),transparent_24rem),linear-gradient(135deg,#fffaf0_0%,#fffdf8_42%,#fef7ed_100%)] dark:bg-[radial-gradient(circle_at_10%_-10%,rgba(190,158,93,0.14),transparent_26rem),radial-gradient(circle_at_92%_4%,rgba(245,158,11,0.08),transparent_22rem),linear-gradient(135deg,#0f172a_0%,#111827_48%,#1f2937_100%)] before:pointer-events-none before:fixed before:inset-0 before:z-0 before:bg-[linear-gradient(rgba(120,53,15,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(120,53,15,0.025)_1px,transparent_1px)] before:bg-[size:56px_56px] before:opacity-40 dark:before:opacity-10">
             {/* 顶部导航栏 */}
             <header
-                className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700"
+                className="sticky top-0 z-10 border-b border-bible-200/70 bg-[#fffaf0]/82 shadow-[0_10px_35px_rgba(120,53,15,0.07)] backdrop-blur-xl dark:border-gray-700/80 dark:bg-gray-950/78 dark:shadow-none"
                 role="banner"
             >
-                <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
+                <div className="relative z-[1] max-w-7xl mx-auto px-4 py-3 md:py-4">
                     {/* 标题行 */}
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -1087,25 +1087,25 @@ export default function HomePage() {
                     </div>
 
                     {/* 搜索输入框 - 全端独占一行 */}
-                    <div className="flex mb-3">
+                    <div className="mb-3 rounded-2xl border border-bible-200/80 bg-white/72 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_16px_40px_rgba(120,53,15,0.08)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/72 dark:shadow-none">
                         <div className="relative flex items-center w-full">
-                            <Search className="absolute left-3 w-4 h-4 text-bible-500 dark:text-bible-400 pointer-events-none" />
+                            <Search className="absolute left-4 w-4 h-4 text-bible-600 dark:text-bible-300 pointer-events-none" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => handleSearchChange(e.target.value)}
-                                placeholder={language === 'traditional' ? '試試「約3:16」「愛」「yuehan」' : '试试「约3:16」「爱」「yuehan」'}
-                                className="w-full pl-9 pr-8 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-800 rounded-lg text-sm text-bible-700 dark:text-bible-300 placeholder-bible-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-bible-400 dark:focus:ring-bible-500 border border-transparent focus:border-bible-300 dark:focus:border-gray-600 font-chinese min-h-[44px]"
+                                placeholder={language === 'traditional' ? '搜尋經文、引用或拼音：約3:16 / 神愛世人 / yuehan' : '搜索经文、引用或拼音：约3:16 / 神爱世人 / yuehan'}
+                                className="w-full rounded-xl border border-transparent bg-transparent py-3 pl-10 pr-10 text-[15px] text-bible-900 outline-none transition placeholder:text-bible-500/75 focus:border-bible-300/80 focus:bg-white/86 focus:ring-2 focus:ring-bible-300/45 dark:text-bible-100 dark:placeholder:text-gray-400 dark:focus:border-bible-500/50 dark:focus:bg-gray-800/90 dark:focus:ring-bible-500/25 font-chinese min-h-[46px]"
                                 aria-label="搜索经文"
                             />
                             {searchQuery && (
                                 <button
                                     onClick={handleClearSearch}
-                                    className="absolute right-2 p-0.5 hover:bg-bible-200 dark:hover:bg-gray-600 rounded transition-colors"
+                                    className="absolute right-3 rounded-full p-1.5 text-bible-500 transition hover:bg-bible-100 hover:text-bible-800 dark:text-bible-300 dark:hover:bg-gray-700 dark:hover:text-bible-100"
                                     title="清除搜索"
                                     aria-label="清除搜索"
                                 >
-                                    <X className="w-3.5 h-3.5 text-bible-500 dark:text-bible-400" />
+                                    <X className="w-3.5 h-3.5" />
                                 </button>
                             )}
                         </div>
@@ -1113,12 +1113,13 @@ export default function HomePage() {
 
                     {!searchQuery && (
                         <div className="-mt-1 mb-3 flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1" aria-label="搜索示例">
-                            {(language === 'traditional' ? ['約3:16', '詩篇23', '愛', 'yuehan'] : ['约3:16', '诗篇23', '爱', 'yuehan']).map(
+                            <span className="shrink-0 text-[11px] tracking-[0.18em] text-bible-500/80 dark:text-bible-400/80 font-chinese">QUICK FIND</span>
+                            {(language === 'traditional' ? ['約3:16', '詩篇23', '神愛世人', 'yuehan'] : ['约3:16', '诗篇23', '神爱世人', 'yuehan']).map(
                                 (example) => (
                                     <button
                                         key={example}
                                         onClick={() => handleSearchChange(example)}
-                                        className="shrink-0 rounded-full border border-bible-200/80 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 px-3 py-1.5 text-xs text-bible-600 dark:text-bible-300 hover:border-bible-400 hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors font-chinese"
+                                        className="shrink-0 rounded-full border border-bible-200/80 bg-white/80 px-3.5 py-1.5 text-xs text-bible-700 shadow-sm transition hover:-translate-y-0.5 hover:border-bible-400 hover:bg-bible-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/75 dark:text-bible-200 dark:hover:bg-gray-700 font-chinese"
                                         type="button"
                                     >
                                         {example}
@@ -1538,7 +1539,7 @@ export default function HomePage() {
                 )}
 
                 {/* 使用提示和统计信息 */}
-                <div className="max-w-7xl mx-auto px-4 py-3">
+                <div className="relative z-[1] max-w-7xl mx-auto px-4 py-3">
                     {/* 引导说明 */}
                     {showGuide && (
                         <div className="mb-3 p-5 bg-gradient-to-br from-bible-50 via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-xl border-2 border-bible-300/50 dark:border-gray-700 shadow-lg animate-fade-in">
@@ -1685,26 +1686,33 @@ export default function HomePage() {
                     </div>
 
                     {/* 状态标签和统计 */}
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                        <div className="flex items-center gap-2 flex-wrap">
+                    <div className="rounded-2xl border border-bible-200/70 bg-white/62 px-4 py-3 shadow-[0_12px_32px_rgba(120,53,15,0.06)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/55 dark:shadow-none">
+                        <div className="flex items-center justify-between flex-wrap gap-4">
+                            <div className="flex items-center gap-2 flex-wrap">
                             {searchQuery && (
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">🔎 搜索「{searchQuery}」</span>
-                                    <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
-                                        {isSearching ? '正在加载搜索索引并匹配经文。' : `找到 ${searchResults.length} 条结果。`}
-                                    </span>
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bible-100 text-bible-700 shadow-inner dark:bg-gray-800 dark:text-bible-300">🔎</span>
+                                    <div className="flex flex-col gap-0.5">
+                                        <span className="text-xs font-semibold text-bible-800 dark:text-bible-200 font-chinese">搜索「{searchQuery}」</span>
+                                        <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
+                                            {isSearching ? '正在匹配经文索引。' : `找到 ${searchResults.length} 条结果。`}
+                                        </span>
+                                    </div>
                                 </div>
                             )}
 
                             {/* 默认精选经文提示 */}
                             {!searchQuery && !selectedBook && filterType !== 'favorites' && !showShareBanner && (
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">📖 精選 114 節經文</span>
-                                    <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
-                                        {showAllContent
-                                            ? '閱讀模式：完整顯示經文。'
-                                            : '背誦模式：部分字詞已隱藏，點擊卡片查看完整經文。'}
-                                    </span>
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bible-100 text-bible-700 shadow-inner dark:bg-gray-800 dark:text-bible-300">📖</span>
+                                    <div className="flex flex-col gap-0.5">
+                                        <span className="text-xs font-semibold text-bible-800 dark:text-bible-200 font-chinese">精選 114 節經文</span>
+                                        <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
+                                            {showAllContent
+                                                ? '閱讀模式：完整顯示經文。'
+                                                : '背誦模式：點擊卡片查看完整經文。'}
+                                        </span>
+                                    </div>
                                 </div>
                             )}
 
@@ -1996,9 +2004,10 @@ export default function HomePage() {
                         </div>
                     </div>
                 </div>
+                </div>
 
                 {/* 经文卡片区域 */}
-                <div className="max-w-7xl mx-auto">
+                <div className="relative z-[1] max-w-7xl mx-auto">
                     {loadingChapter || loadingFavorites ? (
                         <div className="text-center py-12">
                             <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
