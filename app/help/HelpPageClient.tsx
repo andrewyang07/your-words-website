@@ -225,13 +225,13 @@ export default function HelpPageClient() {
                                         <div>
                                             <p className="font-semibold text-sm mb-1">每句提示</p>
                                             <div className="bg-white dark:bg-gray-800 rounded p-2 border border-gold-200 dark:border-gray-600">
-                                                <code className="text-xs">這律██，總要████</code>
+                                                <code className="text-xs">這律〇，總要晝夜思〇</code>
                                             </div>
                                         </div>
                                         <div>
                                             <p className="font-semibold text-sm mb-1">開頭提示</p>
                                             <div className="bg-white dark:bg-gray-800 rounded p-2 border border-gold-200 dark:border-gray-600">
-                                                <code className="text-xs">這律██████████</code>
+                                                <code className="text-xs">這律〇〇〇〇〇〇〇〇〇〇</code>
                                             </div>
                                         </div>
                                     </div>
@@ -239,7 +239,7 @@ export default function HelpPageClient() {
                                 <div className="bg-bible-50 dark:bg-gray-700 rounded-lg p-4 border border-bible-200 dark:border-gray-600">
                                     <h4 className="font-semibold mb-2">🔢 字數設置</h4>
                                     <p className="text-sm">
-                                        可選擇<strong>固定字數</strong>（如始終 2 字）或<strong>隨機字數</strong>（如 1-3 字範圍）。
+                                        可選擇<strong>固定提示字數</strong>（如最多提示 2 字）或<strong>隨機提示字數</strong>（如 1-3 字範圍）；短句也會保留至少一個空心圓遮字。
                                     </p>
                                 </div>
                             </div>
@@ -256,7 +256,7 @@ export default function HelpPageClient() {
                             <div className="pl-13 space-y-3 text-bible-700 dark:text-bible-300 font-chinese">
                                 <div className="bg-gradient-to-br from-gold-50 to-orange-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-5 border-2 border-gold-300 dark:border-gold-600 shadow-sm">
                                     <p className="text-sm font-semibold mb-4 text-gold-800 dark:text-gold-300">
-                                        ⭐ 使用「每句提示」+「固定字數」，從多到少，循序漸進背誦：
+                                        ⭐ 使用「每句提示」+「固定提示字數」，從多到少，循序漸進背誦：
                                     </p>
 
                                     <div className="space-y-3">
@@ -267,12 +267,12 @@ export default function HelpPageClient() {
                                                 <span className="text-sm font-semibold">熟悉經文（5 字）</span>
                                             </div>
                                             <p className="text-xs mb-2">
-                                                設置：每句提示 + 固定 <strong className="text-green-600">5 字</strong>
+                                                設置：每句提示 + 最多提示 <strong className="text-green-600">5 字</strong>
                                             </p>
                                             <div className="bg-green-50 dark:bg-green-900/20 rounded p-2 border border-green-200 dark:border-green-800">
-                                                <code className="text-xs">這律法書不可離開你的口，總要晝夜思想，好使你謹守遵行</code>
+                                                <code className="text-xs">這律法書不可離開你的〇，總要晝夜思〇，好使你謹守遵〇</code>
                                             </div>
-                                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">💡 經文幾乎完全顯示，輕鬆熟悉內容</p>
+                                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">💡 大部分內容可見，但每個短句仍保留遮字</p>
                                         </div>
 
                                         {/* 阶段 2 */}
@@ -282,11 +282,11 @@ export default function HelpPageClient() {
                                                 <span className="text-sm font-semibold">開始挑戰（4 → 3 字）</span>
                                             </div>
                                             <p className="text-xs mb-2">
-                                                設置：每句提示 + 固定 <strong className="text-blue-600">4 字</strong> →{' '}
+                                                設置：每句提示 + 最多提示 <strong className="text-blue-600">4 字</strong> →{' '}
                                                 <strong className="text-blue-600">3 字</strong>
                                             </p>
                                             <div className="bg-blue-50 dark:bg-blue-900/20 rounded p-2 border border-blue-200 dark:border-blue-800">
-                                                <code className="text-xs">這律法書不██，總要晝夜██，好使你謹██</code>
+                                                <code className="text-xs">這律法書〇〇，總要晝〇〇，好使你謹〇〇</code>
                                             </div>
                                             <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">💡 需要回憶部分內容，加深記憶</p>
                                         </div>
@@ -298,10 +298,10 @@ export default function HelpPageClient() {
                                                 <span className="text-sm font-semibold">鞏固記憶（2 字）</span>
                                             </div>
                                             <p className="text-xs mb-2">
-                                                設置：每句提示 + 固定 <strong className="text-orange-600">2 字</strong>
+                                                設置：每句提示 + 最多提示 <strong className="text-orange-600">2 字</strong>
                                             </p>
                                             <div className="bg-orange-50 dark:bg-orange-900/20 rounded p-2 border border-orange-200 dark:border-orange-800">
-                                                <code className="text-xs">這律████，總要████，好使████</code>
+                                                <code className="text-xs">這律〇〇〇〇，總要〇〇〇〇，好使〇〇〇〇</code>
                                             </div>
                                             <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">💡 主要靠記憶，只看關鍵提示</p>
                                         </div>
@@ -313,10 +313,10 @@ export default function HelpPageClient() {
                                                 <span className="text-sm font-semibold">完全背誦（開頭提示）</span>
                                             </div>
                                             <p className="text-xs mb-2">
-                                                設置：開頭提示 + 固定 <strong className="text-red-600">2 字</strong>
+                                                設置：開頭提示 + 最多提示 <strong className="text-red-600">2 字</strong>
                                             </p>
                                             <div className="bg-red-50 dark:bg-red-900/20 rounded p-2 border border-red-200 dark:border-red-800">
-                                                <code className="text-xs">這律██████████████████████████</code>
+                                                <code className="text-xs">這律〇〇〇〇〇〇〇〇〇〇〇〇〇〇〇〇〇〇〇〇</code>
                                             </div>
                                             <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">💡 最高難度，挑戰完全背誦</p>
                                         </div>
@@ -329,7 +329,7 @@ export default function HelpPageClient() {
                                             <span>來回切換，反覆練習</span>
                                         </p>
                                         <p className="text-xs leading-relaxed">
-                                            在各階段之間來回切換練習，例如：5字 → 3字 → 5字 → 2字 → 開頭提示 → 3字...
+                                            在各階段之間來回切換練習，例如：最多提示 5字 → 3字 → 5字 → 2字 → 開頭提示 → 3字...
                                             <br />
                                             這種<strong className="text-gold-700 dark:text-gold-400">「變化式」背誦法</strong>
                                             能讓大腦保持活躍，記憶更牢固。

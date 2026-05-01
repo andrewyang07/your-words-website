@@ -35,57 +35,47 @@ export function getCardSize(verse: Verse): 'small' | 'medium' | 'large' {
     return 'small';
 }
 
+const MASK_CHAR = '〇';
+const PUNCTUATION_REGEX = /[，。！？；：,.!?;:]/;
+
+function isMaskableChar(char: string): boolean {
+    return char.trim() !== '' && !PUNCTUATION_REGEX.test(char);
+}
+
+function maskTextSegment(segment: string, visibleChars: number): string {
+    const chars = segment.split('');
+    const maskableCount = chars.filter(isMaskableChar).length;
+
+    if (maskableCount <= 1) return segment;
+
+    // “固定 N 字”代表最多提示 N 个字；未展开时每个有效片段至少保留 1 个遮字。
+    const charsToShow = Math.min(Math.max(visibleChars, 0), maskableCount - 1);
+    let shown = 0;
+
+    return chars
+        .map((char) => {
+            if (!isMaskableChar(char)) return char;
+
+            if (shown < charsToShow) {
+                shown += 1;
+                return char;
+            }
+
+            return MASK_CHAR;
+        })
+        .join('');
+}
+
 // 遮罩经文文本
 export function maskVerseText(text: string, mode: 'punctuation' | 'prefix', visibleChars: number): string {
-    if (visibleChars <= 0) {
-        return text
-            .split('')
-            .map((char) => (/[，。！？；：,.!?;:]/.test(char) ? char : '〇'))
-            .join('');
-    }
-
     if (mode === 'prefix') {
-        // 前缀模式：只显示前 X 个字，其余遮罩
-        if (text.length <= visibleChars) return text;
-
-        const visiblePart = text.slice(0, visibleChars);
-        const maskedPart = text
-            .slice(visibleChars)
-            .split('')
-            .map((char) => (/[，。！？；：,.!?;:]/.test(char) ? char : '〇'))
-            .join('');
-
-        return visiblePart + maskedPart;
+        // 开头提示：最多显示前 X 个字，其余遮罩；短文本也至少遮 1 个字。
+        return maskTextSegment(text, visibleChars);
     }
 
-    // 标点符号模式：显示每个短语/句子开头 X 个字，后面遮罩到标点为止
-    const punctuationRegex = /[，。！？；：,.!?;:]/;
-    const chars = text.split('');
-    const result: string[] = [];
-    let charsShownInCurrentSegment = 0;
-    let isAfterPunctuation = true; // 开头视为"标点后"
-
-    for (let i = 0; i < chars.length; i++) {
-        const char = chars[i];
-
-        if (punctuationRegex.test(char)) {
-            // 标点符号本身显示
-            result.push(char);
-            charsShownInCurrentSegment = 0;
-            isAfterPunctuation = true;
-        } else {
-            // 普通字符
-            if (isAfterPunctuation && charsShownInCurrentSegment < visibleChars) {
-                // 标点后的前 X 个字显示
-                result.push(char);
-                charsShownInCurrentSegment++;
-            } else {
-                // 其余字符遮罩
-                result.push('〇');
-                isAfterPunctuation = false;
-            }
-        }
-    }
-
-    return result.join('');
+    // 每句提示：每个标点分段最多显示前 X 个字，其余遮罩；短句也至少遮 1 个字。
+    return text
+        .split(/([，。！？；：,.!?;:])/)
+        .map((segment) => (PUNCTUATION_REGEX.test(segment) ? segment : maskTextSegment(segment, visibleChars)))
+        .join('');
 }

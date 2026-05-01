@@ -29,8 +29,8 @@ export default function MaskSettings() {
     ];
 
     const typeOptions: SelectOption[] = [
-        { value: 'fixed', label: '固定字數' },
-        { value: 'range', label: '隨機字數' },
+        { value: 'fixed', label: '固定提示字數' },
+        { value: 'range', label: '隨機提示字數' },
     ];
 
     return (
@@ -66,7 +66,7 @@ export default function MaskSettings() {
             {maskCharsType === 'fixed' ? (
                 <Slider
                     id="mask-slider"
-                    label="顯示:"
+                    label="最多提示:"
                     min={1}
                     max={10}
                     value={maskCharsFixed}
@@ -159,10 +159,10 @@ export default function MaskSettings() {
                                         • 每句提示
                                     </p>
                                     <p className="text-xs mb-1.5 sm:mb-2 text-bible-600 dark:text-bible-400">
-                                        在每個句子開頭顯示提示字
+                                        在每個句子開頭最多顯示提示字，短句也會保留遮字
                                     </p>
                                     <div className="p-1.5 sm:p-2 bg-white dark:bg-gray-800 rounded border border-bible-200 dark:border-gray-600 font-chinese text-xs">
-                                        <p>這律██，總要████（每句都有提示）</p>
+                                        <p>這律〇，總要晝夜思〇（短句也會遮字）</p>
                                     </div>
                                 </div>
 
@@ -172,10 +172,10 @@ export default function MaskSettings() {
                                         • 開頭提示
                                     </p>
                                     <p className="text-xs mb-1.5 sm:mb-2 text-bible-600 dark:text-bible-400">
-                                        只在全文開頭顯示提示字
+                                        只在全文開頭最多顯示提示字，其餘保留遮字
                                     </p>
                                     <div className="p-1.5 sm:p-2 bg-white dark:bg-gray-800 rounded border border-bible-200 dark:border-gray-600 font-chinese text-xs">
-                                        <p>這律██████████（只有開頭有提示）</p>
+                                        <p>這律〇〇〇〇〇〇〇〇〇〇（只有開頭有提示）</p>
                                     </div>
                                 </div>
 

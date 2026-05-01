@@ -130,7 +130,7 @@ export default function HomePage() {
     const [showStatsModal, setShowStatsModal] = useState(false); // 移动端统计 modal
     const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
     const maskModeLabel = maskMode === 'punctuation' ? (language === 'traditional' ? '每句' : '每句') : (language === 'traditional' ? '開頭' : '开头');
-    const maskCharsLabel = maskCharsType === 'fixed' ? `固定${maskCharsFixed}字` : `${language === 'traditional' ? '隨機' : '随机'}${maskCharsMin}-${maskCharsMax}字`;
+    const maskCharsLabel = maskCharsType === 'fixed' ? `${language === 'traditional' ? '最多提示' : '最多提示'}${maskCharsFixed}字` : `${language === 'traditional' ? '隨機提示' : '随机提示'}${maskCharsMin}-${maskCharsMax}字`;
     const maskSettingsSummary = `${maskModeLabel}·${maskCharsLabel}`;
 
     // 滚动监听 - 懒加载更多卡片
@@ -1622,7 +1622,7 @@ export default function HomePage() {
                                                 <p className="text-stone-500 dark:text-stone-400">
                                                     點擊卡片顯示/隱藏經文內容。支持
                                                     <span className="font-semibold">每句提示</span>/<span className="font-semibold">開頭提示</span>
-                                                    兩種模式， 可設置固定或隨機字數，每次點擊隨機顯示不同提示字數。
+                                                    兩種模式，可設置固定或隨機提示字數；短句也會保留至少一個空心圓遮字。
                                                 </p>
                                             </div>
                                         </div>
