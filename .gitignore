@@ -33,6 +33,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# generated search index
+.pagefind-source/
+public/pagefind/
+
 # IDE
 .vscode/
 .idea/

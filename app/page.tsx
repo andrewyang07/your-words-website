@@ -669,25 +669,6 @@ export default function HomePage() {
         await searchEngineInitRef.current;
     }, [searchEngineInited]);
 
-    // 页面可用后后台预热搜索索引：不进首屏 bundle，也尽量不让第一次关键词搜索硬等
-    useEffect(() => {
-        if (loading || searchEngineInited) return;
-
-        let cancelled = false;
-        const prewarm = () => {
-            if (cancelled) return;
-            initSearchEngine().catch((err) => logError('HomePage:prewarmSearchEngine', err));
-        };
-        const id = typeof requestIdleCallback !== 'undefined'
-            ? requestIdleCallback(prewarm, { timeout: 3500 })
-            : setTimeout(prewarm, 1800) as unknown as number;
-
-        return () => {
-            cancelled = true;
-            typeof cancelIdleCallback !== 'undefined' ? cancelIdleCallback(id) : clearTimeout(id);
-        };
-    }, [loading, searchEngineInited, initSearchEngine]);
-
     const searchByReferenceOnly = useCallback(async (value: string): Promise<SearchResult[]> => {
         if (!/[\d:：]/.test(value)) return [];
 
@@ -767,11 +748,19 @@ export default function HomePage() {
                     return;
                 }
 
-                await initSearchEngine();
-                if (requestId !== searchRequestRef.current) return;
+                let results: SearchResult[];
+                try {
+                    const { searchWithPagefind } = await import('@/lib/search/pagefindClient');
+                    results = await searchWithPagefind(value.trim());
+                } catch (pagefindErr) {
+                    logError('HomePage:pagefindSearchFallback', pagefindErr);
+                    await initSearchEngine();
+                    if (requestId !== searchRequestRef.current) return;
 
-                const { getSearchEngine } = await import('@/lib/search/searchEngine');
-                const results = await getSearchEngine().search(value.trim());
+                    const { getSearchEngine } = await import('@/lib/search/searchEngine');
+                    results = await getSearchEngine().search(value.trim());
+                }
+
                 if (requestId !== searchRequestRef.current) return;
 
                 setSearchResults(results);
@@ -2058,9 +2047,7 @@ export default function HomePage() {
                     ) : searchQuery && searchResults.length === 0 && !isSearching ? (
                         <div className="text-center py-20">
                             <p className="text-bible-600 dark:text-bible-400 font-chinese">
-                                {searchEngineInited
-                                    ? `未找到与「${searchQuery}」相关的经文`
-                                    : '搜索索引加载中...'}
+                                {`未找到与「${searchQuery}」相关的经文`}
                             </p>
                         </div>
                     ) : displayVerses.length > 0 ? (
