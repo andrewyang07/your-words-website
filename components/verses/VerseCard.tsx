@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
 import { CardSize } from '@/types/common';
-import { Star, BookOpen, Eye } from 'lucide-react';
+import { Star, BookOpen } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { maskVerseText } from '@/lib/utils';
@@ -144,15 +144,6 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
 
             {/* 经文内容 */}
             <div className="relative flex-1">
-                {!isRevealed && (
-                    <span
-                        className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-stone-900/10 bg-white/35 px-2 py-1 text-[11px] font-medium text-stone-400 dark:border-white/10 dark:bg-white/[0.035] dark:text-stone-500 font-chinese"
-                        title="空心圆是背诵遮字，点击卡片显示全文"
-                    >
-                        <Eye className="h-3 w-3" />
-                        遮字
-                    </span>
-                )}
                 <p
                     className={`
               ${textSizes[size]}
