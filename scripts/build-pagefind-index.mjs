@@ -83,6 +83,7 @@ async function main() {
       <p data-pagefind-meta="chapter">${escapeHtml(chapter)}</p>
       <p data-pagefind-meta="verse">${escapeHtml(verse)}</p>
       <p data-pagefind-meta="textChinese">${escapeHtml(textTraditional)}</p>
+      <p data-pagefind-meta="textSimplified">${escapeHtml(textSimplified)}</p>
       <p data-pagefind-meta="textEnglish">${escapeHtml(textEnglish)}</p>
       <p>${escapeHtml(refSimplified)} ${escapeHtml(refTraditional)} ${escapeHtml(refEnglish)}</p>
       <p>${escapeHtml(book.nameSimplified)} ${escapeHtml(book.nameTraditional)} ${escapeHtml(book.nameEnglish)}</p>

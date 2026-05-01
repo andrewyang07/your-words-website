@@ -131,23 +131,39 @@ export function parseVerseReferences(text: string): VerseReference[] {
  * 根据书卷简称或全称获取标准书卷名
  */
 export function getStandardBookName(bookInput: string): string | null {
+    const normalizedInput = normalizeTraditionalBookName(bookInput.trim());
+
     // 先检查是否是简称
-    if (BOOK_ABBREVIATIONS[bookInput]) {
-        return BOOK_ABBREVIATIONS[bookInput];
+    if (BOOK_ABBREVIATIONS[normalizedInput]) {
+        return BOOK_ABBREVIATIONS[normalizedInput];
     }
 
     // 检查是否是全称
-    if (Object.values(BOOK_ABBREVIATIONS).includes(bookInput)) {
-        return bookInput;
+    if (Object.values(BOOK_ABBREVIATIONS).includes(normalizedInput)) {
+        return normalizedInput;
     }
 
     // 模糊匹配
     for (const [abbr, fullName] of Object.entries(BOOK_ABBREVIATIONS)) {
-        if (fullName.includes(bookInput) || bookInput.includes(abbr)) {
+        if (fullName.includes(normalizedInput) || normalizedInput.includes(abbr)) {
             return fullName;
         }
     }
 
     return null;
+}
+
+function normalizeTraditionalBookName(value: string): string {
+    const charMap: Record<string, string> = {
+        '創': '创', '記': '记', '歷': '历', '書': '书', '詩': '诗',
+        '傳': '传', '賽': '赛', '結': '结', '彌': '弥', '鴻': '鸿',
+        '該': '该', '亞': '亚', '瑪': '玛', '馬': '马', '約': '约',
+        '羅': '罗', '達': '达', '爾': '尔', '迦': '迦', '啟': '启',
+        '國': '国', '數': '数', '衛': '卫', '錄': '录', '後': '后',
+        '前': '前', '門': '门', '猶': '犹', '帖': '帖', '來': '来',
+        '蘭': '兰', '倫': '伦', '優': '优', '萬': '万', '聲': '声',
+    };
+
+    return value.replace(/[\u3400-\u9fff]/g, (char) => charMap[char] || char);
 }
 
