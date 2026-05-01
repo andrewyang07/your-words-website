@@ -129,8 +129,8 @@ export default function HomePage() {
     const [statsLoading, setStatsLoading] = useState(true);
     const [showStatsModal, setShowStatsModal] = useState(false); // 移动端统计 modal
     const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
-    const maskModeLabel = maskMode === 'punctuation' ? '每句' : '開頭';
-    const maskCharsLabel = maskCharsType === 'fixed' ? `固定${maskCharsFixed}字` : `隨機${maskCharsMin}-${maskCharsMax}字`;
+    const maskModeLabel = maskMode === 'punctuation' ? (language === 'traditional' ? '每句' : '每句') : (language === 'traditional' ? '開頭' : '开头');
+    const maskCharsLabel = maskCharsType === 'fixed' ? `固定${maskCharsFixed}字` : `${language === 'traditional' ? '隨機' : '随机'}${maskCharsMin}-${maskCharsMax}字`;
     const maskSettingsSummary = `${maskModeLabel}·${maskCharsLabel}`;
 
     // 滚动监听 - 懒加载更多卡片
@@ -626,7 +626,7 @@ export default function HomePage() {
         setSelectedBook(book);
         setSelectedChapter(null);
         setShuffleKey(0); // 重置随机状态，章节内容需要按顺序显示
-        // 选择书卷时，重置收藏筛选
+        // {language === 'traditional' ? '選擇書卷' : '选择书卷'}时，重置收藏筛选
         if (book && filterType === 'favorites') {
             setFilterType('all');
         }
@@ -648,6 +648,26 @@ export default function HomePage() {
         setSelectedChapter(null);
         setShuffleKey(0);
         setShowAllContent(false); // 返回精选时切换到背诵模式
+    };
+
+    const handleLanguageChange = (nextLanguage: 'simplified' | 'traditional') => {
+        if (nextLanguage === language) return;
+        setLanguage(nextLanguage);
+        setFilterType('all');
+        setSelectedBook(null);
+        setSelectedChapter(null);
+        setBookFilter('all');
+        setFavoritesBookFilter('all');
+        setSearchQuery('');
+        setSearchResults([]);
+        setIsSearching(false);
+        setShuffleKey(0);
+        setShowAllContent(false);
+        if (searchTimerRef.current) {
+            clearTimeout(searchTimerRef.current);
+            searchTimerRef.current = null;
+        }
+        prevShowAllContentRef.current = null;
     };
 
     // 搜索引擎较重：只在真正搜索时动态加载，不要在聚焦输入框时阻塞首屏/键盘弹出
@@ -869,7 +889,7 @@ export default function HomePage() {
         const verseIds = sharedVersesData.map((v) => v.id);
         addFavorites(verseIds);
         setHasAddedAllShared(true); // 标记为已收藏
-        setShareToast(`已添加 ${verseIds.length} 节经文到收藏`);
+        setShareToast(`已添加 ${verseIds.length} {language === 'traditional' ? '節' : '节'}经文到收藏`);
         // 不立即清除横幅，让用户看到星星变化
         // 用户可以手动点击"取消"或刷新页面
     };
@@ -917,27 +937,27 @@ export default function HomePage() {
         <div className="relative min-h-screen overflow-hidden bg-[#f8f5ee] text-stone-950 dark:bg-[#0e1116] dark:text-stone-50 before:pointer-events-none before:fixed before:inset-x-0 before:top-0 before:z-0 before:h-64 before:bg-[radial-gradient(circle_at_50%_0%,rgba(120,113,108,0.13),transparent_34rem)] dark:before:bg-[radial-gradient(circle_at_50%_0%,rgba(214,211,209,0.08),transparent_32rem)]">
             {/* 顶部导航栏 */}
             <header
-                className="sticky top-0 z-10 border-b border-stone-900/10 bg-[#f8f5ee]/86 backdrop-blur-2xl dark:border-white/10 dark:bg-[#0e1116]/86"
+                className="sticky top-0 z-10 border-b border-stone-900/10 bg-[#f8f5ee]/72 backdrop-blur-2xl dark:border-white/10 dark:bg-[#0e1116]/72"
                 role="banner"
             >
                 <div className="relative z-[1] mx-auto max-w-6xl px-4 py-3 md:py-4">
                     {/* 标题行 */}
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                            <a href="/" className="group flex items-center gap-3 min-w-0 transition-opacity hover:opacity-90" title="首頁">
-                                <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-stone-900/10 bg-white/55 dark:border-white/10 dark:bg-white/[0.04]">
+                            <a href="/" className="group flex items-center gap-3 min-w-0 transition-opacity hover:opacity-90" title={language === 'traditional' ? '首頁' : '首页'}>
+                                <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-900/10 bg-white/55 p-1 dark:border-white/10 dark:bg-white/[0.04]">
                                     <Image
                                         src="/logo-light.png"
-                                        alt="你的話語 Logo"
+                                        alt={language === 'traditional' ? '你的話語 Logo' : '你的话语 Logo'}
                                         width={40}
                                         height={40}
                                         priority
-                                        className="h-8 w-8 dark:brightness-90 dark:contrast-125"
+                                        className="h-full w-full rounded-lg object-contain dark:brightness-90 dark:contrast-125"
                                     />
                                 </span>
                                 <span className="min-w-0">
                                     <h1 className="truncate text-[1.55rem] font-semibold leading-none tracking-[0.08em] text-stone-950 dark:text-stone-50 font-chinese md:text-2xl">
-                                        你的話語
+                                        {language === 'traditional' ? '你的話語' : '你的话语'}
                                     </h1>
                                     <span className="mt-1 hidden text-[10px] tracking-[0.28em] text-stone-500 dark:text-stone-400 sm:block">
                                         READ · SEARCH · REMEMBER
@@ -946,14 +966,14 @@ export default function HomePage() {
                             </a>
                         </div>
 
-                        <div className="flex shrink-0 items-center gap-1 rounded-full border border-stone-900/10 bg-white/45 p-1 backdrop-blur dark:border-white/10 dark:bg-white/[0.04] md:gap-1.5">
+                        <div className="liquid-glass flex shrink-0 items-center gap-1 rounded-full p-1 md:gap-1.5">
                             {/* 全局统计 - 桌面端（完整信息）*/}
                             <div className="hidden lg:flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition hover:bg-white/50 dark:text-stone-300 dark:hover:bg-white/[0.06]">
                                 {statsLoading ? (
                                     <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
                                     <span className="whitespace-nowrap text-xs tracking-[0.08em] text-stone-600 dark:text-stone-300 font-chinese">
-                                        {globalStats.totalUsers.toLocaleString()} 访客 · {globalStats.totalFavorites.toLocaleString()} 收藏
+                                        {globalStats.totalUsers.toLocaleString()} {language === 'traditional' ? '訪客' : '访客'} · {globalStats.totalFavorites.toLocaleString()} {language === 'traditional' ? '收藏' : '收藏'}
                                     </span>
                                 )}
                             </div>
@@ -962,7 +982,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowStatsModal(true)}
                                 className="hidden md:flex lg:hidden items-center gap-1 px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
-                                title="点击查看详情"
+                                title={language === 'traditional' ? '點擊查看詳情' : '点击查看详情'}
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 {statsLoading ? (
@@ -978,11 +998,11 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowStatsModal(true)}
                                 className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[44px]"
-                                title="查看统计"
+                                title={language === 'traditional' ? '查看統計' : '查看统计'}
                                 aria-label={
                                     statsLoading
-                                        ? '查看统计'
-                                        : `查看统计，访客 ${globalStats.totalUsers.toLocaleString()}，收藏 ${globalStats.totalFavorites.toLocaleString()}`
+                                        ? (language === 'traditional' ? '查看統計' : '查看统计')
+                                        : `${language === 'traditional' ? '查看統計，訪客' : '查看统计，访客'} ${globalStats.totalUsers.toLocaleString()}，${language === 'traditional' ? '收藏' : '收藏'} ${globalStats.totalFavorites.toLocaleString()}`
                                 }
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
@@ -998,11 +1018,11 @@ export default function HomePage() {
                                 onClick={handleOpenGuide}
                                 className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="显示使用帮助"
-                                aria-label="显示使用帮助"
+                                title={language === 'traditional' ? '顯示使用幫助' : '显示使用帮助'}
+                                aria-label={language === 'traditional' ? '顯示使用幫助' : '显示使用帮助'}
                             >
                                 <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
-                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">帮助</span>
+                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">{language === 'traditional' ? '幫助' : '帮助'}</span>
                             </button>
 
                             {/* 提示设置 - 桌面折叠面板入口 */}
@@ -1010,13 +1030,13 @@ export default function HomePage() {
                                 onClick={() => setShowMaskSettingsDesktop(!showMaskSettingsDesktop)}
                                 className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="打开提示设置"
-                                aria-label="打开提示设置"
+                                title={language === 'traditional' ? '打開提示設定' : '打开提示设置'}
+                                aria-label={language === 'traditional' ? '打開提示設定' : '打开提示设置'}
                                 aria-expanded={showMaskSettingsDesktop}
                                 aria-controls="mask-settings-panel"
                             >
                                 <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
-                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">提示设置</span>
+                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">{language === 'traditional' ? '提示設定' : '提示设置'}</span>
                                 <span className="hidden lg:inline font-chinese text-xs text-stone-500 dark:text-stone-400">{maskSettingsSummary}</span>
                                 <ChevronDown
                                     className={`hidden lg:inline w-3.5 h-3.5 text-stone-500 dark:text-stone-400 transition-transform ${
@@ -1027,7 +1047,7 @@ export default function HomePage() {
 
                             {/* 简繁体切换 - 只在平板/桌面端显示 */}
                             <button
-                                onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
+                                onClick={() => handleLanguageChange(language === 'simplified' ? 'traditional' : 'simplified')}
                                 className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
@@ -1044,19 +1064,19 @@ export default function HomePage() {
                                 onClick={() => setShowAllContent(!showAllContent)}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
-                                aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                                title={showAllContent ? (language === 'traditional' ? '切換到背誦模式' : '切换到背诵模式') : (language === 'traditional' ? '切換到閱讀模式' : '切换到阅读模式')}
+                                aria-label={showAllContent ? (language === 'traditional' ? '切換到背誦模式' : '切换到背诵模式') : (language === 'traditional' ? '切換到閱讀模式' : '切换到阅读模式')}
                                 aria-pressed={showAllContent}
                             >
                                 {showAllContent ? (
                                     <>
                                         <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
-                                        <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">背诵</span>
+                                        <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">{language === 'traditional' ? '背誦' : '背诵'}</span>
                                     </>
                                 ) : (
                                     <>
                                         <Eye className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
-                                        <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">阅读</span>
+                                        <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">{language === 'traditional' ? '閱讀' : '阅读'}</span>
                                     </>
                                 )}
                             </button>
@@ -1066,8 +1086,8 @@ export default function HomePage() {
                                 onClick={() => setShowMaskSettingsMobile(!showMaskSettingsMobile)}
                                 className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={`提示设置（${maskSettingsSummary}）`}
-                                aria-label={`打开提示设置，当前${maskSettingsSummary}`}
+                                title={`${language === 'traditional' ? '提示設定' : '提示设置'}（${maskSettingsSummary}）`}
+                                aria-label={`${language === 'traditional' ? '打開提示設定，當前' : '打开提示设置，当前'}${maskSettingsSummary}`}
                                 aria-expanded={showMaskSettingsMobile}
                                 aria-controls="mask-settings-mobile-panel"
                             >
@@ -1079,20 +1099,20 @@ export default function HomePage() {
                                 onClick={() => setShowSideMenu(true)}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="菜单"
-                                aria-label="打开菜单"
+                                title={language === 'traditional' ? '菜單' : '菜单'}
+                                aria-label={language === 'traditional' ? '打開菜單' : '打开菜单'}
                             >
                                 <Menu className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
-                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">菜單</span>
+                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">{language === 'traditional' ? '菜單' : '菜单'}</span>
                             </button>
                         </div>
                     </div>
 
                     {/* 搜索输入框 - 全端独占一行 */}
-                    <div className="mb-3 rounded-[1.75rem] border border-stone-900/10 bg-white/52 p-2 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+                    <div className="liquid-glass mb-3 rounded-[1.75rem] p-2">
                         <div className="mb-1.5 flex items-center justify-between px-2">
                             <span className="text-[10px] font-semibold tracking-[0.32em] text-stone-500 dark:text-stone-400">SCRIPTURE SEARCH</span>
-                            <span className="hidden text-xs text-bible-500 dark:text-gray-400 sm:inline font-chinese">引用、关键词、拼音都可以</span>
+                            <span className="hidden text-xs text-bible-500 dark:text-gray-400 sm:inline font-chinese">{language === 'traditional' ? '引用、關鍵詞、拼音都可以' : '引用、关键词、拼音都可以'}</span>
                         </div>
                         <div className="relative flex items-center w-full">
                             <Search className="pointer-events-none absolute left-4 h-5 w-5 text-stone-500 dark:text-stone-400" />
@@ -1102,13 +1122,13 @@ export default function HomePage() {
                                 onChange={(e) => handleSearchChange(e.target.value)}
                                 placeholder={language === 'traditional' ? '試試：約3:16 / 神愛世人 / yuehan / lvoe' : '试试：约3:16 / 神爱世人 / yuehan / lvoe'}
                                 className="min-h-[54px] w-full rounded-[1.25rem] border border-transparent bg-[#f3efe7]/80 py-3.5 pl-11 pr-11 text-base text-stone-950 outline-none transition placeholder:text-stone-400 focus:border-stone-900/15 focus:bg-white/85 focus:ring-4 focus:ring-stone-900/5 dark:bg-black/20 dark:text-stone-50 dark:placeholder:text-stone-500 dark:focus:border-white/15 dark:focus:bg-white/[0.06] dark:focus:ring-white/5 font-chinese"
-                                aria-label="搜索经文"
+                                aria-label={language === 'traditional' ? '搜索經文' : '搜索经文'}
                             />
                             {searchQuery && (
                                 <button
                                     onClick={handleClearSearch}
                                     className="absolute right-3 rounded-full p-1.5 text-bible-500 transition hover:bg-bible-100 hover:text-bible-800 dark:text-bible-300 dark:hover:bg-gray-700 dark:hover:text-bible-100"
-                                    title="清除搜索"
+                                    title={language === 'traditional' ? '清除搜索' : '清除搜索'}
                                     aria-label="清除搜索"
                                 >
                                     <X className="w-3.5 h-3.5" />
@@ -1153,7 +1173,7 @@ export default function HomePage() {
                     </div>
 
                     {/* 筛选工具栏 */}
-                    <div className="flex items-center gap-2 overflow-x-auto rounded-full border border-stone-900/10 bg-white/42 p-1.5 backdrop-blur scrollbar-hide dark:border-white/10 dark:bg-white/[0.035]">
+                    <div className="liquid-glass flex items-center gap-2 overflow-x-auto rounded-full p-1.5 scrollbar-hide">
                         {/* 已收藏筛选 - 始终显示 */}
                         <button
                             onClick={handleToggleFavorites}
@@ -1191,7 +1211,7 @@ export default function HomePage() {
                             {({ open }) => (
                                 <div className="relative">
                                     <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
-                                        <span className="block">{selectedBook?.name || '选择书卷'}</span>
+                                        <span className="block">{selectedBook?.name || (language === 'traditional' ? '選擇書卷' : '选择书卷')}</span>
                                         <ChevronDown
                                             className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-600 dark:text-stone-300 transition-transform ${
                                                 open ? 'rotate-180' : ''
@@ -1219,7 +1239,7 @@ export default function HomePage() {
                                             >
                                                 {({ selected }) => (
                                                     <>
-                                                        <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>选择书卷</span>
+                                                        <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>{language === 'traditional' ? '選擇書卷' : '选择书卷'}</span>
                                                         {selected && (
                                                             <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                         )}
@@ -1227,9 +1247,9 @@ export default function HomePage() {
                                                 )}
                                             </Listbox.Option>
 
-                                            {/* 旧约 */}
+                                            {/* {language === 'traditional' ? '舊約' : '旧约'} */}
                                             <div className="px-3 py-1 text-xs font-semibold text-stone-500 dark:text-stone-400 bg-bible-50 dark:bg-gray-900/50 border-t border-b border-bible-100 dark:border-gray-700 font-chinese">
-                                                旧约
+                                                {language === 'traditional' ? '舊約' : '旧约'}
                                             </div>
                                             {books
                                                 .filter((b) => b.testament === 'old')
@@ -1258,9 +1278,9 @@ export default function HomePage() {
                                                     </Listbox.Option>
                                                 ))}
 
-                                            {/* 新约 */}
+                                            {/* {language === 'traditional' ? '新約' : '新约'} */}
                                             <div className="px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-t border-b border-blue-100 dark:border-blue-800 font-chinese mt-1">
-                                                新约
+                                                {language === 'traditional' ? '新約' : '新约'}
                                             </div>
                                             {books
                                                 .filter((b) => b.testament === 'new')
@@ -1301,7 +1321,7 @@ export default function HomePage() {
                                     {({ open }) => (
                                         <div className="relative">
                                             <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
-                                                <span className="block">{selectedChapter ? `第 ${selectedChapter} 章` : '所有章节'}</span>
+                                                <span className="block">{selectedChapter ? `${language === 'traditional' ? '第' : '第'} ${selectedChapter} ${language === 'traditional' ? '章' : '章'}` : (language === 'traditional' ? '所有章節' : '所有章节')}</span>
                                                 <ChevronDown
                                                     className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400 transition-transform ${
                                                         open ? 'rotate-180' : ''
@@ -1330,7 +1350,7 @@ export default function HomePage() {
                                                         {({ selected }) => (
                                                             <>
                                                                 <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
-                                                                    所有章节
+                                                                    {language === 'traditional' ? '所有章節' : '所有章节'}
                                                                 </span>
                                                                 {selected && (
                                                                     <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400" />
@@ -1353,7 +1373,7 @@ export default function HomePage() {
                                                             {({ selected }) => (
                                                                 <>
                                                                     <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
-                                                                        第 {ch} 章
+                                                                        {language === 'traditional' ? '第' : '第'} {ch} {language === 'traditional' ? '章' : '章'}
                                                                     </span>
                                                                     {selected && (
                                                                         <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400" />
@@ -1384,30 +1404,30 @@ export default function HomePage() {
                                 {/* 返回按钮 - 智能显示 */}
                                 {selectedBook && (
                                     <button
-                                        onClick={selectedChapter ? () => handleChapterSelect(null) : handleClearFilters}
-                                        className="flex shrink-0 items-center gap-2 px-4 py-2.5 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
+                                        onClick={handleClearFilters}
+                                        className="liquid-button flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] touch-manipulation"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        title={selectedChapter ? '返回章节选择' : '返回精选经文'}
+                                        title={language === 'traditional' ? '返回精選經文' : '返回精选经文'}
                                     >
                                         <RotateCcw className="w-4 h-4 text-stone-600 dark:text-stone-300" />
                                         <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">
-                                            {selectedChapter ? '重选章节' : '返回'}
+                                            {language === 'traditional' ? '返回精選' : '返回精选'}
                                         </span>
                                     </button>
                                 )}
                             </>
                         )}
 
-                        {/* 随机按钮 - 在精选经文和收藏界面显示，选择书卷/章节/搜索时隐藏 */}
+                        {/* 随机按钮 - 在精选经文和收藏界面显示，{language === 'traditional' ? '選擇書卷' : '选择书卷'}/章节/搜索时隐藏 */}
                         {!selectedBook && !searchQuery && (
                             <button
                                 onClick={handleShuffle}
-                                className="flex shrink-0 items-center gap-2 px-4 py-2.5 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
+                                className="liquid-button flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] touch-manipulation"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="重新排列"
+                                title={language === 'traditional' ? '重新排列' : '重新排列'}
                             >
                                 <Shuffle className="w-4 h-4 text-stone-600 dark:text-stone-300" />
-                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">随机</span>
+                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">{language === 'traditional' ? '隨機' : '随机'}</span>
                             </button>
                         )}
                     </div>
@@ -1440,8 +1460,8 @@ export default function HomePage() {
                                 <div>
                                     <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
                                         {hasAddedAllShared
-                                            ? `已成功收藏 ${sharedVerses.length} 节经文 ✨`
-                                            : `这是分享的收藏列表（共 ${sharedVerses.length} 节经文）`}
+                                            ? `已成功收藏 ${sharedVerses.length} {language === 'traditional' ? '節' : '节'}经文 ✨`
+                                            : `这是分享的收藏列表（共 ${sharedVerses.length} {language === 'traditional' ? '節' : '节'}经文）`}
                                     </p>
                                     <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
                                         {hasAddedAllShared
@@ -1492,7 +1512,7 @@ export default function HomePage() {
                     onThemeChange={setTheme}
                     onViewChapter={handleViewChapterFromMenu}
                     language={language}
-                    onLanguageChange={setLanguage}
+                    onLanguageChange={handleLanguageChange}
                 />
 
                 {/* 移动端统计 modal */}
@@ -1692,7 +1712,7 @@ export default function HomePage() {
                     </div>
 
                     {/* 状态标签和统计 */}
-                    <div className="rounded-[1.35rem] border border-stone-900/10 bg-white/38 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-white/[0.035]">
+                    <div className="liquid-glass rounded-[1.35rem] px-4 py-3">
                         <div className="flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-2 flex-wrap">
                             {searchQuery && (
@@ -1712,11 +1732,11 @@ export default function HomePage() {
                                 <div className="flex items-center gap-3">
                                     <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-stone-400 dark:bg-stone-500" />
                                     <div className="flex flex-col gap-0.5">
-                                        <span className="text-xs font-semibold text-stone-800 dark:text-stone-200 font-chinese">精選 114 節經文</span>
+                                        <span className="text-xs font-semibold text-stone-800 dark:text-stone-200 font-chinese">{language === 'traditional' ? '精選' : '精选'} 114 {language === 'traditional' ? '節經文' : '节经文'}</span>
                                         <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">
                                             {showAllContent
-                                                ? '閱讀模式：完整顯示經文。'
-                                                : '方塊不是亂碼，是背誦遮字；點卡片可顯示全文。'}
+                                                ? (language === 'traditional' ? '閱讀模式：完整顯示經文。' : '阅读模式：完整显示经文。')
+                                                : (language === 'traditional' ? '方塊不是亂碼，是背誦遮字；點卡片可顯示全文。' : '方块不是乱码，是背诵遮字；点卡片可显示全文。')}
                                         </span>
                                     </div>
                                 </div>
@@ -1737,7 +1757,7 @@ export default function HomePage() {
 
                         <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm text-stone-500 dark:text-stone-400 font-chinese">
-                                共 <span className="font-semibold text-stone-600 dark:text-stone-300">{displayVerses.length}</span> 节
+                                共 <span className="font-semibold text-stone-600 dark:text-stone-300">{displayVerses.length}</span> {language === 'traditional' ? '節' : '节'}
                             </span>
 
                             {/* 只在精选经文模式下显示筛选按钮 */}
@@ -1748,7 +1768,7 @@ export default function HomePage() {
                                         <div className="relative">
                                             <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/35 dark:bg-white/[0.04] hover:bg-white/60 dark:hover:bg-white/[0.08] transition-colors">
                                                 <Filter className="w-4 h-4 text-stone-500 dark:text-stone-400" />
-                                                <span className="text-xs text-stone-600 dark:text-stone-300 font-chinese">篩選</span>
+                                                <span className="text-xs text-stone-600 dark:text-stone-300 font-chinese">{language === 'traditional' ? '篩選' : '筛选'}</span>
                                                 <ChevronDown className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                                             </Listbox.Button>
                                             <Transition
@@ -1760,7 +1780,7 @@ export default function HomePage() {
                                                 leaveTo="transform scale-95 opacity-0"
                                             >
                                                 <Listbox.Options className="absolute right-0 mt-2 w-64 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-50 scrollbar-thin">
-                                                    {/* 全部 / 旧约 / 新约 */}
+                                                    {/* 全部 / {language === 'traditional' ? '舊約' : '旧约'} / {language === 'traditional' ? '新約' : '新约'} */}
                                                     <Listbox.Option value="all">
                                                         {({ active, selected }) => (
                                                             <div
@@ -1781,7 +1801,7 @@ export default function HomePage() {
                                                         )}
                                                     </Listbox.Option>
 
-                                                    {/* 计算旧约新约经文数量 */}
+                                                    {/* 计算{language === 'traditional' ? '舊約' : '旧约'}{language === 'traditional' ? '新約' : '新约'}经文数量 */}
                                                     {(() => {
                                                         const oldCount = verses.filter((v) => {
                                                             const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
@@ -1895,7 +1915,7 @@ export default function HomePage() {
                                         <div className="relative">
                                             <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/35 dark:bg-white/[0.04] hover:bg-white/60 dark:hover:bg-white/[0.08] transition-colors">
                                                 <Filter className="w-4 h-4 text-stone-500 dark:text-stone-400" />
-                                                <span className="text-xs text-stone-600 dark:text-stone-300 font-chinese">篩選</span>
+                                                <span className="text-xs text-stone-600 dark:text-stone-300 font-chinese">{language === 'traditional' ? '篩選' : '筛选'}</span>
                                                 <ChevronDown className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                                             </Listbox.Button>
                                             <Transition
@@ -1907,7 +1927,7 @@ export default function HomePage() {
                                                 leaveTo="transform scale-95 opacity-0"
                                             >
                                                 <Listbox.Options className="absolute right-0 mt-2 w-64 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-50 scrollbar-thin">
-                                                    {/* 全部 / 旧约 / 新约 */}
+                                                    {/* 全部 / {language === 'traditional' ? '舊約' : '旧约'} / {language === 'traditional' ? '新約' : '新约'} */}
                                                     <Listbox.Option value="all">
                                                         {({ active, selected }) => (
                                                             <div

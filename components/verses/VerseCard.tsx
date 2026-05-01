@@ -98,7 +98,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         <div
             className={`
         ${sizeClasses[size]}
-        rounded-[1.4rem] border border-stone-900/10 bg-white/58 dark:border-white/10 dark:bg-white/[0.045]
+        liquid-glass rounded-[1.4rem]
         cursor-pointer
         [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-stone-900/20 [@media(hover:hover)]:dark:hover:border-white/20
         [@media(hover:hover)]:hover:bg-white/72 [@media(hover:hover)]:dark:hover:bg-white/[0.065]
