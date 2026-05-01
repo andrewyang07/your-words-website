@@ -98,14 +98,12 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         <div
             className={`
         ${sizeClasses[size]}
-        bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(255,251,235,0.86))] dark:bg-[linear-gradient(180deg,rgba(31,41,55,0.94),rgba(17,24,39,0.92))] rounded-[1.35rem] shadow-[0_18px_50px_rgba(120,53,15,0.10),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_18px_45px_rgba(0,0,0,0.22)]
+        rounded-[1.4rem] border border-stone-900/10 bg-white/58 dark:border-white/10 dark:bg-white/[0.045]
         cursor-pointer
-        border border-bible-200/75 dark:border-gray-700/85
-        [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-bible-400/90 [@media(hover:hover)]:dark:hover:border-bible-500/70
-        [@media(hover:hover)]:hover:shadow-[0_24px_60px_rgba(120,53,15,0.16),inset_0_1px_0_rgba(255,255,255,0.95)]
+        [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-stone-900/20 [@media(hover:hover)]:dark:hover:border-white/20
+        [@media(hover:hover)]:hover:bg-white/72 [@media(hover:hover)]:dark:hover:bg-white/[0.065]
         flex flex-col justify-between
         relative overflow-hidden
-        before:pointer-events-none before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-bible-300/70 before:to-transparent dark:before:via-bible-500/30
         touch-manipulation
         transition-all duration-200
         active:scale-[0.985]
@@ -122,14 +120,14 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             {/* 经文引用 */}
             <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                    <span className="inline-flex items-center rounded-full border border-bible-200/70 bg-bible-50/75 px-2.5 py-1 text-bible-700 dark:border-gray-700 dark:bg-gray-900/55 dark:text-bible-300 font-medium font-chinese text-sm">
+                    <span className="inline-flex items-center rounded-full border border-stone-900/10 bg-white/45 px-2.5 py-1 text-stone-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-stone-300 font-medium font-chinese text-sm">
                         {verse.book} {verse.chapter}:{verse.verse}
                     </span>
                 </div>
                 {/* 收藏星标 */}
                 <button
                     onClick={handleToggleFavorite}
-                    className="rounded-full bg-bible-50/80 dark:bg-gray-700/70 transition-all hover:scale-105 hover:bg-bible-100 dark:hover:bg-gray-700 p-2 -m-1 touch-manipulation"
+                    className="-m-1 rounded-full p-2 text-stone-400 transition-all hover:scale-105 hover:bg-stone-900/5 dark:text-stone-500 dark:hover:bg-white/10 touch-manipulation"
                     title={isFav ? '取消收藏' : '收藏'}
                     aria-label={
                         isFav ? `取消收藏 ${verse.book} ${verse.chapter}:${verse.verse}` : `收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
@@ -138,7 +136,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 >
                     <Star
                         className={`w-5 h-5 transition-colors ${
-                            isFav ? 'text-gold-500 fill-gold-500 dark:text-gold-400 dark:fill-gold-400' : 'text-gray-300 dark:text-gray-600'
+                            isFav ? 'text-amber-600 fill-amber-600 dark:text-amber-300 dark:fill-amber-300' : 'text-stone-300 dark:text-stone-600'
                         }`}
                     />
                 </button>
@@ -147,15 +145,18 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             {/* 经文内容 */}
             <div className="relative flex-1">
                 {!isRevealed && (
-                    <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-gold-200/80 bg-gold-50/75 px-2.5 py-1 text-[11px] font-medium text-gold-700 dark:border-gold-800/70 dark:bg-gold-900/20 dark:text-gold-300 font-chinese">
+                    <span
+                        className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-stone-900/10 bg-white/35 px-2 py-1 text-[11px] font-medium text-stone-400 dark:border-white/10 dark:bg-white/[0.035] dark:text-stone-500 font-chinese"
+                        title="方塊是背誦遮字，點擊卡片顯示全文"
+                    >
                         <Eye className="h-3 w-3" />
-                        方塊是遮字 · 點擊顯示全文
+                        遮字
                     </span>
                 )}
                 <p
                     className={`
               ${textSizes[size]}
-              text-gray-900 dark:text-gray-100 font-medium leading-[1.85] font-chinese
+              text-stone-900 dark:text-stone-100 font-normal leading-[1.9] font-chinese
               transition-opacity duration-200
               break-words overflow-wrap-anywhere
             `}
@@ -165,15 +166,15 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             </div>
 
             {/* 底部信息栏 */}
-            <div className="mt-4 pt-3 border-t border-bible-200/70 dark:border-gray-700/80 flex items-center justify-between">
-                <span className="rounded-full bg-bible-50 dark:bg-gray-700/70 px-2 py-1 text-[11px] text-bible-500 dark:text-gray-400 font-chinese">
+            <div className="mt-4 flex items-center justify-between border-t border-stone-900/10 pt-3 dark:border-white/10">
+                <span className="rounded-full bg-stone-900/[0.035] px-2 py-1 text-[11px] text-stone-500 dark:bg-white/[0.055] dark:text-stone-400 font-chinese">
                     {verse.testament === 'old' ? '旧约' : '新约'}
                 </span>
 
                 {/* 查看整章按钮 */}
                 <button
                     onClick={handleViewInBible}
-                    className="flex items-center gap-1 px-2 py-1 text-xs text-bible-500 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-100 rounded transition-colors touch-manipulation min-h-[44px] min-w-[44px] justify-center"
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded px-2 py-1 text-xs text-stone-500 transition-colors hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-50 touch-manipulation"
                     title="查看本章所有经文"
                     aria-label={`查看 ${verse.book} 第${verse.chapter}章所有经文`}
                     style={{ WebkitTapHighlightColor: 'transparent' }}

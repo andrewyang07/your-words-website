@@ -914,18 +914,18 @@ export default function HomePage() {
     if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_12%_-10%,rgba(190,158,93,0.22),transparent_28rem),radial-gradient(circle_at_90%_8%,rgba(245,158,11,0.10),transparent_24rem),linear-gradient(135deg,#fffaf0_0%,#fffdf8_42%,#fef7ed_100%)] dark:bg-[radial-gradient(circle_at_10%_-10%,rgba(190,158,93,0.14),transparent_26rem),radial-gradient(circle_at_92%_4%,rgba(245,158,11,0.08),transparent_22rem),linear-gradient(135deg,#0f172a_0%,#111827_48%,#1f2937_100%)] before:pointer-events-none before:fixed before:inset-0 before:z-0 before:bg-[linear-gradient(rgba(120,53,15,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(120,53,15,0.025)_1px,transparent_1px)] before:bg-[size:56px_56px] before:opacity-40 dark:before:opacity-10">
+        <div className="relative min-h-screen overflow-hidden bg-[#f8f5ee] text-stone-950 dark:bg-[#0e1116] dark:text-stone-50 before:pointer-events-none before:fixed before:inset-x-0 before:top-0 before:z-0 before:h-64 before:bg-[radial-gradient(circle_at_50%_0%,rgba(120,113,108,0.13),transparent_34rem)] dark:before:bg-[radial-gradient(circle_at_50%_0%,rgba(214,211,209,0.08),transparent_32rem)]">
             {/* 顶部导航栏 */}
             <header
-                className="sticky top-0 z-10 border-b border-bible-200/70 bg-[#fffaf0]/82 shadow-[0_10px_35px_rgba(120,53,15,0.07)] backdrop-blur-xl dark:border-gray-700/80 dark:bg-gray-950/78 dark:shadow-none"
+                className="sticky top-0 z-10 border-b border-stone-900/10 bg-[#f8f5ee]/86 backdrop-blur-2xl dark:border-white/10 dark:bg-[#0e1116]/86"
                 role="banner"
             >
-                <div className="relative z-[1] max-w-7xl mx-auto px-4 py-3 md:py-4">
+                <div className="relative z-[1] mx-auto max-w-6xl px-4 py-3 md:py-4">
                     {/* 标题行 */}
-                    <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="mb-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                             <a href="/" className="group flex items-center gap-3 min-w-0 transition-opacity hover:opacity-90" title="首頁">
-                                <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-bible-200/80 bg-white/80 shadow-[0_10px_24px_rgba(120,53,15,0.10)] dark:border-gray-700 dark:bg-gray-900/80 dark:shadow-none">
+                                <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-stone-900/10 bg-white/55 dark:border-white/10 dark:bg-white/[0.04]">
                                     <Image
                                         src="/logo-light.png"
                                         alt="你的話語 Logo"
@@ -936,29 +936,24 @@ export default function HomePage() {
                                     />
                                 </span>
                                 <span className="min-w-0">
-                                    <h1
-                                        className="truncate text-[1.7rem] font-extrabold leading-none tracking-wide text-bible-800 dark:text-bible-200 font-chinese md:text-3xl"
-                                        style={{
-                                            textShadow: '0 0 12px rgba(190,158,93,0.22), 0 1px 2px rgba(0,0,0,0.04)',
-                                        }}
-                                    >
+                                    <h1 className="truncate text-[1.55rem] font-semibold leading-none tracking-[0.08em] text-stone-950 dark:text-stone-50 font-chinese md:text-2xl">
                                         你的話語
                                     </h1>
-                                    <span className="mt-1 hidden text-[11px] tracking-[0.22em] text-bible-500 dark:text-bible-400 sm:block">
+                                    <span className="mt-1 hidden text-[10px] tracking-[0.28em] text-stone-500 dark:text-stone-400 sm:block">
                                         READ · SEARCH · REMEMBER
                                     </span>
                                 </span>
                             </a>
                         </div>
 
-                        <div className="flex shrink-0 items-center gap-1.5 rounded-2xl border border-bible-200/70 bg-white/62 p-1 shadow-[0_12px_32px_rgba(120,53,15,0.07)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/62 dark:shadow-none md:gap-2">
+                        <div className="flex shrink-0 items-center gap-1 rounded-full border border-stone-900/10 bg-white/45 p-1 backdrop-blur dark:border-white/10 dark:bg-white/[0.04] md:gap-1.5">
                             {/* 全局统计 - 桌面端（完整信息）*/}
-                            <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 min-h-[44px]">
+                            <div className="hidden lg:flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition hover:bg-white/50 dark:text-stone-300 dark:hover:bg-white/[0.06]">
                                 {statsLoading ? (
                                     <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
-                                    <span className="text-sm text-bible-700 dark:text-bible-300 whitespace-nowrap font-chinese">
-                                        👥 164 访客 · ⭐ 35 收藏
+                                    <span className="whitespace-nowrap text-xs tracking-[0.08em] text-stone-600 dark:text-stone-300 font-chinese">
+                                        {globalStats.totalUsers.toLocaleString()} 访客 · {globalStats.totalFavorites.toLocaleString()} 收藏
                                     </span>
                                 )}
                             </div>
@@ -966,15 +961,15 @@ export default function HomePage() {
                             {/* 全局统计 - 平板端（简化，可点击）*/}
                             <button
                                 onClick={() => setShowStatsModal(true)}
-                                className="hidden md:flex lg:hidden items-center gap-1 px-3 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
+                                className="hidden md:flex lg:hidden items-center gap-1 px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 title="点击查看详情"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 {statsLoading ? (
                                     <span className="h-4 w-24 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
-                                    <span className="text-sm text-bible-700 dark:text-bible-300 font-chinese">
-                                        👥 164 · ⭐ 35
+                                    <span className="text-xs tracking-[0.08em] text-stone-600 dark:text-stone-300 font-chinese">
+                                        {globalStats.totalUsers.toLocaleString()} · {globalStats.totalFavorites.toLocaleString()}
                                     </span>
                                 )}
                             </button>
@@ -982,7 +977,7 @@ export default function HomePage() {
                             {/* 全局统计 - 移动端（紧凑，可点击）*/}
                             <button
                                 onClick={() => setShowStatsModal(true)}
-                                className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px] min-w-[44px]"
+                                className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[44px]"
                                 title="查看统计"
                                 aria-label={
                                     statsLoading
@@ -994,37 +989,37 @@ export default function HomePage() {
                                 {statsLoading ? (
                                     <span className="h-4 w-4 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded-full animate-pulse-slow"></span>
                                 ) : (
-                                    <Users className="w-4 h-4 text-bible-700 dark:text-bible-300" />
+                                    <Users className="w-4 h-4 text-stone-600 dark:text-stone-300" />
                                 )}
                             </button>
 
                             {/* 帮助按钮 - 只在平板/桌面端显示 */}
                             <button
                                 onClick={handleOpenGuide}
-                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
+                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="显示使用帮助"
                                 aria-label="显示使用帮助"
                             >
-                                <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">帮助</span>
+                                <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
+                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">帮助</span>
                             </button>
 
                             {/* 提示设置 - 桌面折叠面板入口 */}
                             <button
                                 onClick={() => setShowMaskSettingsDesktop(!showMaskSettingsDesktop)}
-                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
+                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="打开提示设置"
                                 aria-label="打开提示设置"
                                 aria-expanded={showMaskSettingsDesktop}
                                 aria-controls="mask-settings-panel"
                             >
-                                <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">提示设置</span>
-                                <span className="hidden lg:inline font-chinese text-xs text-bible-600 dark:text-bible-400">{maskSettingsSummary}</span>
+                                <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
+                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">提示设置</span>
+                                <span className="hidden lg:inline font-chinese text-xs text-stone-500 dark:text-stone-400">{maskSettingsSummary}</span>
                                 <ChevronDown
-                                    className={`hidden lg:inline w-3.5 h-3.5 text-bible-500 dark:text-bible-400 transition-transform ${
+                                    className={`hidden lg:inline w-3.5 h-3.5 text-stone-500 dark:text-stone-400 transition-transform ${
                                         showMaskSettingsDesktop ? 'rotate-180' : ''
                                     }`}
                                 />
@@ -1033,13 +1028,13 @@ export default function HomePage() {
                             {/* 简繁体切换 - 只在平板/桌面端显示 */}
                             <button
                                 onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
-                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
+                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
                                 aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
                             >
-                                <Languages className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                                <Languages className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
+                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">
                                     {language === 'simplified' ? '繁' : '簡'}
                                 </span>
                             </button>
@@ -1047,7 +1042,7 @@ export default function HomePage() {
                             {/* 阅读/背诵模式切换（始终显示） */}
                             <button
                                 onClick={() => setShowAllContent(!showAllContent)}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
                                 aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
@@ -1055,13 +1050,13 @@ export default function HomePage() {
                             >
                                 {showAllContent ? (
                                     <>
-                                        <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">背诵</span>
+                                        <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
+                                        <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">背诵</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">阅读</span>
+                                        <Eye className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
+                                        <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">阅读</span>
                                     </>
                                 )}
                             </button>
@@ -1069,44 +1064,44 @@ export default function HomePage() {
                             {/* 提示设置 - 移动端折叠入口 */}
                             <button
                                 onClick={() => setShowMaskSettingsMobile(!showMaskSettingsMobile)}
-                                className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px] min-w-[44px]"
+                                className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={`提示设置（${maskSettingsSummary}）`}
                                 aria-label={`打开提示设置，当前${maskSettingsSummary}`}
                                 aria-expanded={showMaskSettingsMobile}
                                 aria-controls="mask-settings-mobile-panel"
                             >
-                                <SlidersHorizontal className="w-4 h-4 text-bible-700 dark:text-bible-300" />
+                                <SlidersHorizontal className="w-4 h-4 text-stone-600 dark:text-stone-300" />
                             </button>
 
                             {/* 汉堡菜单按钮 - 移到最右侧 */}
                             <button
                                 onClick={() => setShowSideMenu(true)}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="菜单"
                                 aria-label="打开菜单"
                             >
-                                <Menu className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">菜單</span>
+                                <Menu className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
+                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">菜單</span>
                             </button>
                         </div>
                     </div>
 
                     {/* 搜索输入框 - 全端独占一行 */}
-                    <div className="mb-3 rounded-[1.35rem] border border-bible-200/80 bg-white/76 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_20px_55px_rgba(120,53,15,0.10)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/76 dark:shadow-[0_20px_45px_rgba(0,0,0,0.20)]">
+                    <div className="mb-3 rounded-[1.75rem] border border-stone-900/10 bg-white/52 p-2 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
                         <div className="mb-1.5 flex items-center justify-between px-2">
-                            <span className="text-[11px] font-semibold tracking-[0.22em] text-bible-500/90 dark:text-bible-400/90">SCRIPTURE SEARCH</span>
+                            <span className="text-[10px] font-semibold tracking-[0.32em] text-stone-500 dark:text-stone-400">SCRIPTURE SEARCH</span>
                             <span className="hidden text-xs text-bible-500 dark:text-gray-400 sm:inline font-chinese">引用、关键词、拼音都可以</span>
                         </div>
                         <div className="relative flex items-center w-full">
-                            <Search className="absolute left-4 w-5 h-5 text-bible-700 dark:text-bible-300 pointer-events-none" />
+                            <Search className="pointer-events-none absolute left-4 h-5 w-5 text-stone-500 dark:text-stone-400" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => handleSearchChange(e.target.value)}
                                 placeholder={language === 'traditional' ? '試試：約3:16 / 神愛世人 / yuehan / lvoe' : '试试：约3:16 / 神爱世人 / yuehan / lvoe'}
-                                className="w-full rounded-2xl border border-bible-200/40 bg-bible-50/72 py-3.5 pl-11 pr-11 text-base text-bible-950 outline-none transition placeholder:text-bible-500/80 focus:border-bible-400/80 focus:bg-white focus:ring-4 focus:ring-bible-300/30 dark:border-gray-700/60 dark:bg-gray-950/40 dark:text-bible-50 dark:placeholder:text-gray-400 dark:focus:border-bible-500/60 dark:focus:bg-gray-900 dark:focus:ring-bible-500/20 font-chinese min-h-[52px]"
+                                className="min-h-[54px] w-full rounded-[1.25rem] border border-transparent bg-[#f3efe7]/80 py-3.5 pl-11 pr-11 text-base text-stone-950 outline-none transition placeholder:text-stone-400 focus:border-stone-900/15 focus:bg-white/85 focus:ring-4 focus:ring-stone-900/5 dark:bg-black/20 dark:text-stone-50 dark:placeholder:text-stone-500 dark:focus:border-white/15 dark:focus:bg-white/[0.06] dark:focus:ring-white/5 font-chinese"
                                 aria-label="搜索经文"
                             />
                             {searchQuery && (
@@ -1150,22 +1145,22 @@ export default function HomePage() {
                     >
                         <div className="rounded-xl border border-bible-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 p-3 shadow-sm">
                             <div className="flex items-center justify-between mb-2">
-                                <p className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">提示设置</p>
-                                <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">{maskSettingsSummary}</span>
+                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">提示设置</p>
+                                <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">{maskSettingsSummary}</span>
                             </div>
                             <MaskSettings />
                         </div>
                     </div>
 
                     {/* 筛选工具栏 */}
-                    <div className="flex items-center gap-2 overflow-x-auto rounded-2xl border border-bible-200/70 bg-white/58 p-1.5 shadow-[0_10px_28px_rgba(120,53,15,0.06)] backdrop-blur scrollbar-hide dark:border-gray-700/80 dark:bg-gray-900/48">
+                    <div className="flex items-center gap-2 overflow-x-auto rounded-full border border-stone-900/10 bg-white/42 p-1.5 backdrop-blur scrollbar-hide dark:border-white/10 dark:bg-white/[0.035]">
                         {/* 已收藏筛选 - 始终显示 */}
                         <button
                             onClick={handleToggleFavorites}
                             className={`flex shrink-0 items-center gap-2 px-4 py-2.5 rounded-xl transition-all touch-manipulation min-h-[44px] ${
                                 filterType === 'favorites'
                                     ? 'bg-gold-500 dark:bg-gold-600 text-white shadow-[0_10px_24px_rgba(217,119,6,0.24)] hover:bg-gold-600 dark:hover:bg-gold-700'
-                                    : 'bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200/80 dark:border-gray-700 shadow-sm'
+                                    : 'bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 text-stone-600 dark:text-stone-300 border border-bible-200/80 dark:border-gray-700 shadow-sm'
                             }`}
                             title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
                         >
@@ -1195,10 +1190,10 @@ export default function HomePage() {
                         <Listbox value={selectedBook} onChange={handleBookSelect}>
                             {({ open }) => (
                                 <div className="relative">
-                                    <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-800 dark:text-bible-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
+                                    <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
                                         <span className="block">{selectedBook?.name || '选择书卷'}</span>
                                         <ChevronDown
-                                            className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-700 dark:text-bible-300 transition-transform ${
+                                            className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-600 dark:text-stone-300 transition-transform ${
                                                 open ? 'rotate-180' : ''
                                             }`}
                                         />
@@ -1217,8 +1212,8 @@ export default function HomePage() {
                                                 className={({ active }) =>
                                                     `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
                                                         active
-                                                            ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
-                                                            : 'text-bible-700 dark:text-bible-300'
+                                                            ? 'bg-bible-100 dark:bg-gray-700 text-stone-900 dark:text-stone-100'
+                                                            : 'text-stone-600 dark:text-stone-300'
                                                     }`
                                                 }
                                             >
@@ -1226,14 +1221,14 @@ export default function HomePage() {
                                                     <>
                                                         <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>选择书卷</span>
                                                         {selected && (
-                                                            <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                            <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                         )}
                                                     </>
                                                 )}
                                             </Listbox.Option>
 
                                             {/* 旧约 */}
-                                            <div className="px-3 py-1 text-xs font-semibold text-bible-500 dark:text-bible-400 bg-bible-50 dark:bg-gray-900/50 border-t border-b border-bible-100 dark:border-gray-700 font-chinese">
+                                            <div className="px-3 py-1 text-xs font-semibold text-stone-500 dark:text-stone-400 bg-bible-50 dark:bg-gray-900/50 border-t border-b border-bible-100 dark:border-gray-700 font-chinese">
                                                 旧约
                                             </div>
                                             {books
@@ -1245,8 +1240,8 @@ export default function HomePage() {
                                                         className={({ active }) =>
                                                             `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
                                                                 active
-                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
-                                                                    : 'text-bible-700 dark:text-bible-300'
+                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-stone-900 dark:text-stone-100'
+                                                                    : 'text-stone-600 dark:text-stone-300'
                                                             }`
                                                         }
                                                     >
@@ -1256,7 +1251,7 @@ export default function HomePage() {
                                                                     {book.name}
                                                                 </span>
                                                                 {selected && (
-                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                                 )}
                                                             </>
                                                         )}
@@ -1276,8 +1271,8 @@ export default function HomePage() {
                                                         className={({ active }) =>
                                                             `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
                                                                 active
-                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
-                                                                    : 'text-bible-700 dark:text-bible-300'
+                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-stone-900 dark:text-stone-100'
+                                                                    : 'text-stone-600 dark:text-stone-300'
                                                             }`
                                                         }
                                                     >
@@ -1287,7 +1282,7 @@ export default function HomePage() {
                                                                     {book.name}
                                                                 </span>
                                                                 {selected && (
-                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                                 )}
                                                             </>
                                                         )}
@@ -1305,10 +1300,10 @@ export default function HomePage() {
                                 <Listbox value={selectedChapter} onChange={handleChapterSelect}>
                                     {({ open }) => (
                                         <div className="relative">
-                                            <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-800 dark:text-bible-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
+                                            <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
                                                 <span className="block">{selectedChapter ? `第 ${selectedChapter} 章` : '所有章节'}</span>
                                                 <ChevronDown
-                                                    className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400 transition-transform ${
+                                                    className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400 transition-transform ${
                                                         open ? 'rotate-180' : ''
                                                     }`}
                                                 />
@@ -1327,8 +1322,8 @@ export default function HomePage() {
                                                         className={({ active }) =>
                                                             `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
                                                                 active
-                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
-                                                                    : 'text-bible-700 dark:text-bible-300'
+                                                                    ? 'bg-bible-100 dark:bg-gray-700 text-stone-900 dark:text-stone-100'
+                                                                    : 'text-stone-600 dark:text-stone-300'
                                                             }`
                                                         }
                                                     >
@@ -1338,7 +1333,7 @@ export default function HomePage() {
                                                                     所有章节
                                                                 </span>
                                                                 {selected && (
-                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                    <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                                 )}
                                                             </>
                                                         )}
@@ -1350,8 +1345,8 @@ export default function HomePage() {
                                                             className={({ active }) =>
                                                                 `relative cursor-pointer select-none py-2 pl-10 pr-4 font-chinese text-sm ${
                                                                     active
-                                                                        ? 'bg-bible-100 dark:bg-gray-700 text-bible-900 dark:text-bible-100'
-                                                                        : 'text-bible-700 dark:text-bible-300'
+                                                                        ? 'bg-bible-100 dark:bg-gray-700 text-stone-900 dark:text-stone-100'
+                                                                        : 'text-stone-600 dark:text-stone-300'
                                                                 }`
                                                             }
                                                         >
@@ -1361,7 +1356,7 @@ export default function HomePage() {
                                                                         第 {ch} 章
                                                                     </span>
                                                                     {selected && (
-                                                                        <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                        <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                                     )}
                                                                 </>
                                                             )}
@@ -1394,8 +1389,8 @@ export default function HomePage() {
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                         title={selectedChapter ? '返回章节选择' : '返回精选经文'}
                                     >
-                                        <RotateCcw className="w-4 h-4 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
+                                        <RotateCcw className="w-4 h-4 text-stone-600 dark:text-stone-300" />
+                                        <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">
                                             {selectedChapter ? '重选章节' : '返回'}
                                         </span>
                                     </button>
@@ -1411,8 +1406,8 @@ export default function HomePage() {
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="重新排列"
                             >
-                                <Shuffle className="w-4 h-4 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">随机</span>
+                                <Shuffle className="w-4 h-4 text-stone-600 dark:text-stone-300" />
+                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">随机</span>
                             </button>
                         )}
                     </div>
@@ -1504,13 +1499,13 @@ export default function HomePage() {
                 {showStatsModal && (
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowStatsModal(false)}>
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-                            <h3 className="text-center text-lg font-semibold text-bible-800 dark:text-bible-200 mb-4 font-chinese">📊 全球統計</h3>
-                            <p className="text-center text-sm text-bible-700 dark:text-bible-300 leading-relaxed font-chinese">
-                                已有 <span className="font-bold text-bible-900 dark:text-bible-100">{globalStats.totalUsers.toLocaleString()}</span>{' '}
+                            <h3 className="text-center text-lg font-semibold text-stone-800 dark:text-stone-200 mb-4 font-chinese">全球統計</h3>
+                            <p className="text-center text-sm text-stone-600 dark:text-stone-300 leading-relaxed font-chinese">
+                                已有 <span className="font-bold text-stone-900 dark:text-stone-100">{globalStats.totalUsers.toLocaleString()}</span>{' '}
                                 位访客在此背誦神的話語
                                 <br />
                                 共收藏{' '}
-                                <span className="font-bold text-bible-900 dark:text-bible-100">
+                                <span className="font-bold text-stone-900 dark:text-stone-100">
                                     {globalStats.totalFavorites.toLocaleString()}
                                 </span>{' '}
                                 次經文
@@ -1528,13 +1523,13 @@ export default function HomePage() {
                 {/* 关闭引导提示 - 浮动通知 */}
                 {showGuideHint && (
                     <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4 animate-fade-in">
-                        <div className="p-4 bg-bible-50 dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 text-bible-800 dark:text-bible-200 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3 relative">
+                        <div className="p-4 bg-bible-50 dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 text-stone-800 dark:text-stone-200 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3 relative">
                             <div className="flex-shrink-0 w-8 h-8 bg-bible-500 dark:bg-bible-600 rounded-full flex items-center justify-center">
                                 <HelpCircle className="w-5 h-5 text-white" />
                             </div>
                             <span className="flex-1">
                                 引导已关闭。如需再次查看，请点击右上角的{' '}
-                                <span className="font-semibold text-bible-700 dark:text-bible-300">「帮助」</span> 按钮
+                                <span className="font-semibold text-stone-600 dark:text-stone-300">「帮助」</span> 按钮
                             </span>
                             <button
                                 onClick={() => setShowGuideHint(false)}
@@ -1543,14 +1538,14 @@ export default function HomePage() {
                                 aria-label="关闭提示"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
-                                <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                <X className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                             </button>
                         </div>
                     </div>
                 )}
 
                 {/* 使用提示和统计信息 */}
-                <div className="relative z-[1] max-w-7xl mx-auto px-4 py-3">
+                <div className="relative z-[1] mx-auto max-w-6xl px-4 py-3">
                     {/* 引导说明 */}
                     {showGuide && (
                         <div className="mb-3 p-5 bg-gradient-to-br from-bible-50 via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-xl border-2 border-bible-300/50 dark:border-gray-700 shadow-lg animate-fade-in">
@@ -1560,7 +1555,7 @@ export default function HomePage() {
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-start justify-between mb-2">
-                                        <h3 className="text-base font-bold text-bible-900 dark:text-bible-100 font-chinese">
+                                        <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 font-chinese">
                                             歡迎使用「你的話語」聖經背誦助手 ✨
                                         </h3>
                                         <button
@@ -1569,17 +1564,17 @@ export default function HomePage() {
                                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                             title="关闭引导"
                                         >
-                                            <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                            <X className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                                         </button>
                                     </div>
 
-                                    <div className="text-xs text-bible-700 dark:text-bible-300 font-chinese space-y-2.5">
+                                    <div className="text-xs text-stone-600 dark:text-stone-300 font-chinese space-y-2.5">
                                         {/* 1. 經文選擇 */}
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">📖</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">經文選擇</p>
-                                                <p className="text-bible-600 dark:text-bible-400">
+                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">經文選擇</p>
+                                                <p className="text-stone-500 dark:text-stone-400">
                                                     <span className="font-semibold">精選 114 節</span>核心經文，或選擇
                                                     <span className="font-semibold">聖經 66 卷</span>任意章節瀏覽。
                                                 </p>
@@ -1590,8 +1585,8 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🎯</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">背誦模式</p>
-                                                <p className="text-bible-600 dark:text-bible-400">
+                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">背誦模式</p>
+                                                <p className="text-stone-500 dark:text-stone-400">
                                                     <span className="font-semibold">點擊卡片</span>顯示/隱藏經文內容。 點擊
                                                     <span className="font-semibold">眼睛圖標</span>切換閱讀/背誦模式，
                                                     <span className="font-semibold">洗牌按鈕</span>隨機排序。
@@ -1603,8 +1598,8 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🎨</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">遮罩提示</p>
-                                                <p className="text-bible-600 dark:text-bible-400">
+                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">遮罩提示</p>
+                                                <p className="text-stone-500 dark:text-stone-400">
                                                     點擊卡片顯示/隱藏經文內容。支持
                                                     <span className="font-semibold">每句提示</span>/<span className="font-semibold">開頭提示</span>
                                                     兩種模式， 可設置固定或隨機字數，每次點擊隨機顯示不同提示字數。
@@ -1616,8 +1611,8 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">⭐</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">收藏分享</p>
-                                                <p className="text-bible-600 dark:text-bible-400">
+                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">收藏分享</p>
+                                                <p className="text-stone-500 dark:text-stone-400">
                                                     點擊<span className="font-semibold">星標</span>收藏經文， 點擊
                                                     <span className="font-semibold">分享按鈕</span>生成鏈接。
                                                 </p>
@@ -1628,10 +1623,10 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">📝</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">
+                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">
                                                     筆記本 <span className="px-1.5 py-0.5 text-xs bg-gold-500 text-white rounded-full">BETA</span>
                                                 </p>
-                                                <p className="text-bible-600 dark:text-bible-400">
+                                                <p className="text-stone-500 dark:text-stone-400">
                                                     右上角菜單 → 筆記本，
                                                     <span className="font-semibold">自動補全</span>經文引用，
                                                     <span className="font-semibold">一鍵展開</span>內容，
@@ -1644,8 +1639,8 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🌓</span>
                                             <div>
-                                                <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">主題語言</p>
-                                                <p className="text-bible-600 dark:text-bible-400">
+                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">主題語言</p>
+                                                <p className="text-stone-500 dark:text-stone-400">
                                                     支持<span className="font-semibold">繁簡切換</span>、
                                                     <span className="font-semibold">深色模式</span>（淺色/深色/自動）。
                                                 </p>
@@ -1657,8 +1652,8 @@ export default function HomePage() {
                                             <div className="flex items-start gap-2">
                                                 <span className="text-base">📱</span>
                                                 <div>
-                                                    <p className="font-semibold text-bible-800 dark:text-bible-200 mb-0.5">心版 iOS App</p>
-                                                    <p className="text-bible-600 dark:text-bible-400">
+                                                    <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">心版 iOS App</p>
+                                                    <p className="text-stone-500 dark:text-stone-400">
                                                         將經文以<span className="font-semibold">小組件</span>形式展示在主屏幕，
                                                         每次解鎖第一眼看到神的話語。
                                                         <a
@@ -1689,23 +1684,23 @@ export default function HomePage() {
                     >
                         <div className="rounded-xl border border-bible-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 p-4 shadow-sm">
                             <div className="flex items-center justify-between mb-3">
-                                <p className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">遮罩提示设置</p>
-                                <span className="text-xs text-bible-600 dark:text-bible-400 font-chinese">{maskSettingsSummary}</span>
+                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">遮罩提示设置</p>
+                                <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">{maskSettingsSummary}</span>
                             </div>
                             <MaskSettings />
                         </div>
                     </div>
 
                     {/* 状态标签和统计 */}
-                    <div className="rounded-2xl border border-bible-200/70 bg-white/62 px-4 py-3 shadow-[0_12px_32px_rgba(120,53,15,0.06)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/55 dark:shadow-none">
+                    <div className="rounded-[1.35rem] border border-stone-900/10 bg-white/38 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-white/[0.035]">
                         <div className="flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-2 flex-wrap">
                             {searchQuery && (
                                 <div className="flex items-center gap-3">
-                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bible-100 text-bible-700 shadow-inner dark:bg-gray-800 dark:text-bible-300">🔎</span>
+                                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-stone-400 dark:bg-stone-500" />
                                     <div className="flex flex-col gap-0.5">
-                                        <span className="text-xs font-semibold text-bible-800 dark:text-bible-200 font-chinese">搜索「{searchQuery}」</span>
-                                        <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
+                                        <span className="text-xs font-semibold text-stone-800 dark:text-stone-200 font-chinese">搜索「{searchQuery}」</span>
+                                        <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">
                                             {isSearching ? '正在匹配经文索引。' : `找到 ${searchResults.length} 条结果。`}
                                         </span>
                                     </div>
@@ -1715,10 +1710,10 @@ export default function HomePage() {
                             {/* 默认精选经文提示 */}
                             {!searchQuery && !selectedBook && filterType !== 'favorites' && !showShareBanner && (
                                 <div className="flex items-center gap-3">
-                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bible-100 text-bible-700 shadow-inner dark:bg-gray-800 dark:text-bible-300">📖</span>
+                                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-stone-400 dark:bg-stone-500" />
                                     <div className="flex flex-col gap-0.5">
-                                        <span className="text-xs font-semibold text-bible-800 dark:text-bible-200 font-chinese">精選 114 節經文</span>
-                                        <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
+                                        <span className="text-xs font-semibold text-stone-800 dark:text-stone-200 font-chinese">精選 114 節經文</span>
+                                        <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">
                                             {showAllContent
                                                 ? '閱讀模式：完整顯示經文。'
                                                 : '方塊不是亂碼，是背誦遮字；點卡片可顯示全文。'}
@@ -1734,15 +1729,15 @@ export default function HomePage() {
                                         已收藏
                                     </span>
                                     {favoritesCount > 0 && (
-                                        <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">💡 可生成鏈接分享</span>
+                                        <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">可生成鏈接分享</span>
                                     )}
                                 </>
                             )}
                         </div>
 
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
-                                共 <span className="font-semibold text-bible-700 dark:text-bible-300">{displayVerses.length}</span> 节
+                            <span className="text-sm text-stone-500 dark:text-stone-400 font-chinese">
+                                共 <span className="font-semibold text-stone-600 dark:text-stone-300">{displayVerses.length}</span> 节
                             </span>
 
                             {/* 只在精选经文模式下显示筛选按钮 */}
@@ -1751,10 +1746,10 @@ export default function HomePage() {
                                     {/* 筛选按钮 */}
                                     <Listbox value={bookFilter} onChange={setBookFilter}>
                                         <div className="relative">
-                                            <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bible-50 dark:bg-gray-800 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors">
-                                                <Filter className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">篩選</span>
-                                                <ChevronDown className="w-3 h-3 text-bible-500 dark:text-bible-400" />
+                                            <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/35 dark:bg-white/[0.04] hover:bg-white/60 dark:hover:bg-white/[0.08] transition-colors">
+                                                <Filter className="w-4 h-4 text-stone-500 dark:text-stone-400" />
+                                                <span className="text-xs text-stone-600 dark:text-stone-300 font-chinese">篩選</span>
+                                                <ChevronDown className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                                             </Listbox.Button>
                                             <Transition
                                                 enter="transition duration-100 ease-out"
@@ -1772,14 +1767,14 @@ export default function HomePage() {
                                                                 className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}
                                                             >
                                                                 <div className="flex items-center justify-between">
-                                                                    <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                                    <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
                                                                         全部
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
                                                                             ({verses.length})
                                                                         </span>
-                                                                        {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                                        {selected && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1807,7 +1802,7 @@ export default function HomePage() {
                                                                             }`}
                                                                         >
                                                                             <div className="flex items-center justify-between">
-                                                                                <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                                                <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
                                                                                     舊約
                                                                                 </span>
                                                                                 <div className="flex items-center gap-2">
@@ -1815,7 +1810,7 @@ export default function HomePage() {
                                                                                         ({oldCount})
                                                                                     </span>
                                                                                     {selected && (
-                                                                                        <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                                        <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                                                     )}
                                                                                 </div>
                                                                             </div>
@@ -1830,7 +1825,7 @@ export default function HomePage() {
                                                                             }`}
                                                                         >
                                                                             <div className="flex items-center justify-between">
-                                                                                <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                                                <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
                                                                                     新約
                                                                                 </span>
                                                                                 <div className="flex items-center gap-2">
@@ -1838,7 +1833,7 @@ export default function HomePage() {
                                                                                         ({newCount})
                                                                                     </span>
                                                                                     {selected && (
-                                                                                        <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                                        <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                                                     )}
                                                                                 </div>
                                                                             </div>
@@ -1868,7 +1863,7 @@ export default function HomePage() {
                                                                         }`}
                                                                     >
                                                                         <div className="flex items-center justify-between">
-                                                                            <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                                            <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
                                                                                 {book.nameTraditional}
                                                                             </span>
                                                                             <div className="flex items-center gap-2">
@@ -1876,7 +1871,7 @@ export default function HomePage() {
                                                                                     ({count})
                                                                                 </span>
                                                                                 {selected && (
-                                                                                    <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                                    <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                                                 )}
                                                                             </div>
                                                                         </div>
@@ -1898,10 +1893,10 @@ export default function HomePage() {
                                     {/* 筛选按钮 */}
                                     <Listbox value={favoritesBookFilter} onChange={setFavoritesBookFilter}>
                                         <div className="relative">
-                                            <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bible-50 dark:bg-gray-800 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors">
-                                                <Filter className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                                <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">篩選</span>
-                                                <ChevronDown className="w-3 h-3 text-bible-500 dark:text-bible-400" />
+                                            <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/35 dark:bg-white/[0.04] hover:bg-white/60 dark:hover:bg-white/[0.08] transition-colors">
+                                                <Filter className="w-4 h-4 text-stone-500 dark:text-stone-400" />
+                                                <span className="text-xs text-stone-600 dark:text-stone-300 font-chinese">篩選</span>
+                                                <ChevronDown className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                                             </Listbox.Button>
                                             <Transition
                                                 enter="transition duration-100 ease-out"
@@ -1919,14 +1914,14 @@ export default function HomePage() {
                                                                 className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}
                                                             >
                                                                 <div className="flex items-center justify-between">
-                                                                    <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                                    <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
                                                                         全部
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
                                                                             ({favoritesBookCounts.all})
                                                                         </span>
-                                                                        {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                                        {selected && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1939,14 +1934,14 @@ export default function HomePage() {
                                                                 className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}
                                                             >
                                                                 <div className="flex items-center justify-between">
-                                                                    <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                                    <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
                                                                         舊約
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
                                                                             ({favoritesBookCounts.old})
                                                                         </span>
-                                                                        {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                                        {selected && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1958,14 +1953,14 @@ export default function HomePage() {
                                                                 className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}
                                                             >
                                                                 <div className="flex items-center justify-between">
-                                                                    <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                                    <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
                                                                         新約
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
                                                                             ({favoritesBookCounts.new})
                                                                         </span>
-                                                                        {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                                        {selected && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1989,7 +1984,7 @@ export default function HomePage() {
                                                                         }`}
                                                                     >
                                                                         <div className="flex items-center justify-between">
-                                                                            <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                                            <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
                                                                                 {book.nameTraditional}
                                                                             </span>
                                                                             <div className="flex items-center gap-2">
@@ -1997,7 +1992,7 @@ export default function HomePage() {
                                                                                     ({count})
                                                                                 </span>
                                                                                 {selected && (
-                                                                                    <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                                                                    <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                                                 )}
                                                                             </div>
                                                                         </div>
@@ -2018,11 +2013,11 @@ export default function HomePage() {
                 </div>
 
                 {/* 经文卡片区域 */}
-                <div className="relative z-[1] max-w-7xl mx-auto">
+                <div className="relative z-[1] mx-auto max-w-6xl">
                     {loadingChapter || loadingFavorites ? (
                         <div className="text-center py-12">
                             <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
-                            <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加载经文中...</p>
+                            <p className="mt-4 text-stone-500 dark:text-stone-400 font-chinese">加载经文中...</p>
                         </div>
                     ) : selectedBook && selectedChapter === null ? (
                         // 选择了书卷但未选择章节，显示章节选择器
@@ -2036,8 +2031,8 @@ export default function HomePage() {
                                     loading="lazy"
                                     className="w-16 h-16 mx-auto mb-4 opacity-60 dark:brightness-90 dark:contrast-125"
                                 />
-                                <h3 className="text-xl font-bold text-bible-800 dark:text-bible-200 mb-2 font-chinese">请选择章节</h3>
-                                <p className="text-bible-600 dark:text-bible-400 font-chinese">
+                                <h3 className="text-xl font-bold text-stone-800 dark:text-stone-200 mb-2 font-chinese">请选择章节</h3>
+                                <p className="text-stone-500 dark:text-stone-400 font-chinese">
                                     {selectedBook.name} 共有 {selectedBook.chapters} 章
                                 </p>
                             </div>
@@ -2048,7 +2043,7 @@ export default function HomePage() {
                                     <button
                                         key={chapterNum}
                                         onClick={() => handleChapterSelect(chapterNum)}
-                                        className="aspect-square flex items-center justify-center bg-bible-100 dark:bg-gray-700 text-bible-800 dark:text-bible-200 hover:bg-bible-400 hover:text-white hover:shadow-md rounded-lg font-semibold shadow-sm touch-manipulation transition-all duration-200 hover:scale-105 active:scale-95"
+                                        className="aspect-square flex items-center justify-center bg-bible-100 dark:bg-gray-700 text-stone-800 dark:text-stone-200 hover:bg-bible-400 hover:text-white hover:shadow-md rounded-lg font-semibold shadow-sm touch-manipulation transition-all duration-200 hover:scale-105 active:scale-95"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                         title={`第 ${chapterNum} 章`}
                                     >
@@ -2063,16 +2058,16 @@ export default function HomePage() {
                                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-bible-100 text-bible-700 dark:bg-gray-800 dark:text-bible-300">
                                     <div className="h-5 w-5 rounded-full border-2 border-bible-400 border-t-transparent animate-spin dark:border-bible-300 dark:border-t-transparent" />
                                 </div>
-                                <p className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">正在翻找经文索引</p>
-                                <p className="mt-1 text-xs text-bible-500 dark:text-bible-400 font-chinese">引用会即时命中，全文搜索稍等半拍。</p>
+                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">正在翻找经文索引</p>
+                                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-chinese">引用会即时命中，全文搜索稍等半拍。</p>
                             </div>
                         </div>
                     ) : searchQuery && searchResults.length === 0 && !isSearching ? (
                         <div className="px-4 py-16">
                             <div className="mx-auto max-w-lg rounded-[1.5rem] border border-bible-200/70 bg-white/70 p-6 text-center shadow-[0_18px_45px_rgba(120,53,15,0.08)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/62 dark:shadow-none">
                                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-bible-100 text-xl text-bible-700 dark:bg-gray-800 dark:text-bible-300">⌕</div>
-                                <p className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">沒有找到「{searchQuery}」</p>
-                                <p className="mt-1 text-xs text-bible-500 dark:text-bible-400 font-chinese">可以試試引用、繁簡另一種寫法，或拼音，例如 約3:16 / 神愛世人 / yuehan。</p>
+                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">沒有找到「{searchQuery}」</p>
+                                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-chinese">可以試試引用、繁簡另一種寫法，或拼音，例如 約3:16 / 神愛世人 / yuehan。</p>
                                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                                     {(language === 'traditional' ? ['約3:16', '神愛世人', 'yuehan'] : ['约3:16', '神爱世人', 'yuehan']).map((example) => (
                                         <button
@@ -2100,7 +2095,7 @@ export default function HomePage() {
                                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-bible-100 dark:bg-gray-700 rounded-lg">
                                         <div className="w-4 h-4 border-2 border-bible-400 dark:border-bible-300 border-t-transparent rounded-full animate-spin"></div>
                                         <span className="text-sm text-bible-600 dark:text-bible-300 font-chinese">
-                                            正在加载更多... ({visibleCount} / {displayVerses.length})
+                                            載入更多 ({visibleCount} / {displayVerses.length})
                                         </span>
                                     </div>
                                 </div>
@@ -2108,7 +2103,7 @@ export default function HomePage() {
                         </>
                     ) : (
                         <div className="text-center py-20">
-                            <p className="text-bible-600 dark:text-bible-400 font-chinese">暂无经文</p>
+                            <p className="text-stone-500 dark:text-stone-400 font-chinese">暂无经文</p>
                         </div>
                     )}
                 </div>
@@ -2152,10 +2147,10 @@ export default function HomePage() {
                                     {/* 内容 */}
                                     <div className="min-w-0 flex-1">
                                         <div className="mb-0.5 flex items-center gap-2">
-                                            <h4 className="font-bold text-bible-800 dark:text-bible-200 font-chinese">心版</h4>
+                                            <h4 className="font-bold text-stone-800 dark:text-stone-200 font-chinese">心版</h4>
                                             <span className="rounded-full bg-bible-100 px-2 py-0.5 text-[10px] font-semibold text-bible-700 dark:bg-gray-800 dark:text-bible-300">iOS</span>
                                             <div className="hidden items-center gap-1 text-xs text-bible-500 dark:text-gray-400 sm:flex">
-                                                <span>⭐</span>
+                                                <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
                                                 <span className="font-medium">5.0</span>
                                             </div>
                                         </div>
@@ -2177,29 +2172,29 @@ export default function HomePage() {
                 )}
 
                 {/* 页脚 */}
-                <footer className="border-t border-bible-200 dark:border-gray-700 mt-12">
+                <footer className="mt-12 border-t border-stone-900/10 dark:border-white/10">
                     {/* 全局统计栏 */}
-                    <div className="border-b border-bible-200 dark:border-gray-700 bg-bible-50/30 dark:bg-gray-800/30">
+                    <div className="border-b border-stone-900/10 bg-white/25 dark:border-white/10 dark:bg-white/[0.025]">
                         <div className="max-w-7xl mx-auto px-4 py-4">
-                            <p className="text-center text-xs text-bible-600 dark:text-bible-400 mb-2 font-chinese">📊 全球使用數據</p>
+                            <p className="mb-2 text-center text-[10px] tracking-[0.28em] text-stone-500 dark:text-stone-400 font-chinese">GLOBAL PRESENCE</p>
                             <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm font-chinese">
                                 <div className="flex items-center gap-1.5">
-                                    <span>👥</span>
-                                    <span className="font-bold text-bible-800 dark:text-bible-200">{globalStats.totalUsers.toLocaleString()}</span>
-                                    <span className="text-xs text-bible-600 dark:text-bible-400">位用戶</span>
+                                    <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
+                                    <span className="font-bold text-stone-800 dark:text-stone-200">{globalStats.totalUsers.toLocaleString()}</span>
+                                    <span className="text-xs text-stone-500 dark:text-stone-400">位用戶</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                    <span>⭐</span>
+                                    <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
                                     <span className="font-bold text-gold-600 dark:text-gold-400">{globalStats.totalFavorites.toLocaleString()}</span>
-                                    <span className="text-xs text-bible-600 dark:text-bible-400">次收藏</span>
+                                    <span className="text-xs text-stone-500 dark:text-stone-400">次收藏</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
-                        <p>願神的話語常在你心中 🙏</p>
-                        <p className="mt-2 text-xs">© 2025 你的話語 · Made with ❤️ for Christ</p>
+                        <p>願神的話語常在你心中</p>
+                        <p className="mt-2 text-xs">© 2025 你的話語 · Made for Christ</p>
                     </div>
                 </footer>
             </main>
