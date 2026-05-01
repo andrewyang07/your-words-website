@@ -922,31 +922,38 @@ export default function HomePage() {
             >
                 <div className="relative z-[1] max-w-7xl mx-auto px-4 py-3 md:py-4">
                     {/* 标题行 */}
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                            <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity" title="首頁">
-                                <Image
-                                    src="/logo-light.png"
-                                    alt="你的話語 Logo"
-                                    width={40}
-                                    height={40}
-                                    priority
-                                    className="w-8 h-8 md:w-10 md:h-10 dark:brightness-90 dark:contrast-125"
-                                />
-                                <h1
-                                    className="text-2xl md:text-3xl font-extrabold font-chinese text-bible-700 dark:text-bible-300 tracking-wide"
-                                    style={{
-                                        textShadow: '0 0 12px rgba(190,158,93,0.3), 0 0 24px rgba(190,158,93,0.15), 0 1px 2px rgba(0,0,0,0.05)',
-                                    }}
-                                >
-                                    你的話語
-                                </h1>
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <a href="/" className="group flex items-center gap-3 min-w-0 transition-opacity hover:opacity-90" title="首頁">
+                                <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-bible-200/80 bg-white/80 shadow-[0_10px_24px_rgba(120,53,15,0.10)] dark:border-gray-700 dark:bg-gray-900/80 dark:shadow-none">
+                                    <Image
+                                        src="/logo-light.png"
+                                        alt="你的話語 Logo"
+                                        width={40}
+                                        height={40}
+                                        priority
+                                        className="h-8 w-8 dark:brightness-90 dark:contrast-125"
+                                    />
+                                </span>
+                                <span className="min-w-0">
+                                    <h1
+                                        className="truncate text-[1.7rem] font-extrabold leading-none tracking-wide text-bible-800 dark:text-bible-200 font-chinese md:text-3xl"
+                                        style={{
+                                            textShadow: '0 0 12px rgba(190,158,93,0.22), 0 1px 2px rgba(0,0,0,0.04)',
+                                        }}
+                                    >
+                                        你的話語
+                                    </h1>
+                                    <span className="mt-1 hidden text-[11px] tracking-[0.22em] text-bible-500 dark:text-bible-400 sm:block">
+                                        READ · SEARCH · REMEMBER
+                                    </span>
+                                </span>
                             </a>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex shrink-0 items-center gap-1.5 rounded-2xl border border-bible-200/70 bg-white/62 p-1 shadow-[0_12px_32px_rgba(120,53,15,0.07)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/62 dark:shadow-none md:gap-2">
                             {/* 全局统计 - 桌面端（完整信息）*/}
-                            <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors min-h-[44px]">
+                            <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 min-h-[44px]">
                                 {statsLoading ? (
                                     <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
@@ -959,7 +966,7 @@ export default function HomePage() {
                             {/* 全局统计 - 平板端（简化，可点击）*/}
                             <button
                                 onClick={() => setShowStatsModal(true)}
-                                className="hidden md:flex lg:hidden items-center gap-1 px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="hidden md:flex lg:hidden items-center gap-1 px-3 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
                                 title="点击查看详情"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
@@ -975,7 +982,7 @@ export default function HomePage() {
                             {/* 全局统计 - 移动端（紧凑，可点击）*/}
                             <button
                                 onClick={() => setShowStatsModal(true)}
-                                className="flex md:hidden items-center justify-center px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px] min-w-[44px]"
+                                className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px] min-w-[44px]"
                                 title="查看统计"
                                 aria-label={
                                     statsLoading
@@ -994,7 +1001,7 @@ export default function HomePage() {
                             {/* 帮助按钮 - 只在平板/桌面端显示 */}
                             <button
                                 onClick={handleOpenGuide}
-                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="显示使用帮助"
                                 aria-label="显示使用帮助"
@@ -1006,7 +1013,7 @@ export default function HomePage() {
                             {/* 提示设置 - 桌面折叠面板入口 */}
                             <button
                                 onClick={() => setShowMaskSettingsDesktop(!showMaskSettingsDesktop)}
-                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="打开提示设置"
                                 aria-label="打开提示设置"
@@ -1026,7 +1033,7 @@ export default function HomePage() {
                             {/* 简繁体切换 - 只在平板/桌面端显示 */}
                             <button
                                 onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
-                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
                                 aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
@@ -1040,7 +1047,7 @@ export default function HomePage() {
                             {/* 阅读/背诵模式切换（始终显示） */}
                             <button
                                 onClick={() => setShowAllContent(!showAllContent)}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
                                 aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
@@ -1062,7 +1069,7 @@ export default function HomePage() {
                             {/* 提示设置 - 移动端折叠入口 */}
                             <button
                                 onClick={() => setShowMaskSettingsMobile(!showMaskSettingsMobile)}
-                                className="flex md:hidden items-center justify-center px-3 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px] min-w-[44px]"
+                                className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px] min-w-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title={`提示设置（${maskSettingsSummary}）`}
                                 aria-label={`打开提示设置，当前${maskSettingsSummary}`}
@@ -1075,7 +1082,7 @@ export default function HomePage() {
                             {/* 汉堡菜单按钮 - 移到最右侧 */}
                             <button
                                 onClick={() => setShowSideMenu(true)}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-bible-50/85 text-bible-800 transition hover:bg-bible-100 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="菜单"
                                 aria-label="打开菜单"
@@ -1087,15 +1094,19 @@ export default function HomePage() {
                     </div>
 
                     {/* 搜索输入框 - 全端独占一行 */}
-                    <div className="mb-3 rounded-2xl border border-bible-200/80 bg-white/72 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_16px_40px_rgba(120,53,15,0.08)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/72 dark:shadow-none">
+                    <div className="mb-3 rounded-[1.35rem] border border-bible-200/80 bg-white/76 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_20px_55px_rgba(120,53,15,0.10)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/76 dark:shadow-[0_20px_45px_rgba(0,0,0,0.20)]">
+                        <div className="mb-1.5 flex items-center justify-between px-2">
+                            <span className="text-[11px] font-semibold tracking-[0.22em] text-bible-500/90 dark:text-bible-400/90">SCRIPTURE SEARCH</span>
+                            <span className="hidden text-xs text-bible-500 dark:text-gray-400 sm:inline font-chinese">引用、关键词、拼音都可以</span>
+                        </div>
                         <div className="relative flex items-center w-full">
-                            <Search className="absolute left-4 w-4 h-4 text-bible-600 dark:text-bible-300 pointer-events-none" />
+                            <Search className="absolute left-4 w-5 h-5 text-bible-700 dark:text-bible-300 pointer-events-none" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => handleSearchChange(e.target.value)}
-                                placeholder={language === 'traditional' ? '搜尋經文、引用或拼音：約3:16 / 神愛世人 / yuehan' : '搜索经文、引用或拼音：约3:16 / 神爱世人 / yuehan'}
-                                className="w-full rounded-xl border border-transparent bg-transparent py-3 pl-10 pr-10 text-[15px] text-bible-900 outline-none transition placeholder:text-bible-500/75 focus:border-bible-300/80 focus:bg-white/86 focus:ring-2 focus:ring-bible-300/45 dark:text-bible-100 dark:placeholder:text-gray-400 dark:focus:border-bible-500/50 dark:focus:bg-gray-800/90 dark:focus:ring-bible-500/25 font-chinese min-h-[46px]"
+                                placeholder={language === 'traditional' ? '試試：約3:16 / 神愛世人 / yuehan / lvoe' : '试试：约3:16 / 神爱世人 / yuehan / lvoe'}
+                                className="w-full rounded-2xl border border-bible-200/40 bg-bible-50/72 py-3.5 pl-11 pr-11 text-base text-bible-950 outline-none transition placeholder:text-bible-500/80 focus:border-bible-400/80 focus:bg-white focus:ring-4 focus:ring-bible-300/30 dark:border-gray-700/60 dark:bg-gray-950/40 dark:text-bible-50 dark:placeholder:text-gray-400 dark:focus:border-bible-500/60 dark:focus:bg-gray-900 dark:focus:ring-bible-500/20 font-chinese min-h-[52px]"
                                 aria-label="搜索经文"
                             />
                             {searchQuery && (
@@ -1147,14 +1158,14 @@ export default function HomePage() {
                     </div>
 
                     {/* 筛选工具栏 */}
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 overflow-x-auto rounded-2xl border border-bible-200/70 bg-white/58 p-1.5 shadow-[0_10px_28px_rgba(120,53,15,0.06)] backdrop-blur scrollbar-hide dark:border-gray-700/80 dark:bg-gray-900/48">
                         {/* 已收藏筛选 - 始终显示 */}
                         <button
                             onClick={handleToggleFavorites}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
+                            className={`flex shrink-0 items-center gap-2 px-4 py-2.5 rounded-xl transition-all touch-manipulation min-h-[44px] ${
                                 filterType === 'favorites'
-                                    ? 'bg-gold-500 dark:bg-gold-600 text-white hover:bg-gold-600 dark:hover:bg-gold-700'
-                                    : 'bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200 dark:border-gray-700'
+                                    ? 'bg-gold-500 dark:bg-gold-600 text-white shadow-[0_10px_24px_rgba(217,119,6,0.24)] hover:bg-gold-600 dark:hover:bg-gold-700'
+                                    : 'bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 text-bible-700 dark:text-bible-300 border border-bible-200/80 dark:border-gray-700 shadow-sm'
                             }`}
                             title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
                         >
@@ -1184,7 +1195,7 @@ export default function HomePage() {
                         <Listbox value={selectedBook} onChange={handleBookSelect}>
                             {({ open }) => (
                                 <div className="relative">
-                                    <Listbox.Button className="relative w-full px-4 py-2 pr-10 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 text-left cursor-pointer touch-manipulation min-h-[44px]">
+                                    <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-800 dark:text-bible-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
                                         <span className="block">{selectedBook?.name || '选择书卷'}</span>
                                         <ChevronDown
                                             className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-700 dark:text-bible-300 transition-transform ${
@@ -1294,7 +1305,7 @@ export default function HomePage() {
                                 <Listbox value={selectedChapter} onChange={handleChapterSelect}>
                                     {({ open }) => (
                                         <div className="relative">
-                                            <Listbox.Button className="relative w-full px-4 py-2 pr-10 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-700 dark:text-bible-300 text-left cursor-pointer touch-manipulation min-h-[44px]">
+                                            <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-bible-800 dark:text-bible-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
                                                 <span className="block">{selectedChapter ? `第 ${selectedChapter} 章` : '所有章节'}</span>
                                                 <ChevronDown
                                                     className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-600 dark:text-bible-400 transition-transform ${
@@ -1379,7 +1390,7 @@ export default function HomePage() {
                                 {selectedBook && (
                                     <button
                                         onClick={selectedChapter ? () => handleChapterSelect(null) : handleClearFilters}
-                                        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
+                                        className="flex shrink-0 items-center gap-2 px-4 py-2.5 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                         title={selectedChapter ? '返回章节选择' : '返回精选经文'}
                                     >
@@ -1396,7 +1407,7 @@ export default function HomePage() {
                         {!selectedBook && !searchQuery && (
                             <button
                                 onClick={handleShuffle}
-                                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-bible-200 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
+                                className="flex shrink-0 items-center gap-2 px-4 py-2.5 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="重新排列"
                             >
