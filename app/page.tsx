@@ -1712,7 +1712,7 @@ export default function HomePage() {
                     </div>
 
                     {/* 状态标签和统计 */}
-                    <div className="liquid-glass relative z-30 rounded-[1.35rem] px-4 py-3">
+                    <div className="liquid-glass relative z-[200] isolate overflow-visible rounded-[1.35rem] px-4 py-3">
                         <div className="flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-2 flex-wrap">
                             {searchQuery && (
@@ -1779,7 +1779,7 @@ export default function HomePage() {
                                                 leaveFrom="transform scale-100 opacity-100"
                                                 leaveTo="transform scale-95 opacity-0"
                                             >
-                                                <Listbox.Options className="absolute right-0 z-[80] mt-2 w-64 max-h-[min(24rem,60vh)] overflow-y-auto rounded-2xl border border-stone-900/10 bg-white/95 py-1 shadow-2xl shadow-stone-900/12 backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/95 scrollbar-thin">
+                                                <Listbox.Options className="absolute right-0 z-[9999] mt-2 w-64 max-h-[min(24rem,60vh)] overflow-y-auto rounded-2xl border border-stone-900/10 bg-white py-1 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-white/10 dark:bg-gray-950 scrollbar-thin">
                                                     {/* 全部 / {language === 'traditional' ? '舊約' : '旧约'} / {language === 'traditional' ? '新約' : '新约'} */}
                                                     <Listbox.Option value="all">
                                                         {({ active, selected }) => (
@@ -1926,7 +1926,7 @@ export default function HomePage() {
                                                 leaveFrom="transform scale-100 opacity-100"
                                                 leaveTo="transform scale-95 opacity-0"
                                             >
-                                                <Listbox.Options className="absolute right-0 z-[80] mt-2 w-64 max-h-[min(24rem,60vh)] overflow-y-auto rounded-2xl border border-stone-900/10 bg-white/95 py-1 shadow-2xl shadow-stone-900/12 backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/95 scrollbar-thin">
+                                                <Listbox.Options className="absolute right-0 z-[9999] mt-2 w-64 max-h-[min(24rem,60vh)] overflow-y-auto rounded-2xl border border-stone-900/10 bg-white py-1 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-white/10 dark:bg-gray-950 scrollbar-thin">
                                                     {/* 全部 / {language === 'traditional' ? '舊約' : '旧约'} / {language === 'traditional' ? '新約' : '新约'} */}
                                                     <Listbox.Option value="all">
                                                         {({ active, selected }) => (
@@ -2033,7 +2033,7 @@ export default function HomePage() {
                 </div>
 
                 {/* 经文卡片区域 */}
-                <div className="relative z-[1] mx-auto max-w-6xl">
+                <div className="relative z-0 mx-auto max-w-6xl">
                     {loadingChapter || loadingFavorites ? (
                         <div className="text-center py-12">
                             <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
