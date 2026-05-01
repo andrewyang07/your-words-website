@@ -937,7 +937,7 @@ export default function HomePage() {
         <div className="relative min-h-screen overflow-hidden bg-[#f8f5ee] text-stone-950 dark:bg-[#0e1116] dark:text-stone-50 before:pointer-events-none before:fixed before:inset-x-0 before:top-0 before:z-0 before:h-64 before:bg-[radial-gradient(circle_at_50%_0%,rgba(120,113,108,0.13),transparent_34rem)] dark:before:bg-[radial-gradient(circle_at_50%_0%,rgba(214,211,209,0.08),transparent_32rem)]">
             {/* 顶部导航栏 */}
             <header
-                className="sticky top-0 z-10 border-b border-stone-900/10 bg-[#f8f5ee]/72 backdrop-blur-2xl dark:border-white/10 dark:bg-[#0e1116]/72"
+                className="sticky top-0 z-50 border-b border-stone-900/10 bg-[#f8f5ee]/72 backdrop-blur-2xl dark:border-white/10 dark:bg-[#0e1116]/72"
                 role="banner"
             >
                 <div className="relative z-[1] mx-auto max-w-6xl px-4 py-3 md:py-4">
@@ -960,7 +960,7 @@ export default function HomePage() {
                                         {language === 'traditional' ? '你的話語' : '你的话语'}
                                     </h1>
                                     <span className="mt-1 hidden text-[10px] tracking-[0.28em] text-stone-500 dark:text-stone-400 sm:block">
-                                        READ · SEARCH · REMEMBER
+                                        {language === 'traditional' ? '讀 · 查 · 背' : '读 · 查 · 背'}
                                     </span>
                                 </span>
                             </a>
@@ -1111,7 +1111,7 @@ export default function HomePage() {
                     {/* 搜索输入框 - 全端独占一行 */}
                     <div className="liquid-glass mb-3 rounded-[1.75rem] p-2">
                         <div className="mb-1.5 flex items-center justify-between px-2">
-                            <span className="text-[10px] font-semibold tracking-[0.32em] text-stone-500 dark:text-stone-400">SCRIPTURE SEARCH</span>
+                            <span className="text-[10px] font-semibold tracking-[0.24em] text-stone-500 dark:text-stone-400 font-chinese">{language === 'traditional' ? '經文搜尋' : '经文搜索'}</span>
                             <span className="hidden text-xs text-bible-500 dark:text-gray-400 sm:inline font-chinese">{language === 'traditional' ? '引用、關鍵詞、拼音都可以' : '引用、关键词、拼音都可以'}</span>
                         </div>
                         <div className="relative flex items-center w-full">
@@ -1139,7 +1139,7 @@ export default function HomePage() {
 
                     {!searchQuery && (
                         <div className="-mt-1 mb-3 flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1" aria-label="搜索示例">
-                            <span className="shrink-0 text-[11px] tracking-[0.18em] text-bible-500/80 dark:text-bible-400/80 font-chinese">QUICK FIND</span>
+                            <span className="shrink-0 text-[11px] tracking-[0.16em] text-bible-500/80 dark:text-bible-400/80 font-chinese">{language === 'traditional' ? '快速尋找' : '快速查找'}</span>
                             {(language === 'traditional' ? ['約3:16', '詩篇23', '神愛世人', 'yuehan'] : ['约3:16', '诗篇23', '神爱世人', 'yuehan']).map(
                                 (example) => (
                                     <button
@@ -1435,7 +1435,7 @@ export default function HomePage() {
             </header>
 
             {/* 主内容区域 */}
-            <main role="main" aria-label="圣经经文内容">
+            <main role="main" aria-label={language === 'traditional' ? '聖經經文內容' : '圣经经文内容'}>
                 {/* 分享横幅 */}
                 {showShareBanner && sharedVerses.length > 0 && (
                     <div
@@ -1712,7 +1712,7 @@ export default function HomePage() {
                     </div>
 
                     {/* 状态标签和统计 */}
-                    <div className="liquid-glass rounded-[1.35rem] px-4 py-3">
+                    <div className="liquid-glass relative z-30 rounded-[1.35rem] px-4 py-3">
                         <div className="flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-2 flex-wrap">
                             {searchQuery && (
@@ -1736,7 +1736,7 @@ export default function HomePage() {
                                         <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">
                                             {showAllContent
                                                 ? (language === 'traditional' ? '閱讀模式：完整顯示經文。' : '阅读模式：完整显示经文。')
-                                                : (language === 'traditional' ? '方塊不是亂碼，是背誦遮字；點卡片可顯示全文。' : '方块不是乱码，是背诵遮字；点卡片可显示全文。')}
+                                                : (language === 'traditional' ? '空心圓是背誦遮字；點卡片可顯示全文。' : '空心圆是背诵遮字；点卡片可显示全文。')}
                                         </span>
                                     </div>
                                 </div>
@@ -1779,7 +1779,7 @@ export default function HomePage() {
                                                 leaveFrom="transform scale-100 opacity-100"
                                                 leaveTo="transform scale-95 opacity-0"
                                             >
-                                                <Listbox.Options className="absolute right-0 mt-2 w-64 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-50 scrollbar-thin">
+                                                <Listbox.Options className="absolute right-0 z-[80] mt-2 w-64 max-h-[min(24rem,60vh)] overflow-y-auto rounded-2xl border border-stone-900/10 bg-white/95 py-1 shadow-2xl shadow-stone-900/12 backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/95 scrollbar-thin">
                                                     {/* 全部 / {language === 'traditional' ? '舊約' : '旧约'} / {language === 'traditional' ? '新約' : '新约'} */}
                                                     <Listbox.Option value="all">
                                                         {({ active, selected }) => (
@@ -1926,7 +1926,7 @@ export default function HomePage() {
                                                 leaveFrom="transform scale-100 opacity-100"
                                                 leaveTo="transform scale-95 opacity-0"
                                             >
-                                                <Listbox.Options className="absolute right-0 mt-2 w-64 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-50 scrollbar-thin">
+                                                <Listbox.Options className="absolute right-0 z-[80] mt-2 w-64 max-h-[min(24rem,60vh)] overflow-y-auto rounded-2xl border border-stone-900/10 bg-white/95 py-1 shadow-2xl shadow-stone-900/12 backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/95 scrollbar-thin">
                                                     {/* 全部 / {language === 'traditional' ? '舊約' : '旧约'} / {language === 'traditional' ? '新約' : '新约'} */}
                                                     <Listbox.Option value="all">
                                                         {({ active, selected }) => (

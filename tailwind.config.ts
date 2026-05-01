@@ -32,7 +32,7 @@ const config: Config = {
                 },
             },
             fontFamily: {
-                chinese: ['PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'],
+                chinese: ['PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
             },
             animation: {
                 'fade-in': 'fadeIn 0.4s ease-out forwards',

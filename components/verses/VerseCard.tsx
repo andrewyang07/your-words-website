@@ -41,16 +41,16 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     }, [verse.id, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax]);
 
     const sizeClasses = {
-        small: 'p-4 min-h-[120px]',
-        medium: 'p-6 min-h-[160px]',
-        large: 'p-8 min-h-[200px]',
+        small: 'p-4 sm:p-4 min-h-[120px]',
+        medium: 'p-5 sm:p-6 min-h-[160px]',
+        large: 'p-6 sm:p-8 min-h-[200px]',
     };
 
     // 统一字体大小，提升易读性
     const textSizes = {
-        small: 'text-base',
-        medium: 'text-base',
-        large: 'text-base',
+        small: 'text-[17px] sm:text-base',
+        medium: 'text-[17px] sm:text-base',
+        large: 'text-[17px] sm:text-base',
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
@@ -147,7 +147,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 {!isRevealed && (
                     <span
                         className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-stone-900/10 bg-white/35 px-2 py-1 text-[11px] font-medium text-stone-400 dark:border-white/10 dark:bg-white/[0.035] dark:text-stone-500 font-chinese"
-                        title="方塊是背誦遮字，點擊卡片顯示全文"
+                        title="空心圆是背诵遮字，点击卡片显示全文"
                     >
                         <Eye className="h-3 w-3" />
                         遮字
@@ -156,7 +156,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 <p
                     className={`
               ${textSizes[size]}
-              text-stone-900 dark:text-stone-100 font-normal leading-[1.9] font-chinese
+              text-stone-900 dark:text-stone-100 font-normal leading-[2.05] sm:leading-[1.9] font-chinese
               transition-opacity duration-200
               break-words overflow-wrap-anywhere
             `}
