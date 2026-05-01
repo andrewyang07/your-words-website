@@ -37,7 +37,7 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
         <p className="text-bible-600 dark:text-bible-300 font-chinese">
           {language === 'traditional' ? '未找到相關經文' : '未找到相关经文'}
         </p>
-        <p className="text-sm text-bible-500 dark:text-bible-400 mt-2 font-chinese">
+        <p className="text-sm text-stone-500 dark:text-stone-400 mt-2 font-chinese">
           {language === 'traditional'
             ? '試試其他關鍵詞，或輸入如「約3:16」的經文引用'
             : '试试其他关键词，或输入如“约3:16”的经文引用'}
@@ -48,7 +48,7 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
 
   return (
     <div className="w-full max-w-3xl mx-auto mt-5 space-y-4">
-      <p className="text-xs text-bible-500 dark:text-bible-400 font-chinese px-1">
+      <p className="text-xs text-stone-500 dark:text-stone-400 font-chinese px-1">
         {language === 'traditional'
           ? `找到 ${results.length} 條結果`
           : `找到 ${results.length} 条结果`}

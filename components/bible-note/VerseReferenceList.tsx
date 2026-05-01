@@ -51,10 +51,10 @@ export default function VerseReferenceList({
 
     if (loading) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-3 md:p-4">
+            <div className="rounded-[1.5rem] border border-stone-900/10 bg-white/72 p-3 shadow-[0_24px_70px_rgba(68,64,60,0.10)] dark:border-white/10 dark:bg-white/[0.045] md:p-4">
                 <div className="flex items-center justify-center py-4 md:py-6">
-                    <Loader2 className="w-6 h-6 animate-spin text-bible-600 dark:text-bible-400" />
-                    <span className="ml-2 text-sm text-bible-600 dark:text-bible-400 font-chinese">
+                    <Loader2 className="w-6 h-6 animate-spin text-stone-600 dark:text-stone-400" />
+                    <span className="ml-2 text-sm text-stone-600 dark:text-stone-400 font-chinese">
                         加載經文中...
                     </span>
                 </div>
@@ -64,10 +64,10 @@ export default function VerseReferenceList({
 
     if (references.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-3 md:p-4">
+            <div className="rounded-[1.5rem] border border-stone-900/10 bg-white/72 p-3 shadow-[0_24px_70px_rgba(68,64,60,0.10)] dark:border-white/10 dark:bg-white/[0.045] md:p-4">
                 <div className="flex items-center gap-2 mb-2 md:mb-3">
-                    <BookOpen className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                    <h3 className="font-bold text-bible-800 dark:text-bible-200 font-chinese">
+                    <BookOpen className="w-4 h-4 text-stone-600 dark:text-stone-400" />
+                    <h3 className="font-bold text-stone-950 dark:text-stone-50 font-chinese">
                         引用的經文
                     </h3>
                 </div>
@@ -81,14 +81,14 @@ export default function VerseReferenceList({
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 p-3 md:p-4">
+        <div className="rounded-[1.5rem] border border-stone-900/10 bg-white/72 p-3 shadow-[0_24px_70px_rgba(68,64,60,0.10)] dark:border-white/10 dark:bg-white/[0.045] md:p-4">
             {/* 标题和操作按钮 */}
             <div className="flex items-center justify-between mb-2 md:mb-3">
                 <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                    <h3 className="font-bold text-bible-800 dark:text-bible-200 font-chinese">
+                    <BookOpen className="w-4 h-4 text-stone-600 dark:text-stone-400" />
+                    <h3 className="font-bold text-stone-950 dark:text-stone-50 font-chinese">
                         引用的經文
-                        <span className="ml-2 text-sm font-normal text-bible-500 dark:text-bible-400">
+                        <span className="ml-2 text-sm font-normal text-stone-500 dark:text-stone-400">
                             ({versesWithText.length})
                         </span>
                     </h3>
@@ -98,7 +98,7 @@ export default function VerseReferenceList({
                 <button
                     onClick={onExpandAll}
                     disabled={isExpanding}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 text-white rounded-lg transition-colors touch-manipulation min-h-[32px]"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs bg-stone-900 hover:bg-stone-800 disabled:bg-stone-300 text-white rounded-full dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-white transition-colors touch-manipulation min-h-[32px]"
                     title="將所有經文完整內容插入筆記"
                 >
                     {isExpanding ? (

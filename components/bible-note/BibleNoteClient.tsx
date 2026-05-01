@@ -328,7 +328,7 @@ export default function BibleNoteClient() {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-bible-50 to-white dark:from-gray-900 dark:to-gray-800">
+        <div className="yw-page">
             {/* Header */}
             <PageHeader
                 onMenuClick={() => setShowSideMenu(true)}
@@ -362,7 +362,7 @@ export default function BibleNoteClient() {
 
                         <button
                             onClick={() => setShowNoteList(true)}
-                            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                            className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
                             title="笔记列表"
                             aria-label="打开笔记列表"
                         >
@@ -546,7 +546,7 @@ export default function BibleNoteClient() {
 
                 {/* Mobile tab navigation */}
                 <div className="lg:hidden mb-2">
-                    <div className="flex gap-1 bg-white dark:bg-gray-800 rounded-lg p-1 shadow-lg border border-bible-200 dark:border-gray-700">
+                    <div className="flex gap-1 rounded-2xl border border-stone-900/10 bg-white/72 p-1 shadow-[0_18px_46px_rgba(68,64,60,0.08)] dark:border-white/10 dark:bg-white/[0.045]">
                         <button
                             onClick={() => setActiveTab('edit')}
                             className={`flex-1 py-1.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[40px] ${
@@ -581,7 +581,7 @@ export default function BibleNoteClient() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     {/* Editor (desktop: 2/3 width) */}
                     <div className={`lg:col-span-2 ${activeTab === 'edit' ? 'block' : 'hidden lg:block'}`}>
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 overflow-hidden min-h-[400px]">
+                        <div className="min-h-[400px] overflow-hidden rounded-[1.5rem] border border-stone-900/10 bg-white/72 shadow-[0_24px_70px_rgba(68,64,60,0.10)] dark:border-white/10 dark:bg-white/[0.045]">
                             <NoteEditor
                                 content={content}
                                 onChange={setContent}

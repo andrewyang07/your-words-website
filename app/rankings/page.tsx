@@ -3,11 +3,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Languages, HelpCircle, Eye, EyeOff, Menu, TrendingUp, ArrowLeft, Filter, ChevronDown, Check } from 'lucide-react';
+import { Languages, HelpCircle, Eye, EyeOff, Filter, ChevronDown, Check } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import { useAppStore } from '@/stores/useAppStore';
 import RankingsList from '@/components/rankings/RankingsList';
+import PageHeader from '@/components/layout/PageHeader';
 import booksData from '@/public/data/books.json';
 import dynamic from 'next/dynamic';
 
@@ -93,116 +93,49 @@ export default function RankingsPage() {
     }, [rankings]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-bible-50 to-bible-100 dark:from-gray-900 dark:to-gray-800">
-            {/* 顶部导航栏 - 与主页保持一致 */}
-            <header
-                className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-bible-200 dark:border-gray-700"
-                role="banner"
-            >
-                <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
-                    {/* 标题行 */}
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                            <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity" title="首頁">
-                                <Image
-                                    src="/logo-light.png"
-                                    alt="你的話語 Logo"
-                                    width={40}
-                                    height={40}
-                                    priority
-                                    className="w-8 h-8 md:w-10 md:h-10 dark:brightness-90 dark:contrast-125"
-                                />
-                                <h1
-                                    className="text-2xl md:text-3xl font-extrabold font-chinese text-bible-700 dark:text-bible-300 tracking-wide"
-                                    style={{
-                                        textShadow: '0 0 12px rgba(190,158,93,0.3), 0 0 24px rgba(190,158,93,0.15), 0 1px 2px rgba(0,0,0,0.05)',
-                                    }}
-                                >
-                                    你的話語
-                                </h1>
-                            </a>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            {/* 帮助按钮 */}
-                            <button
-                                onClick={() => router.push('/help')}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="显示使用帮助"
-                                aria-label="显示使用帮助"
-                            >
-                                <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">帮助</span>
-                            </button>
-
-                            {/* 简繁体切换 */}
-                            <button
-                                onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
-                                aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
-                            >
-                                <Languages className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">
-                                    {language === 'simplified' ? '繁' : '簡'}
-                                </span>
-                            </button>
-
-                            {/* 阅读/背诵模式切换 */}
-                            <button
-                                onClick={() => setShowAllContent(!showAllContent)}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
-                                aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
-                                aria-pressed={showAllContent}
-                            >
-                                {showAllContent ? (
-                                    <>
-                                        <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">背诵</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Eye className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                        <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">阅读</span>
-                                    </>
-                                )}
-                            </button>
-
-                            {/* 汉堡菜单按钮 */}
-                            <button
-                                onClick={() => setShowSideMenu(true)}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title="菜单"
-                                aria-label="打开菜单"
-                            >
-                                <Menu className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                                <span className="hidden sm:inline font-chinese text-bible-700 dark:text-bible-300 text-sm">菜單</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* 副标题 - 显示当前页面 */}
-                    <div className="flex items-center gap-2">
+        <div className="min-h-screen yw-page">
+            <PageHeader
+                onMenuClick={() => setShowSideMenu(true)}
+                showHelp={false}
+                subtitle={<span className="rounded-full border border-stone-900/10 px-2.5 py-1 text-xs text-stone-500 dark:border-white/10 dark:text-stone-400">總排行榜</span>}
+                rightContent={
+                    <>
                         <button
-                            onClick={() => router.push('/')}
-                            className="flex items-center gap-1 text-sm text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 transition-colors font-chinese"
+                            onClick={() => router.push('/help')}
+                            className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            title="显示使用帮助"
+                            aria-label="显示使用帮助"
                         >
-                            <ArrowLeft className="w-4 h-4" />
-                            <span>返回主頁</span>
+                            <HelpCircle className="w-4 h-4 md:w-5 md:h-5" />
+                            <span className="hidden sm:inline font-chinese text-sm">帮助</span>
                         </button>
-                        <span className="text-bible-400 dark:text-gray-600">/</span>
-                        <div className="flex items-center gap-2">
-                            <TrendingUp className="w-4 h-4 text-gold-600 dark:text-gold-400" />
-                            <span className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">總排行榜</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
+                        <button
+                            onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
+                            className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
+                            aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
+                        >
+                            <Languages className="w-4 h-4 md:w-5 md:h-5" />
+                            <span className="hidden sm:inline font-chinese text-sm">
+                                {language === 'simplified' ? '繁' : '簡'}
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => setShowAllContent(!showAllContent)}
+                            className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                            aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+                            aria-pressed={showAllContent}
+                        >
+                            {showAllContent ? <EyeOff className="w-4 h-4 md:w-5 md:h-5" /> : <Eye className="w-4 h-4 md:w-5 md:h-5" />}
+                            <span className="hidden sm:inline font-chinese text-sm">{showAllContent ? '背诵' : '阅读'}</span>
+                        </button>
+                    </>
+                }
+            />
 
             {/* 侧边栏菜单 */}
             <SideMenu 
@@ -215,10 +148,10 @@ export default function RankingsPage() {
             />
 
             {/* 主内容 */}
-            <main className="max-w-4xl mx-auto px-4 py-8">
+            <main className="yw-shell">
                 {/* 说明文字 */}
-                <div className="mb-6 p-4 bg-gradient-to-r from-gold-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-gold-200 dark:border-gold-700/30">
-                    <p className="text-sm text-bible-700 dark:text-bible-300 font-chinese text-center">
+                <div className="mb-6 yw-panel p-4">
+                    <p className="text-sm text-stone-700 dark:text-stone-300 font-chinese text-center">
                         📊 最多收藏的聖經經文（按收藏次數排序） · 每小時更新
                     </p>
                 </div>
@@ -226,17 +159,17 @@ export default function RankingsPage() {
                 {/* 筛选工具栏 */}
                 {rankings.length > 0 && !loading && !error && (
                     <div className="relative z-[200] mb-6 flex items-center justify-between flex-wrap gap-3 overflow-visible">
-                        <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
-                            共 <span className="font-semibold text-bible-700 dark:text-bible-300">{filteredRankings.length}</span> 节
+                        <span className="text-sm text-stone-500 dark:text-stone-400 font-chinese">
+                            共 <span className="font-semibold text-stone-700 dark:text-stone-300">{filteredRankings.length}</span> 节
                         </span>
                         
                         {/* 筛选按钮 */}
                         <Listbox value={bookFilter} onChange={setBookFilter}>
                             <div className="relative z-[220] overflow-visible">
                                 <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bible-50 dark:bg-gray-800 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors">
-                                    <Filter className="w-4 h-4 text-bible-600 dark:text-bible-400" />
-                                    <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">篩選</span>
-                                    <ChevronDown className="w-3 h-3 text-bible-500 dark:text-bible-400" />
+                                    <Filter className="w-4 h-4 text-stone-600 dark:text-stone-400" />
+                                    <span className="text-xs text-stone-700 dark:text-stone-300 font-chinese">篩選</span>
+                                    <ChevronDown className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                                 </Listbox.Button>
                                 <Transition
                                     enter="transition duration-100 ease-out"
@@ -252,14 +185,14 @@ export default function RankingsPage() {
                                             {({ active, selected }) => (
                                                 <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                        <span className="text-sm font-chinese text-stone-950 dark:text-stone-50">
                                                             全部
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
                                                                 ({rankingsBookCounts.all})
                                                             </span>
-                                                            {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                            {selected && <Check className="w-4 h-4 text-stone-600 dark:text-stone-400" />}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -270,14 +203,14 @@ export default function RankingsPage() {
                                             {({ active, selected }) => (
                                                 <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                        <span className="text-sm font-chinese text-stone-950 dark:text-stone-50">
                                                             舊約
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
                                                                 ({rankingsBookCounts.old})
                                                             </span>
-                                                            {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                            {selected && <Check className="w-4 h-4 text-stone-600 dark:text-stone-400" />}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -288,14 +221,14 @@ export default function RankingsPage() {
                                             {({ active, selected }) => (
                                                 <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                        <span className="text-sm font-chinese text-stone-950 dark:text-stone-50">
                                                             新約
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
                                                                 ({rankingsBookCounts.new})
                                                             </span>
-                                                            {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                            {selected && <Check className="w-4 h-4 text-stone-600 dark:text-stone-400" />}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -315,14 +248,14 @@ export default function RankingsPage() {
                                                     {({ active, selected }) => (
                                                         <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-sm font-chinese text-bible-800 dark:text-bible-200">
+                                                                <span className="text-sm font-chinese text-stone-950 dark:text-stone-50">
                                                                     {book.nameTraditional}
                                                                 </span>
                                                                 <div className="flex items-center gap-2">
                                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
                                                                         ({count})
                                                                     </span>
-                                                                    {selected && <Check className="w-4 h-4 text-bible-600 dark:text-bible-400" />}
+                                                                    {selected && <Check className="w-4 h-4 text-stone-600 dark:text-stone-400" />}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -341,11 +274,11 @@ export default function RankingsPage() {
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
-                        <p className="mt-4 text-bible-600 dark:text-bible-400 font-chinese">加載排行榜中...</p>
+                        <p className="mt-4 text-stone-600 dark:text-stone-400 font-chinese">加載排行榜中...</p>
                     </div>
                 ) : error ? (
                     <div className="text-center py-12">
-                        <p className="text-bible-600 dark:text-bible-400 font-chinese mb-4">{error}</p>
+                        <p className="text-stone-600 dark:text-stone-400 font-chinese mb-4">{error}</p>
                         <Link
                             href="/"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors font-chinese"
@@ -357,7 +290,7 @@ export default function RankingsPage() {
                     <RankingsList rankings={filteredRankings} />
                 ) : rankings.length > 0 ? (
                     <div className="text-center py-12">
-                        <p className="text-bible-500 dark:text-bible-400 font-chinese mb-2">該篩選條件下沒有經文</p>
+                        <p className="text-stone-500 dark:text-stone-400 font-chinese mb-2">該篩選條件下沒有經文</p>
                         <button
                             onClick={() => setBookFilter('all')}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors font-chinese"
@@ -367,7 +300,7 @@ export default function RankingsPage() {
                     </div>
                 ) : (
                     <div className="text-center py-12">
-                        <p className="text-bible-500 dark:text-bible-400 font-chinese mb-2">暫無排行榜數據</p>
+                        <p className="text-stone-500 dark:text-stone-400 font-chinese mb-2">暫無排行榜數據</p>
                         <p className="text-sm text-bible-400 dark:text-bible-500 font-chinese">開始收藏經文吧！</p>
                     </div>
                 )}

@@ -88,7 +88,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                             {medal ? (
                                 <span className="text-2xl">{medal}</span>
                             ) : (
-                                <span className="text-lg font-bold text-bible-600 dark:text-bible-400 font-chinese">{rank}</span>
+                                <span className="text-lg font-bold text-stone-600 dark:text-stone-400 font-chinese">{rank}</span>
                             )}
                         </div>
 
@@ -99,7 +99,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                             </p>
                             {/* 经文内容 - 完整显示 */}
                             {item.text && (
-                                <p className="text-xs text-bible-600 dark:text-bible-400 font-chinese mt-1.5 leading-relaxed">
+                                <p className="text-xs text-stone-600 dark:text-stone-400 font-chinese mt-1.5 leading-relaxed">
                                     {item.text}
                                 </p>
                             )}
@@ -107,15 +107,15 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                                 <span
                                     className={`text-xs px-2 py-0.5 rounded ${
                                         item.testament === 'old'
-                                            ? 'bg-bible-100 dark:bg-bible-900/30 text-bible-700 dark:text-bible-300'
+                                            ? 'bg-bible-100 dark:bg-bible-900/30 text-stone-700 dark:text-stone-300'
                                             : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                                     }`}
                                 >
                                     {item.testament === 'old' ? '舊約' : '新約'}
                                 </span>
                                 <div className="flex items-center gap-1">
-                                    <Star className="w-3 h-3 fill-current text-gold-600 dark:text-gold-400" />
-                                    <span className="text-sm font-semibold text-gold-600 dark:text-gold-400">{item.favorites.toLocaleString()}</span>
+                                    <Star className="w-3 h-3 fill-current text-amber-600 dark:text-amber-300" />
+                                    <span className="text-sm font-semibold text-amber-600 dark:text-amber-300">{item.favorites.toLocaleString()}</span>
                                     <span className="text-xs text-gray-600 dark:text-gray-400">人收藏</span>
                                 </div>
                             </div>
@@ -143,13 +143,13 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                             {/* 查看章节按钮 */}
                             <button
                                 onClick={() => handleViewChapter(item.bookName, item.chapter)}
-                                className="flex items-center gap-1 px-3 py-2 rounded-lg bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 transition-colors touch-manipulation"
+                                className="flex items-center gap-1 px-3 py-2 rounded-lg liquid-button hover:bg-white/65 dark:hover:bg-white/[0.08] transition-colors touch-manipulation"
                                 title={`查看 ${item.bookName} ${item.chapter}章`}
                                 aria-label={`查看 ${item.bookName} ${item.chapter}章`}
                                 style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
-                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300 hidden sm:inline">查看章節</span>
-                                <ChevronRight className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                                <span className="text-sm font-chinese text-stone-700 dark:text-stone-300 hidden sm:inline">查看章節</span>
+                                <ChevronRight className="w-4 h-4 text-stone-600 dark:text-stone-400" />
                             </button>
                         </div>
                     </div>
