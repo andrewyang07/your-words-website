@@ -372,7 +372,7 @@ export default function BibleNoteClient() {
 
                         <OcrImporter onInsertReferences={handleInsertFromOcr} />
 
-                        <div className="relative">
+                        <div className="relative z-[220] overflow-visible">
                             <button
                                 onClick={() => setShowExportMenu(!showExportMenu)}
                                 disabled={!content}
@@ -388,8 +388,8 @@ export default function BibleNoteClient() {
 
                             {showExportMenu && content && (
                                 <>
-                                    <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
-                                    <div className="fixed md:absolute bottom-0 md:bottom-auto left-0 right-0 md:right-0 md:left-auto md:mt-2 w-full md:w-48 bg-white dark:bg-gray-800 rounded-t-xl md:rounded-lg shadow-2xl border-t md:border border-bible-200 dark:border-gray-700 py-3 md:py-1 z-50">
+                                    <div className="fixed inset-0 z-[9998]" onClick={() => setShowExportMenu(false)} />
+                                    <div className="fixed bottom-0 left-0 right-0 z-[9999] w-full rounded-t-2xl border-t border-stone-900/10 bg-white py-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:absolute md:bottom-auto md:left-auto md:right-0 md:mt-2 md:w-48 md:rounded-2xl md:border dark:border-white/10 dark:bg-gray-950 md:py-1">
                                         <button
                                             onClick={handleCopyToClipboard}
                                             className="w-full flex items-center gap-3 px-4 py-3 md:py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left min-h-[48px] md:min-h-0"
@@ -449,8 +449,8 @@ export default function BibleNoteClient() {
 
                 {/* Help modal */}
                 {showHelp && (
-                    <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-start animate-fade-in" onClick={() => setShowHelp(false)}>
-                        <div className="max-w-lg w-full mx-4 mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-bible-200 dark:border-gray-700 p-4 md:p-6" onClick={(e) => e.stopPropagation()}>
+                    <div className="fixed inset-0 z-[9998] flex justify-center items-start bg-black/50 animate-fade-in" onClick={() => setShowHelp(false)}>
+                        <div className="z-[9999] mx-4 mt-20 w-full max-w-lg rounded-2xl border border-stone-900/10 bg-white p-4 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:p-6 dark:border-white/10 dark:bg-gray-950" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                     <HelpCircle className="w-6 h-6 text-bible-600 dark:text-bible-400" />

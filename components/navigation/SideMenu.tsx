@@ -70,7 +70,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-50 bg-stone-950/28 backdrop-blur-sm dark:bg-black/58"
+                        className="fixed inset-0 z-[10000] bg-stone-950/28 backdrop-blur-sm dark:bg-black/58"
                         onClick={onClose}
                     />
 
@@ -80,7 +80,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="liquid-glass fixed bottom-3 right-3 top-3 z-50 flex w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[1.75rem]"
+                        className="liquid-glass fixed bottom-3 right-3 top-3 z-[10001] flex w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[1.75rem]"
                     >
                         {/* 头部 */}
                         <div className="flex items-center justify-between border-b border-stone-900/10 p-4 dark:border-white/10">

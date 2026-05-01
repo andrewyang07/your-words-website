@@ -72,7 +72,7 @@ const BibleSuggestionList = forwardRef<BibleSuggestionListRef, BibleSuggestionLi
     return (
       <div
         ref={listRef}
-        className="w-80 max-h-72 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-bible-200 dark:border-gray-700 py-1"
+        className="z-[9999] w-80 max-h-72 overflow-y-auto rounded-2xl border border-stone-900/10 bg-white py-1 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-white/10 dark:bg-gray-950"
       >
         {items.map((item, index) => (
           <button

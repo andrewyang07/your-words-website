@@ -225,14 +225,14 @@ export default function RankingsPage() {
                 
                 {/* 筛选工具栏 */}
                 {rankings.length > 0 && !loading && !error && (
-                    <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
+                    <div className="relative z-[200] mb-6 flex items-center justify-between flex-wrap gap-3 overflow-visible">
                         <span className="text-sm text-bible-500 dark:text-bible-400 font-chinese">
                             共 <span className="font-semibold text-bible-700 dark:text-bible-300">{filteredRankings.length}</span> 节
                         </span>
                         
                         {/* 筛选按钮 */}
                         <Listbox value={bookFilter} onChange={setBookFilter}>
-                            <div className="relative">
+                            <div className="relative z-[220] overflow-visible">
                                 <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bible-50 dark:bg-gray-800 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors">
                                     <Filter className="w-4 h-4 text-bible-600 dark:text-bible-400" />
                                     <span className="text-xs text-bible-700 dark:text-bible-300 font-chinese">篩選</span>
@@ -246,7 +246,7 @@ export default function RankingsPage() {
                                     leaveFrom="transform scale-100 opacity-100"
                                     leaveTo="transform scale-95 opacity-0"
                                 >
-                                    <Listbox.Options className="absolute right-0 mt-2 w-64 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-bible-200 dark:border-gray-700 py-1 z-50 scrollbar-thin">
+                                    <Listbox.Options className="absolute right-0 z-[9999] mt-2 w-64 max-h-[min(24rem,60vh)] overflow-y-auto rounded-2xl border border-stone-900/10 bg-white py-1 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-white/10 dark:bg-gray-950 scrollbar-thin">
                                         {/* 全部 / 旧约 / 新约 */}
                                         <Listbox.Option value="all">
                                             {({ active, selected }) => (

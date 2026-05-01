@@ -131,7 +131,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
     };
 
     return (
-        <div className="relative">
+        <div className="relative z-[220] overflow-visible">
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
@@ -143,7 +143,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-[min(90vw,560px)] bg-white dark:bg-gray-800 border border-bible-200 dark:border-gray-700 rounded-xl shadow-2xl z-50 p-4">
+                <div className="absolute right-0 z-[9999] mt-2 w-[min(90vw,560px)] rounded-2xl border border-stone-900/10 bg-white p-4 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-white/10 dark:bg-gray-950">
                     <div className="flex items-center justify-between mb-3">
                         <div>
                             <h4 className="font-semibold text-bible-800 dark:text-bible-200 font-chinese">OCR 识别经文引用（Beta）</h4>

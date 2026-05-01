@@ -122,7 +122,7 @@ export default function MaskSettings() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/30 dark:bg-black/50 z-40"
+                            className="fixed inset-0 z-[9998] bg-black/30 dark:bg-black/50"
                             onClick={() => setShowHelp(false)}
                         />
                         {/* 提示框 */}
@@ -131,7 +131,7 @@ export default function MaskSettings() {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
                             transition={{ duration: 0.2 }}
-                            className="fixed left-1/2 top-[20vh] sm:top-1/2 -translate-x-1/2 sm:-translate-y-1/2 w-[95vw] sm:w-[90vw] max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-2 border-bible-300 dark:border-gray-600 z-50 p-4 sm:p-5"
+                            className="fixed left-1/2 top-[20vh] z-[9999] w-[95vw] max-w-md -translate-x-1/2 rounded-2xl border border-stone-900/10 bg-white p-4 shadow-[0_24px_70px_rgba(68,64,60,0.24)] sm:top-1/2 sm:w-[90vw] sm:-translate-y-1/2 sm:p-5 dark:border-white/10 dark:bg-gray-950"
                         >
                             {/* 标题和关闭按钮 */}
                             <div className="flex items-center justify-between mb-4">

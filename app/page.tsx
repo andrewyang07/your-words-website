@@ -1158,8 +1158,8 @@ export default function HomePage() {
                     {/* 手机端提示设置折叠面板 */}
                     <div
                         id="mask-settings-mobile-panel"
-                        className={`md:hidden overflow-hidden transition-all duration-300 ${
-                            showMaskSettingsMobile ? 'max-h-[320px] opacity-100 mb-3' : 'max-h-0 opacity-0'
+                        className={`md:hidden relative z-[220] transition-all duration-300 ${
+                            showMaskSettingsMobile ? 'max-h-[520px] overflow-visible opacity-100 mb-3' : 'max-h-0 overflow-hidden opacity-0'
                         }`}
                         aria-hidden={!showMaskSettingsMobile}
                     >
@@ -1173,7 +1173,7 @@ export default function HomePage() {
                     </div>
 
                     {/* 筛选工具栏 */}
-                    <div className="liquid-glass flex items-center gap-2 overflow-x-auto rounded-full p-1.5 scrollbar-hide">
+                    <div className="liquid-glass relative z-[210] isolate flex flex-wrap items-center gap-2 overflow-visible rounded-[1.35rem] p-1.5">
                         {/* 已收藏筛选 - 始终显示 */}
                         <button
                             onClick={handleToggleFavorites}
@@ -1209,7 +1209,7 @@ export default function HomePage() {
                         {/* 书卷选择器 */}
                         <Listbox value={selectedBook} onChange={handleBookSelect}>
                             {({ open }) => (
-                                <div className="relative">
+                                <div className="relative z-[220] overflow-visible">
                                     <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
                                         <span className="block">{selectedBook?.name || (language === 'traditional' ? '選擇書卷' : '选择书卷')}</span>
                                         <ChevronDown
@@ -1226,7 +1226,7 @@ export default function HomePage() {
                                         leaveFrom="transform scale-100 opacity-100"
                                         leaveTo="transform scale-95 opacity-0"
                                     >
-                                        <Listbox.Options className="absolute z-20 mt-1 min-w-full w-max max-h-[70vh] overflow-auto rounded-lg bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none scrollbar-thin">
+                                        <Listbox.Options className="absolute z-[9999] mt-2 min-w-full w-max max-h-[min(24rem,70vh)] overflow-auto rounded-2xl border border-stone-900/10 bg-white py-1 shadow-[0_24px_70px_rgba(68,64,60,0.24)] ring-1 ring-black/5 focus:outline-none dark:border-white/10 dark:bg-gray-950 scrollbar-thin">
                                             <Listbox.Option
                                                 value={null}
                                                 className={({ active }) =>
@@ -1319,7 +1319,7 @@ export default function HomePage() {
                             <>
                                 <Listbox value={selectedChapter} onChange={handleChapterSelect}>
                                     {({ open }) => (
-                                        <div className="relative">
+                                        <div className="relative z-[220] overflow-visible">
                                             <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
                                                 <span className="block">{selectedChapter ? `${language === 'traditional' ? '第' : '第'} ${selectedChapter} ${language === 'traditional' ? '章' : '章'}` : (language === 'traditional' ? '所有章節' : '所有章节')}</span>
                                                 <ChevronDown
@@ -1336,7 +1336,7 @@ export default function HomePage() {
                                                 leaveFrom="transform scale-100 opacity-100"
                                                 leaveTo="transform scale-95 opacity-0"
                                             >
-                                                <Listbox.Options className="absolute z-20 mt-1 min-w-full w-max max-h-[70vh] overflow-auto rounded-lg bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none scrollbar-thin">
+                                                <Listbox.Options className="absolute z-[9999] mt-2 min-w-full w-max max-h-[min(24rem,70vh)] overflow-auto rounded-2xl border border-stone-900/10 bg-white py-1 shadow-[0_24px_70px_rgba(68,64,60,0.24)] ring-1 ring-black/5 focus:outline-none dark:border-white/10 dark:bg-gray-950 scrollbar-thin">
                                                     <Listbox.Option
                                                         value={null}
                                                         className={({ active }) =>
@@ -1494,7 +1494,7 @@ export default function HomePage() {
 
                 {/* 分享Toast通知 */}
                 {shareToast && (
-                    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4 animate-fade-in">
+                    <div className="fixed top-20 left-1/2 z-[10002] mx-4 max-w-md -translate-x-1/2 animate-fade-in">
                         <div className="p-4 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 text-blue-900 dark:text-blue-100 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
                             <div className="flex-shrink-0 w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center">
                                 <Share2 className="w-5 h-5 text-white" />
@@ -1517,7 +1517,7 @@ export default function HomePage() {
 
                 {/* 移动端统计 modal */}
                 {showStatsModal && (
-                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowStatsModal(false)}>
+                    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowStatsModal(false)}>
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
                             <h3 className="text-center text-lg font-semibold text-stone-800 dark:text-stone-200 mb-4 font-chinese">全球統計</h3>
                             <p className="text-center text-sm text-stone-600 dark:text-stone-300 leading-relaxed font-chinese">
@@ -1542,7 +1542,7 @@ export default function HomePage() {
 
                 {/* 关闭引导提示 - 浮动通知 */}
                 {showGuideHint && (
-                    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md mx-4 animate-fade-in">
+                    <div className="fixed top-20 left-1/2 z-[10002] mx-4 max-w-md -translate-x-1/2 animate-fade-in">
                         <div className="p-4 bg-bible-50 dark:bg-gray-800 border-2 border-bible-300 dark:border-gray-600 text-stone-800 dark:text-stone-200 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3 relative">
                             <div className="flex-shrink-0 w-8 h-8 bg-bible-500 dark:bg-bible-600 rounded-full flex items-center justify-center">
                                 <HelpCircle className="w-5 h-5 text-white" />
@@ -1697,8 +1697,8 @@ export default function HomePage() {
                     {/* 桌面端提示设置折叠面板 */}
                     <div
                         id="mask-settings-panel"
-                        className={`hidden md:block overflow-hidden transition-all duration-300 ${
-                            showMaskSettingsDesktop ? 'max-h-[280px] opacity-100 mb-4' : 'max-h-0 opacity-0'
+                        className={`hidden md:block relative z-[220] transition-all duration-300 ${
+                            showMaskSettingsDesktop ? 'max-h-[520px] overflow-visible opacity-100 mb-4' : 'max-h-0 overflow-hidden opacity-0'
                         }`}
                         aria-hidden={!showMaskSettingsDesktop}
                     >
