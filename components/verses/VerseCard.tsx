@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
 import { CardSize } from '@/types/common';
-import { Star, BookOpen } from 'lucide-react';
+import { Star, BookOpen, Eye } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { maskVerseText } from '@/lib/utils';
@@ -145,17 +145,24 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             </div>
 
             {/* 经文内容 */}
-            <p
-                className={`
-            ${textSizes[size]}
-            text-gray-900 dark:text-gray-100 font-medium leading-[1.85] font-chinese
-            flex-1
-            transition-opacity duration-200
-            break-words overflow-wrap-anywhere
-          `}
-            >
-                {displayText}
-            </p>
+            <div className="relative flex-1">
+                {!isRevealed && (
+                    <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-gold-200/80 bg-gold-50/75 px-2.5 py-1 text-[11px] font-medium text-gold-700 dark:border-gold-800/70 dark:bg-gold-900/20 dark:text-gold-300 font-chinese">
+                        <Eye className="h-3 w-3" />
+                        方塊是遮字 · 點擊顯示全文
+                    </span>
+                )}
+                <p
+                    className={`
+              ${textSizes[size]}
+              text-gray-900 dark:text-gray-100 font-medium leading-[1.85] font-chinese
+              transition-opacity duration-200
+              break-words overflow-wrap-anywhere
+            `}
+                >
+                    {displayText}
+                </p>
+            </div>
 
             {/* 底部信息栏 */}
             <div className="mt-4 pt-3 border-t border-bible-200/70 dark:border-gray-700/80 flex items-center justify-between">

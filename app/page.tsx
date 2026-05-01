@@ -1721,7 +1721,7 @@ export default function HomePage() {
                                         <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
                                             {showAllContent
                                                 ? '閱讀模式：完整顯示經文。'
-                                                : '背誦模式：點擊卡片查看完整經文。'}
+                                                : '方塊不是亂碼，是背誦遮字；點卡片可顯示全文。'}
                                         </span>
                                     </div>
                                 </div>
@@ -2058,17 +2058,34 @@ export default function HomePage() {
                             </div>
                         </div>
                     ) : isSearching ? (
-                        <div className="text-center py-20">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-bible-100 dark:bg-gray-700 rounded-lg">
-                                <div className="w-4 h-4 border-2 border-bible-400 dark:border-bible-300 border-t-transparent rounded-full animate-spin"></div>
-                                <span className="text-sm text-bible-600 dark:text-bible-300 font-chinese">搜索中...</span>
+                        <div className="px-4 py-16">
+                            <div className="mx-auto max-w-md rounded-[1.5rem] border border-bible-200/70 bg-white/70 p-6 text-center shadow-[0_18px_45px_rgba(120,53,15,0.08)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/62 dark:shadow-none">
+                                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-bible-100 text-bible-700 dark:bg-gray-800 dark:text-bible-300">
+                                    <div className="h-5 w-5 rounded-full border-2 border-bible-400 border-t-transparent animate-spin dark:border-bible-300 dark:border-t-transparent" />
+                                </div>
+                                <p className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">正在翻找经文索引</p>
+                                <p className="mt-1 text-xs text-bible-500 dark:text-bible-400 font-chinese">引用会即时命中，全文搜索稍等半拍。</p>
                             </div>
                         </div>
                     ) : searchQuery && searchResults.length === 0 && !isSearching ? (
-                        <div className="text-center py-20">
-                            <p className="text-bible-600 dark:text-bible-400 font-chinese">
-                                {`未找到与「${searchQuery}」相关的经文`}
-                            </p>
+                        <div className="px-4 py-16">
+                            <div className="mx-auto max-w-lg rounded-[1.5rem] border border-bible-200/70 bg-white/70 p-6 text-center shadow-[0_18px_45px_rgba(120,53,15,0.08)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/62 dark:shadow-none">
+                                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-bible-100 text-xl text-bible-700 dark:bg-gray-800 dark:text-bible-300">⌕</div>
+                                <p className="text-sm font-semibold text-bible-800 dark:text-bible-200 font-chinese">沒有找到「{searchQuery}」</p>
+                                <p className="mt-1 text-xs text-bible-500 dark:text-bible-400 font-chinese">可以試試引用、繁簡另一種寫法，或拼音，例如 約3:16 / 神愛世人 / yuehan。</p>
+                                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                                    {(language === 'traditional' ? ['約3:16', '神愛世人', 'yuehan'] : ['约3:16', '神爱世人', 'yuehan']).map((example) => (
+                                        <button
+                                            key={example}
+                                            type="button"
+                                            onClick={() => handleSearchChange(example)}
+                                            className="rounded-full border border-bible-200 bg-white/85 px-3 py-1.5 text-xs text-bible-700 transition hover:border-bible-400 hover:bg-bible-50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-bible-200 dark:hover:bg-gray-700 font-chinese"
+                                        >
+                                            {example}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     ) : displayVerses.length > 0 ? (
                         <>
@@ -2096,61 +2113,61 @@ export default function HomePage() {
                     )}
                 </div>
 
-                {/* iOS App 推广区块 - Mini版 */}
+                {/* iOS App 推广区块 - quiet card */}
                 {showAppPromo && (
-                    <div className="max-w-7xl mx-auto px-4 py-6 mt-4 animate-fade-in">
-                        <div className="relative bg-gradient-to-r from-bible-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-xl shadow-md border border-bible-200 dark:border-gray-600 overflow-hidden">
+                    <div className="relative z-[1] mx-auto mt-3 max-w-7xl px-4 py-4 animate-fade-in">
+                        <div className="relative overflow-hidden rounded-[1.35rem] border border-bible-200/70 bg-white/48 shadow-[0_12px_34px_rgba(120,53,15,0.06)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/42 dark:shadow-none">
                             {/* 关闭按钮 */}
                             <button
                                 onClick={handleDismissAppPromo}
-                                className="absolute top-2 right-2 p-1.5 hover:bg-bible-200/50 dark:hover:bg-gray-600 rounded-lg transition-colors z-10"
+                                className="absolute right-2.5 top-2.5 z-10 rounded-full p-1.5 text-bible-400 transition hover:bg-bible-100 hover:text-bible-700 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                                 title="关闭推广"
                                 aria-label="关闭心版推广"
                             >
-                                <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                <X className="w-4 h-4" />
                             </button>
 
                             <a
                                 href="https://apps.apple.com/app/6744570052"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="block p-4 md:p-5 hover:bg-bible-100/30 dark:hover:bg-gray-700/30 transition-colors"
+                                className="group block p-3.5 pr-10 transition hover:bg-white/42 dark:hover:bg-gray-800/40 md:p-4"
                             >
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3 md:gap-4">
                                     {/* Logo */}
                                     <div className="flex-shrink-0">
-                                        <div className="w-14 h-14 md:w-16 md:h-16 bg-white dark:bg-gray-700 rounded-[18%] shadow-md flex items-center justify-center p-2.5 overflow-hidden">
+                                        <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-bible-200/70 bg-white/80 p-2 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:h-12 md:w-12">
                                             <Image
                                                 src="/xinban-logo.jpg"
                                                 alt="心版 App Logo"
-                                                width={64}
-                                                height={64}
+                                                width={48}
+                                                height={48}
                                                 loading="lazy"
                                                 quality={85}
-                                                className="w-full h-full object-contain"
+                                                className="h-full w-full object-contain"
                                             />
                                         </div>
                                     </div>
 
                                     {/* 内容 */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h4 className="text-lg md:text-xl font-bold text-bible-800 dark:text-bible-200 font-chinese">心版</h4>
-                                            <span className="px-1.5 py-0.5 bg-bible-500 text-white text-[10px] font-semibold rounded">iOS</span>
-                                            <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="mb-0.5 flex items-center gap-2">
+                                            <h4 className="font-bold text-bible-800 dark:text-bible-200 font-chinese">心版</h4>
+                                            <span className="rounded-full bg-bible-100 px-2 py-0.5 text-[10px] font-semibold text-bible-700 dark:bg-gray-800 dark:text-bible-300">iOS</span>
+                                            <div className="hidden items-center gap-1 text-xs text-bible-500 dark:text-gray-400 sm:flex">
                                                 <span>⭐</span>
                                                 <span className="font-medium">5.0</span>
                                             </div>
                                         </div>
-                                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 font-chinese line-clamp-2">
-                                            將經文系在指頭上，刻在心版上 · 主屏幕小組件 · 雙語對照 · 免費下載
+                                        <p className="line-clamp-1 text-xs text-bible-600 dark:text-gray-400 font-chinese md:text-sm">
+                                            主屏幕小組件 · 雙語對照 · 把經文放在每天第一眼
                                         </p>
                                     </div>
 
                                     {/* 按钮 */}
-                                    <div className="flex-shrink-0 hidden md:block">
-                                        <div className="px-4 py-2 bg-bible-600 hover:bg-bible-700 text-white text-sm font-semibold rounded-lg transition-colors font-chinese whitespace-nowrap">
-                                            前往 App Store →
+                                    <div className="hidden flex-shrink-0 md:block">
+                                        <div className="rounded-full border border-bible-300/70 px-3.5 py-2 text-xs font-semibold text-bible-700 transition group-hover:border-bible-500 group-hover:bg-bible-50 dark:border-gray-700 dark:text-bible-300 dark:group-hover:bg-gray-800 font-chinese whitespace-nowrap">
+                                            App Store →
                                         </div>
                                     </div>
                                 </div>
