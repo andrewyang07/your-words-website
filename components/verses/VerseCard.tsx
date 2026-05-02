@@ -4,10 +4,12 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
 import { CardSize } from '@/types/common';
-import { Star, BookOpen } from 'lucide-react';
+import { Star, BookOpen, Share2 } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { maskVerseText } from '@/lib/utils';
+import { encodeVerseRef } from '@/lib/bibleBookMapping';
+import { buildShareUrl, shareOrCopy } from '@/lib/shareUtils.mjs';
 import { getVerseNumericId, sendStats } from '@/lib/statsUtils';
 
 interface VerseCardProps {
@@ -22,6 +24,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     const { isFavorite, toggleFavorite } = useFavoritesStore();
     const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
     const [isRevealed, setIsRevealed] = useState(defaultRevealed);
+    const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
     const isFav = isFavorite(verse.id);
 
     // 当 defaultRevealed 改变时，更新 isRevealed
@@ -41,16 +44,16 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     }, [verse.id, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax]);
 
     const sizeClasses = {
-        small: 'p-4 min-h-[120px]',
-        medium: 'p-6 min-h-[160px]',
-        large: 'p-8 min-h-[200px]',
+        small: 'p-4 sm:p-4 min-h-[120px]',
+        medium: 'p-5 sm:p-6 min-h-[160px]',
+        large: 'p-6 sm:p-8 min-h-[200px]',
     };
 
     // 统一字体大小，提升易读性
     const textSizes = {
-        small: 'text-base',
-        medium: 'text-base',
-        large: 'text-base',
+        small: 'text-[17px] sm:text-base',
+        medium: 'text-[17px] sm:text-base',
+        large: 'text-[17px] sm:text-base',
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
@@ -91,6 +94,28 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         }
     };
 
+    const handleShareVerse = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            const bookKey = verse.bookKey || verse.id.split('-').slice(0, -2).join('-');
+            const encoded = encodeVerseRef(bookKey, verse.chapter, verse.verse);
+            const url = buildShareUrl({ origin: window.location.origin, encoded });
+            const result = await shareOrCopy({
+                title: `${verse.book} ${verse.chapter}:${verse.verse}`,
+                text: verse.text,
+                url,
+                navigatorRef: navigator,
+            });
+
+            if (result === 'copied' || result === 'shared') {
+                setShareStatus(result);
+                window.setTimeout(() => setShareStatus('idle'), 1800);
+            }
+        } catch {
+            setShareStatus('idle');
+        }
+    };
+
     // 显示预览文本或完整文本
     const displayText = isRevealed ? verse.text : maskVerseText(verse.text, maskMode, visibleChars);
 
@@ -98,16 +123,15 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         <div
             className={`
         ${sizeClasses[size]}
-        bg-white dark:bg-gray-800 rounded-xl shadow-md
+        liquid-glass rounded-[1.4rem]
         cursor-pointer
-        border-2 border-bible-200 dark:border-gray-700
-        [@media(hover:hover)]:hover:border-bible-500 [@media(hover:hover)]:dark:hover:border-bible-400
-        [@media(hover:hover)]:hover:shadow-[0_0_0_2px_rgba(190,158,93,0.3)]
+        [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-stone-900/20 [@media(hover:hover)]:dark:hover:border-white/20
+        [@media(hover:hover)]:hover:bg-white/72 [@media(hover:hover)]:dark:hover:bg-white/[0.065]
         flex flex-col justify-between
-        relative
+        relative overflow-hidden
         touch-manipulation
         transition-all duration-200
-        active:scale-[0.98]
+        active:scale-[0.985]
         focus:outline-none focus:ring-2 focus:ring-bible-500 dark:focus:ring-bible-400
       `}
             onClick={handleCardClick}
@@ -121,14 +145,14 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             {/* 经文引用 */}
             <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                    <span className="text-bible-600 dark:text-bible-400 font-medium font-chinese text-sm">
+                    <span className="inline-flex items-center rounded-full border border-stone-900/10 bg-white/45 px-2.5 py-1 text-stone-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-stone-300 font-medium font-chinese text-sm">
                         {verse.book} {verse.chapter}:{verse.verse}
                     </span>
                 </div>
                 {/* 收藏星标 */}
                 <button
                     onClick={handleToggleFavorite}
-                    className="transition-transform hover:scale-110 p-2 -m-2 touch-manipulation"
+                    className="-m-1 rounded-full p-2 text-stone-400 transition-all hover:scale-105 hover:bg-stone-900/5 dark:text-stone-500 dark:hover:bg-white/10 touch-manipulation"
                     title={isFav ? '取消收藏' : '收藏'}
                     aria-label={
                         isFav ? `取消收藏 ${verse.book} ${verse.chapter}:${verse.verse}` : `收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
@@ -137,40 +161,56 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 >
                     <Star
                         className={`w-5 h-5 transition-colors ${
-                            isFav ? 'text-gold-500 fill-gold-500 dark:text-gold-400 dark:fill-gold-400' : 'text-gray-300 dark:text-gray-600'
+                            isFav ? 'text-amber-600 fill-amber-600 dark:text-amber-300 dark:fill-amber-300' : 'text-stone-300 dark:text-stone-600'
                         }`}
                     />
                 </button>
             </div>
 
             {/* 经文内容 */}
-            <p
-                className={`
-            ${textSizes[size]}
-            text-gray-800 dark:text-gray-100 font-medium leading-relaxed font-chinese
-            flex-1
-            transition-opacity duration-200
-            break-words overflow-wrap-anywhere
-          `}
-            >
-                {displayText}
-            </p>
+            <div className="relative flex-1">
+                <p
+                    className={`
+              ${textSizes[size]}
+              text-stone-900 dark:text-stone-100 font-normal leading-[2.05] sm:leading-[1.9] font-chinese
+              transition-opacity duration-200
+              break-words overflow-wrap-anywhere
+            `}
+                >
+                    {displayText}
+                </p>
+            </div>
 
             {/* 底部信息栏 */}
-            <div className="mt-3 pt-2 border-t border-bible-100 dark:border-gray-700 flex items-center justify-between">
-                <span className="text-xs text-bible-500 dark:text-gray-400 font-chinese">{verse.testament === 'old' ? '旧约' : '新约'}</span>
+            <div className="mt-4 flex items-center justify-between border-t border-stone-900/10 pt-3 dark:border-white/10">
+                <span className="rounded-full bg-stone-900/[0.035] px-2 py-1 text-[11px] text-stone-500 dark:bg-white/[0.055] dark:text-stone-400 font-chinese">
+                    {verse.testament === 'old' ? '旧约' : '新约'}
+                </span>
 
-                {/* 查看整章按钮 */}
-                <button
-                    onClick={handleViewInBible}
-                    className="flex items-center gap-1 px-2 py-1 text-xs text-bible-600 dark:text-bible-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-bible-50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation min-h-[44px] min-w-[44px] justify-center"
-                    title="查看本章所有经文"
-                    aria-label={`查看 ${verse.book} 第${verse.chapter}章所有经文`}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                    <BookOpen className="w-3 h-3" />
-                    <span className="font-chinese">查看整章</span>
-                </button>
+                <div className="flex items-center gap-1.5">
+                    <button
+                        onClick={handleShareVerse}
+                        className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded px-2 py-1 text-xs text-stone-500 transition-colors hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-50 touch-manipulation"
+                        title={shareStatus === 'idle' ? '分享经文' : shareStatus === 'copied' ? '链接已复制' : '已打开分享'}
+                        aria-label={`分享 ${verse.book} ${verse.chapter}:${verse.verse}`}
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
+                    >
+                        <Share2 className="w-3 h-3" />
+                        <span className="font-chinese">{shareStatus === 'copied' ? '已复制' : shareStatus === 'shared' ? '已分享' : '分享'}</span>
+                    </button>
+
+                    {/* 查看整章按钮 */}
+                    <button
+                        onClick={handleViewInBible}
+                        className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded px-2 py-1 text-xs text-stone-500 transition-colors hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-50 touch-manipulation"
+                        title="查看本章所有经文"
+                        aria-label={`查看 ${verse.book} 第${verse.chapter}章所有经文`}
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
+                    >
+                        <BookOpen className="w-3 h-3" />
+                        <span className="font-chinese">查看整章</span>
+                    </button>
+                </div>
             </div>
         </div>
     );

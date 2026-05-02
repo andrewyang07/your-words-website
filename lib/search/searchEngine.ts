@@ -140,12 +140,18 @@ class SearchEngine {
     }
   }
 
-  private async addDocsInChunks(docs: DocRecord[], chunkSize = 2000): Promise<void> {
+  private async addDocsInChunks(docs: DocRecord[], chunkSize = 350): Promise<void> {
     if (!this.miniSearch) return;
     for (let i = 0; i < docs.length; i += chunkSize) {
       this.miniSearch.addAll(docs.slice(i, i + chunkSize));
       if (i + chunkSize < docs.length) {
-        await new Promise<void>(r => setTimeout(r, 0));
+        await new Promise<void>((resolve) => {
+          if (typeof requestIdleCallback !== 'undefined') {
+            requestIdleCallback(() => resolve(), { timeout: 120 });
+          } else {
+            setTimeout(resolve, 0);
+          }
+        });
       }
     }
   }

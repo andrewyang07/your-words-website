@@ -213,15 +213,15 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed top-[50vh] bottom-0 left-0 right-0 z-30 bg-white dark:bg-gray-800 shadow-2xl border-t-2 border-bible-300 dark:border-gray-600 flex flex-col"
+                        className="fixed top-[50vh] bottom-0 left-0 right-0 z-[300] overflow-visible bg-white dark:bg-gray-800 shadow-2xl border-t-2 border-bible-300 dark:border-gray-600 flex flex-col"
                     >
                         {/* 头部 - 导航控制 */}
                         <div className="flex flex-col gap-2 p-2 md:p-4 border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900">
                             <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="flex flex-wrap items-center gap-2">
+                                <div className="relative z-[320] flex flex-wrap items-center gap-2 overflow-visible">
                                     {/* 书卷选择器 */}
                                     <Listbox value={currentBook} onChange={handleBookChange}>
-                                        <div className="relative">
+                                        <div className="relative z-[330] overflow-visible">
                                             <Listbox.Button className="min-h-[40px] md:min-h-[44px] px-2.5 md:px-3 py-1.5 md:py-2 bg-white dark:bg-gray-700 border border-bible-300 dark:border-gray-600 rounded-lg text-xs md:text-sm font-chinese text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-600 transition-colors touch-manipulation">
                                                 {bookDisplayName || currentBook}
                                             </Listbox.Button>
@@ -231,7 +231,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                 leaveFrom="opacity-100"
                                                 leaveTo="opacity-0"
                                             >
-                                                <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-48 overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                                <Listbox.Options className="absolute z-[9999] mt-2 max-h-[min(24rem,60vh)] w-48 overflow-auto rounded-2xl border border-stone-900/10 bg-white py-1 shadow-[0_24px_70px_rgba(68,64,60,0.24)] ring-1 ring-black/5 focus:outline-none dark:border-white/10 dark:bg-gray-950 scrollbar-thin">
                                                     {allBooks.map((book) => (
                                                         <Listbox.Option
                                                             key={book.key}
@@ -254,7 +254,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
 
                                     {/* 章节选择器 */}
                                     <Listbox value={currentChapter} onChange={handleChapterChange}>
-                                        <div className="relative">
+                                        <div className="relative z-[330] overflow-visible">
                                             <Listbox.Button className="min-h-[44px] min-w-[60px] px-3 py-2 bg-white dark:bg-gray-700 border border-bible-300 dark:border-gray-600 rounded-lg text-sm md:text-base font-chinese text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-600 transition-colors touch-manipulation">
                                                 第 {currentChapter} 章
                                             </Listbox.Button>
@@ -264,7 +264,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                 leaveFrom="opacity-100"
                                                 leaveTo="opacity-0"
                                             >
-                                                <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-32 overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                                <Listbox.Options className="absolute z-[9999] mt-2 max-h-[min(24rem,60vh)] w-32 overflow-auto rounded-2xl border border-stone-900/10 bg-white py-1 shadow-[0_24px_70px_rgba(68,64,60,0.24)] ring-1 ring-black/5 focus:outline-none dark:border-white/10 dark:bg-gray-950 scrollbar-thin">
                                                     {Array.from({ length: maxChapter }, (_, i) => i + 1).map((ch) => (
                                                         <Listbox.Option
                                                             key={ch}

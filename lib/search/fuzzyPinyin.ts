@@ -78,7 +78,7 @@ export function buildPinyinIndex(
 export function buildPinyinIndexAsync(
   chinese: Record<string, Record<string, Record<string, string>>>,
   onComplete: (index: PinyinIndex) => void,
-  chunkSize = 500
+  chunkSize = 150
 ): void {
   const exact = new Map<string, string>();
   const fuzzy = new Map<string, string>();

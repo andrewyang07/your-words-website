@@ -64,7 +64,7 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50"
+                        className="fixed inset-0 z-[10000] bg-black/50 dark:bg-black/70"
                         onClick={onClose}
                     />
 
@@ -73,7 +73,7 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
                         animate={{ x: 0 }}
                         exit={{ x: '-100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed left-0 top-0 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-800 shadow-2xl z-50 flex flex-col"
+                        className="fixed left-0 top-0 z-[10001] flex h-full w-80 max-w-[85vw] flex-col bg-white shadow-2xl dark:bg-gray-800"
                     >
                         {/* 头部 */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-bible-200 dark:border-gray-700">

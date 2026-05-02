@@ -23,7 +23,7 @@ export default function ContextViewer() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50"
+            className="fixed inset-0 z-[10000] bg-black/50 dark:bg-black/70"
             onClick={() => setContextVerse(null)}
           />
 
@@ -33,7 +33,7 @@ export default function ContextViewer() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed inset-x-4 top-[10%] mx-auto max-w-xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl z-50 max-h-[80vh] overflow-hidden flex flex-col"
+            className="fixed inset-x-4 top-[10%] z-[10001] mx-auto flex max-h-[80vh] max-w-xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-bible-200 dark:border-gray-700">
