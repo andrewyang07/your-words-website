@@ -417,7 +417,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                         <div className="flex min-h-[52px] items-center justify-between gap-3 border-t border-stone-900/10 bg-white/65 p-2.5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035] md:p-3">
                             {/* 左侧：选择提示 */}
                             <div className="font-chinese text-xs text-stone-500 dark:text-stone-400 md:text-sm">
-                                {selectedVerses.size > 0 ? `已選 ${selectedVerses.size} 節` : '點擊经文可多選'}
+                                {selectedVerses.size > 0 ? `已選 ${selectedVerses.size} 節，可批量插入` : '點擊經文多選，或用右側按鈕插入單節'}
                             </div>
 
                             {/* 右侧：操作按钮 */}

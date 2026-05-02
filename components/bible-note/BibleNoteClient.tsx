@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search, Loader2, Check, AlertCircle, MoreHorizontal } from 'lucide-react';
@@ -8,7 +8,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import PageHeader from '@/components/layout/PageHeader';
-import NoteEditor from './NoteEditor';
+import NoteEditor, { type NoteEditorHandle } from './NoteEditor';
 import UsageGuide from './UsageGuide';
 import VerseReferenceList from './VerseReferenceList';
 import OcrImporter from './OcrImporter';
@@ -27,6 +27,7 @@ const ChapterViewer = dynamic(() => import('./ChapterViewer'), {
 export default function BibleNoteClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const editorRef = useRef<NoteEditorHandle | null>(null);
     const { theme, setTheme, language, setLanguage } = useAppStore();
     const [content, setContent] = useState('');
     const [currentNoteId, setCurrentNoteId] = useState<string | null>(null);
@@ -160,8 +161,9 @@ export default function BibleNoteClient() {
         const allRefs = parseVerseReferences(content);
         const seen = new Set<string>();
         return allRefs.filter((ref) => {
-            if (seen.has(ref.original)) return false;
-            seen.add(ref.original);
+            const key = `${ref.book}-${ref.chapter}-${ref.startVerse}-${ref.endVerse ?? ref.startVerse}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
             return true;
         });
     }, [content]);
@@ -297,8 +299,11 @@ export default function BibleNoteClient() {
                 })
                 .join('');
 
-            setContent((prevContent) => prevContent + insertText);
-            showToast(`已插入 ${verses.length} 節經文`);
+            const insertedAtCursor = editorRef.current?.insertMarkdownAtCursor(insertText) ?? false;
+            if (!insertedAtCursor) {
+                setContent((prevContent) => prevContent + insertText);
+            }
+            showToast(insertedAtCursor ? `已插入 ${verses.length} 節到光標位置` : `已添加 ${verses.length} 節到筆記末尾`);
             setChapterViewerState({ isOpen: false, book: '', chapter: 0 });
         },
         [showToast]
@@ -322,8 +327,11 @@ export default function BibleNoteClient() {
                 }
             }
 
-            setContent((prev) => prev + insertText);
-            showToast(`已插入 ${ocrRefs.length} 条 OCR 识别引用`);
+            const insertedAtCursor = editorRef.current?.insertMarkdownAtCursor(insertText) ?? false;
+            if (!insertedAtCursor) {
+                setContent((prev) => prev + insertText);
+            }
+            showToast(insertedAtCursor ? `已插入 ${ocrRefs.length} 条 OCR 引用到光标位置` : `已添加 ${ocrRefs.length} 条 OCR 引用到笔记末尾`);
         },
         [showToast]
     );
@@ -606,6 +614,7 @@ export default function BibleNoteClient() {
                     <div className={`lg:col-span-2 ${activeTab === 'edit' ? 'block' : 'hidden lg:block'}`}>
                         <div className="min-h-[520px] overflow-hidden rounded-[1.75rem] border border-stone-900/10 bg-white/78 shadow-[0_28px_80px_rgba(68,64,60,0.09)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
                             <NoteEditor
+                                ref={editorRef}
                                 content={content}
                                 onChange={setContent}
                                 onExpandVerse={getVerseText}

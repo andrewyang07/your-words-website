@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
@@ -25,7 +25,11 @@ interface NoteEditorProps {
   onExpandVerse?: (book: string, chapter: number, verse: number) => Promise<string | null>;
 }
 
-export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEditorProps) {
+export interface NoteEditorHandle {
+  insertMarkdownAtCursor: (markdown: string) => boolean;
+}
+
+const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function NoteEditor({ content, onChange, onExpandVerse }, ref) {
   const [isReady, setIsReady] = useState(false);
   const contentRef = useRef(content);
   const onChangeRef = useRef(onChange);
@@ -131,6 +135,27 @@ export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEdi
       editor.commands.setContent(content);
     }
   }, [editor, isReady, content]);
+
+  // Parent components use this to insert scripture from the chapter drawer
+  // at the current writing position. If the editor is not ready, parent falls
+  // back to appending at the end of the note.
+  useImperativeHandle(ref, () => ({
+    insertMarkdownAtCursor(markdown: string) {
+      if (!editor || !isReady) return false;
+
+      const { from } = editor.state.selection;
+      const before = editor.state.doc.textBetween(Math.max(0, from - 30), from, '\n', '\n');
+      const after = editor.state.doc.textBetween(from, Math.min(editor.state.doc.content.size, from + 30), '\n', '\n');
+      const looksInsideReference = /@[^\s\n]*$/.test(before) || (/[^\s\n]*$/.test(before) && /^[\w\u4e00-\u9fff:：\d]+/.test(after) && /[\w\u4e00-\u9fff]$/.test(before));
+      if (looksInsideReference) return false;
+
+      editor.chain().focus().insertContent(markdown).run();
+      const md = (editor.storage as any).markdown.getMarkdown();
+      contentRef.current = md;
+      onChangeRef.current(md);
+      return true;
+    },
+  }), [editor, isReady]);
 
   if (!editor) {
     return (
@@ -260,7 +285,7 @@ export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEdi
       <EditorContent editor={editor} className="flex-1 overflow-y-auto" />
     </div>
   );
-}
+});
 
 function BubbleButton({
   onClick,
@@ -287,3 +312,5 @@ function BubbleButton({
     </button>
   );
 }
+
+export default NoteEditor;
