@@ -24,16 +24,16 @@ export default function VerseCard({
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-bible-50 dark:bg-gray-700 rounded-lg p-3 border border-bible-200 dark:border-gray-600 hover:border-bible-400 dark:hover:border-bible-500 transition-colors"
+            className="rounded-2xl border border-stone-900/10 bg-stone-50/70 p-3 transition-colors hover:border-amber-500/30 hover:bg-white/75 dark:border-white/10 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]"
         >
             {/* 经文引用标题 */}
             <div className="flex items-center justify-between mb-1.5">
-                <h4 className="font-semibold text-bible-700 dark:text-bible-300 font-chinese">
+                <h4 className="font-chinese text-sm font-semibold text-stone-900 dark:text-stone-100">
                     {reference}
                 </h4>
                 <button
                     onClick={onViewChapter}
-                    className="flex items-center gap-1 px-2 py-1 text-xs bg-bible-500 hover:bg-bible-600 text-white rounded transition-colors touch-manipulation min-h-[32px] shadow-sm"
+                    className="flex min-h-[32px] items-center gap-1 rounded-full border border-stone-900/10 bg-white/80 px-2 py-1 text-xs text-stone-600 shadow-sm transition-colors hover:bg-white hover:text-stone-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-stone-300 dark:hover:bg-white/[0.1] touch-manipulation"
                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                     title={`查看 ${book} 第 ${chapter} 章`}
                     aria-label={`查看 ${book} 第 ${chapter} 章`}
@@ -45,7 +45,7 @@ export default function VerseCard({
 
             {/* 经文内容 */}
             {text ? (
-                <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed font-chinese font-medium">
+                <p className="font-chinese text-sm font-medium leading-relaxed text-stone-700 dark:text-stone-200">
                     {text}
                 </p>
             ) : (

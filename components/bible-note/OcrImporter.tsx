@@ -134,12 +134,12 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
         <div className="relative z-[220] overflow-visible">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-white/[0.08] touch-manipulation"
                 title="OCR 识别并插入经文引用（Beta）"
                 aria-label="OCR 识别并插入经文引用"
             >
-                <ScanText className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                <span className="hidden sm:inline text-sm font-chinese text-bible-700 dark:text-bible-300">OCR</span>
+                <ScanText className="h-4 w-4 text-stone-500 dark:text-stone-400" />
+                <span className="font-chinese">OCR 识别截图</span>
             </button>
 
             {isOpen && (

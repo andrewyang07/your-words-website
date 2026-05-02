@@ -70,7 +70,7 @@
     float: left;
     pointer-events: none;
     height: 0;
-    @apply text-bible-400 dark:text-gray-500 font-chinese;
+    @apply text-stone-400 dark:text-stone-500 font-chinese;
 }
 
 .ProseMirror h1 {

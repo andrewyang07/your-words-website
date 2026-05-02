@@ -40,7 +40,7 @@ export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEdi
         heading: { levels: [1, 2, 3] },
       }),
       Placeholder.configure({
-        placeholder: '開始記錄你的靈修筆記…\n\n輸入 @ 搜索經文，輸入 / 查看命令',
+        placeholder: '開始記錄今天的靈修筆記…\n\n輸入 @ 引用經文，輸入 / 打開命令',
       }),
       Markdown.configure({
         html: false,
@@ -104,7 +104,7 @@ export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEdi
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[400px] px-6 py-4 font-chinese text-base leading-relaxed',
+        class: 'prose prose-stone prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[470px] px-5 py-5 font-chinese text-base leading-8 md:px-8 md:py-7',
       },
     },
     onUpdate: ({ editor }) => {
@@ -156,7 +156,7 @@ export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEdi
       <BubbleMenu
         editor={editor}
         options={{ placement: 'top' }}
-        className="flex items-center gap-0.5 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-bible-200 dark:border-gray-700 p-1"
+        className="flex items-center gap-0.5 rounded-full border border-stone-900/10 bg-white/95 p-1 shadow-[0_18px_50px_rgba(68,64,60,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/95"
       >
         <BubbleButton
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -189,7 +189,7 @@ export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEdi
       </BubbleMenu>
 
       {/* Static toolbar */}
-      <div className="border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900 p-2 flex items-center gap-1 overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-1 overflow-x-auto border-b border-stone-900/10 bg-stone-50/70 px-3 py-2 scrollbar-none backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]">
         <BubbleButton
           onClick={() => editor.chain().focus().undo().run()}
           isActive={false}
@@ -204,7 +204,7 @@ export default function NoteEditor({ content, onChange, onExpandVerse }: NoteEdi
         >
           <Redo2 className="w-4 h-4" />
         </BubbleButton>
-        <div className="w-px h-5 bg-bible-200 dark:bg-gray-700 mx-0.5" />
+        <div className="h-5 w-px bg-stone-900/10 dark:bg-white/10 mx-0.5" />
         <BubbleButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
@@ -276,10 +276,10 @@ function BubbleButton({
   return (
     <button
       onClick={onClick}
-      className={`p-1.5 rounded transition-colors ${
+      className={`rounded-full p-1.5 transition-colors ${
         isActive
-          ? 'bg-bible-200 dark:bg-gray-600 text-bible-800 dark:text-bible-200'
-          : 'text-bible-600 dark:text-bible-400 hover:bg-bible-100 dark:hover:bg-gray-700'
+          ? 'bg-stone-950 text-white dark:bg-stone-100 dark:text-stone-950'
+          : 'text-stone-500 hover:bg-white/80 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-white/[0.08] dark:hover:text-stone-100'
       }`}
       title={title}
     >

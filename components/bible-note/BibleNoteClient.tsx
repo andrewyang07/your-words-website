@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search, Loader2, Check, AlertCircle } from 'lucide-react';
+import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search, Loader2, Check, AlertCircle, MoreHorizontal } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
@@ -35,10 +35,11 @@ export default function BibleNoteClient() {
     const [activeTab, setActiveTab] = useState<'edit' | 'references'>('edit');
     const [isExpanding, setIsExpanding] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
+    const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [showSideMenu, setShowSideMenu] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
-    const [chapterViewerState, setChapterViewerState] = useState<{ isOpen: boolean; book: string; chapter: number }>({
+    const [chapterViewerState, setChapterViewerState] = useState<{ isOpen: boolean; book: string; chapter: number; verse?: number }>({
         isOpen: false,
         book: '',
         chapter: 0,
@@ -252,8 +253,8 @@ export default function BibleNoteClient() {
         }
     }, [content, references, showToast]);
 
-    const handleViewChapter = useCallback((book: string, chapter: number) => {
-        setChapterViewerState({ isOpen: true, book, chapter });
+    const handleViewChapter = useCallback((book: string, chapter: number, verse?: number) => {
+        setChapterViewerState({ isOpen: true, book, chapter, verse });
         setLastViewedBook(book);
         setLastViewedChapter(chapter);
     }, []);
@@ -332,94 +333,116 @@ export default function BibleNoteClient() {
             {/* Header */}
             <PageHeader
                 onMenuClick={() => setShowSideMenu(true)}
-                onHelpClick={() => setShowHelp(true)}
-                showHelp={true}
+                showHelp={false}
                 subtitle={
-                    <span className="flex items-center gap-2 text-bible-600 dark:text-bible-400">
+                    <span className="flex items-center gap-2 text-stone-600 dark:text-stone-300">
                         筆記本
-                        <span className="px-2 py-0.5 text-xs bg-gold-500 text-white rounded-full font-bold">BETA</span>
+                        <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[0.65rem] font-semibold tracking-[0.16em] text-amber-700 dark:text-amber-300">BETA</span>
                     </span>
                 }
                 rightContent={
                     <>
                         {saveStatus === 'saving' && (
-                            <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese animate-fade-in flex items-center gap-1">
-                                <Loader2 className="w-3 h-3 animate-spin" />
+                            <span className="hidden items-center gap-1 rounded-full px-2 py-1 text-xs text-stone-500 dark:text-stone-400 sm:flex">
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                保存中
                             </span>
                         )}
                         {saveStatus === 'saved' && (
-                            <span className="text-xs text-green-600 dark:text-green-400 font-chinese animate-fade-in flex items-center gap-1">
-                                <Check className="w-3 h-3" />
+                            <span className="hidden items-center gap-1 rounded-full px-2 py-1 text-xs text-emerald-700 dark:text-emerald-300 sm:flex">
+                                <Check className="h-3 w-3" />
                                 已保存
                             </span>
                         )}
                         {saveStatus === 'error' && (
-                            <span className="text-xs text-red-500 dark:text-red-400 font-chinese animate-fade-in flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" />
+                            <span className="hidden items-center gap-1 rounded-full px-2 py-1 text-xs text-red-600 dark:text-red-300 sm:flex">
+                                <AlertCircle className="h-3 w-3" />
                                 保存失敗
                             </span>
                         )}
 
                         <button
                             onClick={() => setShowNoteList(true)}
-                            className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                            className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-700 transition-colors hover:bg-white/65 dark:text-stone-200 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
                             title="笔记列表"
                             aria-label="打开笔记列表"
                         >
-                            <FileText className="w-4 h-4 md:w-5 md:h-5 text-bible-700 dark:text-bible-300" />
-                            <span className="hidden sm:inline text-sm font-chinese text-bible-700 dark:text-bible-300">笔记</span>
+                            <FileText className="h-4 w-4 md:h-5 md:w-5" />
+                            <span className="hidden text-sm font-chinese sm:inline">笔记</span>
                         </button>
-
-                        <OcrImporter onInsertReferences={handleInsertFromOcr} />
 
                         <div className="relative z-[220] overflow-visible">
                             <button
                                 onClick={() => setShowExportMenu(!showExportMenu)}
                                 disabled={!content}
-                                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
+                                className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-700 transition-colors hover:bg-white/65 disabled:cursor-not-allowed disabled:opacity-45 dark:text-stone-200 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="導出筆記"
                                 aria-label="導出筆記"
                             >
-                                <Download className="w-4 h-4 md:w-5 md:h-5" />
-                                <span className="hidden sm:inline text-sm font-chinese">導出</span>
-                                <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
+                                <Download className="h-4 w-4 md:h-5 md:w-5" />
+                                <span className="hidden text-sm font-chinese sm:inline">導出</span>
+                                <ChevronDown className="h-3 w-3 md:h-4 md:w-4" />
                             </button>
 
                             {showExportMenu && content && (
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setShowExportMenu(false)} />
-                                    <div className="fixed bottom-0 left-0 right-0 z-[9999] w-full rounded-t-2xl border-t border-stone-900/10 bg-white py-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:absolute md:bottom-auto md:left-auto md:right-0 md:mt-2 md:w-48 md:rounded-2xl md:border dark:border-white/10 dark:bg-gray-950 md:py-1">
+                                    <div className="fixed bottom-0 left-0 right-0 z-[9999] w-full rounded-t-2xl border-t border-stone-900/10 bg-white py-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:absolute md:bottom-auto md:left-auto md:right-0 md:mt-2 md:w-52 md:rounded-2xl md:border dark:border-white/10 dark:bg-gray-950 md:py-1">
                                         <button
                                             onClick={handleCopyToClipboard}
-                                            className="w-full flex items-center gap-3 px-4 py-3 md:py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left min-h-[48px] md:min-h-0"
+                                            className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-stone-100 dark:hover:bg-white/[0.08] md:min-h-0 md:py-2"
                                         >
-                                            <Copy className="w-5 h-5 md:w-4 md:h-4 text-bible-600 dark:text-bible-400" />
-                                            <span className="text-base md:text-sm font-chinese text-bible-700 dark:text-bible-300">複製到剪貼板</span>
+                                            <Copy className="h-5 w-5 text-stone-600 dark:text-stone-300 md:h-4 md:w-4" />
+                                            <span className="font-chinese text-base text-stone-700 dark:text-stone-200 md:text-sm">複製到剪貼板</span>
                                         </button>
                                         <button
                                             onClick={handleExportToFile}
-                                            className="w-full flex items-center gap-3 px-4 py-3 md:py-2 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors text-left min-h-[48px] md:min-h-0"
+                                            className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-stone-100 dark:hover:bg-white/[0.08] md:min-h-0 md:py-2"
                                         >
-                                            <FileDown className="w-5 h-5 md:w-4 md:h-4 text-bible-600 dark:text-bible-400" />
-                                            <span className="text-base md:text-sm font-chinese text-bible-700 dark:text-bible-300">下載 MD 文件</span>
+                                            <FileDown className="h-5 w-5 text-stone-600 dark:text-stone-300 md:h-4 md:w-4" />
+                                            <span className="font-chinese text-base text-stone-700 dark:text-stone-200 md:text-sm">下載 MD 文件</span>
                                         </button>
                                     </div>
                                 </>
                             )}
                         </div>
 
-                        <button
-                            onClick={handleClear}
-                            disabled={!content}
-                            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px]"
-                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                            title="清空筆記"
-                            aria-label="清空筆記"
-                        >
-                            <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-                            <span className="hidden sm:inline text-sm font-chinese">清空</span>
-                        </button>
+                        <div className="relative z-[220] overflow-visible">
+                            <button
+                                onClick={() => setShowMoreMenu(!showMoreMenu)}
+                                className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-700 transition-colors hover:bg-white/65 dark:text-stone-200 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                                title="更多笔记工具"
+                                aria-label="更多笔记工具"
+                            >
+                                <MoreHorizontal className="h-4 w-4 md:h-5 md:w-5" />
+                                <span className="hidden text-sm font-chinese sm:inline">更多</span>
+                            </button>
+
+                            {showMoreMenu && (
+                                <>
+                                    <div className="fixed inset-0 z-[9998]" onClick={() => setShowMoreMenu(false)} />
+                                    <div className="fixed bottom-0 left-0 right-0 z-[9999] space-y-1 rounded-t-2xl border-t border-stone-900/10 bg-white p-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:absolute md:bottom-auto md:left-auto md:right-0 md:mt-2 md:w-56 md:rounded-2xl md:border dark:border-white/10 dark:bg-gray-950">
+                                        <OcrImporter onInsertReferences={handleInsertFromOcr} />
+                                        <button
+                                            onClick={() => { setShowHelp(true); setShowMoreMenu(false); }}
+                                            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-white/[0.08]"
+                                        >
+                                            <HelpCircle className="h-4 w-4 text-stone-500 dark:text-stone-400" />
+                                            <span className="font-chinese">使用说明</span>
+                                        </button>
+                                        <button
+                                            onClick={() => { handleClear(); setShowMoreMenu(false); }}
+                                            disabled={!content}
+                                            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-300 dark:hover:bg-red-950/30"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                            <span className="font-chinese">清空当前笔记</span>
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </>
                 }
             />
@@ -545,14 +568,14 @@ export default function BibleNoteClient() {
                 )}
 
                 {/* Mobile tab navigation */}
-                <div className="lg:hidden mb-2">
-                    <div className="flex gap-1 rounded-2xl border border-stone-900/10 bg-white/72 p-1 shadow-[0_18px_46px_rgba(68,64,60,0.08)] dark:border-white/10 dark:bg-white/[0.045]">
+                <div className="lg:hidden mb-3">
+                    <div className="flex gap-1 rounded-full border border-stone-900/10 bg-white/60 p-1 shadow-[0_14px_40px_rgba(68,64,60,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
                         <button
                             onClick={() => setActiveTab('edit')}
                             className={`flex-1 py-1.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[40px] ${
                                 activeTab === 'edit'
-                                    ? 'bg-bible-500 text-white shadow-sm'
-                                    : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
+                                    ? 'bg-stone-950 text-white shadow-sm dark:bg-stone-100 dark:text-stone-950'
+                                    : 'text-stone-600 dark:text-stone-300 hover:bg-white/70 dark:hover:bg-white/[0.08]'
                             }`}
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                         >
@@ -562,8 +585,8 @@ export default function BibleNoteClient() {
                             onClick={() => setActiveTab('references')}
                             className={`flex-1 py-1.5 rounded-lg font-chinese text-sm transition-all relative touch-manipulation min-h-[40px] ${
                                 activeTab === 'references'
-                                    ? 'bg-bible-500 text-white shadow-sm'
-                                    : 'text-bible-700 dark:text-bible-300 hover:bg-bible-100 dark:hover:bg-gray-700'
+                                    ? 'bg-stone-950 text-white shadow-sm dark:bg-stone-100 dark:text-stone-950'
+                                    : 'text-stone-600 dark:text-stone-300 hover:bg-white/70 dark:hover:bg-white/[0.08]'
                             }`}
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                         >
@@ -581,7 +604,7 @@ export default function BibleNoteClient() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     {/* Editor (desktop: 2/3 width) */}
                     <div className={`lg:col-span-2 ${activeTab === 'edit' ? 'block' : 'hidden lg:block'}`}>
-                        <div className="min-h-[400px] overflow-hidden rounded-[1.5rem] border border-stone-900/10 bg-white/72 shadow-[0_24px_70px_rgba(68,64,60,0.10)] dark:border-white/10 dark:bg-white/[0.045]">
+                        <div className="min-h-[520px] overflow-hidden rounded-[1.75rem] border border-stone-900/10 bg-white/78 shadow-[0_28px_80px_rgba(68,64,60,0.09)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
                             <NoteEditor
                                 content={content}
                                 onChange={setContent}
@@ -614,6 +637,7 @@ export default function BibleNoteClient() {
                     onClose={() => setChapterViewerState({ isOpen: false, book: '', chapter: 0 })}
                     book={chapterViewerState.book}
                     chapter={chapterViewerState.chapter}
+                    targetVerse={chapterViewerState.verse}
                     onInsertVerses={handleInsertVerses}
                     onChapterChange={handleChapterChange}
                 />
@@ -623,14 +647,15 @@ export default function BibleNoteClient() {
                     onClick={handleOpenBible}
                     className={`fixed ${
                         chapterViewerState.isOpen
-                            ? 'bottom-[52vh]'
-                            : 'bottom-20 lg:bottom-8'
-                    } right-6 lg:left-8 min-h-[56px] min-w-[56px] lg:min-h-[48px] lg:min-w-[48px] bg-bible-500 hover:bg-bible-600 active:bg-bible-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-40 flex items-center justify-center touch-manipulation`}
+                            ? 'bottom-[45vh]'
+                            : 'bottom-6 lg:bottom-8'
+                    } right-4 lg:right-8 min-h-[48px] rounded-full border border-stone-900/10 bg-white/78 px-4 text-stone-800 shadow-[0_14px_40px_rgba(68,64,60,0.12)] backdrop-blur-2xl transition-all duration-300 hover:bg-white dark:border-white/10 dark:bg-gray-950/78 dark:text-stone-100 z-40 flex items-center justify-center gap-2 touch-manipulation`}
                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                     title="打開聖經"
                     aria-label="打開聖經查看器"
                 >
-                    <BookOpen className="w-6 h-6 lg:w-5 lg:h-5" />
+                    <BookOpen className="w-5 h-5 text-amber-700 dark:text-amber-300" />
+                    <span className="hidden font-chinese text-sm sm:inline">打開聖經</span>
                 </button>
             </div>
         </div>

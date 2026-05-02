@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { getChapter, getBookMetadata } from '@/lib/verseLoader';
@@ -12,11 +12,12 @@ interface ChapterViewerProps {
     onClose: () => void;
     book: string;
     chapter: number;
+    targetVerse?: number;
     onInsertVerses: (verses: Array<{ book: string; chapter: number; verse: number; text: string }>) => void;
     onChapterChange?: (book: string, chapter: number) => void;
 }
 
-export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsertVerses, onChapterChange }: ChapterViewerProps) {
+export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVerse, onInsertVerses, onChapterChange }: ChapterViewerProps) {
     const [verses, setVerses] = useState<Record<number, string>>({});
     const [loading, setLoading] = useState(false);
     const [isInserting, setIsInserting] = useState(false);
@@ -83,6 +84,15 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                 setLoading(false);
             });
     }, [isOpen, currentBook, currentChapter]);
+
+    // 打开引用整章时定位到触发经文
+    useEffect(() => {
+        if (!isOpen || loading || !targetVerse) return;
+        const timer = window.setTimeout(() => {
+            document.getElementById(`chapter-verse-${targetVerse}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }, 80);
+        return () => window.clearTimeout(timer);
+    }, [isOpen, loading, targetVerse, verses]);
 
     // ESC 键关闭
     useEffect(() => {
@@ -213,16 +223,17 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed top-[50vh] bottom-0 left-0 right-0 z-[300] overflow-visible bg-white dark:bg-gray-800 shadow-2xl border-t-2 border-bible-300 dark:border-gray-600 flex flex-col"
+                        className="fixed top-[45vh] bottom-0 left-0 right-0 z-[300] overflow-visible rounded-t-[1.75rem] border-t border-stone-900/10 bg-[#fbfaf7]/96 shadow-[0_-18px_54px_rgba(68,64,60,0.13)] backdrop-blur-2xl dark:border-white/10 dark:bg-gray-950/96 flex flex-col"
                     >
                         {/* 头部 - 导航控制 */}
-                        <div className="flex flex-col gap-2 p-2 md:p-4 border-b border-bible-200 dark:border-gray-700 bg-bible-50 dark:bg-gray-900">
+                        <div className="flex flex-col gap-2 border-b border-stone-900/10 bg-white/45 p-3 dark:border-white/10 dark:bg-white/[0.035] md:p-4">
+                            <div className="mx-auto h-1 w-10 rounded-full bg-stone-300/80 dark:bg-stone-700" />
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="relative z-[320] flex flex-wrap items-center gap-2 overflow-visible">
                                     {/* 书卷选择器 */}
                                     <Listbox value={currentBook} onChange={handleBookChange}>
                                         <div className="relative z-[330] overflow-visible">
-                                            <Listbox.Button className="min-h-[40px] md:min-h-[44px] px-2.5 md:px-3 py-1.5 md:py-2 bg-white dark:bg-gray-700 border border-bible-300 dark:border-gray-600 rounded-lg text-xs md:text-sm font-chinese text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-600 transition-colors touch-manipulation">
+                                            <Listbox.Button className="min-h-[40px] md:min-h-[44px] rounded-full border border-stone-900/10 bg-white/70 px-3 py-1.5 font-chinese text-xs text-stone-800 transition-colors hover:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:text-stone-100 dark:hover:bg-white/[0.1] md:text-sm">
                                                 {bookDisplayName || currentBook}
                                             </Listbox.Button>
                                             <Transition
@@ -237,10 +248,10 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                             key={book.key}
                                                             value={book.key}
                                                             className={({ active }) =>
-                                                                `min-h-[40px] md:min-h-[44px] cursor-pointer select-none px-3 md:px-4 py-1.5 md:py-2 font-chinese text-xs md:text-sm ${
+                                                                `min-h-[40px] cursor-pointer select-none px-3 py-1.5 font-chinese text-xs md:min-h-[44px] md:px-4 md:py-2 md:text-sm ${
                                                                     active
-                                                                        ? 'bg-bible-100 dark:bg-gray-600 text-bible-900 dark:text-bible-100'
-                                                                        : 'text-bible-700 dark:text-bible-300'
+                                                                        ? 'bg-stone-100 text-stone-950 dark:bg-white/[0.08] dark:text-stone-100'
+                                                                        : 'text-stone-700 dark:text-stone-300'
                                                                 }`
                                                             }
                                                         >
@@ -255,7 +266,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                     {/* 章节选择器 */}
                                     <Listbox value={currentChapter} onChange={handleChapterChange}>
                                         <div className="relative z-[330] overflow-visible">
-                                            <Listbox.Button className="min-h-[44px] min-w-[60px] px-3 py-2 bg-white dark:bg-gray-700 border border-bible-300 dark:border-gray-600 rounded-lg text-sm md:text-base font-chinese text-bible-800 dark:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-600 transition-colors touch-manipulation">
+                                            <Listbox.Button className="min-h-[40px] min-w-[60px] rounded-full border border-stone-900/10 bg-white/70 px-3 py-1.5 font-chinese text-sm text-stone-800 transition-colors hover:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:text-stone-100 dark:hover:bg-white/[0.1] md:min-h-[44px] md:text-base">
                                                 第 {currentChapter} 章
                                             </Listbox.Button>
                                             <Transition
@@ -270,10 +281,10 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                             key={ch}
                                                             value={ch}
                                                             className={({ active }) =>
-                                                                `min-h-[40px] md:min-h-[44px] cursor-pointer select-none px-3 md:px-4 py-1.5 md:py-2 font-chinese text-xs md:text-sm ${
+                                                                `min-h-[40px] cursor-pointer select-none px-3 py-1.5 font-chinese text-xs md:min-h-[44px] md:px-4 md:py-2 md:text-sm ${
                                                                     active
-                                                                        ? 'bg-bible-100 dark:bg-gray-600 text-bible-900 dark:text-bible-100'
-                                                                        : 'text-bible-700 dark:text-bible-300'
+                                                                        ? 'bg-stone-100 text-stone-950 dark:bg-white/[0.08] dark:text-stone-100'
+                                                                        : 'text-stone-700 dark:text-stone-300'
                                                                 }`
                                                             }
                                                         >
@@ -289,48 +300,48 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                     <button
                                         onClick={handlePrevChapter}
                                         disabled={!canGoPrev}
-                                        className="min-h-[44px] min-w-[44px] p-2 bg-bible-100 hover:bg-bible-200 disabled:bg-gray-200 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600 dark:disabled:bg-gray-800 rounded-lg transition-colors touch-manipulation"
+                                        className="min-h-[40px] min-w-[40px] rounded-full border border-stone-900/10 bg-white/60 p-2 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] md:min-h-[44px] md:min-w-[44px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                         title="上一章"
                                         aria-label="上一章"
                                     >
-                                        <ChevronLeft className="w-5 h-5 text-bible-700 dark:text-bible-300" />
+                                        <ChevronLeft className="h-5 w-5 text-stone-600 dark:text-stone-300" />
                                     </button>
                                     <button
                                         onClick={handleNextChapter}
                                         disabled={!canGoNext}
-                                        className="min-h-[44px] min-w-[44px] p-2 bg-bible-100 hover:bg-bible-200 disabled:bg-gray-200 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600 dark:disabled:bg-gray-800 rounded-lg transition-colors touch-manipulation"
+                                        className="min-h-[40px] min-w-[40px] rounded-full border border-stone-900/10 bg-white/60 p-2 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] md:min-h-[44px] md:min-w-[44px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                         title="下一章"
                                         aria-label="下一章"
                                     >
-                                        <ChevronRight className="w-5 h-5 text-bible-700 dark:text-bible-300" />
+                                        <ChevronRight className="h-5 w-5 text-stone-600 dark:text-stone-300" />
                                     </button>
                                 </div>
 
                                 <button
                                     onClick={onClose}
-                                    className="min-h-[44px] min-w-[44px] p-2 hover:bg-bible-200 dark:hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
+                                    className="min-h-[40px] rounded-full px-3 py-2 font-chinese text-sm text-stone-600 transition-colors hover:bg-white/70 dark:text-stone-300 dark:hover:bg-white/[0.08] md:min-h-[44px]"
                                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                     title="關閉"
                                     aria-label="關閉章節查看器"
                                 >
-                                    <X className="w-6 h-6 text-bible-600 dark:text-bible-400" />
+                                    <span>收起整章</span>
                                 </button>
                             </div>
 
-                            <p className="text-xs md:text-sm text-bible-600 dark:text-bible-400 font-chinese">{Object.keys(verses).length} 節經文</p>
+                            <p className="font-chinese text-xs text-stone-500 dark:text-stone-400 md:text-sm">{Object.keys(verses).length} 節經文{targetVerse ? ` · 已定位第 ${targetVerse} 節` : ''}</p>
                         </div>
 
                         {/* 内容区域 */}
-                        <div className="flex-1 overflow-y-auto p-2 md:p-3">
+                        <div className="flex-1 overflow-y-auto p-3 md:p-4">
                             {loading ? (
                                 <div className="flex items-center justify-center py-12">
-                                    <Loader2 className="w-8 h-8 animate-spin text-bible-600 dark:text-bible-400" />
-                                    <span className="ml-3 text-bible-600 dark:text-bible-400 font-chinese text-sm md:text-base">加載中...</span>
+                                    <Loader2 className="h-8 w-8 animate-spin text-stone-500 dark:text-stone-400" />
+                                    <span className="ml-3 font-chinese text-sm text-stone-500 dark:text-stone-400 md:text-base">加載中...</span>
                                 </div>
                             ) : (
-                                <div className="space-y-2">
+                                <div className="mx-auto max-w-5xl space-y-1.5">
                                     {Object.entries(verses)
                                         .sort(([a], [b]) => parseInt(a) - parseInt(b))
                                         .map(([verseNum, verseText]) => {
@@ -342,10 +353,13 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     transition={{ duration: 0.2, delay: num * 0.01 }}
-                                                    className={`min-h-[56px] p-2.5 md:p-3 bg-bible-50 dark:bg-gray-700 rounded-lg border-2 transition-colors cursor-pointer ${
+                                                    id={`chapter-verse-${num}`}
+                                                    className={`group min-h-[48px] rounded-2xl border p-2.5 transition-colors cursor-pointer md:p-3 ${
                                                         isSelected
-                                                            ? 'border-bible-500 dark:border-bible-400 bg-bible-100 dark:bg-gray-600'
-                                                            : 'border-bible-200 dark:border-gray-600'
+                                                            ? 'border-amber-500/60 bg-amber-50/80 dark:border-amber-300/50 dark:bg-amber-950/20'
+                                                            : targetVerse === num
+                                                                ? 'border-amber-500/40 bg-white/85 ring-1 ring-amber-500/20 dark:border-amber-300/40 dark:bg-white/[0.07]'
+                                                                : 'border-stone-900/10 bg-white/55 hover:bg-white/85 dark:border-white/10 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]'
                                                     }`}
                                                     onClick={(e) => {
                                                         // 只有当点击的不是插入按钮时才切换选中状态
@@ -361,17 +375,17 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                             type="checkbox"
                                                             checked={isSelected}
                                                             onChange={() => {}}
-                                                            className="mt-1 w-5 h-5 md:w-4 md:h-4 rounded border-bible-300 text-bible-500 focus:ring-bible-500 pointer-events-none"
+                                                            className="pointer-events-none mt-1 h-5 w-5 rounded border-stone-300 text-amber-600 focus:ring-amber-500 md:h-4 md:w-4"
                                                             aria-label={`選擇第 ${verseNum} 節`}
                                                         />
 
                                                         {/* 节数标记 */}
-                                                        <span className="flex-shrink-0 w-6 h-6 md:w-7 md:h-7 flex items-center justify-center bg-bible-500 text-white rounded-full text-xs md:text-sm font-semibold">
+                                                        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-stone-900 text-xs font-semibold text-white dark:bg-stone-100 dark:text-stone-950 md:h-7 md:w-7 md:text-sm">
                                                             {verseNum}
                                                         </span>
 
                                                         {/* 经文内容 */}
-                                                        <p className="flex-1 text-bible-800 dark:text-bible-100 font-chinese text-base leading-relaxed">
+                                                        <p className="flex-1 font-chinese text-base leading-7 text-stone-800 dark:text-stone-100">
                                                             {verseText}
                                                         </p>
 
@@ -383,13 +397,13 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                                                 handleInsertSingle(num, verseText);
                                                             }}
                                                             disabled={isInserting}
-                                                            className="flex-shrink-0 min-h-[44px] min-w-[44px] md:min-w-0 md:px-3 py-2 bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 text-white rounded-lg transition-colors shadow-sm touch-manipulation flex items-center justify-center gap-1"
+                                                            className="flex min-h-[40px] min-w-[40px] flex-shrink-0 items-center justify-center gap-1 rounded-full border border-stone-900/10 bg-white/80 px-3 py-2 text-stone-700 shadow-sm transition-colors hover:bg-white disabled:opacity-40 dark:border-white/10 dark:bg-white/[0.07] dark:text-stone-100 dark:hover:bg-white/[0.1] md:min-w-0"
                                                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                                             title="插入此節"
                                                             aria-label="插入此節"
                                                         >
-                                                            <Plus className="w-4 h-4 md:w-5 md:h-5" />
-                                                            <span className="hidden md:inline text-xs font-chinese">插入</span>
+                                                            <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                                                            <span className="hidden font-chinese text-xs md:inline">插入</span>
                                                         </button>
                                                     </div>
                                                 </motion.div>
@@ -400,10 +414,10 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                         </div>
 
                         {/* 底部操作栏 */}
-                        <div className="min-h-[52px] p-2.5 md:p-3 border-t border-bible-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between gap-3">
+                        <div className="flex min-h-[52px] items-center justify-between gap-3 border-t border-stone-900/10 bg-white/65 p-2.5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035] md:p-3">
                             {/* 左侧：选择提示 */}
-                            <div className="text-xs md:text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                {selectedVerses.size > 0 ? `已選 ${selectedVerses.size} 節` : '點擊 ☑️ 多選'}
+                            <div className="font-chinese text-xs text-stone-500 dark:text-stone-400 md:text-sm">
+                                {selectedVerses.size > 0 ? `已選 ${selectedVerses.size} 節` : '點擊经文可多選'}
                             </div>
 
                             {/* 右侧：操作按钮 */}
@@ -412,7 +426,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                     <>
                                         <button
                                             onClick={handleClearSelection}
-                                            className="min-h-[44px] px-3 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-bible-700 dark:text-bible-300 rounded-lg transition-colors font-chinese text-xs md:text-sm touch-manipulation"
+                                            className="min-h-[40px] rounded-full border border-stone-900/10 bg-white/70 px-3 py-2 font-chinese text-xs text-stone-600 transition-colors hover:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:text-stone-300 md:text-sm touch-manipulation"
                                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                         >
                                             取消
@@ -420,7 +434,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, onInsert
                                         <button
                                             onClick={handleInsertSelected}
                                             disabled={isInserting}
-                                            className="min-h-[44px] px-3 md:px-4 py-2 bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 text-white rounded-lg transition-colors shadow-sm font-chinese text-xs md:text-sm touch-manipulation flex items-center gap-1"
+                                            className="flex min-h-[40px] items-center gap-1 rounded-full bg-stone-950 px-3 py-2 font-chinese text-xs text-white shadow-sm transition-colors hover:bg-stone-800 disabled:opacity-40 dark:bg-stone-100 dark:text-stone-950 md:px-4 md:text-sm touch-manipulation"
                                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                         >
                                             {isInserting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
