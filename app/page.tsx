@@ -974,9 +974,9 @@ export default function HomePage() {
                 <div className="relative z-[1] mx-auto max-w-6xl px-4 py-3 md:py-4">
                     {/* 标题行 */}
                     <div className="mb-4 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                            <a href="/" className="group flex items-center gap-3 min-w-0 transition-opacity hover:opacity-90" title={language === 'traditional' ? '首頁' : '首页'}>
-                                <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-900/10 bg-white/55 p-1 dark:border-white/10 dark:bg-white/[0.04]">
+                        <div className="flex min-w-0 flex-1 items-center gap-3 overflow-visible">
+                            <a href="/" className="group flex min-w-0 items-center gap-2.5 overflow-visible transition-opacity hover:opacity-90 sm:gap-3" title={language === 'traditional' ? '首頁' : '首页'}>
+                                <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stone-900/10 bg-white/55 p-1 dark:border-white/10 dark:bg-white/[0.04] sm:h-10 sm:w-10">
                                     <Image
                                         src="/logo-light.png"
                                         alt={language === 'traditional' ? '你的話語 Logo' : '你的话语 Logo'}
@@ -986,11 +986,11 @@ export default function HomePage() {
                                         className="h-full w-full rounded-lg object-contain dark:brightness-90 dark:contrast-125"
                                     />
                                 </span>
-                                <span className="min-w-0">
-                                    <h1 className="truncate text-[1.55rem] font-semibold leading-none tracking-[0.08em] text-stone-950 dark:text-stone-50 font-chinese md:text-2xl">
+                                <span className="min-w-0 overflow-visible py-0.5">
+                                    <h1 className="truncate text-[1.32rem] font-semibold leading-[1.22] tracking-[0.05em] text-stone-950 dark:text-stone-50 font-chinese sm:text-[1.55rem] sm:tracking-[0.08em] md:text-2xl">
                                         {language === 'traditional' ? '你的話語' : '你的话语'}
                                     </h1>
-                                    <span className="mt-1 hidden text-[10px] tracking-[0.28em] text-stone-500 dark:text-stone-400 sm:block">
+                                    <span className="mt-0.5 hidden text-[10px] leading-none tracking-[0.28em] text-stone-500 dark:text-stone-400 sm:block">
                                         {language === 'traditional' ? '讀 · 查 · 背' : '读 · 查 · 背'}
                                     </span>
                                 </span>
