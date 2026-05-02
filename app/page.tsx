@@ -33,6 +33,7 @@ import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { Verse, Book } from '@/types/verse';
 import { encodeVerseList, decodeVerseList } from '@/lib/bibleBookMapping';
+import { buildShareUrl, getSharedBannerCopy, getSharedVerseSaveSummary, shareOrCopy } from '@/lib/shareUtils.mjs';
 import { logError } from '@/lib/errorHandler';
 import { shuffleArray } from '@/lib/utils';
 import type { SearchResult } from '@/types/search';
@@ -88,6 +89,7 @@ export default function HomePage() {
     const [showShareBanner, setShowShareBanner] = useState(false);
     const [shareToast, setShareToast] = useState<string | null>(null);
     const [hasAddedAllShared, setHasAddedAllShared] = useState(false); // 是否已一键收藏
+    const [sharedSaveSummary, setSharedSaveSummary] = useState<{ newCount: number; existingCount: number } | null>(null);
 
     // 收藏经文的完整数据
     const [favoritesVersesData, setFavoritesVersesData] = useState<Verse[]>([]);
@@ -594,6 +596,7 @@ export default function HomePage() {
             setSharedVerses([]);
             setSharedVersesData([]);
             setHasAddedAllShared(false); // 重置收藏状态
+            setSharedSaveSummary(null);
             // 清除URL参数
             if (typeof window !== 'undefined') {
                 window.history.replaceState({}, '', window.location.pathname);
@@ -848,12 +851,11 @@ export default function HomePage() {
     const handleShareFavorites = async () => {
         const favoritesList = getFavoritesList();
 
-        if (favoritesList.length === 0) {
-            return;
-        }
+        if (favoritesList.length === 0) return;
 
         if (favoritesList.length > 200) {
-            return; // 按钮应该已经是禁用状态
+            setShareToast(language === 'traditional' ? '收藏太多，請先減少到 200 節以內。' : '收藏太多，请先减少到 200 节以内。');
+            return;
         }
 
         try {
@@ -872,14 +874,22 @@ export default function HomePage() {
                 .filter((v): v is { bookKey: string; chapter: number; verse: number } => v !== null);
 
             const encoded = encodeVerseList(versesToEncode);
-            const shareUrl = `${window.location.origin}${window.location.pathname}?s=${encoded}`;
+            const shareUrl = buildShareUrl({ origin: window.location.origin, pathname: window.location.pathname, encoded });
+            const result = await shareOrCopy({
+                title: language === 'traditional' ? '我的收藏經文' : '我的收藏经文',
+                text: language === 'traditional' ? '這些經文想分享給你。' : '这些经文想分享给你。',
+                url: shareUrl,
+                navigatorRef: navigator,
+            });
 
-            // 立即复制到剪贴板（移动端和桌面端统一处理）
-            await navigator.clipboard.writeText(shareUrl);
-            setShareToast('链接已复制到剪贴板，发送给他人即可查看您的收藏');
+            if (result === 'copied') {
+                setShareToast(language === 'traditional' ? '連結已複製，可直接發給朋友。' : '链接已复制，可直接发给朋友。');
+            } else if (result === 'shared') {
+                setShareToast(language === 'traditional' ? '已打開系統分享。' : '已打开系统分享。');
+            }
         } catch (error) {
             logError('HomePage:handleShareFavorites', error);
-            setShareToast('复制失败，请稍后重试');
+            setShareToast(language === 'traditional' ? '分享失敗，請稍後重試。' : '分享失败，请稍后重试。');
         }
     };
 
@@ -887,9 +897,23 @@ export default function HomePage() {
     const handleAddAllShared = () => {
         // 使用 sharedVersesData（实际加载的经文）的 id，而不是手动拼接
         const verseIds = sharedVersesData.map((v) => v.id);
-        addFavorites(verseIds);
+        const summary = getSharedVerseSaveSummary(verseIds, new Set(getFavoritesList()));
+
+        if (summary.newIds.length > 0) {
+            addFavorites(summary.newIds);
+        }
+
+        setSharedSaveSummary({ newCount: summary.newCount, existingCount: summary.existingCount });
         setHasAddedAllShared(true); // 标记为已收藏
-        setShareToast(`已添加 ${verseIds.length} {language === 'traditional' ? '節' : '节'}经文到收藏`);
+        setShareToast(
+            summary.newCount > 0
+                ? language === 'traditional'
+                    ? `已加入 ${summary.newCount} 節經文。`
+                    : `已加入 ${summary.newCount} 节经文。`
+                : language === 'traditional'
+                  ? '這些經文已在收藏中。'
+                  : '这些经文已在收藏中。'
+        );
         // 不立即清除横幅，让用户看到星星变化
         // 用户可以手动点击"取消"或刷新页面
     };
@@ -906,6 +930,13 @@ export default function HomePage() {
 
     // 使用 getFavoritesList 获取真实的收藏总数（不受当前筛选影响）
     const favoritesCount = getFavoritesList().length;
+    const sharedBannerCopy = getSharedBannerCopy({
+        language,
+        count: sharedVerses.length,
+        added: hasAddedAllShared,
+        newCount: sharedSaveSummary?.newCount,
+        existingCount: sharedSaveSummary?.existingCount,
+    });
 
     // 计算收藏筛选选项的经文数量
     const favoritesBookCounts = useMemo(() => {
@@ -1439,53 +1470,37 @@ export default function HomePage() {
                 {/* 分享横幅 */}
                 {showShareBanner && sharedVerses.length > 0 && (
                     <div
-                        className="bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-200 dark:border-blue-800 py-4 transition-all duration-300"
+                        className="border-b border-stone-900/10 bg-white/70 py-4 shadow-[0_18px_45px_rgba(68,64,60,0.08)] backdrop-blur-xl transition-all duration-300 dark:border-white/10 dark:bg-gray-950/82"
                         role="alert"
                         aria-live="polite"
                         aria-atomic="true"
                     >
-                        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row">
                             <div className="flex items-center gap-3 text-center sm:text-left">
-                                <div
-                                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                                        hasAddedAllShared ? 'bg-green-500 dark:bg-green-600' : 'bg-blue-500 dark:bg-blue-600'
-                                    }`}
-                                >
-                                    {hasAddedAllShared ? (
-                                        <Star className="w-5 h-5 text-white fill-white" />
-                                    ) : (
-                                        <Share2 className="w-5 h-5 text-white" />
-                                    )}
+                                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-stone-900/10 bg-stone-900/[0.04] text-stone-700 dark:border-white/10 dark:bg-white/[0.06] dark:text-stone-200">
+                                    {hasAddedAllShared ? <Star className="h-5 w-5 fill-current" /> : <Share2 className="h-5 w-5" />}
                                 </div>
                                 <div>
-                                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 font-chinese">
-                                        {hasAddedAllShared
-                                            ? `已成功收藏 ${sharedVerses.length} {language === 'traditional' ? '節' : '节'}经文 ✨`
-                                            : `这是分享的收藏列表（共 ${sharedVerses.length} {language === 'traditional' ? '節' : '节'}经文）`}
-                                    </p>
-                                    <p className="text-xs text-blue-700 dark:text-blue-300 font-chinese">
-                                        {hasAddedAllShared
-                                            ? '所有卡片已标记为收藏，可以点击"取消"关闭此提示'
-                                            : '您可以一键将这些经文添加到自己的收藏中'}
-                                    </p>
+                                    <p className="text-sm font-semibold text-stone-900 dark:text-stone-100 font-chinese">{sharedBannerCopy.title}</p>
+                                    <p className="text-xs text-stone-500 dark:text-stone-400 font-chinese">{sharedBannerCopy.detail}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 {!hasAddedAllShared && (
                                     <button
                                         onClick={handleAddAllShared}
-                                        className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg transition-colors font-chinese text-sm font-medium shadow-sm touch-manipulation min-h-[44px]"
+                                        className="min-h-[44px] rounded-xl border border-stone-900/10 bg-stone-950 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-stone-800 dark:border-white/10 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-white font-chinese touch-manipulation"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                     >
-                                        一键全部收藏
+                                        {language === 'traditional' ? '一鍵收藏' : '一键收藏'}
                                     </button>
                                 )}
                                 <button
                                     onClick={handleCancelShare}
-                                    className="px-4 py-2 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-600 rounded-lg transition-colors font-chinese text-sm border border-blue-200 dark:border-blue-700 touch-manipulation min-h-[44px]"
+                                    className="min-h-[44px] rounded-xl border border-stone-900/10 bg-white/80 px-4 py-2 text-sm text-stone-600 transition hover:bg-white hover:text-stone-950 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-300 dark:hover:bg-white/[0.09] dark:hover:text-white font-chinese touch-manipulation"
                                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 >
-                                    {hasAddedAllShared ? '关闭' : '取消'}
+                                    {sharedBannerCopy.actionLabel}
                                 </button>
                             </div>
                         </div>
@@ -1494,10 +1509,10 @@ export default function HomePage() {
 
                 {/* 分享Toast通知 */}
                 {shareToast && (
-                    <div className="fixed top-20 left-1/2 z-[10002] mx-4 max-w-md -translate-x-1/2 animate-fade-in">
-                        <div className="p-4 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 text-blue-900 dark:text-blue-100 rounded-xl shadow-2xl text-sm font-chinese flex items-center gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center">
-                                <Share2 className="w-5 h-5 text-white" />
+                    <div className="fixed bottom-5 left-1/2 z-[10002] mx-4 max-w-md -translate-x-1/2 animate-fade-in md:bottom-auto md:top-24">
+                        <div className="flex items-center gap-3 rounded-2xl border border-stone-900/10 bg-white px-4 py-3 text-sm text-stone-800 shadow-[0_22px_60px_rgba(68,64,60,0.22)] dark:border-white/10 dark:bg-gray-950 dark:text-stone-100 font-chinese">
+                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-stone-900/[0.05] text-stone-700 dark:bg-white/[0.08] dark:text-stone-200">
+                                <Share2 className="h-4 w-4" />
                             </div>
                             <span>{shareToast}</span>
                         </div>

@@ -7,6 +7,9 @@ import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { highlightText, type HighlightSegment } from '@/lib/search/highlighter';
 import { getSearchEngine } from '@/lib/search/searchEngine';
+import { encodeVerseRef } from '@/lib/bibleBookMapping';
+import { buildShareUrl, shareOrCopy } from '@/lib/shareUtils.mjs';
+import { sendStats } from '@/lib/statsUtils';
 import type { SearchResult } from '@/types/search';
 
 interface SearchResultCardProps {
@@ -40,6 +43,7 @@ export default function SearchResultCard({
   isSelected,
 }: SearchResultCardProps) {
   const [copied, setCopied] = useState(false);
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
   const { query, searchLang, setContextVerse, setSelectedIndex } =
     useSearchStore();
   const language = useAppStore((s) => s.language);
@@ -87,22 +91,33 @@ export default function SearchResultCard({
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/search?q=${encodeURIComponent(
-      `${result.bookKey}${result.chapter}:${result.verse}`
-    )}`;
+    const encoded = encodeVerseRef(result.bookKey, result.chapter, result.verse);
+    const url = buildShareUrl({ origin: window.location.origin, encoded });
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${bookNameChinese} ${result.chapter}:${result.verse}`,
-          text: result.textChinese,
-          url,
-        });
-      } catch {
-        // User cancelled or share failed
+    try {
+      const shareResult = await shareOrCopy({
+        title: `${bookNameChinese} ${result.chapter}:${result.verse}`,
+        text: showEnglish ? result.textEnglish : result.textChinese,
+        url,
+        navigatorRef: navigator,
+      });
+
+      if (shareResult === 'copied' || shareResult === 'shared') {
+        setShareStatus(shareResult);
+        setTimeout(() => setShareStatus('idle'), 1500);
       }
-    } else {
-      await navigator.clipboard.writeText(url).catch(() => {});
+    } catch {
+      setShareStatus('idle');
+    }
+  };
+
+  const handleFavorite = () => {
+    const wasFavorite = favorited;
+    toggleFavorite(result.id);
+
+    if (!wasFavorite) {
+      const encoded = encodeVerseRef(result.bookKey, result.chapter, result.verse);
+      sendStats('favorite', encoded);
     }
   };
 
@@ -137,7 +152,7 @@ export default function SearchResultCard({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              toggleFavorite(result.id);
+              handleFavorite();
             }}
             className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
             title={favorited ? '取消收藏' : '收藏'}
@@ -201,7 +216,7 @@ export default function SearchResultCard({
           className="inline-flex items-center gap-1 text-bible-500 dark:text-bible-400 hover:text-bible-700 dark:hover:text-bible-300 transition-colors"
         >
           <Share2 className="w-3.5 h-3.5" />
-          <span className="font-chinese">分享</span>
+          <span className="font-chinese">{shareStatus === 'copied' ? '已复制' : shareStatus === 'shared' ? '已分享' : '分享'}</span>
         </button>
       </div>
     </div>

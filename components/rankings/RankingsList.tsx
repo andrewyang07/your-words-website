@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Star, ChevronRight } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
+import { sendStats } from '@/lib/statsUtils';
 import booksData from '@/public/data/books.json';
 
 interface RankingItem {
@@ -52,9 +53,13 @@ export default function RankingsList({ rankings }: RankingsListProps) {
         router.push(`/?book=${encodeURIComponent(bookName)}&chapter=${chapter}`);
     };
 
-    const handleToggleFavorite = (e: React.MouseEvent, verseId: string) => {
+    const handleToggleFavorite = (e: React.MouseEvent, verseId: string, numericVerseId: string) => {
         e.stopPropagation();
+        const wasFavorite = isFavorite(verseId);
         toggleFavorite(verseId);
+        if (!wasFavorite) {
+            sendStats('favorite', numericVerseId);
+        }
     };
 
     // 前3名的图标
@@ -125,7 +130,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                         <div className="flex-shrink-0 flex items-center gap-2">
                             {/* 收藏按钮 */}
                             <button
-                                onClick={(e) => handleToggleFavorite(e, item.fullVerseId)}
+                                onClick={(e) => handleToggleFavorite(e, item.fullVerseId, item.verseId)}
                                 className="p-2 rounded-lg hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors touch-manipulation"
                                 title={isFav ? '取消收藏' : '收藏'}
                                 aria-label={isFav ? '取消收藏' : '收藏'}
