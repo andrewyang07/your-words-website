@@ -57,10 +57,11 @@ export async function migrateFromLocalStorage(): Promise<string | null> {
     const content = localStorage.getItem('bible-note-content');
     if (!content) return null;
 
-    const existing = await getAllNotes();
-    if (existing.length > 0) {
+    const existingNotes = await db.notes.toArray();
+    const duplicate = existingNotes.find((note) => note.content === content);
+    if (duplicate) {
         localStorage.removeItem('bible-note-content');
-        return null;
+        return duplicate.id;
     }
 
     const now = Date.now();

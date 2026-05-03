@@ -6,7 +6,7 @@
 
 @layer base {
     body {
-        @apply font-chinese antialiased;
+        @apply bg-[#f8f5ee] font-chinese text-stone-900 antialiased dark:bg-[#0b0f14] dark:text-stone-100;
     }
 }
 
@@ -227,14 +227,55 @@
 }
 
 /* MDXEditor notebook skin */
+.bible-note-mdx-editor {
+    color: rgb(41 37 36);
+}
+
+.dark .bible-note-mdx-editor {
+    color: rgb(231 229 228);
+}
+
 .bible-note-mdx-editor [role='toolbar'] {
     border-bottom: 1px solid rgba(214, 211, 209, 0.7);
     background: rgba(250, 250, 249, 0.78);
     padding: 0.6rem 0.75rem;
 }
 
+.dark .bible-note-mdx-editor [role='toolbar'] {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+    background: rgba(18, 24, 32, 0.92);
+}
+
+.bible-note-mdx-editor [role='toolbar'] button,
+.bible-note-mdx-editor [role='toolbar'] [role='radio'],
+.bible-note-mdx-editor [role='toolbar'] [role='combobox'] {
+    color: rgb(87 83 78);
+}
+
+.dark .bible-note-mdx-editor [role='toolbar'] button,
+.dark .bible-note-mdx-editor [role='toolbar'] [role='radio'],
+.dark .bible-note-mdx-editor [role='toolbar'] [role='combobox'] {
+    color: rgb(214 211 209);
+}
+
 .bible-note-mdx-editor .mdxeditor-root-contenteditable {
     background: transparent;
+}
+
+.bible-note-mdx-editor [contenteditable='true'] {
+    color: rgb(41 37 36);
+}
+
+.dark .bible-note-mdx-editor [contenteditable='true'] {
+    color: rgb(231 229 228);
+    caret-color: rgb(245 158 11);
+}
+
+.bible-note-mdx-editor [contenteditable='true'] p,
+.bible-note-mdx-editor [contenteditable='true'] h2,
+.bible-note-mdx-editor [contenteditable='true'] h3,
+.bible-note-mdx-editor [contenteditable='true'] li {
+    color: inherit;
 }
 
 .bible-note-mdx-editor blockquote {
@@ -242,4 +283,13 @@
     background: rgb(245 245 244 / 0.55);
     border-radius: 0.75rem;
     padding: 0.75rem 1rem;
+}
+
+.dark .bible-note-mdx-editor blockquote {
+    background: rgb(255 255 255 / 0.06);
+    color: rgb(231 229 228);
+}
+
+.dark .bible-note-mdx-editor [data-placeholder] {
+    color: rgb(148 163 184);
 }

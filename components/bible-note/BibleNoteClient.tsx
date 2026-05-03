@@ -8,7 +8,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import PageHeader from '@/components/layout/PageHeader';
-import NoteEditor, { type NoteEditorHandle } from './NoteEditor';
+import type { NoteEditorHandle } from './NoteEditor';
 import UsageGuide from './UsageGuide';
 import VerseReferenceList from './VerseReferenceList';
 import OcrImporter from './OcrImporter';
@@ -22,6 +22,14 @@ const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
 });
 const ChapterViewer = dynamic(() => import('./ChapterViewer'), {
     ssr: false,
+});
+const NoteEditor = dynamic(() => import('./NoteEditor'), {
+    ssr: false,
+    loading: () => (
+        <div className="min-h-[620px] rounded-[1.75rem] border border-stone-200/70 bg-white/75 p-6 text-sm text-stone-500 shadow-[0_24px_80px_rgba(68,64,60,0.08)] dark:border-gray-700/60 dark:bg-gray-900/70 dark:text-stone-300">
+            正在打開筆記紙…
+        </div>
+    ),
 });
 
 export default function BibleNoteClient() {

@@ -172,8 +172,9 @@ function parseOsisReference(osis: string): Omit<VerseReference, 'original' | 'po
 
 function parseWithLocalFallback(text: string): VerseReference[] {
     const refs: VerseReference[] = [];
+    const rangeSeparator = '[-–—~～到至]';
     const pattern = new RegExp(
-        `(${BOOK_PATTERN})\\s*(\\d{1,3})[:：](\\d{1,3})(?:[-\\-到至](\\d{1,3}))?`,
+        `(${BOOK_PATTERN})\\s*(\\d{1,3})\\s*[:：]\\s*(\\d{1,3})(?:\\s*${rangeSeparator}\\s*(\\d{1,3}))?`,
         'g'
     );
 
