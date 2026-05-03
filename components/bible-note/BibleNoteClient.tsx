@@ -617,7 +617,6 @@ export default function BibleNoteClient() {
                                 ref={editorRef}
                                 content={content}
                                 onChange={setContent}
-                                onExpandVerse={getVerseText}
                             />
                         </div>
                     </div>

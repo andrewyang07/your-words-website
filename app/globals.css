@@ -1,3 +1,5 @@
+@import '@mdxeditor/editor/style.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -222,4 +224,22 @@
     .yw-body {
         @apply font-chinese leading-relaxed text-stone-700 dark:text-stone-300;
     }
+}
+
+/* MDXEditor notebook skin */
+.bible-note-mdx-editor [role='toolbar'] {
+    border-bottom: 1px solid rgba(214, 211, 209, 0.7);
+    background: rgba(250, 250, 249, 0.78);
+    padding: 0.6rem 0.75rem;
+}
+
+.bible-note-mdx-editor .mdxeditor-root-contenteditable {
+    background: transparent;
+}
+
+.bible-note-mdx-editor blockquote {
+    border-left-color: rgb(217 119 6 / 0.45);
+    background: rgb(245 245 244 / 0.55);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
 }

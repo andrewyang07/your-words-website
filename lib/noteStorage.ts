@@ -1,3 +1,5 @@
+import Dexie, { type Table } from 'dexie';
+
 export interface Note {
     id: string;
     title: string;
@@ -6,65 +8,30 @@ export interface Note {
     updatedAt: number;
 }
 
-const DB_NAME = 'your-words-notes';
-const STORE_NAME = 'notes';
-const DB_VERSION = 1;
+class BibleNotesDatabase extends Dexie {
+    notes!: Table<Note, string>;
 
-let dbPromise: Promise<IDBDatabase> | null = null;
-
-function openDB(): Promise<IDBDatabase> {
-    if (dbPromise) return dbPromise;
-    dbPromise = new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, DB_VERSION);
-        req.onupgradeneeded = () => {
-            const db = req.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-            }
-        };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-    });
-    return dbPromise;
+    constructor() {
+        super('your-words-notes');
+        this.version(2).stores({
+            notes: 'id, title, createdAt, updatedAt',
+        });
+    }
 }
 
+const db = new BibleNotesDatabase();
+
 export async function getAllNotes(): Promise<Pick<Note, 'id' | 'title' | 'updatedAt'>[]> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const store = tx.objectStore(STORE_NAME);
-        const req = store.getAll();
-        req.onsuccess = () => {
-            const notes: Note[] = req.result;
-            const summaries = notes
-                .map(({ id, title, updatedAt }) => ({ id, title, updatedAt }))
-                .sort((a, b) => b.updatedAt - a.updatedAt);
-            resolve(summaries);
-        };
-        req.onerror = () => reject(req.error);
-    });
+    const notes = await db.notes.orderBy('updatedAt').reverse().toArray();
+    return notes.map(({ id, title, updatedAt }) => ({ id, title, updatedAt }));
 }
 
 export async function getNote(id: string): Promise<Note | null> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const store = tx.objectStore(STORE_NAME);
-        const req = store.get(id);
-        req.onsuccess = () => resolve(req.result ?? null);
-        req.onerror = () => reject(req.error);
-    });
+    return (await db.notes.get(id)) ?? null;
 }
 
 export async function saveNote(note: Note): Promise<void> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
-        const req = store.put(note);
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
-    });
+    await db.notes.put(note);
 }
 
 export async function createNote(): Promise<Note> {
@@ -81,22 +48,15 @@ export async function createNote(): Promise<Note> {
 }
 
 export async function deleteNote(id: string): Promise<void> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
-        const req = store.delete(id);
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
-    });
+    await db.notes.delete(id);
 }
 
 export async function migrateFromLocalStorage(): Promise<string | null> {
     if (typeof window === 'undefined') return null;
+
     const content = localStorage.getItem('bible-note-content');
     if (!content) return null;
 
-    // Check if already migrated by seeing if we have notes
     const existing = await getAllNotes();
     if (existing.length > 0) {
         localStorage.removeItem('bible-note-content');
@@ -117,6 +77,6 @@ export async function migrateFromLocalStorage(): Promise<string | null> {
 }
 
 export function extractTitle(content: string): string {
-    const firstLine = content.split('\n').find((l) => l.trim());
+    const firstLine = content.split('\n').find((line) => line.trim());
     return firstLine?.replace(/^#+\s*/, '').trim().slice(0, 30) || '无标题';
 }
