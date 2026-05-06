@@ -9,11 +9,11 @@ import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import PageHeader from '@/components/layout/PageHeader';
 import type { NoteEditorHandle } from './NoteEditor';
-import UsageGuide from './UsageGuide';
 import VerseReferenceList from './VerseReferenceList';
 import OcrImporter from './OcrImporter';
 import NoteList from './NoteList';
 import { getAllNotes, getNote, saveNote, createNote, migrateFromLocalStorage, extractTitle, type Note } from '@/lib/noteStorage';
+import { buildInsertedVerseMarkdown, getInsertionToast, uniqueVerseReferences } from '@/lib/noteMarkdown';
 import { initializeSearch } from '@/lib/editorSearch';
 
 // 动态导入非关键组件以提升性能
@@ -166,14 +166,7 @@ export default function BibleNoteClient() {
 
     // 解析经文引用（去重）
     const references = useMemo(() => {
-        const allRefs = parseVerseReferences(content);
-        const seen = new Set<string>();
-        return allRefs.filter((ref) => {
-            const key = `${ref.book}-${ref.chapter}-${ref.startVerse}-${ref.endVerse ?? ref.startVerse}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-        });
+        return uniqueVerseReferences(parseVerseReferences(content));
     }, [content]);
 
     const handleExportToFile = useCallback(() => {
@@ -300,18 +293,13 @@ export default function BibleNoteClient() {
 
     const handleInsertVerses = useCallback(
         (verses: Array<{ book: string; chapter: number; verse: number; text: string }>) => {
-            const insertText = verses
-                .map((v) => {
-                    const ref = `${v.book}${v.chapter}:${v.verse}`;
-                    return `\n> ${ref}: ${v.text}\n`;
-                })
-                .join('');
+            const insertText = buildInsertedVerseMarkdown(verses);
 
-            const insertedAtCursor = editorRef.current?.insertMarkdownAtCursor(insertText) ?? false;
-            if (!insertedAtCursor) {
+            const insertedInEditor = editorRef.current?.insertMarkdownAtCursor(insertText) ?? false;
+            if (!insertedInEditor) {
                 setContent((prevContent) => prevContent + insertText);
             }
-            showToast(insertedAtCursor ? `已插入 ${verses.length} 節到光標位置` : `已添加 ${verses.length} 節到筆記末尾`);
+            showToast(getInsertionToast('chapter', verses.length, insertedInEditor));
             setChapterViewerState({ isOpen: false, book: '', chapter: 0 });
         },
         [showToast]
@@ -335,11 +323,11 @@ export default function BibleNoteClient() {
                 }
             }
 
-            const insertedAtCursor = editorRef.current?.insertMarkdownAtCursor(insertText) ?? false;
-            if (!insertedAtCursor) {
+            const insertedInEditor = editorRef.current?.insertMarkdownAtCursor(insertText) ?? false;
+            if (!insertedInEditor) {
                 setContent((prev) => prev + insertText);
             }
-            showToast(insertedAtCursor ? `已插入 ${ocrRefs.length} 条 OCR 引用到光标位置` : `已添加 ${ocrRefs.length} 条 OCR 引用到笔记末尾`);
+            showToast(getInsertionToast('ocr', ocrRefs.length, insertedInEditor));
         },
         [showToast]
     );
@@ -524,10 +512,10 @@ export default function BibleNoteClient() {
                                     <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
                                     <div>
                                         <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
-                                            @ 搜索經文
+                                            經文引用
                                         </h4>
                                         <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
-                                            輸入 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@</code> 後跟經文名稱（如 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@约3:16</code>）即可搜索並插入經文。支持拼音搜索（如 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">@yuehan</code> 找到約翰福音）和模糊匹配。
+                                            直接寫下經文引用（如 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">约3:16</code> 或 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">John 3:17</code>），右側會自動生成經文邊注。
                                         </p>
                                     </div>
                                 </div>

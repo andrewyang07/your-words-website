@@ -74,7 +74,7 @@ export default function VerseReferenceList({
                 <p className="py-8 text-center font-chinese text-sm text-stone-500 dark:text-stone-400">
                     還沒有引用經文
                     <br />
-                    <span className="mt-2 inline-flex rounded-full border border-stone-900/10 bg-white/70 px-3 py-1 text-xs text-stone-500 dark:border-white/10 dark:bg-white/[0.06]">試著輸入 @约3:16</span>
+                    <span className="mt-2 inline-flex rounded-full border border-stone-900/10 bg-white/70 px-3 py-1 text-xs text-stone-500 dark:border-white/10 dark:bg-white/[0.06]">試著輸入 约3:16 或 John 3:17</span>
                 </p>
             </div>
         );

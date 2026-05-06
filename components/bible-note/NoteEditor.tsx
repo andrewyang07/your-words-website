@@ -103,7 +103,7 @@ const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function NoteEd
                         開始記錄今天的靈修筆記…
                         <br />
                         <br />
-                        輸入 @ 引用經文，或直接寫下 約3:16
+                        直接寫下經文引用，如 約3:16 或 John 3:17
                     </div>
                 }
                 className="min-h-[620px] text-stone-900 dark:text-gray-100"
