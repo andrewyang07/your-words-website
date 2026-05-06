@@ -1,4 +1,7 @@
 // 经文引用解析工具
+import { bcv_parser } from 'bible-passage-reference-parser/esm/bcv_parser.js';
+import * as zhParser from 'bible-passage-reference-parser/esm/lang/zh.js';
+import * as enParser from 'bible-passage-reference-parser/esm/lang/en.js';
 
 export interface VerseReference {
     original: string; // 原始文本，如 "约3:16"
@@ -94,32 +97,96 @@ function buildBookPattern(): string {
 
 const BOOK_PATTERN = buildBookPattern();
 
+const OSIS_BOOKS = [
+    'Gen', 'Exod', 'Lev', 'Num', 'Deut', 'Josh', 'Judg', 'Ruth', '1Sam', '2Sam', '1Kgs', '2Kgs', '1Chr', '2Chr', 'Ezra', 'Neh', 'Esth', 'Job', 'Ps', 'Prov', 'Eccl', 'Song', 'Isa', 'Jer', 'Lam', 'Ezek', 'Dan', 'Hos', 'Joel', 'Amos', 'Obad', 'Jonah', 'Mic', 'Nah', 'Hab', 'Zeph', 'Hag', 'Zech', 'Mal', 'Matt', 'Mark', 'Luke', 'John', 'Acts', 'Rom', '1Cor', '2Cor', 'Gal', 'Eph', 'Phil', 'Col', '1Thess', '2Thess', '1Tim', '2Tim', 'Titus', 'Phlm', 'Heb', 'Jas', '1Pet', '2Pet', '1John', '2John', '3John', 'Jude', 'Rev',
+] as const;
+
+const CHINESE_BOOKS = [
+    '创世记', '出埃及记', '利未记', '民数记', '申命记', '约书亚记', '士师记', '路得记', '撒母耳记上', '撒母耳记下', '列王纪上', '列王纪下', '历代志上', '历代志下', '以斯拉记', '尼希米记', '以斯帖记', '约伯记', '诗篇', '箴言', '传道书', '雅歌', '以赛亚书', '耶利米书', '耶利米哀歌', '以西结书', '但以理书', '何西阿书', '约珥书', '阿摩司书', '俄巴底亚书', '约拿书', '弥迦书', '那鸿书', '哈巴谷书', '西番雅书', '哈该书', '撒迦利亚书', '玛拉基书', '马太福音', '马可福音', '路加福音', '约翰福音', '使徒行传', '罗马书', '哥林多前书', '哥林多后书', '加拉太书', '以弗所书', '腓立比书', '歌罗西书', '帖撒罗尼迦前书', '帖撒罗尼迦后书', '提摩太前书', '提摩太后书', '提多书', '腓利门书', '希伯来书', '雅各书', '彼得前书', '彼得后书', '约翰一书', '约翰二书', '约翰三书', '犹大书', '启示录',
+] as const;
+
+const OSIS_TO_BOOK = new Map<string, string>(OSIS_BOOKS.map((osis, index) => [osis, CHINESE_BOOKS[index]]));
+const externalParsers = [new bcv_parser(zhParser), new bcv_parser(enParser)];
+
 /**
- * 解析文本中的所有经文引用
+ * 解析文本中的所有经文引用。
+ *
+ * Primary path uses OpenBibleInfo's battle-tested parser. We keep the small
+ * Chinese regex fallback because it covers a few app-specific shorthand forms
+ * and protects the notebook if the external parser rejects a phrase.
  */
 export function parseVerseReferences(text: string): VerseReference[] {
+    const refs = [...parseWithOpenBibleParser(text), ...parseWithLocalFallback(text)];
+    const seen = new Set<string>();
+
+    return refs.filter((ref) => {
+        const key = `${ref.book}-${ref.chapter}-${ref.startVerse}-${ref.endVerse ?? ref.startVerse}-${ref.position}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+function parseWithOpenBibleParser(text: string): VerseReference[] {
     const refs: VerseReference[] = [];
 
-    // 匹配格式：书卷名 + 章节 + : + 经文节数（可选范围）
-    // 例如：约3:16, 约翰福音3:16, 创1:1-3
+    externalParsers.forEach((parser) => {
+        parser.parse(text).osis_and_indices().forEach((match: { osis: string; indices: [number, number] }) => {
+            const { osis, indices } = match;
+            const parsed = parseOsisReference(osis);
+            if (!parsed) return;
+
+            const original = text.slice(indices[0], indices[1]);
+            if (/\n/.test(original)) return;
+
+            refs.push({
+                original,
+                position: indices[0],
+                ...parsed,
+            });
+        });
+    });
+
+    return refs;
+}
+
+function parseOsisReference(osis: string): Omit<VerseReference, 'original' | 'position'> | null {
+    const [start, end] = osis.split('-');
+    const startParts = start.split('.');
+    if (startParts.length < 3) return null;
+
+    const [osisBook, chapterStr, verseStr] = startParts;
+    const book = OSIS_TO_BOOK.get(osisBook);
+    if (!book) return null;
+
+    const endParts = end?.split('.') ?? [];
+    const endVerse = endParts.length === 3 ? Number(endParts[2]) : undefined;
+
+    return {
+        book,
+        chapter: Number(chapterStr),
+        startVerse: Number(verseStr),
+        endVerse,
+    };
+}
+
+function parseWithLocalFallback(text: string): VerseReference[] {
+    const refs: VerseReference[] = [];
+    const rangeSeparator = '[-–—~～到至]';
     const pattern = new RegExp(
-        `(${BOOK_PATTERN})\\s*(\\d{1,3})[:：](\\d{1,3})(?:[-\\-到至](\\d{1,3}))?`,
+        `(${BOOK_PATTERN})\\s*(\\d{1,3})\\s*[:：]\\s*(\\d{1,3})(?:\\s*${rangeSeparator}\\s*(\\d{1,3}))?`,
         'g'
     );
 
     let match;
     while ((match = pattern.exec(text)) !== null) {
         const [fullMatch, bookPart, chapterStr, startVerseStr, endVerseStr] = match;
-
-        // 解析书卷名（简称转全称）
-        const book = BOOK_ABBREVIATIONS[bookPart] || bookPart;
-
         refs.push({
             original: fullMatch,
-            book,
-            chapter: parseInt(chapterStr, 10),
-            startVerse: parseInt(startVerseStr, 10),
-            endVerse: endVerseStr ? parseInt(endVerseStr, 10) : undefined,
+            book: BOOK_ABBREVIATIONS[bookPart] || bookPart,
+            chapter: Number(chapterStr),
+            startVerse: Number(startVerseStr),
+            endVerse: endVerseStr ? Number(endVerseStr) : undefined,
             position: match.index,
         });
     }
