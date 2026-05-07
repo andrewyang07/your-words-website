@@ -143,20 +143,20 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 z-[9999] mt-2 w-[min(90vw,560px)] rounded-2xl border border-stone-900/10 bg-white p-4 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-white/10 dark:bg-gray-950">
+                <div className="absolute right-0 z-[9999] mt-2 w-[min(90vw,560px)] rounded-2xl border border-stone-900/10 bg-white p-4 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-amber-200/10 dark:bg-[#17130f]">
                     <div className="flex items-center justify-between mb-3">
                         <div>
-                            <h4 className="font-semibold text-bible-800 dark:text-bible-200 font-chinese">OCR 识别经文引用（Beta）</h4>
-                            <p className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
+                            <h4 className="font-semibold text-bible-800 dark:text-stone-100 font-chinese">OCR 识别经文引用（Beta）</h4>
+                            <p className="text-xs text-bible-500 dark:text-stone-400 font-chinese">
                                 纯前端本地识别，不上传服务器。建议上传清晰截图。
                             </p>
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-white/[0.08] transition-colors"
                             aria-label="关闭 OCR 面板"
                         >
-                            <X className="w-4 h-4 text-bible-600 dark:text-bible-400" />
+                            <X className="w-4 h-4 text-bible-600 dark:text-stone-400" />
                         </button>
                     </div>
 
@@ -164,7 +164,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                         className={`flex items-center justify-center gap-2 h-24 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${
                             isDragging
                                 ? 'border-bible-500 bg-bible-100/50 dark:bg-bible-900/30'
-                                : 'border-bible-300 dark:border-gray-600 hover:bg-bible-50 dark:hover:bg-gray-700/50'
+                                : 'border-bible-300 dark:border-amber-200/10 hover:bg-bible-50 dark:hover:bg-white/[0.06]'
                         }`}
                         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                         onDragLeave={() => setIsDragging(false)}
@@ -175,8 +175,8 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                             if (file) void handleImageUpload(file);
                         }}
                     >
-                        <ImagePlus className="w-5 h-5 text-bible-600 dark:text-bible-400" />
-                        <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">上传 / 拖放 / 粘贴截图（jpg/png）</span>
+                        <ImagePlus className="w-5 h-5 text-bible-600 dark:text-amber-300" />
+                        <span className="text-sm font-chinese text-bible-700 dark:text-stone-300">上传 / 拖放 / 粘贴截图（jpg/png）</span>
                         <input
                             type="file"
                             accept="image/png,image/jpeg,image/jpg"
@@ -190,12 +190,12 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                     </label>
 
                     {isRecognizing && (
-                        <div className="mt-3 p-3 rounded-lg bg-bible-50 dark:bg-gray-700">
+                        <div className="mt-3 p-3 rounded-lg bg-bible-50 dark:bg-[#211b13]/80">
                             <div className="flex items-center gap-2 mb-2">
-                                <Loader2 className="w-4 h-4 animate-spin text-bible-600 dark:text-bible-400" />
-                                <span className="text-sm font-chinese text-bible-700 dark:text-bible-300">识别中... {ocrProgress}%</span>
+                                <Loader2 className="w-4 h-4 animate-spin text-bible-600 dark:text-amber-300" />
+                                <span className="text-sm font-chinese text-bible-700 dark:text-stone-300">识别中... {ocrProgress}%</span>
                             </div>
-                            <div className="h-2 bg-bible-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                            <div className="h-2 bg-bible-200 dark:bg-black/30 rounded-full overflow-hidden">
                                 <div className="h-full bg-bible-500 transition-all" style={{ width: `${ocrProgress}%` }} />
                             </div>
                         </div>
@@ -208,7 +208,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                     {references.length > 0 && (
                         <div className="mt-3 space-y-3">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
+                                <span className="text-xs text-bible-500 dark:text-stone-400 font-chinese">
                                     识别到 {references.length} 条引用
                                 </span>
                                 <button
@@ -219,20 +219,20 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                                             setSelectedRefs(new Set(references.map((r) => r.original)));
                                         }
                                     }}
-                                    className="text-xs text-bible-600 dark:text-bible-400 hover:underline font-chinese"
+                                    className="text-xs text-bible-600 dark:text-amber-300 hover:underline font-chinese"
                                 >
                                     {selectedRefs.size === references.length ? '取消全选' : '全选'}
                                 </button>
                             </div>
-                            <div className="max-h-48 overflow-y-auto border border-bible-200 dark:border-gray-700 rounded-lg p-2 space-y-1">
+                            <div className="max-h-48 overflow-y-auto border border-bible-200 dark:border-amber-200/10 rounded-lg p-2 space-y-1">
                                 {references.map((ref, idx) => (
                                     <button
                                         key={`${ref.original}-${idx}`}
                                         onClick={() => toggleRef(ref.original)}
                                         className={`w-full text-left px-2 py-1.5 rounded-md font-chinese text-sm transition-colors ${
                                             selectedRefs.has(ref.original)
-                                                ? 'bg-bible-100 dark:bg-gray-700 text-bible-800 dark:text-bible-200'
-                                                : 'hover:bg-bible-50 dark:hover:bg-gray-700/50 text-bible-700 dark:text-bible-300'
+                                                ? 'bg-bible-100 dark:bg-[#2a2117] text-bible-800 dark:text-stone-100'
+                                                : 'hover:bg-bible-50 dark:hover:bg-white/[0.06] text-bible-700 dark:text-stone-300'
                                         }`}
                                     >
                                         <span className="inline-flex items-center gap-2">
@@ -243,7 +243,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                                 ))}
                             </div>
 
-                            <label className="flex items-center gap-2 text-sm font-chinese text-bible-700 dark:text-bible-300">
+                            <label className="flex items-center gap-2 text-sm font-chinese text-bible-700 dark:text-stone-300">
                                 <input
                                     type="checkbox"
                                     checked={expandOnInsert}

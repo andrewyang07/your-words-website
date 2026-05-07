@@ -223,10 +223,10 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed top-[45vh] bottom-0 left-0 right-0 z-[300] overflow-visible rounded-t-[1.75rem] border-t border-stone-900/10 bg-[#fbfaf7]/96 shadow-[0_-18px_54px_rgba(68,64,60,0.13)] backdrop-blur-2xl dark:border-white/10 dark:bg-gray-950/96 flex flex-col"
+                        className="fixed top-[45vh] bottom-0 left-0 right-0 z-[300] overflow-visible rounded-t-[1.75rem] border-t border-stone-900/10 bg-[#fbfaf7]/96 shadow-[0_-18px_54px_rgba(68,64,60,0.13)] backdrop-blur-2xl dark:border-amber-200/10 dark:bg-[#17130f]/96 flex flex-col"
                     >
                         {/* 头部 - 导航控制 */}
-                        <div className="flex flex-col gap-2 border-b border-stone-900/10 bg-white/45 p-3 dark:border-white/10 dark:bg-white/[0.035] md:p-4">
+                        <div className="flex flex-col gap-2 border-b border-stone-900/10 bg-white/45 p-3 dark:border-amber-200/10 dark:bg-[#211b13]/70 md:p-4">
                             <div className="mx-auto h-1 w-10 rounded-full bg-stone-300/80 dark:bg-stone-700" />
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="relative z-[320] flex flex-wrap items-center gap-2 overflow-visible">
@@ -359,7 +359,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                                             ? 'border-amber-500/60 bg-amber-50/80 dark:border-amber-300/50 dark:bg-amber-950/20'
                                                             : targetVerse === num
                                                                 ? 'border-amber-500/40 bg-white/85 ring-1 ring-amber-500/20 dark:border-amber-300/40 dark:bg-white/[0.07]'
-                                                                : 'border-stone-900/10 bg-white/55 hover:bg-white/85 dark:border-white/10 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]'
+                                                                : 'border-stone-900/10 bg-white/55 hover:bg-white/85 dark:border-amber-200/10 dark:bg-[#211b13]/70 dark:hover:bg-white/[0.06]'
                                                     }`}
                                                     onClick={(e) => {
                                                         // 只有当点击的不是插入按钮时才切换选中状态
@@ -414,7 +414,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                         </div>
 
                         {/* 底部操作栏 */}
-                        <div className="flex min-h-[52px] items-center justify-between gap-3 border-t border-stone-900/10 bg-white/65 p-2.5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035] md:p-3">
+                        <div className="flex min-h-[52px] items-center justify-between gap-3 border-t border-stone-900/10 bg-white/65 p-2.5 backdrop-blur-xl dark:border-amber-200/10 dark:bg-[#211b13]/70 md:p-3">
                             {/* 左侧：选择提示 */}
                             <div className="font-chinese text-xs text-stone-500 dark:text-stone-400 md:text-sm">
                                 {selectedVerses.size > 0 ? `已選 ${selectedVerses.size} 節，可批量插入` : '點擊經文多選，或用右側按鈕插入單節'}

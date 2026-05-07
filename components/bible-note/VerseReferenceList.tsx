@@ -28,8 +28,11 @@ export default function VerseReferenceList({
 
     // 加载经文内容
     useEffect(() => {
+        let cancelled = false;
+
         if (references.length === 0) {
             setVersesWithText([]);
+            setLoading(false);
             return;
         }
 
@@ -42,16 +45,22 @@ export default function VerseReferenceList({
                     return { ...ref, text };
                 })
             );
-            setVersesWithText(verses);
-            setLoading(false);
+            if (!cancelled) {
+                setVersesWithText(verses);
+                setLoading(false);
+            }
         };
 
-        loadVerses();
+        void loadVerses();
+
+        return () => {
+            cancelled = true;
+        };
     }, [references]);
 
     if (loading) {
         return (
-            <div className="rounded-[1.75rem] border border-stone-900/10 bg-white/70 p-4 shadow-[0_14px_42px_rgba(68,64,60,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+            <div className="notebook-side-panel rounded-[1.75rem] border border-stone-900/10 bg-white/70 p-4 shadow-[0_14px_42px_rgba(68,64,60,0.06)] backdrop-blur-xl">
                 <div className="flex items-center justify-center py-4 md:py-6">
                     <Loader2 className="w-6 h-6 animate-spin text-stone-600 dark:text-stone-400" />
                     <span className="ml-2 text-sm text-stone-600 dark:text-stone-400 font-chinese">
@@ -64,7 +73,7 @@ export default function VerseReferenceList({
 
     if (references.length === 0) {
         return (
-            <div className="rounded-[1.75rem] border border-stone-900/10 bg-white/70 p-4 shadow-[0_14px_42px_rgba(68,64,60,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+            <div className="notebook-side-panel rounded-[1.75rem] border border-stone-900/10 bg-white/70 p-4 shadow-[0_14px_42px_rgba(68,64,60,0.06)] backdrop-blur-xl">
                 <div className="flex items-center gap-2 mb-2 md:mb-3">
                     <BookOpen className="w-4 h-4 text-stone-600 dark:text-stone-400" />
                     <h3 className="font-bold text-stone-950 dark:text-stone-50 font-chinese">
@@ -74,14 +83,14 @@ export default function VerseReferenceList({
                 <p className="py-8 text-center font-chinese text-sm text-stone-500 dark:text-stone-400">
                     還沒有引用經文
                     <br />
-                    <span className="mt-2 inline-flex rounded-full border border-stone-900/10 bg-white/70 px-3 py-1 text-xs text-stone-500 dark:border-white/10 dark:bg-white/[0.06]">試著輸入 约3:16 或 John 3:17</span>
+                    <span className="notebook-helper-pill mt-2 inline-flex rounded-full border border-stone-900/10 bg-white/70 px-3 py-1 text-xs text-stone-500">試著輸入 约3:16 或 John 3:17</span>
                 </p>
             </div>
         );
     }
 
     return (
-        <div className="rounded-[1.75rem] border border-stone-900/10 bg-white/70 p-4 shadow-[0_14px_42px_rgba(68,64,60,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+        <div className="notebook-side-panel rounded-[1.75rem] border border-stone-900/10 bg-white/70 p-4 shadow-[0_14px_42px_rgba(68,64,60,0.06)] backdrop-blur-xl">
             {/* 标题和操作按钮 */}
             <div className="flex items-center justify-between mb-2 md:mb-3">
                 <div className="flex items-center gap-2">
@@ -98,7 +107,7 @@ export default function VerseReferenceList({
                 <button
                     onClick={onExpandAll}
                     disabled={isExpanding}
-                    className="flex min-h-[32px] items-center gap-1 rounded-full border border-stone-900/10 bg-white/72 px-3 py-1.5 text-xs text-stone-700 transition-colors hover:bg-white disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.06] dark:text-stone-200 dark:hover:bg-white/[0.1] touch-manipulation"
+                    className="flex min-h-[32px] items-center gap-1 rounded-full border border-stone-900/10 bg-white/72 px-3 py-1.5 text-xs text-stone-700 transition-colors hover:bg-white disabled:opacity-50 dark:border-amber-200/10 dark:bg-[#2a2117] dark:text-stone-200 dark:hover:bg-white/[0.08] touch-manipulation"
                     title="將所有經文完整內容插入筆記"
                 >
                     {isExpanding ? (

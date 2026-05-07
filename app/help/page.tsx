@@ -2,8 +2,11 @@ import type { Metadata } from 'next';
 import HelpPageClient from './HelpPageClient';
 
 export const metadata: Metadata = {
-    title: '使用帮助 - 你的话语圣经背诵工具',
-    description: '详细的使用教程和功能介绍，帮助你更好地使用圣经背诵工具和圣经笔记本功能。',
+    title: '使用幫助',
+    description: '了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。',
+    alternates: {
+        canonical: '/help',
+    },
     keywords: [
         '使用帮助',
         '教程',
@@ -17,9 +20,26 @@ export const metadata: Metadata = {
         '经文分享'
     ],
     openGraph: {
-        title: '使用帮助 - 你的话语圣经背诵工具',
-        description: '详细的使用教程和功能介绍，帮助你更好地使用圣经背诵工具',
+        title: '使用幫助 - 你的話語聖經背誦工具',
+        description: '了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。',
+        url: '/help',
+        siteName: '你的話語',
+        locale: 'zh_TW',
         type: 'website',
+        images: [
+            {
+                url: '/logo-light.png',
+                width: 1024,
+                height: 1024,
+                alt: '你的話語 Logo',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary',
+        title: '使用幫助 - 你的話語聖經背誦工具',
+        description: '了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。',
+        images: ['/logo-light.png'],
     },
 };
 

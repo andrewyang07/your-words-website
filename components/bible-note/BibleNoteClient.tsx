@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search, Loader2, Check, AlertCircle, MoreHorizontal } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
@@ -14,7 +13,6 @@ import OcrImporter from './OcrImporter';
 import NoteList from './NoteList';
 import { getAllNotes, getNote, saveNote, createNote, migrateFromLocalStorage, extractTitle, type Note } from '@/lib/noteStorage';
 import { buildInsertedVerseMarkdown, getInsertionToast, uniqueVerseReferences } from '@/lib/noteMarkdown';
-import { initializeSearch } from '@/lib/editorSearch';
 
 // 动态导入非关键组件以提升性能
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -26,18 +24,17 @@ const ChapterViewer = dynamic(() => import('./ChapterViewer'), {
 const NoteEditor = dynamic(() => import('./NoteEditor'), {
     ssr: false,
     loading: () => (
-        <div className="min-h-[620px] rounded-[1.75rem] border border-stone-200/70 bg-white/75 p-6 text-sm text-stone-500 shadow-[0_24px_80px_rgba(68,64,60,0.08)] dark:border-gray-700/60 dark:bg-gray-900/70 dark:text-stone-300">
+        <div className="min-h-[620px] rounded-[1.75rem] border border-stone-200/70 bg-white/75 p-6 text-sm text-stone-500 shadow-[0_24px_80px_rgba(68,64,60,0.08)] dark:border-amber-200/10 dark:bg-[#191612]/80 dark:text-stone-300">
             正在打開筆記紙…
         </div>
     ),
 });
 
 export default function BibleNoteClient() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
     const editorRef = useRef<NoteEditorHandle | null>(null);
     const { theme, setTheme, language, setLanguage } = useAppStore();
     const [content, setContent] = useState('');
+    const [references, setReferences] = useState<VerseReference[]>([]);
     const [currentNoteId, setCurrentNoteId] = useState<string | null>(null);
     const [currentNoteCreatedAt, setCurrentNoteCreatedAt] = useState<number>(Date.now());
     const [showNoteList, setShowNoteList] = useState(false);
@@ -57,7 +54,7 @@ export default function BibleNoteClient() {
     const [lastViewedChapter, setLastViewedChapter] = useState<number>(1);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-    // 初始化：迁移旧数据，加载最新笔记，预加载搜索引擎
+    // 初始化：迁移旧数据，加载最新笔记
     useEffect(() => {
         const init = async () => {
             await migrateFromLocalStorage();
@@ -77,9 +74,6 @@ export default function BibleNoteClient() {
             }
         };
         void init();
-
-        // Eagerly initialize search engine (non-blocking)
-        void initializeSearch();
     }, []);
 
     // 从 localStorage 恢复上次查看的章节
@@ -164,9 +158,18 @@ export default function BibleNoteClient() {
         setShowNoteList(false);
     }, []);
 
-    // 解析经文引用（去重）
-    const references = useMemo(() => {
-        return uniqueVerseReferences(parseVerseReferences(content));
+    // 延后解析经文引用，避免每个按键都同步跑 Bible parser 卡住编辑器
+    useEffect(() => {
+        if (!content.trim()) {
+            setReferences([]);
+            return;
+        }
+
+        const timer = window.setTimeout(() => {
+            setReferences(uniqueVerseReferences(parseVerseReferences(content)));
+        }, 300);
+
+        return () => window.clearTimeout(timer);
     }, [content]);
 
     const handleExportToFile = useCallback(() => {
@@ -367,7 +370,7 @@ export default function BibleNoteClient() {
 
                         <button
                             onClick={() => setShowNoteList(true)}
-                            className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-700 transition-colors hover:bg-white/65 dark:text-stone-200 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                            className="flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] md:px-4 touch-manipulation"
                             title="笔记列表"
                             aria-label="打开笔记列表"
                         >
@@ -379,7 +382,7 @@ export default function BibleNoteClient() {
                             <button
                                 onClick={() => setShowExportMenu(!showExportMenu)}
                                 disabled={!content}
-                                className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-700 transition-colors hover:bg-white/65 disabled:cursor-not-allowed disabled:opacity-45 dark:text-stone-200 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                                className="flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-stone-600 transition hover:bg-white/55 disabled:cursor-not-allowed disabled:opacity-45 dark:text-stone-300 dark:hover:bg-white/[0.06] md:px-4 touch-manipulation"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="導出筆記"
                                 aria-label="導出筆記"
@@ -392,7 +395,7 @@ export default function BibleNoteClient() {
                             {showExportMenu && content && (
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setShowExportMenu(false)} />
-                                    <div className="fixed bottom-0 left-0 right-0 z-[9999] w-full rounded-t-2xl border-t border-stone-900/10 bg-white py-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:absolute md:bottom-auto md:left-auto md:right-0 md:mt-2 md:w-52 md:rounded-2xl md:border dark:border-white/10 dark:bg-gray-950 md:py-1">
+                                    <div className="fixed bottom-0 left-0 right-0 z-[9999] w-full rounded-t-2xl border-t border-stone-900/10 bg-white py-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:absolute md:bottom-auto md:left-auto md:right-0 md:mt-2 md:w-52 md:rounded-2xl md:border dark:border-amber-200/10 dark:bg-[#17130f] md:py-1">
                                         <button
                                             onClick={handleCopyToClipboard}
                                             className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-stone-100 dark:hover:bg-white/[0.08] md:min-h-0 md:py-2"
@@ -415,7 +418,7 @@ export default function BibleNoteClient() {
                         <div className="relative z-[220] overflow-visible">
                             <button
                                 onClick={() => setShowMoreMenu(!showMoreMenu)}
-                                className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-700 transition-colors hover:bg-white/65 dark:text-stone-200 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                                className="flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] md:px-4 touch-manipulation"
                                 title="更多笔记工具"
                                 aria-label="更多笔记工具"
                             >
@@ -426,7 +429,7 @@ export default function BibleNoteClient() {
                             {showMoreMenu && (
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setShowMoreMenu(false)} />
-                                    <div className="fixed bottom-0 left-0 right-0 z-[9999] space-y-1 rounded-t-2xl border-t border-stone-900/10 bg-white p-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:absolute md:bottom-auto md:left-auto md:right-0 md:mt-2 md:w-56 md:rounded-2xl md:border dark:border-white/10 dark:bg-gray-950">
+                                    <div className="fixed bottom-0 left-0 right-0 z-[9999] space-y-1 rounded-t-2xl border-t border-stone-900/10 bg-white p-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:absolute md:bottom-auto md:left-auto md:right-0 md:mt-2 md:w-56 md:rounded-2xl md:border dark:border-amber-200/10 dark:bg-[#17130f]">
                                         <OcrImporter onInsertReferences={handleInsertFromOcr} />
                                         <button
                                             onClick={() => { setShowHelp(true); setShowMoreMenu(false); }}
@@ -477,7 +480,7 @@ export default function BibleNoteClient() {
                 {/* Help modal */}
                 {showHelp && (
                     <div className="fixed inset-0 z-[9998] flex justify-center items-start bg-black/50 animate-fade-in" onClick={() => setShowHelp(false)}>
-                        <div className="z-[9999] mx-4 mt-20 w-full max-w-lg rounded-2xl border border-stone-900/10 bg-white p-4 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:p-6 dark:border-white/10 dark:bg-gray-950" onClick={(e) => e.stopPropagation()}>
+                        <div className="z-[9999] mx-4 mt-20 w-full max-w-lg rounded-2xl border border-stone-900/10 bg-white p-4 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:p-6 dark:border-amber-200/10 dark:bg-[#17130f]" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                     <HelpCircle className="w-6 h-6 text-bible-600 dark:text-bible-400" />
@@ -573,7 +576,7 @@ export default function BibleNoteClient() {
 
                 {/* Mobile tab navigation */}
                 <div className="lg:hidden mb-3">
-                    <div className="flex gap-1 rounded-full border border-stone-900/10 bg-white/60 p-1 shadow-[0_14px_40px_rgba(68,64,60,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+                    <div className="flex gap-1 rounded-full border border-stone-900/10 bg-white/60 p-1 shadow-[0_14px_40px_rgba(68,64,60,0.06)] backdrop-blur-xl dark:border-amber-200/12 dark:bg-[#1b1712]/74">
                         <button
                             onClick={() => setActiveTab('edit')}
                             className={`flex-1 py-1.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[40px] ${
@@ -608,9 +611,9 @@ export default function BibleNoteClient() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     {/* Editor (desktop: 2/3 width) */}
                     <div className={`lg:col-span-2 ${activeTab === 'edit' ? 'block' : 'hidden lg:block'}`}>
-                        <div className="min-h-[520px] overflow-hidden rounded-[1.75rem] border border-stone-900/10 bg-white/78 shadow-[0_28px_80px_rgba(68,64,60,0.09)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+                        <div className="min-h-[520px] overflow-hidden rounded-[1.75rem] border border-stone-900/10 bg-white/78 shadow-[0_28px_80px_rgba(68,64,60,0.09)] backdrop-blur-xl dark:border-amber-200/12 dark:bg-[#1b1712]/74">
                             <NoteEditor
-                                ref={editorRef}
+                                noteEditorRef={editorRef}
                                 content={content}
                                 onChange={setContent}
                             />
@@ -653,7 +656,7 @@ export default function BibleNoteClient() {
                         chapterViewerState.isOpen
                             ? 'bottom-[45vh]'
                             : 'bottom-6 lg:bottom-8'
-                    } right-4 lg:right-8 min-h-[48px] rounded-full border border-stone-900/10 bg-white/78 px-4 text-stone-800 shadow-[0_14px_40px_rgba(68,64,60,0.12)] backdrop-blur-2xl transition-all duration-300 hover:bg-white dark:border-white/10 dark:bg-gray-950/78 dark:text-stone-100 z-40 flex items-center justify-center gap-2 touch-manipulation`}
+                    } right-4 lg:right-8 min-h-[48px] rounded-full border border-stone-900/10 bg-white/78 px-4 text-stone-800 shadow-[0_14px_40px_rgba(68,64,60,0.12)] backdrop-blur-2xl transition-all duration-300 hover:bg-white dark:border-amber-200/10 dark:bg-[#1c1812]/90 dark:text-stone-100 z-40 flex items-center justify-center gap-2 touch-manipulation`}
                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                     title="打開聖經"
                     aria-label="打開聖經查看器"

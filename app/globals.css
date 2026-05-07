@@ -6,7 +6,7 @@
 
 @layer base {
     body {
-        @apply bg-[#f8f5ee] font-chinese text-stone-900 antialiased dark:bg-[#0b0f14] dark:text-stone-100;
+        @apply bg-[#f8f5ee] font-chinese text-stone-900 antialiased dark:bg-[#11100d] dark:text-stone-100;
     }
 }
 
@@ -175,13 +175,15 @@
     }
 
     .dark .liquid-button {
-        background: rgba(255, 255, 255, 0.045);
-        border-color: rgba(255, 255, 255, 0.10);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        background: rgba(44, 38, 30, 0.72);
+        border-color: rgba(214, 188, 132, 0.16);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 246, 220, 0.08),
+            0 10px 28px rgba(0, 0, 0, 0.18);
     }
 
     .yw-page {
-        @apply min-h-screen bg-[#f8f5ee] text-stone-900 transition-colors dark:bg-[#0b0f14] dark:text-stone-100;
+        @apply min-h-screen bg-[#f8f5ee] text-stone-900 transition-colors dark:bg-[#11100d] dark:text-stone-100;
         background-image:
             radial-gradient(circle at top left, rgba(190, 158, 93, 0.12), transparent 34rem),
             radial-gradient(circle at bottom right, rgba(120, 113, 108, 0.08), transparent 30rem);
@@ -189,8 +191,9 @@
 
     .dark .yw-page {
         background-image:
-            radial-gradient(circle at top left, rgba(190, 158, 93, 0.10), transparent 32rem),
-            radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.045), transparent 28rem);
+            radial-gradient(circle at top left, rgba(190, 158, 93, 0.14), transparent 34rem),
+            radial-gradient(circle at bottom right, rgba(120, 113, 108, 0.08), transparent 30rem),
+            linear-gradient(180deg, rgba(255, 246, 220, 0.025), transparent 18rem);
     }
 
     .yw-shell {
@@ -232,7 +235,12 @@
 }
 
 .dark .bible-note-mdx-editor {
-    color: rgb(231 229 228);
+    color: rgb(238 232 220);
+    background: rgba(25, 22, 18, 0.92) !important;
+    border-color: rgba(214, 188, 132, 0.18) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 246, 220, 0.06),
+        0 30px 90px rgba(0, 0, 0, 0.34) !important;
 }
 
 .bible-note-mdx-editor [role='toolbar'] {
@@ -242,8 +250,8 @@
 }
 
 .dark .bible-note-mdx-editor [role='toolbar'] {
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    background: rgba(18, 24, 32, 0.92);
+    border-bottom-color: rgba(214, 188, 132, 0.14);
+    background: rgba(33, 29, 23, 0.96);
 }
 
 .bible-note-mdx-editor [role='toolbar'] button,
@@ -255,7 +263,35 @@
 .dark .bible-note-mdx-editor [role='toolbar'] button,
 .dark .bible-note-mdx-editor [role='toolbar'] [role='radio'],
 .dark .bible-note-mdx-editor [role='toolbar'] [role='combobox'] {
-    color: rgb(214 211 209);
+    background: rgba(255, 246, 220, 0.055) !important;
+    border-color: rgba(214, 188, 132, 0.14) !important;
+    color: rgb(226 218 204) !important;
+}
+
+.dark .bible-note-mdx-editor [role='toolbar'] button:hover,
+.dark .bible-note-mdx-editor [role='toolbar'] [role='radio']:hover,
+.dark .bible-note-mdx-editor [role='toolbar'] [role='combobox']:hover {
+    background: rgba(255, 246, 220, 0.10) !important;
+    color: rgb(255 248 232) !important;
+}
+
+.dark .bible-note-mdx-editor [role='toolbar'] svg,
+.dark .bible-note-mdx-editor [role='toolbar'] [role='radio'] svg,
+.dark .bible-note-mdx-editor [role='toolbar'] button svg {
+    color: rgb(226 218 204) !important;
+    opacity: 1 !important;
+    stroke: currentColor !important;
+}
+
+.dark .bible-note-mdx-editor [role='toolbar'] [aria-disabled='true'],
+.dark .bible-note-mdx-editor [role='toolbar'] button:disabled {
+    color: rgb(103 95 82) !important;
+    opacity: 0.72 !important;
+}
+
+.dark .bible-note-mdx-editor [role='toolbar'] [aria-disabled='true'] svg,
+.dark .bible-note-mdx-editor [role='toolbar'] button:disabled svg {
+    color: rgb(103 95 82) !important;
 }
 
 .bible-note-mdx-editor .mdxeditor-root-contenteditable {
@@ -267,8 +303,8 @@
 }
 
 .dark .bible-note-mdx-editor [contenteditable='true'] {
-    color: rgb(231 229 228);
-    caret-color: rgb(245 158 11);
+    color: rgb(238 232 220);
+    caret-color: rgb(217 171 89);
 }
 
 .bible-note-mdx-editor [contenteditable='true'] p,
@@ -286,10 +322,34 @@
 }
 
 .dark .bible-note-mdx-editor blockquote {
-    background: rgb(255 255 255 / 0.06);
-    color: rgb(231 229 228);
+    border-left-color: rgba(217, 171, 89, 0.62);
+    background: rgba(86, 66, 36, 0.22);
+    color: rgb(238 232 220);
 }
 
 .dark .bible-note-mdx-editor [data-placeholder] {
-    color: rgb(148 163 184);
+    color: rgb(165 154 135);
+}
+
+.dark .notebook-side-panel {
+    background: rgba(26, 22, 17, 0.84) !important;
+    border-color: rgba(214, 188, 132, 0.14) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 246, 220, 0.055),
+        0 18px 54px rgba(0, 0, 0, 0.24) !important;
+}
+
+.dark .notebook-side-panel h3 {
+    color: rgb(245 239 228) !important;
+}
+
+.dark .notebook-side-panel p,
+.dark .notebook-side-panel span {
+    color: rgb(180 169 150);
+}
+
+.dark .notebook-helper-pill {
+    background: rgba(255, 246, 220, 0.07) !important;
+    border-color: rgba(214, 188, 132, 0.16) !important;
+    color: rgb(194 181 157) !important;
 }

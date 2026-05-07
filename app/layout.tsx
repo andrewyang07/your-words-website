@@ -15,9 +15,12 @@ const notoSans = Noto_Sans_SC({
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://www.yourwords.me'),
-    title: '你的話語 - 聖經背誦與搜索 | 你的话语 - 圣经背诵与搜索',
+    title: {
+        default: '你的話語 - 免費聖經背誦與搜索工具',
+        template: '%s | 你的話語',
+    },
     description:
-        '免費聖經背誦與搜索工具，支持中文、英文、拼音快速搜索經文，Flash Card背誦模式和聖經筆記本功能。免费圣经背诵与搜索工具，支持中文、英文、拼音快速搜索经文，Flash Card背诵模式和圣经笔记本功能。繁體中文、簡體中文雙語支持，讓神的話語常在心中。',
+        '免費聖經背誦與搜索工具，支持中文、英文、拼音快速查找經文，提供 Flash Card 背誦、經文收藏、分享與聖經筆記本功能。',
     keywords: [
         // 繁体关键词（主要）
         '背聖經',
@@ -80,11 +83,7 @@ export const metadata: Metadata = {
     creator: 'Your Words',
     publisher: 'Your Words',
     alternates: {
-        languages: {
-            'zh-TW': 'https://www.yourwords.me',
-            'zh-CN': 'https://www.yourwords.me',
-            zh: 'https://www.yourwords.me',
-        },
+        canonical: '/',
     },
     robots: {
         index: true,
@@ -103,8 +102,8 @@ export const metadata: Metadata = {
         alternateLocale: ['zh_CN'],
         url: 'https://www.yourwords.me',
         siteName: '你的話語',
-        title: '你的話語 - 聖經背誦與搜索 | 你的话语 - 圣经背诵与搜索',
-        description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速搜索經文，Flash Card背誦模式和聖經筆記本功能。免费圣经背诵与搜索工具，支持中文、英文、拼音快速搜索经文，Flash Card背诵模式和圣经笔记本功能。',
+        title: '你的話語 - 免費聖經背誦與搜索工具',
+        description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速查找經文，提供 Flash Card 背誦、經文收藏、分享與聖經筆記本功能。',
         images: [
             {
                 url: '/logo-light.png',
@@ -116,8 +115,8 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary',
-        title: '你的話語 - 聖經背誦與搜索 | 你的话语 - 圣经背诵与搜索',
-        description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速搜索經文，Flash Card背誦模式和聖經筆記本功能。免费圣经背诵与搜索工具，支持中文、英文、拼音快速搜索经文，Flash Card背诵模式和圣经笔记本功能。',
+        title: '你的話語 - 免費聖經背誦與搜索工具',
+        description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速查找經文，提供 Flash Card 背誦、經文收藏、分享與聖經筆記本功能。',
         images: ['/logo-light.png'],
     },
     icons: {
@@ -130,20 +129,39 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const structuredData = {
         '@context': 'https://schema.org',
-        '@type': 'WebApplication',
-        name: '你的话语',
-        alternateName: 'Your Words',
-        description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速搜索經文，Flash Card背誦模式和聖經筆記本功能。免费圣经背诵与搜索工具，支持中文、英文、拼音快速搜索经文，Flash Card背诵模式和圣经笔记本功能',
-        url: 'https://www.yourwords.me',
-        applicationCategory: 'EducationApplication',
-        operatingSystem: 'Web Browser',
-        offers: {
-            '@type': 'Offer',
-            price: '0',
-            priceCurrency: 'USD',
-        },
-        inLanguage: ['zh-TW', 'zh-CN'],
-        featureList: ['圣经背诵', 'Flash Card模式', '圣经笔记本', '经文收藏', '经文分享', '快速經文搜索', 'Fast Bible Search'],
+        '@graph': [
+            {
+                '@type': 'WebApplication',
+                '@id': 'https://www.yourwords.me/#app',
+                name: '你的話語',
+                alternateName: ['你的话语', 'Your Words'],
+                description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速查找經文，提供 Flash Card 背誦、經文收藏、分享與聖經筆記本功能。',
+                url: 'https://www.yourwords.me',
+                applicationCategory: 'EducationApplication',
+                operatingSystem: 'Web Browser',
+                isAccessibleForFree: true,
+                offers: {
+                    '@type': 'Offer',
+                    price: '0',
+                    priceCurrency: 'USD',
+                },
+                inLanguage: ['zh-TW', 'zh-CN', 'en'],
+                featureList: ['聖經背誦', '聖經搜索', '中文、英文、拼音搜索', 'Flash Card 背誦模式', '聖經筆記本', '經文收藏', '經文分享', '本地優先使用'],
+            },
+            {
+                '@type': 'WebSite',
+                '@id': 'https://www.yourwords.me/#website',
+                name: '你的話語',
+                alternateName: ['你的话语', 'Your Words'],
+                url: 'https://www.yourwords.me',
+                inLanguage: ['zh-TW', 'zh-CN', 'en'],
+                potentialAction: {
+                    '@type': 'SearchAction',
+                    target: 'https://www.yourwords.me/search?q={search_term_string}',
+                    'query-input': 'required name=search_term_string',
+                },
+            },
+        ],
     };
 
     return (

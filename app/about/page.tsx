@@ -2,8 +2,11 @@ import type { Metadata } from 'next';
 import AboutPageClient from './AboutPageClient';
 
 export const metadata: Metadata = {
-    title: '关于你的话语 - 免费圣经背诵工具',
-    description: '了解你的话语圣经背诵工具的功能特色、开发背景和使用方法。支持Flash Card背诵模式和圣经笔记本功能。',
+    title: '關於你的話語',
+    description: '了解你的話語聖經背誦工具的功能特色、開發背景和使用方法。支持 Flash Card 背誦模式和聖經筆記本功能。',
+    alternates: {
+        canonical: '/about',
+    },
     keywords: [
         '关于你的话语',
         '你的话语介绍',
@@ -17,9 +20,26 @@ export const metadata: Metadata = {
         '背圣经app'
     ],
     openGraph: {
-        title: '关于你的话语 - 免费圣经背诵工具',
-        description: '了解你的话语圣经背诵工具的功能特色和使用方法',
+        title: '關於你的話語 - 免費聖經背誦工具',
+        description: '了解你的話語聖經背誦工具的功能特色和使用方法',
+        url: '/about',
+        siteName: '你的話語',
+        locale: 'zh_TW',
         type: 'website',
+        images: [
+            {
+                url: '/logo-light.png',
+                width: 1024,
+                height: 1024,
+                alt: '你的話語 Logo',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary',
+        title: '關於你的話語 - 免費聖經背誦工具',
+        description: '了解你的話語聖經背誦工具的功能特色和使用方法',
+        images: ['/logo-light.png'],
     },
 };
 

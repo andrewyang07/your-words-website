@@ -1,7 +1,7 @@
 'use client';
 
 import {
-    forwardRef,
+    type Ref,
     useEffect,
     useImperativeHandle,
     useMemo,
@@ -30,13 +30,14 @@ import {
 interface NoteEditorProps {
     content: string;
     onChange: (content: string) => void;
+    noteEditorRef?: Ref<NoteEditorHandle>;
 }
 
 export interface NoteEditorHandle {
     insertMarkdownAtCursor: (markdown: string) => boolean;
 }
 
-const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function NoteEditor({ content, onChange }, ref) {
+export default function NoteEditor({ content, onChange, noteEditorRef }: NoteEditorProps) {
     const editorRef = useRef<MDXEditorMethods>(null);
     const latestMarkdownRef = useRef(content);
 
@@ -72,7 +73,7 @@ const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function NoteEd
         []
     );
 
-    useImperativeHandle(ref, () => ({
+    useImperativeHandle(noteEditorRef, () => ({
         insertMarkdownAtCursor(markdown: string) {
             const editor = editorRef.current;
             if (!editor) return false;
@@ -84,7 +85,7 @@ const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function NoteEd
             onChange(nextMarkdown);
             return true;
         },
-    }), [onChange]);
+    }), [noteEditorRef, onChange]);
 
     const handleChange = (markdown: string) => {
         latestMarkdownRef.current = markdown;
@@ -92,7 +93,7 @@ const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function NoteEd
     };
 
     return (
-        <div className="bible-note-mdx-editor overflow-hidden rounded-[1.75rem] border border-stone-200/70 bg-white/85 shadow-[0_24px_80px_rgba(68,64,60,0.08)] backdrop-blur-sm transition-all dark:border-gray-700/60 dark:bg-gray-900/70">
+        <div className="bible-note-mdx-editor overflow-hidden rounded-[1.75rem] border border-stone-200/70 bg-white/85 shadow-[0_24px_80px_rgba(68,64,60,0.08)] backdrop-blur-sm transition-all dark:border-amber-200/15 dark:bg-[#191612]/80">
             <MDXEditor
                 ref={editorRef}
                 markdown={content}
@@ -111,6 +112,4 @@ const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function NoteEd
             />
         </div>
     );
-});
-
-export default NoteEditor;
+}

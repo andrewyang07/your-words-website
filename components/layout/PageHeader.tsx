@@ -20,37 +20,39 @@ export default function PageHeader({
 }: PageHeaderProps) {
     return (
         <header
-            className="sticky top-0 z-10 border-b border-stone-900/10 bg-[#f8f5ee]/72 backdrop-blur-2xl dark:border-white/10 dark:bg-[#0e1116]/72"
+            className="sticky top-0 z-50 border-b border-stone-900/10 bg-[#f8f5ee]/72 backdrop-blur-2xl dark:border-amber-200/10 dark:bg-[#15120e]/82"
             role="banner"
         >
-            <div className="mx-auto max-w-6xl px-4 py-3 md:py-4">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                {/* Logo 和标题 - 完全从主页复制 */}
-                <div className="flex items-center gap-3">
-                    <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity" title="返回首頁">
-                        <Image
-                            src="/logo-light.png"
-                            alt="你的話語 Logo"
-                            width={48}
-                            height={48}
-                            className="h-10 w-10 rounded-xl border border-stone-900/10 bg-white/55 p-1 object-contain dark:border-white/10 dark:bg-white/[0.04] dark:brightness-90 dark:contrast-125"
-                            priority
-                        />
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-[1.55rem] font-semibold leading-none tracking-[0.08em] text-stone-950 dark:text-stone-50 font-chinese md:text-2xl">
+            <div className="relative z-[1] mx-auto max-w-6xl px-4 py-3 md:py-4">
+                <div className="flex items-center justify-between gap-3">
+                {/* Logo 和标题 - 与主页标题行保持同一尺寸 */}
+                <div className="flex min-w-0 flex-1 items-center gap-3 overflow-visible">
+                    <a href="/" className="group flex min-w-0 items-center gap-2.5 overflow-visible transition-opacity hover:opacity-90 sm:gap-3" title="返回首頁">
+                        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stone-900/10 bg-white/55 p-1 dark:border-white/10 dark:bg-white/[0.04] sm:h-10 sm:w-10">
+                            <Image
+                                src="/logo-light.png"
+                                alt="你的話語 Logo"
+                                width={40}
+                                height={40}
+                                className="h-full w-full rounded-lg object-contain dark:brightness-90 dark:contrast-125"
+                                priority
+                            />
+                        </span>
+                        <span className="min-w-0 overflow-visible py-0.5">
+                            <h1 className="truncate text-[1.32rem] font-semibold leading-[1.22] tracking-[0.05em] text-stone-950 dark:text-stone-50 font-chinese sm:text-[1.55rem] sm:tracking-[0.08em] md:text-2xl">
                                 你的話語
                             </h1>
                             {subtitle && (
-                                <div className="text-sm md:text-base font-chinese">
+                                <span className="mt-0.5 hidden text-[10px] leading-none tracking-[0.28em] text-stone-500 dark:text-stone-400 sm:flex">
                                     {subtitle}
-                                </div>
+                                </span>
                             )}
-                        </div>
+                        </span>
                     </a>
                 </div>
 
                 {/* 右侧按钮区域 */}
-                <div className="flex items-center gap-2">
+                <div className="liquid-glass flex shrink-0 items-center gap-1 rounded-full p-1 md:gap-1.5">
                     {/* 自定义按钮内容 */}
                     {rightContent}
 
@@ -58,7 +60,7 @@ export default function PageHeader({
                     {showHelp && onHelpClick && (
                         <button
                             onClick={onHelpClick}
-                            className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                            className="flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] md:px-4 touch-manipulation"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             title="显示使用帮助"
                             aria-label="显示使用帮助"
@@ -71,7 +73,7 @@ export default function PageHeader({
                     {/* 汉堡菜单按钮 */}
                     <button
                         onClick={onMenuClick}
-                        className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                        className="flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] md:px-4 touch-manipulation"
                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                         title="菜单"
                         aria-label="打开菜单"
