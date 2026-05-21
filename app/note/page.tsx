@@ -46,5 +46,13 @@ export const metadata: Metadata = {
 };
 
 export default function NotePage() {
-    return <BibleNoteClient />;
+    return (
+        <>
+            <section className="sr-only" aria-label="聖經筆記本簡介">
+                <h1>聖經筆記本</h1>
+                <p>本地優先的線上聖經筆記本，支持經文引用、Markdown 編輯與匯出備份，適合記錄靈修心得。</p>
+            </section>
+            <BibleNoteClient />
+        </>
+    );
 }

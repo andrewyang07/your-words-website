@@ -44,5 +44,13 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
-    return <AboutPageClient />;
+    return (
+        <>
+            <section className="sr-only" aria-label="關於你的話語簡介">
+                <h1>關於你的話語</h1>
+                <p>了解你的話語聖經背誦工具的功能特色、開發背景和使用方法。</p>
+            </section>
+            <AboutPageClient />
+        </>
+    );
 }

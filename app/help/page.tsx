@@ -44,5 +44,13 @@ export const metadata: Metadata = {
 };
 
 export default function HelpPage() {
-    return <HelpPageClient />;
+    return (
+        <>
+            <section className="sr-only" aria-label="使用幫助簡介">
+                <h1>使用幫助</h1>
+                <p>了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。</p>
+            </section>
+            <HelpPageClient />
+        </>
+    );
 }
