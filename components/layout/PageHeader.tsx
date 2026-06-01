@@ -39,9 +39,9 @@ export default function PageHeader({
                             />
                         </span>
                         <span className="min-w-0 overflow-visible py-0.5">
-                            <h1 className="truncate text-[1.32rem] font-semibold leading-[1.22] tracking-[0.05em] text-stone-950 dark:text-stone-50 font-chinese sm:text-[1.55rem] sm:tracking-[0.08em] md:text-2xl">
+                            <span className="block truncate text-[1.32rem] font-semibold leading-[1.22] tracking-[0.05em] text-stone-950 dark:text-stone-50 font-chinese sm:text-[1.55rem] sm:tracking-[0.08em] md:text-2xl">
                                 你的話語
-                            </h1>
+                            </span>
                             {subtitle && (
                                 <span className="mt-0.5 hidden text-[10px] leading-none tracking-[0.28em] text-stone-500 dark:text-stone-400 sm:flex">
                                     {subtitle}
