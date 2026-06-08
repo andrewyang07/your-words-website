@@ -38,6 +38,14 @@ export default function SearchLayout({ children }: { children: React.ReactNode }
                 <p>支持經文引用、中文關鍵詞、英文與拼音搜索，快速查找聖經經文，適合查經、背誦和靈修使用。</p>
             </section>
             {children}
+            <section className="mx-auto max-w-2xl px-4 pb-12 font-chinese text-sm leading-7 text-stone-600 dark:text-stone-400">
+                <div className="yw-panel p-5">
+                    <h2 className="mb-2 text-base font-semibold text-stone-950 dark:text-stone-50">如何快速找到經文</h2>
+                    <p>
+                        你可以輸入「約3:16」「John 3:16」這類經文引用，也可以輸入關鍵詞如「愛」「信心」「平安」。中文、英文與拼音搜索適合查經、靈修準備和背誦複習，幫助你在需要時快速回到神的話語。
+                    </p>
+                </div>
+            </section>
         </>
     );
 }

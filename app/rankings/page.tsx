@@ -155,6 +155,13 @@ export default function RankingsPage() {
                         📊 最多收藏的聖經經文（按收藏次數排序） · 每小時更新
                     </p>
                 </div>
+
+                <section className="mb-6 yw-panel p-5 font-chinese text-sm leading-7 text-stone-700 dark:text-stone-300">
+                    <h2 className="mb-2 text-base font-semibold text-stone-950 dark:text-stone-50">如何使用經文排行榜</h2>
+                    <p>
+                        排行榜整理較常被收藏的聖經經文，幫助你找到適合背誦、默想和查經分享的段落。你可以切換閱讀模式查看完整內容，也可以按舊約、新約或書卷篩選，把常被弟兄姊妹收藏的經文加入自己的背誦計劃。
+                    </p>
+                </section>
                 
                 {/* 筛选工具栏 */}
                 {rankings.length > 0 && !loading && !error && (
