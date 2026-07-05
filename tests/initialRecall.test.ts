@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { evaluateInitialRecall, getNextRecallHint } from '../lib/review/initialRecall';
 
 describe('evaluateInitialRecall', () => {
-  it('matches Chinese recall by pinyin while ignoring punctuation', () => {
+  it('rejects full pinyin for Chinese recall', () => {
     const result = evaluateInitialRecall({
       text: '神爱世人，甚至将他的独生子赐给他们。',
       language: 'zh',
@@ -10,8 +10,8 @@ describe('evaluateInitialRecall', () => {
     });
 
     expect(result.isComplete).toBe(false);
-    expect(result.isValidPrefix).toBe(true);
-    expect(result.displayText).toBe('神爱世人，甚至__________。');
+    expect(result.isValidPrefix).toBe(false);
+    expect(result.displayText).toBe('____，____________。');
   });
 
   it('does not accept Chinese characters as Chinese recall input', () => {
@@ -25,7 +25,7 @@ describe('evaluateInitialRecall', () => {
     expect(result.displayText).toBe('____。');
   });
 
-  it('also accepts Chinese pinyin initials for faster recall', () => {
+  it('matches Chinese recall by pinyin initials', () => {
     const result = evaluateInitialRecall({
       text: '神爱世人。',
       language: 'zh',
@@ -54,8 +54,8 @@ describe('evaluateInitialRecall', () => {
       getNextRecallHint({
         text: '神爱世人。',
         language: 'zh',
-        input: 'shen',
+        input: 'sa',
       })
-    ).toBe('a');
+    ).toBe('s');
   });
 });

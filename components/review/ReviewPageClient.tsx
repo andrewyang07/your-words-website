@@ -174,9 +174,8 @@ export default function ReviewPageClient() {
                 <input
                   value={input}
                   onChange={(event) => setInput(event.target.value)}
-                  autoFocus
                   className="h-12 w-full rounded border border-stone-900/10 bg-white px-3 text-lg outline-none focus:ring-2 focus:ring-stone-800 dark:border-white/10 dark:bg-white/[0.06] dark:focus:ring-stone-200"
-                  placeholder="输入拼音；可用完整拼音或首字母"
+                  placeholder="输入拼音首字母"
                 />
                 {!recallResult.isValidPrefix && <p className="text-sm text-amber-700 dark:text-amber-300">慢慢来，刚才那一位可能不对。</p>}
                 <div className="flex flex-wrap gap-2">

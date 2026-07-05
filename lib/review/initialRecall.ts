@@ -19,7 +19,6 @@ export interface InitialRecallResult {
 interface RecallUnit {
   text: string;
   token: string;
-  initialToken?: string;
   recallable: boolean;
 }
 
@@ -29,18 +28,10 @@ const englishWordPattern = /[A-Za-z0-9]+/g;
 export function evaluateInitialRecall({ text, language, input }: InitialRecallInput): InitialRecallResult {
   const units = language === 'en' ? buildEnglishUnits(text) : buildChineseUnits(text);
   const expectedInput = units.filter((unit) => unit.recallable).map((unit) => unit.token).join('');
-  const expectedInitials = units.filter((unit) => unit.recallable).map((unit) => unit.initialToken ?? unit.token).join('');
   const normalizedInput = normalizeInput(input);
   const hasNonPinyinInput = input.trim().length > 0 && normalizedInput.length === 0;
-  const inputMode = hasNonPinyinInput
-    ? 'invalid'
-    : expectedInput.startsWith(normalizedInput)
-    ? 'full'
-    : expectedInitials.startsWith(normalizedInput)
-      ? 'initials'
-      : 'invalid';
-  const isValidPrefix = inputMode !== 'invalid';
-  const visibleCount = isValidPrefix ? getVisibleCount(units, normalizedInput, inputMode) : 0;
+  const isValidPrefix = !hasNonPinyinInput && expectedInput.startsWith(normalizedInput);
+  const visibleCount = isValidPrefix ? getVisibleCount(units, normalizedInput) : 0;
   let seenRecallable = 0;
 
   const displayText = units.map((unit) => {
@@ -53,7 +44,7 @@ export function evaluateInitialRecall({ text, language, input }: InitialRecallIn
     displayText,
     isComplete: isValidPrefix && visibleCount === units.filter((unit) => unit.recallable).length,
     isValidPrefix,
-    expectedInput: inputMode === 'initials' ? expectedInitials : expectedInput,
+    expectedInput,
     normalizedInput,
   };
 }
@@ -75,8 +66,7 @@ function buildChineseUnits(text: string): RecallUnit[] {
 
     return {
       text: char,
-      token,
-      initialToken: token[0],
+      token: token[0] ?? '',
       recallable,
     };
   });
@@ -103,15 +93,14 @@ function buildEnglishUnits(text: string): RecallUnit[] {
   return units;
 }
 
-function getVisibleCount(units: RecallUnit[], input: string, mode: 'full' | 'initials'): number {
+function getVisibleCount(units: RecallUnit[], input: string): number {
   let consumed = '';
   let visible = 0;
 
   for (const unit of units) {
     if (!unit.recallable) continue;
-    const token = mode === 'initials' ? unit.initialToken ?? unit.token : unit.token;
-    if (!input.startsWith(consumed + token)) break;
-    consumed += token;
+    if (!input.startsWith(consumed + unit.token)) break;
+    consumed += unit.token;
     visible += 1;
   }
 
