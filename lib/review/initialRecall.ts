@@ -1,3 +1,5 @@
+import { pinyin } from 'pinyin-pro';
+
 export type RecallLanguage = 'zh' | 'en';
 
 export interface InitialRecallInput {
@@ -17,6 +19,7 @@ export interface InitialRecallResult {
 interface RecallUnit {
   text: string;
   token: string;
+  initialToken?: string;
   recallable: boolean;
 }
 
@@ -26,9 +29,18 @@ const englishWordPattern = /[A-Za-z0-9]+/g;
 export function evaluateInitialRecall({ text, language, input }: InitialRecallInput): InitialRecallResult {
   const units = language === 'en' ? buildEnglishUnits(text) : buildChineseUnits(text);
   const expectedInput = units.filter((unit) => unit.recallable).map((unit) => unit.token).join('');
+  const expectedInitials = units.filter((unit) => unit.recallable).map((unit) => unit.initialToken ?? unit.token).join('');
   const normalizedInput = normalizeInput(input);
-  const isValidPrefix = expectedInput.startsWith(normalizedInput);
-  const visibleCount = isValidPrefix ? normalizedInput.length : Math.max(0, normalizedInput.length - 1);
+  const hasNonPinyinInput = input.trim().length > 0 && normalizedInput.length === 0;
+  const inputMode = hasNonPinyinInput
+    ? 'invalid'
+    : expectedInput.startsWith(normalizedInput)
+    ? 'full'
+    : expectedInitials.startsWith(normalizedInput)
+      ? 'initials'
+      : 'invalid';
+  const isValidPrefix = inputMode !== 'invalid';
+  const visibleCount = isValidPrefix ? getVisibleCount(units, normalizedInput, inputMode) : 0;
   let seenRecallable = 0;
 
   const displayText = units.map((unit) => {
@@ -39,9 +51,9 @@ export function evaluateInitialRecall({ text, language, input }: InitialRecallIn
 
   return {
     displayText,
-    isComplete: normalizedInput.length === expectedInput.length && isValidPrefix,
+    isComplete: isValidPrefix && visibleCount === units.filter((unit) => unit.recallable).length,
     isValidPrefix,
-    expectedInput,
+    expectedInput: inputMode === 'initials' ? expectedInitials : expectedInput,
     normalizedInput,
   };
 }
@@ -53,15 +65,21 @@ export function getNextRecallHint(input: InitialRecallInput): string | null {
 }
 
 function normalizeInput(input: string): string {
-  return Array.from(input.toLocaleLowerCase()).filter((char) => /[\p{Letter}\p{Number}]/u.test(char)).join('');
+  return Array.from(input.toLocaleLowerCase()).filter((char) => /[a-z0-9]/u.test(char)).join('');
 }
 
 function buildChineseUnits(text: string): RecallUnit[] {
-  return Array.from(text).map((char) => ({
-    text: char,
-    token: char.toLocaleLowerCase(),
-    recallable: chineseCharPattern.test(char),
-  }));
+  return Array.from(text).map((char) => {
+    const recallable = chineseCharPattern.test(char);
+    const token = recallable ? pinyin(char, { toneType: 'none', type: 'array' }).join('').toLocaleLowerCase() : '';
+
+    return {
+      text: char,
+      token,
+      initialToken: token[0],
+      recallable,
+    };
+  });
 }
 
 function buildEnglishUnits(text: string): RecallUnit[] {
@@ -83,4 +101,19 @@ function buildEnglishUnits(text: string): RecallUnit[] {
   }
 
   return units;
+}
+
+function getVisibleCount(units: RecallUnit[], input: string, mode: 'full' | 'initials'): number {
+  let consumed = '';
+  let visible = 0;
+
+  for (const unit of units) {
+    if (!unit.recallable) continue;
+    const token = mode === 'initials' ? unit.initialToken ?? unit.token : unit.token;
+    if (!input.startsWith(consumed + token)) break;
+    consumed += token;
+    visible += 1;
+  }
+
+  return visible;
 }

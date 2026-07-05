@@ -2,16 +2,39 @@ import { describe, expect, it } from 'vitest';
 import { evaluateInitialRecall, getNextRecallHint } from '../lib/review/initialRecall';
 
 describe('evaluateInitialRecall', () => {
-  it('matches Chinese recall by visible characters while ignoring punctuation', () => {
+  it('matches Chinese recall by pinyin while ignoring punctuation', () => {
     const result = evaluateInitialRecall({
       text: '神爱世人，甚至将他的独生子赐给他们。',
       language: 'zh',
-      input: '神爱世人甚至',
+      input: 'shenaishirenshenzhi',
     });
 
     expect(result.isComplete).toBe(false);
     expect(result.isValidPrefix).toBe(true);
     expect(result.displayText).toBe('神爱世人，甚至__________。');
+  });
+
+  it('does not accept Chinese characters as Chinese recall input', () => {
+    const result = evaluateInitialRecall({
+      text: '神爱世人。',
+      language: 'zh',
+      input: '神爱',
+    });
+
+    expect(result.isValidPrefix).toBe(false);
+    expect(result.displayText).toBe('____。');
+  });
+
+  it('also accepts Chinese pinyin initials for faster recall', () => {
+    const result = evaluateInitialRecall({
+      text: '神爱世人。',
+      language: 'zh',
+      input: 'sasr',
+    });
+
+    expect(result.isComplete).toBe(true);
+    expect(result.isValidPrefix).toBe(true);
+    expect(result.displayText).toBe('神爱世人。');
   });
 
   it('matches English recall by first letters and ignores case', () => {
@@ -29,10 +52,10 @@ describe('evaluateInitialRecall', () => {
   it('returns the next recall hint without changing validation rules', () => {
     expect(
       getNextRecallHint({
-        text: 'For God so loved the world.',
-        language: 'en',
-        input: 'fg',
+        text: '神爱世人。',
+        language: 'zh',
+        input: 'shen',
       })
-    ).toBe('s');
+    ).toBe('a');
   });
 });
