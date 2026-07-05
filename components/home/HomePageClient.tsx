@@ -24,6 +24,7 @@ import {
     Users,
     Search,
     SlidersHorizontal,
+    BookOpenCheck,
 } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
@@ -1464,6 +1465,29 @@ export default function HomePage() {
                     </div>
                 </div>
             </header>
+
+            <section className="relative z-[1] mx-auto max-w-6xl px-4 py-4 sm:py-5" aria-label={language === 'traditional' ? '每日複習入口' : '每日复习入口'}>
+                <div className="rounded-lg border border-stone-900/10 bg-white/72 p-4 shadow-[0_18px_50px_rgba(68,64,60,0.08)] dark:border-white/10 dark:bg-white/[0.045] sm:flex sm:items-center sm:justify-between sm:gap-5">
+                    <div className="flex items-start gap-3">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-stone-950 text-white dark:bg-stone-50 dark:text-stone-950">
+                            <BookOpenCheck className="h-5 w-5" />
+                        </span>
+                        <div>
+                            <h2 className="text-lg font-semibold text-stone-950 dark:text-stone-50">{language === 'traditional' ? '每日複習' : '每日复习'}</h2>
+                            <p className="mt-1 text-sm leading-6 text-stone-600 dark:text-stone-300">
+                                {language === 'traditional' ? '一次一個記憶項目，讀、遮字、回想、評估。' : '一次一个记忆项目，读、遮字、回想、评估。'}
+                            </p>
+                        </div>
+                    </div>
+                    <a
+                        href="/review"
+                        className="mt-4 inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded bg-stone-950 px-4 text-sm font-medium text-white dark:bg-stone-50 dark:text-stone-950 sm:mt-0 sm:w-auto"
+                    >
+                        <BookOpenCheck className="h-4 w-4" />
+                        {language === 'traditional' ? '開始複習' : '开始复习'}
+                    </a>
+                </div>
+            </section>
 
             {/* 主内容区域 */}
             <main role="main" aria-label={language === 'traditional' ? '聖經經文內容' : '圣经经文内容'}>
