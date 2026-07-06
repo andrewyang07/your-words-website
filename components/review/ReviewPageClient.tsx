@@ -2,18 +2,20 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, Eye, Flame, HelpCircle, Keyboard, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Check, Eye, Flame, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useReviewStore } from '@/stores/useReviewStore';
-import { buildDailyReviewQuota, createReviewProgress, type MemorizationItem, type ReviewRating } from '@/lib/review/dailyReview';
-import { evaluateInitialRecall, getNextRecallHint } from '@/lib/review/initialRecall';
+import { buildDailyReviewQuota, type MemorizationItem, type ReviewRating } from '@/lib/review/dailyReview';
 import { loadChapterVerses, loadPresetVerses } from '@/lib/dataLoader';
+import { useMaskStore } from '@/stores/useMaskStore';
+import { maskVerseText } from '@/lib/utils';
+import { decodeVerseList } from '@/lib/bibleBookMapping';
 import type { Verse } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 
-type Step = 'read' | 'recall' | 'check';
+type Step = 'masked' | 'check';
 
 const ratingCopy: Record<ReviewRating, string> = {
   'got-it': '会了',
@@ -25,18 +27,21 @@ export default function ReviewPageClient() {
   const { language } = useAppStore();
   const { getFavoritesList } = useFavoritesStore();
   const { reviewGroups, progress, ensureProgress, rateItem, completeQuota, streak, getMasteryProgress } = useReviewStore();
+  const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
-  const [step, setStep] = useState<Step>('read');
-  const [input, setInput] = useState('');
+  const [step, setStep] = useState<Step>('masked');
   const [completed, setCompleted] = useState(false);
   const [includeNotDue, setIncludeNotDue] = useState(false);
   const [today, setToday] = useState(() => new Date());
+  const [sharedIds, setSharedIds] = useState<string[]>([]);
+  const visibleChars = maskCharsType === 'fixed' ? maskCharsFixed : Math.max(maskCharsMin, Math.min(maskCharsMax, 2));
 
   const favoriteKey = getFavoritesList().join('|');
   const favoriteIds = useMemo(() => (favoriteKey ? favoriteKey.split('|') : []), [favoriteKey]);
+  const reviewPoolIds = sharedIds.length > 0 ? sharedIds : favoriteIds;
 
   useEffect(() => {
     let cancelled = false;
@@ -46,9 +51,12 @@ export default function ReviewPageClient() {
       setError(null);
 
       try {
-        const favoriteVerses = await loadFavoriteVerses(favoriteIds, language);
-        const curatedVerses = favoriteVerses.length > 0 ? [] : await loadPresetVerses(language);
-        if (!cancelled) setVerses(favoriteVerses.length > 0 ? favoriteVerses : curatedVerses);
+        const ids = getSharedReviewIds();
+        if (!cancelled) setSharedIds(ids);
+        const poolIds = ids.length > 0 ? ids : favoriteIds;
+        const poolVerses = await loadFavoriteVerses(poolIds, language);
+        const curatedVerses = poolVerses.length > 0 ? [] : await loadPresetVerses(language);
+        if (!cancelled) setVerses(poolVerses.length > 0 ? poolVerses : curatedVerses);
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : '加载每日复习失败');
       } finally {
@@ -65,19 +73,17 @@ export default function ReviewPageClient() {
   const quota = useMemo(
     () =>
       buildDailyReviewQuota({
-        savedVerseIds: favoriteIds,
+        savedVerseIds: reviewPoolIds,
         reviewGroups,
         progress,
         verses,
         today,
         includeNotDue,
       }),
-    [favoriteIds, reviewGroups, progress, verses, today, includeNotDue]
+    [reviewPoolIds, reviewGroups, progress, verses, today, includeNotDue]
   );
 
   const currentItem = quota.items[index];
-  const recallText = currentItem?.verses.map((verse) => verse.text).join('\n') ?? '';
-  const recallResult = evaluateInitialRecall({ text: recallText, language: 'zh', input });
   const mastery = getMasteryProgress();
 
   useEffect(() => {
@@ -87,8 +93,7 @@ export default function ReviewPageClient() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && step === 'read') setStep('recall');
-      if (event.key === 'Enter' && step === 'recall') setStep('check');
+      if (event.key === 'Enter' && step === 'masked') setStep('check');
       if (step === 'check' && ['1', '2', '3'].includes(event.key)) {
         const rating = event.key === '1' ? 'got-it' : event.key === '2' ? 'fuzzy' : 'missed';
         handleRate(rating);
@@ -99,11 +104,6 @@ export default function ReviewPageClient() {
     return () => window.removeEventListener('keydown', onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, currentItem, index, quota.items.length]);
-
-  const handleHint = () => {
-    const hint = getNextRecallHint({ text: recallText, language: 'zh', input });
-    if (hint) setInput((value) => `${value}${hint}`);
-  };
 
   const handleRate = (rating: ReviewRating) => {
     if (!currentItem) return;
@@ -116,14 +116,12 @@ export default function ReviewPageClient() {
     }
 
     setIndex((value) => value + 1);
-    setStep('read');
-    setInput('');
+    setStep('masked');
   };
 
   const handleContinue = () => {
     setIndex(0);
-    setInput('');
-    setStep('read');
+    setStep('masked');
     setCompleted(false);
     setIncludeNotDue(true);
     setToday(new Date());
@@ -160,35 +158,13 @@ export default function ReviewPageClient() {
               </span>
             </div>
 
-            <ReviewText item={currentItem} step={step} recallDisplay={recallResult.displayText} />
+            <ReviewText item={currentItem} step={step} maskMode={maskMode} visibleChars={visibleChars} />
 
-            {step === 'read' && (
-              <button onClick={() => setStep('recall')} className="mt-6 inline-flex min-h-[48px] items-center justify-center gap-2 rounded bg-stone-950 px-4 text-white dark:bg-stone-50 dark:text-stone-950">
-                <Keyboard className="h-4 w-4" />
-                开始回想
+            {step === 'masked' && (
+              <button onClick={() => setStep('check')} className="mt-6 inline-flex min-h-[48px] items-center justify-center gap-2 rounded bg-stone-950 px-4 text-white dark:bg-stone-50 dark:text-stone-950">
+                <Eye className="h-4 w-4" />
+                查看全文
               </button>
-            )}
-
-            {step === 'recall' && (
-              <div className="mt-6 space-y-3">
-                <input
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  className="h-12 w-full rounded border border-stone-900/10 bg-white px-3 text-lg outline-none focus:ring-2 focus:ring-stone-800 dark:border-white/10 dark:bg-white/[0.06] dark:focus:ring-stone-200"
-                  placeholder="输入拼音首字母"
-                />
-                {!recallResult.isValidPrefix && <p className="text-sm text-amber-700 dark:text-amber-300">慢慢来，刚才那一位可能不对。</p>}
-                <div className="flex flex-wrap gap-2">
-                  <button onClick={handleHint} className="inline-flex min-h-[44px] items-center gap-2 rounded border border-stone-900/10 px-3 text-sm dark:border-white/10">
-                    <HelpCircle className="h-4 w-4" />
-                    提示
-                  </button>
-                  <button onClick={() => setStep('check')} className="inline-flex min-h-[44px] items-center gap-2 rounded bg-stone-950 px-4 text-sm text-white dark:bg-stone-50 dark:text-stone-950">
-                    <Eye className="h-4 w-4" />
-                    查看全文
-                  </button>
-                </div>
-              </div>
             )}
 
             {step === 'check' && (
@@ -210,8 +186,19 @@ export default function ReviewPageClient() {
   );
 }
 
-function ReviewText({ item, step, recallDisplay }: { item: MemorizationItem; step: Step; recallDisplay: string }) {
-  const text = step === 'check' ? item.verses.map((verse) => verse.text).join('\n') : step === 'recall' ? recallDisplay : item.verses.map((verse) => verse.text).join('\n');
+function ReviewText({
+  item,
+  step,
+  maskMode,
+  visibleChars,
+}: {
+  item: MemorizationItem;
+  step: Step;
+  maskMode: 'punctuation' | 'prefix';
+  visibleChars: number;
+}) {
+  const fullText = item.verses.map((verse) => verse.text).join('\n');
+  const text = step === 'check' ? fullText : maskVerseText(fullText, maskMode, visibleChars);
 
   return (
     <div className="min-h-[280px] flex-1 rounded border border-stone-900/10 bg-stone-50/80 p-4 dark:border-white/10 dark:bg-white/[0.035]">
@@ -230,10 +217,10 @@ function CompletionPanel({ mastery, onContinue }: { mastery: Record<string, numb
       <p className="mt-2 text-stone-600 dark:text-stone-300">配额已完成，明天继续。掌握进度已更新。</p>
       <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[
-          ['New', mastery.new],
-          ['Learning', mastery.learning],
-          ['Reviewing', mastery.reviewing],
-          ['Mastered', mastery.mastered],
+          ['新内容', mastery.new],
+          ['练习中', mastery.learning],
+          ['复习中', mastery.reviewing],
+          ['熟悉了', mastery.mastered],
         ].map(([label, value]) => (
           <div key={label} className="rounded border border-stone-900/10 p-3 dark:border-white/10">
             <p className="text-xs text-stone-500">{label}</p>
@@ -286,4 +273,11 @@ async function loadFavoriteVerses(favoriteIds: string[], language: 'simplified' 
   }
 
   return loaded;
+}
+
+function getSharedReviewIds(): string[] {
+  if (typeof window === 'undefined') return [];
+  const encoded = new URLSearchParams(window.location.search).get('s');
+  if (!encoded) return [];
+  return decodeVerseList(encoded).map(({ bookKey, chapter, verse }) => `${bookKey}-${chapter}-${verse}`);
 }

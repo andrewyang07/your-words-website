@@ -146,12 +146,12 @@ export default function DiscoveryPageClient() {
             返回复习
           </Link>
           <Link href="/review" className="min-h-[44px] rounded bg-stone-950 px-4 py-3 text-sm text-white dark:bg-stone-50 dark:text-stone-950">
-            Review Home
+            今日复习
           </Link>
         </header>
 
         <section className="mb-6">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">Discovery</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">发现页</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">发现并保存经文</h1>
         </section>
 

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
+  cleanupOrphanReviewProgress,
   createReviewProgress,
   getMasteryProgress,
   rateReviewItem,
@@ -27,6 +28,7 @@ interface ReviewStoreState extends ReviewPersistedState {
   ensureProgress: (itemId: string, today: Date) => ReviewProgress;
   rateItem: (itemId: string, rating: ReviewRating, reviewedAt: Date) => ReviewProgress;
   completeQuota: (completedAt: Date) => void;
+  cleanupOrphanProgress: (activeItemIds: string[], today: Date) => void;
   getMasteryProgress: () => Record<ReviewStage, number>;
 }
 
@@ -52,6 +54,21 @@ export function deserializeReviewState(state: unknown): ReviewPersistedState {
     reviewGroups: Array.isArray(candidate.reviewGroups) ? candidate.reviewGroups : [],
     progress: candidate.progress && typeof candidate.progress === 'object' ? candidate.progress : {},
     streak: candidate.streak && typeof candidate.streak === 'object' ? candidate.streak : { count: 0 },
+  };
+}
+
+export function cleanupReviewProgressState(
+  state: ReviewPersistedState,
+  activeItemIds: string[],
+  today: Date
+): ReviewPersistedState {
+  return {
+    ...state,
+    progress: cleanupOrphanReviewProgress({
+      progress: state.progress,
+      activeItemIds,
+      today,
+    }),
   };
 }
 
@@ -87,6 +104,16 @@ export const useReviewStore = create<ReviewStoreState>()(
 
       completeQuota: (completedAt: Date) => {
         set((state) => ({ streak: nextStreak(state.streak, completedAt) }));
+      },
+
+      cleanupOrphanProgress: (activeItemIds: string[], today: Date) => {
+        set((state) => ({
+          progress: cleanupOrphanReviewProgress({
+            progress: state.progress,
+            activeItemIds,
+            today,
+          }),
+        }));
       },
 
       getMasteryProgress: () => getMasteryProgress(get().progress),

@@ -44,6 +44,13 @@ export interface BuildDailyReviewQuotaInput {
   includeNotDue?: boolean;
 }
 
+export interface CleanupOrphanReviewProgressInput {
+  progress: Record<string, ReviewProgress>;
+  activeItemIds: string[];
+  today: Date;
+  ttlDays?: number;
+}
+
 export function buildDailyReviewQuota({
   savedVerseIds,
   reviewGroups,
@@ -75,7 +82,7 @@ export function buildDailyReviewQuota({
 
   return {
     source,
-    items: items.filter((item) => includeNotDue || isDue(item, today)).slice(0, maxShortItems),
+    items: prioritizeReviewItems(items, progress, today, includeNotDue).slice(0, maxShortItems),
   };
 }
 
@@ -116,6 +123,24 @@ export function getMasteryProgress(progress: Record<string, ReviewProgress>) {
       return summary;
     },
     { new: 0, learning: 0, reviewing: 0, mastered: 0 } satisfies Record<ReviewStage, number>
+  );
+}
+
+export function cleanupOrphanReviewProgress({
+  progress,
+  activeItemIds,
+  today,
+  ttlDays = 180,
+}: CleanupOrphanReviewProgressInput): Record<string, ReviewProgress> {
+  const active = new Set(activeItemIds);
+  const ttlMs = ttlDays * 86_400_000;
+
+  return Object.fromEntries(
+    Object.entries(progress).filter(([itemId, itemProgress]) => {
+      if (active.has(itemId)) return true;
+      const lastTouchedAt = itemProgress.lastReviewedAt ?? itemProgress.nextReviewAt;
+      return today.getTime() - new Date(lastTouchedAt).getTime() <= ttlMs;
+    })
   );
 }
 
@@ -162,7 +187,7 @@ function intervalDays(stage: ReviewStage, rating: ReviewRating): number {
   if (rating === 'fuzzy') return 2;
   if (stage === 'learning') return 1;
   if (stage === 'reviewing') return 4;
-  return 14;
+  return 30;
 }
 
 function addDays(date: Date, days: number): Date {
@@ -173,6 +198,29 @@ function addDays(date: Date, days: number): Date {
 
 function isDue(item: MemorizationItem, today: Date): boolean {
   return new Date(item.nextReviewAt).getTime() <= today.getTime();
+}
+
+function prioritizeReviewItems(
+  items: MemorizationItem[],
+  progress: Record<string, ReviewProgress>,
+  today: Date,
+  includeNotDue: boolean
+): MemorizationItem[] {
+  return [...items]
+    .filter((item) => includeNotDue || isDue(item, today) || isWeak(progress[item.id]) || item.stage === 'new')
+    .sort((a, b) => reviewPriority(a, progress[a.id], today) - reviewPriority(b, progress[b.id], today));
+}
+
+function reviewPriority(item: MemorizationItem, progress: ReviewProgress | undefined, today: Date): number {
+  if (item.stage === 'new') return 2;
+  if (isDue(item, today)) return 0;
+  if (isWeak(progress)) return 1;
+  if (item.stage === 'mastered') return 3;
+  return 4;
+}
+
+function isWeak(progress: ReviewProgress | undefined): boolean {
+  return progress?.recentRatings.some((rating) => rating === 'fuzzy' || rating === 'missed') ?? false;
 }
 
 function isVerse(verse: Verse | undefined): verse is Verse {
