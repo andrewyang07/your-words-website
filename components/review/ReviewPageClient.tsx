@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, Eye, Flame, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Check, Eye, EyeOff, Flame, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useReviewStore } from '@/stores/useReviewStore';
@@ -14,8 +14,6 @@ import { decodeVerseList } from '@/lib/bibleBookMapping';
 import type { Verse } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-
-type Step = 'masked' | 'check';
 
 const ratingCopy: Record<ReviewRating, string> = {
   'got-it': '会了',
@@ -32,7 +30,7 @@ export default function ReviewPageClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
-  const [step, setStep] = useState<Step>('masked');
+  const [revealed, setRevealed] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [includeNotDue, setIncludeNotDue] = useState(false);
   const [today, setToday] = useState(() => new Date());
@@ -93,8 +91,11 @@ export default function ReviewPageClient() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && step === 'masked') setStep('check');
-      if (step === 'check' && ['1', '2', '3'].includes(event.key)) {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('button,a,input,textarea,select')) return;
+
+      if (event.key === 'Enter') setRevealed((value) => !value);
+      if (['1', '2', '3'].includes(event.key)) {
         const rating = event.key === '1' ? 'got-it' : event.key === '2' ? 'fuzzy' : 'missed';
         handleRate(rating);
       }
@@ -103,7 +104,7 @@ export default function ReviewPageClient() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, currentItem, index, quota.items.length]);
+  }, [currentItem, index, quota.items.length]);
 
   const handleRate = (rating: ReviewRating) => {
     if (!currentItem) return;
@@ -116,12 +117,12 @@ export default function ReviewPageClient() {
     }
 
     setIndex((value) => value + 1);
-    setStep('masked');
+    setRevealed(false);
   };
 
   const handleContinue = () => {
     setIndex(0);
-    setStep('masked');
+    setRevealed(false);
     setCompleted(false);
     setIncludeNotDue(true);
     setToday(new Date());
@@ -158,17 +159,14 @@ export default function ReviewPageClient() {
               </span>
             </div>
 
-            <ReviewText item={currentItem} step={step} maskMode={maskMode} visibleChars={visibleChars} />
+            <ReviewText item={currentItem} revealed={revealed} maskMode={maskMode} visibleChars={visibleChars} />
 
-            {step === 'masked' && (
-              <button onClick={() => setStep('check')} className="mt-6 inline-flex min-h-[48px] items-center justify-center gap-2 rounded bg-stone-950 px-4 text-white dark:bg-stone-50 dark:text-stone-950">
-                <Eye className="h-4 w-4" />
-                查看全文
+            <div className="mt-6 space-y-3">
+              <button onClick={() => setRevealed((value) => !value)} className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded bg-stone-950 px-4 text-white dark:bg-stone-50 dark:text-stone-950 sm:w-auto">
+                {revealed ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {revealed ? '隐藏全文' : '查看全文'}
               </button>
-            )}
-
-            {step === 'check' && (
-              <div className="mt-6 grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {(['got-it', 'fuzzy', 'missed'] as ReviewRating[]).map((rating, ratingIndex) => (
                   <button key={rating} onClick={() => handleRate(rating)} className="min-h-[48px] rounded border border-stone-900/10 bg-white/70 px-2 text-sm font-medium dark:border-white/10 dark:bg-white/[0.05]">
                     {ratingCopy[rating]}
@@ -176,7 +174,7 @@ export default function ReviewPageClient() {
                   </button>
                 ))}
               </div>
-            )}
+            </div>
           </section>
         ) : (
           <EmptyReview onContinue={handleContinue} />
@@ -188,17 +186,17 @@ export default function ReviewPageClient() {
 
 function ReviewText({
   item,
-  step,
+  revealed,
   maskMode,
   visibleChars,
 }: {
   item: MemorizationItem;
-  step: Step;
+  revealed: boolean;
   maskMode: 'punctuation' | 'prefix';
   visibleChars: number;
 }) {
   const fullText = item.verses.map((verse) => verse.text).join('\n');
-  const text = step === 'check' ? fullText : maskVerseText(fullText, maskMode, visibleChars);
+  const text = revealed ? fullText : maskVerseText(fullText, maskMode, visibleChars);
 
   return (
     <div className="min-h-[280px] flex-1 rounded border border-stone-900/10 bg-stone-50/80 p-4 dark:border-white/10 dark:bg-white/[0.035]">
