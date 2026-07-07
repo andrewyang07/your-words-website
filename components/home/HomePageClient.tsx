@@ -113,6 +113,7 @@ export default function HomePage() {
     const searchRequestRef = useRef(0);
     const searchEngineInitRef = useRef<Promise<void> | null>(null);
     const prevShowAllContentRef = useRef<boolean | null>(null);
+    const didSetInitialFavoritesViewRef = useRef(false);
 
     // 懒加载状态 - 根据设备响应式显示
     const getInitialCount = () => {
@@ -938,6 +939,23 @@ export default function HomePage() {
         existingCount: sharedSaveSummary?.existingCount,
     });
     const sharedReviewHref = sharedVerses.length > 0 ? `/review?s=${encodeURIComponent(encodeVerseList(sharedVerses))}` : '/review';
+
+    useEffect(() => {
+        if (didSetInitialFavoritesViewRef.current || typeof window === 'undefined') return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasExplicitView =
+            urlParams.has('s') ||
+            urlParams.has('book') ||
+            urlParams.has('chapter') ||
+            urlParams.get('from') === 'bible-note';
+
+        if (!hasExplicitView && favoritesCount > 0) {
+            setFilterType('favorites');
+        }
+
+        didSetInitialFavoritesViewRef.current = true;
+    }, [favoritesCount]);
 
     // 计算收藏筛选选项的经文数量
     const favoritesBookCounts = useMemo(() => {
