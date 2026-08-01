@@ -24,10 +24,6 @@ export function getVerseReference(verse: Pick<Verse, 'book' | 'chapter' | 'verse
   return `${verse.book} ${verse.chapter}:${verse.verse}`;
 }
 
-export function buildSingleVerseShareText(verse: Verse): string {
-  return `${getVerseReference(verse)} ${verse.text}`;
-}
-
 function getTestamentFromBookKey(bookKey: string): Verse['testament'] {
   const newTestamentStart = '马太福音';
   const newTestamentBooks = [

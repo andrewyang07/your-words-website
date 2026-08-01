@@ -5,6 +5,7 @@ export const DEFAULT_READER_TEXT_SIZE = 100 as const;
 export const MIN_READER_TEXT_SIZE = READER_TEXT_SIZES[0];
 export const MAX_READER_TEXT_SIZE = READER_TEXT_SIZES[READER_TEXT_SIZES.length - 1];
 export const VERSE_MASONRY_GAP = 16;
+export const MAX_SHARED_VERSES = 200;
 export const READER_CONTROL_COPY = {
   simplified: {
     groupLabel: '经文字体大小',

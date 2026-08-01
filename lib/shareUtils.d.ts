@@ -21,9 +21,3 @@ export function getSharedBannerCopy(args: {
   actionLabel: string;
 };
 export function buildShareUrl(args: { origin: string; pathname?: string; encoded: string }): string;
-export function shareOrCopy(args: {
-  title: string;
-  text: string;
-  url: string;
-  navigatorRef?: Navigator;
-}): Promise<'shared' | 'copied' | 'cancelled'>;

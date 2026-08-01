@@ -7,14 +7,11 @@ import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { loadBooks, loadChapterVerses, loadPresetVerses } from '@/lib/dataLoader';
 import { getSearchEngine } from '@/lib/search/searchEngine';
-import { encodeVerseList } from '@/lib/bibleBookMapping';
-import { buildShareUrl, shareOrCopy } from '@/lib/shareUtils.mjs';
 import type { Book, Verse } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import DiscoveryVerseCard from './DiscoveryVerseCard';
 import {
-  buildSingleVerseShareText,
   getChapterOptions,
   getVerseReference,
   searchResultToVerse,
@@ -118,22 +115,6 @@ export default function DiscoveryPageClient() {
     setToast(`${getVerseReference(verse)} 已加入复习`);
   }
 
-  async function handleShare(verse: Verse) {
-    try {
-      const encoded = encodeVerseList([{ bookKey: verse.bookKey, chapter: verse.chapter, verse: verse.verse }]);
-      const origin = window.location.origin;
-      const url = buildShareUrl({ origin, pathname: '/', encoded });
-      const result = await shareOrCopy({
-        title: getVerseReference(verse),
-        text: buildSingleVerseShareText(verse),
-        url,
-      });
-      setToast(result === 'shared' ? '已打开分享' : result === 'copied' ? '链接已复制' : '已取消分享');
-    } catch {
-      setToast('分享失败');
-    }
-  }
-
   if (loading) return <LoadingSpinner />;
   if (error && !busy && visibleVerses.length === 0) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
@@ -228,7 +209,7 @@ export default function DiscoveryPageClient() {
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visibleVerses.map((verse) => (
-            <DiscoveryVerseCard key={verse.id} verse={verse} saved={isFavorite(verse.id)} onSave={handleSave} onShare={handleShare} />
+            <DiscoveryVerseCard key={verse.id} verse={verse} saved={isFavorite(verse.id)} onSave={handleSave} />
           ))}
         </section>
 

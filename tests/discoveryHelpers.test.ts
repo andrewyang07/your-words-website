@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSingleVerseShareText, getChapterOptions, getVerseReference, searchResultToVerse } from '../components/discover/discoveryHelpers';
+import { getChapterOptions, getVerseReference, searchResultToVerse } from '../components/discover/discoveryHelpers';
 import type { Book, Verse } from '../types/verse';
 
 describe('discovery helpers', () => {
@@ -15,7 +15,6 @@ describe('discovery helpers', () => {
     };
 
     expect(getVerseReference(verse)).toBe('约翰福音 3:16');
-    expect(buildSingleVerseShareText(verse)).toContain(verse.text);
   });
 
   it('maps search results to saveable verses', () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Check, Star, BookOpen, Share2 } from 'lucide-react';
+import { Copy, Check, Star, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
@@ -8,7 +8,6 @@ import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { highlightText, type HighlightSegment } from '@/lib/search/highlighter';
 import { getSearchEngine } from '@/lib/search/searchEngine';
 import { encodeVerseRef } from '@/lib/bibleBookMapping';
-import { buildShareUrl, shareOrCopy } from '@/lib/shareUtils.mjs';
 import { sendStats } from '@/lib/statsUtils';
 import type { SearchResult } from '@/types/search';
 import { getReaderTextStyle } from '@/lib/readerPreferences';
@@ -45,7 +44,6 @@ export default function SearchResultCard({
   isSelected,
 }: SearchResultCardProps) {
   const [copied, setCopied] = useState(false);
-  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
   const { query, searchLang, setContextVerse, setSelectedIndex } =
     useSearchStore();
   const language = useAppStore((s) => s.language);
@@ -91,27 +89,6 @@ export default function SearchResultCard({
       verse: result.verse,
       verses,
     });
-  };
-
-  const handleShare = async () => {
-    const encoded = encodeVerseRef(result.bookKey, result.chapter, result.verse);
-    const url = buildShareUrl({ origin: window.location.origin, encoded });
-
-    try {
-      const shareResult = await shareOrCopy({
-        title: `${bookNameChinese} ${result.chapter}:${result.verse}`,
-        text: showEnglish ? result.textEnglish : result.textChinese,
-        url,
-        navigatorRef: navigator,
-      });
-
-      if (shareResult === 'copied' || shareResult === 'shared') {
-        setShareStatus(shareResult);
-        setTimeout(() => setShareStatus('idle'), 1500);
-      }
-    } catch {
-      setShareStatus('idle');
-    }
   };
 
   const handleFavorite = () => {
@@ -222,16 +199,6 @@ export default function SearchResultCard({
         >
           <BookOpen className="w-3.5 h-3.5" />
           <span className="font-chinese">上下文</span>
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleShare();
-          }}
-          className="inline-flex items-center gap-1 text-bible-500 dark:text-bible-400 hover:text-bible-700 dark:hover:text-bible-300 transition-colors"
-        >
-          <Share2 className="w-3.5 h-3.5" />
-          <span className="font-chinese">{shareStatus === 'copied' ? '已复制' : shareStatus === 'shared' ? '已分享' : '分享'}</span>
         </button>
       </div>
     </div>

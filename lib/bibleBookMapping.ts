@@ -3,7 +3,7 @@
  * 用于将书卷key与数字ID（1-66）相互转换，以支持URL参数的简短编码
  */
 
-import booksData from '@/public/data/books.json';
+import booksData from '../public/data/books.json';
 
 // 书卷key到ID的映射（1-66）
 const bookKeyToId: Record<string, number> = {};
@@ -86,8 +86,20 @@ export function decodeVerseList(encoded: string): Array<{ bookKey: string; chapt
         .filter((item): item is { bookKey: string; chapter: number; verse: number } => item !== null);
 }
 
+export function parseVerseId(id: string): { bookKey: string; chapter: number; verse: number } | null {
+    const parts = id.split('-');
+    const verse = Number(parts.pop());
+    const chapter = Number(parts.pop());
+    const bookKey = parts.join('-');
+
+    if (!bookKey || !Number.isInteger(chapter) || !Number.isInteger(verse)) {
+        return null;
+    }
+
+    return { bookKey, chapter, verse };
+}
+
 /**
  * 导出映射表供其他地方使用
  */
 export { bookKeyToId, bookIdToKey };
-

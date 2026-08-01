@@ -4,12 +4,10 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Verse } from '@/types/verse';
 import { CardSize } from '@/types/common';
-import { Star, BookOpen, Share2 } from 'lucide-react';
+import { Star, BookOpen } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { maskVerseText } from '@/lib/utils';
-import { encodeVerseRef } from '@/lib/bibleBookMapping';
-import { buildShareUrl, shareOrCopy } from '@/lib/shareUtils.mjs';
 import { getVerseNumericId, sendStats } from '@/lib/statsUtils';
 import { getReaderTextStyle } from '@/lib/readerPreferences';
 import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
@@ -27,7 +25,6 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
     const textSize = useReaderPreferencesStore((state) => state.textSize);
     const [isRevealed, setIsRevealed] = useState(defaultRevealed);
-    const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
     const isFav = isFavorite(verse.id);
 
     // 当 defaultRevealed 改变时，更新 isRevealed
@@ -87,28 +84,6 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         if (!wasFavorite) {
             const verseId = getVerseNumericId(verse);
             sendStats('favorite', verseId);
-        }
-    };
-
-    const handleShareVerse = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        try {
-            const bookKey = verse.bookKey || verse.id.split('-').slice(0, -2).join('-');
-            const encoded = encodeVerseRef(bookKey, verse.chapter, verse.verse);
-            const url = buildShareUrl({ origin: window.location.origin, encoded });
-            const result = await shareOrCopy({
-                title: `${verse.book} ${verse.chapter}:${verse.verse}`,
-                text: verse.text,
-                url,
-                navigatorRef: navigator,
-            });
-
-            if (result === 'copied' || result === 'shared') {
-                setShareStatus(result);
-                window.setTimeout(() => setShareStatus('idle'), 1800);
-            }
-        } catch {
-            setShareStatus('idle');
         }
     };
 
@@ -187,17 +162,6 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 </span>
 
                 <div className="flex items-center gap-1.5">
-                    <button
-                        onClick={handleShareVerse}
-                        className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded px-2 py-1 text-xs text-stone-500 transition-colors hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-50 touch-manipulation"
-                        title={shareStatus === 'idle' ? '分享经文' : shareStatus === 'copied' ? '链接已复制' : '已打开分享'}
-                        aria-label={`分享 ${verse.book} ${verse.chapter}:${verse.verse}`}
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                        <Share2 className="w-3 h-3" />
-                        <span className="font-chinese">{shareStatus === 'copied' ? '已复制' : shareStatus === 'shared' ? '已分享' : '分享'}</span>
-                    </button>
-
                     {/* 查看整章按钮 */}
                     <button
                         onClick={handleViewInBible}

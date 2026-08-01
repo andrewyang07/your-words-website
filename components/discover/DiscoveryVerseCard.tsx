@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Share2, Star } from 'lucide-react';
+import { Check, Star } from 'lucide-react';
 import type { Verse } from '@/types/verse';
 import { getVerseReference } from './discoveryHelpers';
 import { getReaderTextStyle } from '@/lib/readerPreferences';
@@ -10,10 +10,9 @@ interface DiscoveryVerseCardProps {
   verse: Verse;
   saved: boolean;
   onSave: (verse: Verse) => void;
-  onShare: (verse: Verse) => void;
 }
 
-export default function DiscoveryVerseCard({ verse, saved, onSave, onShare }: DiscoveryVerseCardProps) {
+export default function DiscoveryVerseCard({ verse, saved, onSave }: DiscoveryVerseCardProps) {
   const textSize = useReaderPreferencesStore((state) => state.textSize);
 
   return (
@@ -51,13 +50,6 @@ export default function DiscoveryVerseCard({ verse, saved, onSave, onShare }: Di
         >
           <Star className="h-4 w-4" />
           {saved ? '已加入复习' : '加入复习'}
-        </button>
-        <button
-          onClick={() => onShare(verse)}
-          className="inline-flex min-h-[42px] items-center justify-center rounded border border-stone-900/10 px-3 text-stone-700 hover:bg-stone-100 dark:border-white/10 dark:text-stone-200 dark:hover:bg-white/[0.08]"
-          aria-label={`分享 ${getVerseReference(verse)}`}
-        >
-          <Share2 className="h-4 w-4" />
         </button>
       </div>
     </article>

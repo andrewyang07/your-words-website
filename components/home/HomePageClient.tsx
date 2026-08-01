@@ -33,8 +33,9 @@ import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { Verse, Book } from '@/types/verse';
-import { encodeVerseList, decodeVerseList } from '@/lib/bibleBookMapping';
-import { buildShareUrl, getSharedBannerCopy, getSharedVerseSaveSummary, shareOrCopy } from '@/lib/shareUtils.mjs';
+import { encodeVerseList, decodeVerseList, parseVerseId } from '@/lib/bibleBookMapping';
+import { getSharedBannerCopy, getSharedVerseSaveSummary } from '@/lib/shareUtils.mjs';
+import { shareSavedVerseCollection } from '@/lib/shareCollection';
 import { logError } from '@/lib/errorHandler';
 import { shuffleArray } from '@/lib/utils';
 import type { SearchResult } from '@/types/search';
@@ -90,6 +91,7 @@ export default function HomePage() {
     const [sharedVersesData, setSharedVersesData] = useState<Verse[]>([]); // 分享经文的完整数据
     const [showShareBanner, setShowShareBanner] = useState(false);
     const [shareToast, setShareToast] = useState<string | null>(null);
+    const [manualShareUrl, setManualShareUrl] = useState<string | null>(null);
     const [hasAddedAllShared, setHasAddedAllShared] = useState(false); // 是否已一键收藏
     const [sharedSaveSummary, setSharedSaveSummary] = useState<{ newCount: number; existingCount: number } | null>(null);
 
@@ -419,12 +421,9 @@ export default function HomePage() {
                 const parsedFavorites: Array<{ bookKey: string; chapter: number; verse: number }> = [];
 
                 favoriteIds.forEach((id) => {
-                    const parts = id.split('-');
-                    if (parts.length < 3) return;
-
-                    const verse = parseInt(parts[parts.length - 1]);
-                    const chapter = parseInt(parts[parts.length - 2]);
-                    const bookKey = parts.slice(0, -2).join('-');
+                    const parsed = parseVerseId(id);
+                    if (!parsed) return;
+                    const { bookKey, chapter, verse } = parsed;
 
                     parsedFavorites.push({ bookKey, chapter, verse });
 
@@ -855,43 +854,20 @@ export default function HomePage() {
 
         if (favoritesList.length === 0) return;
 
-        if (favoritesList.length > 200) {
-            setShareToast(language === 'traditional' ? '收藏太多，請先減少到 200 節以內。' : '收藏太多，请先减少到 200 节以内。');
-            return;
-        }
+        setManualShareUrl(null);
+        const result = await shareSavedVerseCollection({
+            verseIds: favoritesList,
+            origin: window.location.origin,
+            clipboard: navigator.clipboard,
+        });
 
-        try {
-            // 将 verseId (如"创世记-3-16") 转换为 {bookKey, chapter, verse}
-            const versesToEncode = favoritesList
-                .map((id) => {
-                    const parts = id.split('-');
-                    if (parts.length < 3) return null;
-
-                    const verse = parseInt(parts[parts.length - 1]);
-                    const chapter = parseInt(parts[parts.length - 2]);
-                    const bookKey = parts.slice(0, -2).join('-');
-
-                    return { bookKey, chapter, verse };
-                })
-                .filter((v): v is { bookKey: string; chapter: number; verse: number } => v !== null);
-
-            const encoded = encodeVerseList(versesToEncode);
-            const shareUrl = buildShareUrl({ origin: window.location.origin, pathname: window.location.pathname, encoded });
-            const result = await shareOrCopy({
-                title: language === 'traditional' ? '我的收藏經文' : '我的收藏经文',
-                text: language === 'traditional' ? '這些經文想分享給你。' : '这些经文想分享给你。',
-                url: shareUrl,
-                navigatorRef: navigator,
-            });
-
-            if (result === 'copied') {
-                setShareToast(language === 'traditional' ? '連結已複製，可直接發給朋友。' : '链接已复制，可直接发给朋友。');
-            } else if (result === 'shared') {
-                setShareToast(language === 'traditional' ? '已打開系統分享。' : '已打开系统分享。');
-            }
-        } catch (error) {
-            logError('HomePage:handleShareFavorites', error);
-            setShareToast(language === 'traditional' ? '分享失敗，請稍後重試。' : '分享失败，请稍后重试。');
+        if (result.status === 'too-many') {
+            setShareToast(language === 'traditional' ? '最多只能分享 200 節經文' : '最多只能分享 200 节经文');
+        } else if (result.status === 'manual-copy') {
+            setShareToast(language === 'traditional' ? '無法自動複製' : '无法自动复制');
+            setManualShareUrl(result.url);
+        } else {
+            setShareToast(language === 'traditional' ? '分享連結已複製' : '分享链接已复制');
         }
     };
 
@@ -1244,17 +1220,12 @@ export default function HomePage() {
                         {filterType === 'favorites' && favoritesCount > 0 && (
                             <button
                                 onClick={handleShareFavorites}
-                                disabled={favoritesCount > 200}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm touch-manipulation min-h-[44px] ${
-                                    favoritesCount > 200
-                                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                                        : 'bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
-                                }`}
-                                title={favoritesCount > 200 ? '收藏过多（超过200节），无法生成分享链接' : '点击生成分享链接，可将您的收藏分享给他人'}
+                                className="flex min-h-[44px] items-center gap-2 rounded-lg border border-blue-200 bg-white px-4 py-2 text-blue-600 shadow-sm transition-all hover:bg-blue-50 dark:border-blue-700 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-blue-900/20 touch-manipulation"
+                                title={language === 'traditional' ? '複製完整收藏的分享連結' : '复制完整收藏的分享链接'}
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 <Share2 className="w-4 h-4" />
-                                <span className="hidden sm:inline font-chinese text-sm">分享</span>
+                                <span className="font-chinese text-sm">{language === 'traditional' ? '複製收藏連結' : '复制收藏链接'}</span>
                             </button>
                         )}
 
@@ -1567,6 +1538,21 @@ export default function HomePage() {
                             </div>
                             <span>{shareToast}</span>
                         </div>
+                    </div>
+                )}
+
+                {manualShareUrl && (
+                    <div className="fixed inset-x-4 bottom-24 z-[10001] mx-auto max-w-2xl rounded-2xl border border-amber-700/20 bg-amber-50 p-4 shadow-[0_22px_60px_rgba(68,64,60,0.22)] dark:border-amber-300/20 dark:bg-gray-950">
+                        <label htmlFor="manual-share-url" className="mb-2 block text-sm font-medium text-amber-900 dark:text-amber-100 font-chinese">
+                            {language === 'traditional' ? '請長按或選取下方完整連結手動複製' : '请长按或选取下方完整链接手动复制'}
+                        </label>
+                        <input
+                            id="manual-share-url"
+                            value={manualShareUrl}
+                            readOnly
+                            onFocus={(event) => event.currentTarget.select()}
+                            className="w-full rounded-xl border border-amber-700/20 bg-white px-3 py-3 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-amber-600 dark:border-amber-300/20 dark:bg-white/[0.08] dark:text-stone-100"
+                        />
                     </div>
                 )}
 
