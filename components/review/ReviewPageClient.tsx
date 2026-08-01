@@ -157,8 +157,8 @@ export default function ReviewPageClient() {
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">每日复习</p>
                 <h1
-                  className="reader-text mt-1 font-semibold text-stone-950 dark:text-stone-50"
-                  style={getReaderTextStyle(textSize, '24px') as React.CSSProperties}
+                  className={`${currentItem.kind === 'verse' ? 'reader-text' : 'text-2xl'} mt-1 font-semibold text-stone-950 dark:text-stone-50`}
+                  style={currentItem.kind === 'verse' ? getReaderTextStyle(textSize, '24px') as React.CSSProperties : undefined}
                 >
                   {currentItem.title}
                 </h1>

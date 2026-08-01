@@ -10,12 +10,22 @@ import type { Verse } from '@/types/verse';
 interface HeightMeasurement { height: number; layoutKey: string }
 
 function useViewportWidth() {
+  const frameRef = useRef<number | null>(null);
   const [width, setWidth] = useState(0);
   useEffect(() => {
-    const update = () => setWidth(window.innerWidth);
+    const update = () => {
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+      frameRef.current = requestAnimationFrame(() => {
+        frameRef.current = null;
+        setWidth(window.innerWidth);
+      });
+    };
     update();
     window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    };
   }, []);
   return width;
 }

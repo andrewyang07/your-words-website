@@ -2,7 +2,23 @@
 
 export const READER_TEXT_SIZES = [90, 100, 115, 130, 145] as const;
 export const DEFAULT_READER_TEXT_SIZE = 100 as const;
+export const MIN_READER_TEXT_SIZE = READER_TEXT_SIZES[0];
+export const MAX_READER_TEXT_SIZE = READER_TEXT_SIZES[READER_TEXT_SIZES.length - 1];
 export const VERSE_MASONRY_GAP = 16;
+export const READER_CONTROL_COPY = {
+  simplified: {
+    groupLabel: '经文字体大小',
+    decreaseLabel: '缩小经文字体',
+    increaseLabel: '放大经文字体',
+    resetLabel: '重置字体',
+  },
+  traditional: {
+    groupLabel: '經文字體大小',
+    decreaseLabel: '縮小經文字體',
+    increaseLabel: '放大經文字體',
+    resetLabel: '重設字體',
+  },
+} as const;
 
 // 100节精选经文引用 (基于 Kendra Fletcher 清单)
 export const PRESET_VERSE_REFERENCES = [
