@@ -1,5 +1,9 @@
 // 应用常量定义
 
+export const READER_TEXT_SIZES = [90, 100, 115, 130, 145] as const;
+export const DEFAULT_READER_TEXT_SIZE = 100 as const;
+export const VERSE_MASONRY_GAP = 16;
+
 // 100节精选经文引用 (基于 Kendra Fletcher 清单)
 export const PRESET_VERSE_REFERENCES = [
   // 创世记
@@ -172,5 +176,3 @@ export const PRESET_VERSE_REFERENCES = [
   // 启示录
   { book: '启示录', chapter: 3, verse: 20, priority: 4 },
 ] as const;
-
-

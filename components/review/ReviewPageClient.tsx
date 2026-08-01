@@ -14,6 +14,9 @@ import { decodeVerseList } from '@/lib/bibleBookMapping';
 import type { Verse } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
+import { getReaderTextStyle } from '@/lib/readerPreferences';
+import type { ReaderTextSize } from '@/lib/readerPreferences';
+import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
 
 const ratingCopy: Record<ReviewRating, string> = {
   'got-it': '会了',
@@ -26,6 +29,7 @@ export default function ReviewPageClient() {
   const { getFavoritesList } = useFavoritesStore();
   const { reviewGroups, progress, ensureProgress, rateItem, completeQuota, streak, getMasteryProgress } = useReviewStore();
   const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
+  const textSize = useReaderPreferencesStore((state) => state.textSize);
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -152,14 +156,19 @@ export default function ReviewPageClient() {
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">每日复习</p>
-                <h1 className="mt-1 text-2xl font-semibold text-stone-950 dark:text-stone-50">{currentItem.title}</h1>
+                <h1
+                  className="reader-text mt-1 font-semibold text-stone-950 dark:text-stone-50"
+                  style={getReaderTextStyle(textSize, '24px') as React.CSSProperties}
+                >
+                  {currentItem.title}
+                </h1>
               </div>
               <span className="rounded border border-stone-900/10 px-2.5 py-1 text-xs text-stone-600 dark:border-white/10 dark:text-stone-300">
                 {index + 1}/{quota.items.length}
               </span>
             </div>
 
-            <ReviewText item={currentItem} revealed={revealed} maskMode={maskMode} visibleChars={visibleChars} />
+            <ReviewText item={currentItem} revealed={revealed} maskMode={maskMode} visibleChars={visibleChars} textSize={textSize} />
 
             <div className="mt-6 space-y-3">
               <button onClick={() => setRevealed((value) => !value)} className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded bg-stone-950 px-4 text-white dark:bg-stone-50 dark:text-stone-950 sm:w-auto">
@@ -184,23 +193,32 @@ export default function ReviewPageClient() {
   );
 }
 
+interface ReviewTextProps {
+  item: MemorizationItem;
+  revealed: boolean;
+  maskMode: 'punctuation' | 'prefix';
+  visibleChars: number;
+  textSize: ReaderTextSize;
+}
+
 function ReviewText({
   item,
   revealed,
   maskMode,
   visibleChars,
-}: {
-  item: MemorizationItem;
-  revealed: boolean;
-  maskMode: 'punctuation' | 'prefix';
-  visibleChars: number;
-}) {
+  textSize,
+}: ReviewTextProps) {
   const fullText = item.verses.map((verse) => verse.text).join('\n');
   const text = revealed ? fullText : maskVerseText(fullText, maskMode, visibleChars);
 
   return (
     <div className="min-h-[280px] flex-1 rounded border border-stone-900/10 bg-stone-50/80 p-4 dark:border-white/10 dark:bg-white/[0.035]">
-      <p className="whitespace-pre-wrap break-words text-[20px] leading-[2.1] text-stone-900 dark:text-stone-100">{text}</p>
+      <p
+        className="reader-text whitespace-pre-wrap break-words leading-[2.1] text-stone-900 dark:text-stone-100"
+        style={getReaderTextStyle(textSize, '20px') as React.CSSProperties}
+      >
+        {text}
+      </p>
     </div>
   );
 }

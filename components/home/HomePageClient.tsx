@@ -39,6 +39,7 @@ import { logError } from '@/lib/errorHandler';
 import { shuffleArray } from '@/lib/utils';
 import type { SearchResult } from '@/types/search';
 import MaskSettings from '@/components/settings/MaskSettings';
+import ReaderTextSizeSetting from '@/components/settings/ReaderTextSizeSetting';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
@@ -1080,13 +1081,13 @@ export default function HomePage() {
                                 onClick={() => setShowMaskSettingsDesktop(!showMaskSettingsDesktop)}
                                 className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={language === 'traditional' ? '打開提示設定' : '打开提示设置'}
-                                aria-label={language === 'traditional' ? '打開提示設定' : '打开提示设置'}
+                                title={language === 'traditional' ? '打開閱讀與提示設定' : '打开阅读与提示设置'}
+                                aria-label={language === 'traditional' ? '打開閱讀與提示設定' : '打开阅读与提示设置'}
                                 aria-expanded={showMaskSettingsDesktop}
                                 aria-controls="mask-settings-panel"
                             >
                                 <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
-                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">{language === 'traditional' ? '提示設定' : '提示设置'}</span>
+                                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">{language === 'traditional' ? '閱讀設定' : '阅读设置'}</span>
                                 <span className="hidden lg:inline font-chinese text-xs text-stone-500 dark:text-stone-400">{maskSettingsSummary}</span>
                                 <ChevronDown
                                     className={`hidden lg:inline w-3.5 h-3.5 text-stone-500 dark:text-stone-400 transition-transform ${
@@ -1136,8 +1137,8 @@ export default function HomePage() {
                                 onClick={() => setShowMaskSettingsMobile(!showMaskSettingsMobile)}
                                 className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[44px]"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={`${language === 'traditional' ? '提示設定' : '提示设置'}（${maskSettingsSummary}）`}
-                                aria-label={`${language === 'traditional' ? '打開提示設定，當前' : '打开提示设置，当前'}${maskSettingsSummary}`}
+                                title={`${language === 'traditional' ? '閱讀設定' : '阅读设置'}（${maskSettingsSummary}）`}
+                                aria-label={`${language === 'traditional' ? '打開閱讀與提示設定，當前' : '打开阅读与提示设置，当前'}${maskSettingsSummary}`}
                                 aria-expanded={showMaskSettingsMobile}
                                 aria-controls="mask-settings-mobile-panel"
                             >
@@ -1215,10 +1216,11 @@ export default function HomePage() {
                     >
                         <div className="rounded-xl border border-bible-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 p-3 shadow-sm">
                             <div className="flex items-center justify-between mb-2">
-                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">提示设置</p>
+                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">{language === 'traditional' ? '閱讀與提示設定' : '阅读与提示设置'}</p>
                                 <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">{maskSettingsSummary}</span>
                             </div>
                             <MaskSettings />
+                            <ReaderTextSizeSetting language={language} className="mt-3" />
                         </div>
                     </div>
 
@@ -1768,10 +1770,11 @@ export default function HomePage() {
                     >
                         <div className="rounded-xl border border-bible-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 p-4 shadow-sm">
                             <div className="flex items-center justify-between mb-3">
-                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">遮罩提示设置</p>
+                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">{language === 'traditional' ? '閱讀與提示設定' : '阅读与提示设置'}</p>
                                 <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">{maskSettingsSummary}</span>
                             </div>
                             <MaskSettings />
+                            <ReaderTextSizeSetting language={language} className="mt-3" />
                         </div>
                     </div>
 

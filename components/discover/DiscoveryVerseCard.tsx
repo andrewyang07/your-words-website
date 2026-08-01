@@ -3,6 +3,8 @@
 import { Check, Share2, Star } from 'lucide-react';
 import type { Verse } from '@/types/verse';
 import { getVerseReference } from './discoveryHelpers';
+import { getReaderTextStyle } from '@/lib/readerPreferences';
+import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
 
 interface DiscoveryVerseCardProps {
   verse: Verse;
@@ -12,11 +14,18 @@ interface DiscoveryVerseCardProps {
 }
 
 export default function DiscoveryVerseCard({ verse, saved, onSave, onShare }: DiscoveryVerseCardProps) {
+  const textSize = useReaderPreferencesStore((state) => state.textSize);
+
   return (
     <article className="rounded-lg border border-stone-900/10 bg-white/78 p-4 shadow-[0_18px_50px_rgba(68,64,60,0.08)] dark:border-white/10 dark:bg-white/[0.045]">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-stone-950 dark:text-stone-100">{getVerseReference(verse)}</p>
+          <p
+            className="reader-text font-medium text-stone-950 dark:text-stone-100"
+            style={getReaderTextStyle(textSize, '14px') as React.CSSProperties}
+          >
+            {getVerseReference(verse)}
+          </p>
           <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">{verse.testament === 'new' ? '新约' : '旧约'}</p>
         </div>
         {saved && (
@@ -27,7 +36,12 @@ export default function DiscoveryVerseCard({ verse, saved, onSave, onShare }: Di
         )}
       </div>
 
-      <p className="min-h-[84px] whitespace-pre-wrap break-words text-[17px] leading-8 text-stone-900 dark:text-stone-100">{verse.text}</p>
+      <p
+        className="reader-text min-h-[84px] whitespace-pre-wrap break-words leading-[1.88] text-stone-900 dark:text-stone-100"
+        style={getReaderTextStyle(textSize, '17px') as React.CSSProperties}
+      >
+        {verse.text}
+      </p>
 
       <div className="mt-4 flex gap-2">
         <button

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen, HelpCircle, TrendingUp, ChevronRight, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import ReaderTextSizeSetting from '@/components/settings/ReaderTextSizeSetting';
 
 interface SideMenuProps {
     isOpen: boolean;
@@ -209,6 +210,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                             {theme === 'system' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
                                         </button>
                                     </div>
+                                    <ReaderTextSizeSetting language={language} className="mx-4 mt-3" />
                                 </div>
 
                                 {/* 语言设置 */}

@@ -11,6 +11,8 @@ import { encodeVerseRef } from '@/lib/bibleBookMapping';
 import { buildShareUrl, shareOrCopy } from '@/lib/shareUtils.mjs';
 import { sendStats } from '@/lib/statsUtils';
 import type { SearchResult } from '@/types/search';
+import { getReaderTextStyle } from '@/lib/readerPreferences';
+import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
 
 interface SearchResultCardProps {
   result: SearchResult;
@@ -47,6 +49,7 @@ export default function SearchResultCard({
   const { query, searchLang, setContextVerse, setSelectedIndex } =
     useSearchStore();
   const language = useAppStore((s) => s.language);
+  const textSize = useReaderPreferencesStore((state) => state.textSize);
   const { toggleFavorite, isFavorite } = useFavoritesStore();
 
   const favorited = isFavorite(result.id);
@@ -137,12 +140,18 @@ export default function SearchResultCard({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           {showChinese && (
-            <span className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese">
+            <span
+              className="reader-text font-semibold text-bible-700 dark:text-bible-300 font-chinese"
+              style={getReaderTextStyle(textSize, '14px') as React.CSSProperties}
+            >
               {bookNameChinese} {result.chapter}:{result.verse}
             </span>
           )}
           {showEnglish && (
-            <span className="text-sm font-medium text-bible-600 dark:text-bible-300">
+            <span
+              className="reader-text font-medium text-bible-600 dark:text-bible-300"
+              style={getReaderTextStyle(textSize, '14px') as React.CSSProperties}
+            >
               {result.bookEnglish} {result.chapter}:{result.verse}
             </span>
           )}
@@ -185,12 +194,18 @@ export default function SearchResultCard({
       {/* Verse text */}
       <div className="space-y-1.5 mb-3">
         {showChinese && (
-          <p className="text-bible-800 dark:text-bible-200 font-chinese leading-relaxed">
+          <p
+            className="reader-text text-bible-800 dark:text-bible-200 font-chinese leading-relaxed"
+            style={getReaderTextStyle(textSize, '16px') as React.CSSProperties}
+          >
             <HighlightedText segments={zhSegments} />
           </p>
         )}
         {showEnglish && (
-          <p className="text-bible-800 dark:text-bible-200 leading-relaxed">
+          <p
+            className="reader-text text-bible-800 dark:text-bible-200 leading-relaxed"
+            style={getReaderTextStyle(textSize, '16px') as React.CSSProperties}
+          >
             <HighlightedText segments={enSegments} />
           </p>
         )}

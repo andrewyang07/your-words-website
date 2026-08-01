@@ -12,6 +12,16 @@
 
 /* 自定义滚动条 */
 @layer utilities {
+    .reader-text {
+        font-size: calc(var(--reader-base-size) * var(--reader-text-scale));
+    }
+
+    @media (min-width: 640px) {
+        .reader-text-responsive {
+            font-size: calc(var(--reader-sm-base-size, var(--reader-base-size)) * var(--reader-text-scale));
+        }
+    }
+
     .scrollbar-hide::-webkit-scrollbar {
         display: none;
     }

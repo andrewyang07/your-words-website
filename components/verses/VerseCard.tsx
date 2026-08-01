@@ -11,6 +11,8 @@ import { maskVerseText } from '@/lib/utils';
 import { encodeVerseRef } from '@/lib/bibleBookMapping';
 import { buildShareUrl, shareOrCopy } from '@/lib/shareUtils.mjs';
 import { getVerseNumericId, sendStats } from '@/lib/statsUtils';
+import { getReaderTextStyle } from '@/lib/readerPreferences';
+import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
 
 interface VerseCardProps {
     verse: Verse;
@@ -23,6 +25,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     const router = useRouter();
     const { isFavorite, toggleFavorite } = useFavoritesStore();
     const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
+    const textSize = useReaderPreferencesStore((state) => state.textSize);
     const [isRevealed, setIsRevealed] = useState(defaultRevealed);
     const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
     const isFav = isFavorite(verse.id);
@@ -47,13 +50,6 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         small: 'p-4 sm:p-4 min-h-[120px]',
         medium: 'p-5 sm:p-6 min-h-[160px]',
         large: 'p-6 sm:p-8 min-h-[200px]',
-    };
-
-    // 统一字体大小，提升易读性
-    const textSizes = {
-        small: 'text-[17px] sm:text-base',
-        medium: 'text-[17px] sm:text-base',
-        large: 'text-[17px] sm:text-base',
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
@@ -139,13 +135,15 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             style={{ WebkitTapHighlightColor: 'transparent' }}
             role="article"
             aria-label={`${verse.book} ${verse.chapter}章${verse.verse}节，${isRevealed ? '已展开' : '已收起'}，按Enter或空格键切换`}
-            aria-pressed={isRevealed}
             tabIndex={0}
         >
             {/* 经文引用 */}
             <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                    <span className="inline-flex items-center rounded-full border border-stone-900/10 bg-white/45 px-2.5 py-1 text-stone-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-stone-300 font-medium font-chinese text-sm">
+                    <span
+                        className="reader-text inline-flex items-center rounded-full border border-stone-900/10 bg-white/45 px-2.5 py-1 text-stone-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-stone-300 font-medium font-chinese"
+                        style={getReaderTextStyle(textSize, '14px') as React.CSSProperties}
+                    >
                         {verse.book} {verse.chapter}:{verse.verse}
                     </span>
                 </div>
@@ -171,11 +169,12 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             <div className="relative flex-1">
                 <p
                     className={`
-              ${textSizes[size]}
+              reader-text reader-text-responsive
               text-stone-900 dark:text-stone-100 font-normal leading-[2.05] sm:leading-[1.9] font-chinese
               transition-opacity duration-200
               break-words overflow-wrap-anywhere
             `}
+                    style={getReaderTextStyle(textSize, '17px', '16px') as React.CSSProperties}
                 >
                     {displayText}
                 </p>

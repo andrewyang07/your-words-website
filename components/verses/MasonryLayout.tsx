@@ -1,87 +1,49 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
-import { Verse } from '@/types/verse';
-import VerseCard from './VerseCard';
+import { useMemo, useRef } from 'react';
+import type { OrderedMasonryPosition } from '@/lib/orderedMasonry';
+import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
+import type { Verse } from '@/types/verse';
 import { getCardSize } from '@/lib/utils';
+import VerseCard from './VerseCard';
+import { useMeasuredMasonry } from './useMeasuredMasonry';
 
 interface MasonryLayoutProps {
-    verses: Verse[];
-    onViewInBible?: (verse: Verse) => void;
-    defaultRevealed?: boolean; // 是否默认展开所有卡片
+  verses: Verse[];
+  onViewInBible?: (verse: Verse) => void;
+  defaultRevealed?: boolean;
+}
+
+interface PositionedVerseCardProps extends Omit<MasonryLayoutProps, 'verses'> {
+  verse: Verse;
+  position?: OrderedMasonryPosition;
+}
+
+function PositionedVerseCard({ verse, position, onViewInBible, defaultRevealed }: PositionedVerseCardProps) {
+  return (
+    <div data-masonry-id={verse.id} className="absolute left-0 top-0 motion-safe:transition-transform motion-safe:duration-200"
+      style={{ width: position?.width ?? 0, transform: `translate3d(${position?.x ?? 0}px, ${position?.y ?? 0}px, 0)` }}>
+      <div className="animate-fade-in">
+        <VerseCard verse={verse} size={getCardSize(verse)} onViewInBible={() => onViewInBible?.(verse)}
+          defaultRevealed={defaultRevealed} />
+      </div>
+    </div>
+  );
 }
 
 export default function MasonryLayout({ verses, onViewInBible, defaultRevealed = false }: MasonryLayoutProps) {
-    // 根据屏幕大小动态调整列数
-    const getInitialColumnCount = () => {
-        if (typeof window === 'undefined') return 4; // SSR 时默认4列
-        const width = window.innerWidth;
-        if (width < 768) return 1;
-        if (width < 1024) return 2;
-        if (width < 1280) return 3;
-        return 4;
-    };
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textSize = useReaderPreferencesStore((state) => state.textSize);
+  const layout = useMeasuredMasonry(containerRef, verses, textSize);
+  const positions = useMemo(() => new Map(layout.positions.map((position) => [position.id, position])), [layout.positions]);
 
-    const [columnCount, setColumnCount] = useState(getInitialColumnCount);
-
-    useEffect(() => {
-        const updateColumnCount = () => {
-            const width = window.innerWidth;
-            if (width < 768) {
-                setColumnCount(1); // 手机端
-            } else if (width < 1024) {
-                setColumnCount(2); // 平板端
-            } else if (width < 1280) {
-                setColumnCount(3); // 小桌面
-            } else {
-                setColumnCount(4); // 大桌面
-            }
-        };
-
-        // 立即执行一次
-        updateColumnCount();
-
-        window.addEventListener('resize', updateColumnCount);
-        return () => window.removeEventListener('resize', updateColumnCount);
-    }, []);
-
-    // 计算瀑布流布局，同时记录每张卡片的原始索引
-    const masonryColumns = useMemo(() => {
-        const columns: Array<Array<{ verse: Verse; originalIndex: number }>> = Array.from({ length: columnCount }, () => []);
-        const columnHeights = Array(columnCount).fill(0);
-
-        verses.forEach((verse, originalIndex) => {
-            // 找到最短的列
-            const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights));
-
-            // 根据优先级和文本长度确定卡片高度
-            const size = getCardSize(verse);
-            const heights = { small: 120, medium: 160, large: 200 };
-            const cardHeight = heights[size];
-
-            columns[shortestColumnIndex].push({ verse, originalIndex });
-            columnHeights[shortestColumnIndex] += cardHeight;
-        });
-
-        return columns;
-    }, [verses, columnCount]);
-
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
-            {masonryColumns.map((column, columnIndex) => (
-                <div key={columnIndex} className="flex flex-col gap-4">
-                    {column.map(({ verse }) => (
-                        <div key={verse.id} className="animate-fade-in">
-                            <VerseCard
-                                verse={verse}
-                                size={getCardSize(verse)}
-                                onViewInBible={() => onViewInBible?.(verse)}
-                                defaultRevealed={defaultRevealed}
-                            />
-                        </div>
-                    ))}
-                </div>
-            ))}
-        </div>
-    );
+  return (
+    <div ref={containerRef} className="p-4 sm:p-6">
+      <div className="relative motion-safe:transition-[height] motion-safe:duration-200"
+        style={{ height: layout.containerHeight, visibility: layout.positions[0]?.width ? 'visible' : 'hidden' }}>
+        {verses.map((verse) => <PositionedVerseCard key={verse.id} verse={verse} position={positions.get(verse.id)}
+          onViewInBible={onViewInBible} defaultRevealed={defaultRevealed} />)}
+      </div>
+    </div>
+  );
 }

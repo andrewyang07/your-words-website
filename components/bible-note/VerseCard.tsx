@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { BookOpen } from 'lucide-react';
+import { getReaderTextStyle } from '@/lib/readerPreferences';
+import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
 
 interface VerseCardProps {
     reference: string; // 如 "约3:16"
@@ -20,6 +22,8 @@ export default function VerseCard({
     text,
     onViewChapter,
 }: VerseCardProps) {
+    const textSize = useReaderPreferencesStore((state) => state.textSize);
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -28,7 +32,10 @@ export default function VerseCard({
         >
             {/* 经文引用标题 */}
             <div className="flex items-center justify-between mb-1.5">
-                <h4 className="font-chinese text-sm font-semibold text-stone-900 dark:text-stone-100">
+                <h4
+                    className="reader-text font-chinese font-semibold text-stone-900 dark:text-stone-100"
+                    style={getReaderTextStyle(textSize, '14px') as React.CSSProperties}
+                >
                     {reference}
                 </h4>
                 <button
@@ -45,7 +52,10 @@ export default function VerseCard({
 
             {/* 经文内容 */}
             {text ? (
-                <p className="font-chinese text-sm font-medium leading-relaxed text-stone-700 dark:text-stone-200">
+                <p
+                    className="reader-text font-chinese font-medium leading-relaxed text-stone-700 dark:text-stone-200"
+                    style={getReaderTextStyle(textSize, '14px') as React.CSSProperties}
+                >
                     {text}
                 </p>
             ) : (
@@ -56,4 +66,3 @@ export default function VerseCard({
         </motion.div>
     );
 }
-
