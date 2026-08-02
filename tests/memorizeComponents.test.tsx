@@ -12,6 +12,16 @@ afterEach(() => {
   window.history.replaceState({}, '', '/');
 });
 
+async function returnToPreviousStage(
+  view: ReturnType<typeof render>,
+  currentInstruction: string,
+  previousInstruction: string,
+) {
+  await view.findByRole('heading', { name: currentInstruction });
+  fireEvent.click(view.getByRole('button', { name: '返回上一步' }));
+  await view.findByRole('heading', { name: previousInstruction });
+}
+
 describe('deep memorization controls', () => {
   it('offers a T9 keyboard by default and accepts grouped initials', () => {
     const onPress = vi.fn();
@@ -78,6 +88,32 @@ describe('deep memorization controls', () => {
       ids: ['约翰福音-3-16', '诗篇-23-1'],
       directId: '约翰福音-3-16',
     });
+  });
+
+  it('lets the user return from every later stage without leaving the session', async () => {
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        约翰福音: { 3: { 16: '神爱世人。' } },
+      }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    expect(view.getByRole('button', { name: '返回经文列表' })).toBeTruthy();
+
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await returnToPreviousStage(view, '凭留下的字，补全句子', '先读一遍，不急着记');
+
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await returnToPreviousStage(view, '只留少量线索，再想一遍', '凭留下的字，补全句子');
+
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await returnToPreviousStage(view, '按每个字的拼音首字母', '只留少量线索，再想一遍');
   });
 
   it('opens a non-favorite share, skips every stage, then returns to favorites', async () => {

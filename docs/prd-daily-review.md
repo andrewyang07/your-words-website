@@ -11,6 +11,7 @@ Help a user reproduce one favorited CUV verse character-by-character in a focuse
 1. `/memorize` lists the user's saved verses. An empty list says “先收藏一节想背的经文” and links back to Scripture browsing.
 2. Selecting a verse hides ordinary navigation and begins a new session with a fixed random mask.
 3. Four stages are independently skippable: read the full verse; mask about 30% of Han characters; increase the same mask to about 65%; mask all Han characters and reveal them sequentially with pinyin initials.
+   From every later stage, the user can return to the previous stage and move forward again without resetting the session.
 4. Completion offers retry, choose another saved verse, or finish and return.
 
 ## Rules

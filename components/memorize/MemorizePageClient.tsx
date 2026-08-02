@@ -144,10 +144,19 @@ export default function MemorizePageClient() {
     void enterStage(stage + 1);
   };
 
+  const goBack = () => {
+    if (stage === 0) {
+      setSelected(null);
+      setSession(null);
+      return;
+    }
+    setStage((stage - 1) as MemorizationStage);
+  };
+
   return (
     <main className="memorize-page flex min-h-[100dvh] flex-col overflow-x-hidden px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
       <header className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
-        <button onClick={() => { setSelected(null); setSession(null); }} className="memorize-icon" aria-label="返回经文列表"><ArrowLeft className="h-5 w-5" /></button>
+        <button type="button" onClick={goBack} className="memorize-icon" aria-label={stage === 0 ? '返回经文列表' : '返回上一步'}><ArrowLeft className="h-5 w-5" /></button>
         <StageIndicator stage={stage} />
         <button onClick={skip} className="min-h-11 px-2 text-sm text-stone-500 hover:text-stone-950 dark:hover:text-white">跳过</button>
       </header>
