@@ -1,5 +1,7 @@
 # PRD: 纯净背经主页与发现页重构
 
+> Status: Superseded by `docs/prd-daily-review.md`. The homepage now links to 深度背诵; `/review` is only a compatibility redirect to `/memorize`.
+
 ## Problem Statement
 
 当前 Daily Review PR 已经加入 `/review` 和本地复习进度，但产品体验的边界需要更清楚：主页原本承担读经、选经、搜索、查看整章、帮助和侧边栏导航，这些是已有核心工作流，不能被复习列表整页替换；`/review` 则需要保持移动端友好的自查复习。

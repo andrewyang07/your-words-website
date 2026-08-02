@@ -1,3 +1,5 @@
 # Self-Check Review Over Typed Recall
 
+> Status: Superseded. Deep Memorization uses contextual pinyin-initial recall as its final stage and has no self-rating or schedule. See `docs/prd-daily-review.md`.
+
 Daily Review will use Self-Check Review instead of typed Initial Recall as the core flow: masked text, optional reveal/hide full text, then Review Rating. Reveal/hide and the 会了 / 模糊 / 不会 buttons should be available together so the user can cover the text again before judging recall. Typed recall can remain a future enhancement, but it is not required for the pure memorization experience because the product should stay simple, mobile-friendly, and focused on local review progress. Scheduling stays intentionally simple: Missed returns tomorrow, Fuzzy returns in 2 days, Got It grows by stage, and Mastered Got It returns in about 30 days.

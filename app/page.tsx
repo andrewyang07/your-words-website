@@ -2,6 +2,7 @@ import Link from 'next/link';
 import HomePageClient from '@/components/home/HomePageClient';
 
 const primaryPages = [
+    { href: '/memorize', label: '深度背诵' },
     { href: '/search', label: '圣经搜索' },
     { href: '/note', label: '圣经笔记本' },
     { href: '/rankings', label: '圣经经文排行榜' },

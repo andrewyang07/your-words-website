@@ -112,7 +112,7 @@ export default function DiscoveryPageClient() {
 
   function handleSave(verse: Verse) {
     addFavorite(verse.id);
-    setToast(`${getVerseReference(verse)} 已加入复习`);
+    setToast(`${getVerseReference(verse)} 已收藏`);
   }
 
   if (loading) return <LoadingSpinner />;
@@ -124,10 +124,10 @@ export default function DiscoveryPageClient() {
         <header className="mb-6 flex items-center justify-between gap-3">
           <Link href="/" className="inline-flex min-h-[44px] items-center gap-2 rounded border border-stone-900/10 bg-white/70 px-3 text-sm text-stone-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200">
             <ArrowLeft className="h-4 w-4" />
-            返回复习
+            返回首页
           </Link>
-          <Link href="/review" className="min-h-[44px] rounded bg-stone-950 px-4 py-3 text-sm text-white dark:bg-stone-50 dark:text-stone-950">
-            今日复习
+          <Link href="/memorize" className="min-h-[44px] rounded bg-stone-950 px-4 py-3 text-sm text-white dark:bg-stone-50 dark:text-stone-950">
+            深度背诵
           </Link>
         </header>
 

@@ -33,7 +33,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { Verse, Book } from '@/types/verse';
-import { encodeVerseList, decodeVerseList, parseVerseId } from '@/lib/bibleBookMapping';
+import { encodeVerseList, encodeVerseRef, decodeVerseList, parseVerseId } from '@/lib/bibleBookMapping';
 import { getSharedBannerCopy, getSharedVerseSaveSummary } from '@/lib/shareUtils.mjs';
 import { shareSavedVerseCollection } from '@/lib/shareCollection';
 import { logError } from '@/lib/errorHandler';
@@ -915,7 +915,10 @@ export default function HomePage() {
         newCount: sharedSaveSummary?.newCount,
         existingCount: sharedSaveSummary?.existingCount,
     });
-    const sharedReviewHref = sharedVerses.length > 0 ? `/review?s=${encodeURIComponent(encodeVerseList(sharedVerses))}` : '/review';
+    const firstSharedVerse = sharedVerses[0];
+    const sharedMemorizeHref = firstSharedVerse
+        ? `/memorize?v=${encodeURIComponent(encodeVerseRef(firstSharedVerse.bookKey, firstSharedVerse.chapter, firstSharedVerse.verse))}`
+        : '/memorize';
 
     useEffect(() => {
         if (didSetInitialFavoritesViewRef.current || typeof window === 'undefined') return;
@@ -1457,25 +1460,25 @@ export default function HomePage() {
                 </div>
             </header>
 
-            <section className="relative z-[1] mx-auto max-w-6xl px-4 py-3 sm:py-4" aria-label={language === 'traditional' ? '每日複習入口' : '每日复习入口'}>
+            <section className="relative z-[1] mx-auto max-w-6xl px-4 py-3 sm:py-4" aria-label={language === 'traditional' ? '深度背誦入口' : '深度背诵入口'}>
                 <div className="liquid-glass rounded-[1.5rem] p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
                     <div className="flex items-start gap-3">
                         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-bible-200/80 bg-bible-100/80 text-bible-700 shadow-sm dark:border-gold-300/15 dark:bg-white/[0.06] dark:text-bible-200">
                             <BookOpenCheck className="h-5 w-5" />
                         </span>
                         <div>
-                            <h2 className="text-lg font-semibold text-stone-950 dark:text-stone-50">{language === 'traditional' ? '每日複習' : '每日复习'}</h2>
+                            <h2 className="text-lg font-semibold text-stone-950 dark:text-stone-50">{language === 'traditional' ? '深度背誦' : '深度背诵'}</h2>
                             <p className="mt-1 text-sm leading-6 text-stone-600 dark:text-stone-300">
-                                {language === 'traditional' ? '從收藏經文中挑幾節，遮住、回想，再自己判斷。' : '从收藏经文中挑几节，遮住、回想，再自己判断。'}
+                                {language === 'traditional' ? '從收藏中選一節，逐步減少提示，再用拼音首字母回想。' : '从收藏中选一节，逐步减少提示，再用拼音首字母回想。'}
                             </p>
                         </div>
                     </div>
                     <a
-                        href="/review"
+                        href="/memorize"
                         className="mt-4 inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-bible-700 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-bible-800 dark:bg-bible-300 dark:text-stone-950 dark:hover:bg-bible-200 sm:mt-0 sm:w-auto"
                     >
                         <BookOpenCheck className="h-4 w-4" />
-                        {language === 'traditional' ? '今日複習' : '今日复习'}
+                        {language === 'traditional' ? '選擇經文' : '选择经文'}
                     </a>
                 </div>
             </section>
@@ -1502,11 +1505,11 @@ export default function HomePage() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <a
-                                    href={sharedReviewHref}
+                                    href={sharedMemorizeHref}
                                     className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-bible-700/20 bg-bible-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-bible-800 dark:border-bible-300/20 dark:bg-bible-300 dark:text-stone-950 dark:hover:bg-bible-200 font-chinese touch-manipulation"
                                 >
                                     <BookOpenCheck className="h-4 w-4" />
-                                    {language === 'traditional' ? '複習' : '复习'}
+                                    {language === 'traditional' ? '深度背誦' : '深度背诵'}
                                 </a>
                                 {!hasAddedAllShared && (
                                     <button

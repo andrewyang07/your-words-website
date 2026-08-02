@@ -1,5 +1,7 @@
 # Daily Review Product Design
 
+> Status: Superseded by the Deep Memorization decisions in `docs/prd-daily-review.md`. Daily Review, scheduling, ratings, mastery, groups, and streaks are no longer product concepts.
+
 ## 目标
 
 把网站从“经文浏览器”推进成“每天能真的背到一点”的背经工具。核心体验参考 Readwise Daily Review：一次只处理一个内容单元，低压力、短流程、可持续。

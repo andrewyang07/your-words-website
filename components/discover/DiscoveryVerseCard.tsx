@@ -49,7 +49,7 @@ export default function DiscoveryVerseCard({ verse, saved, onSave }: DiscoveryVe
           disabled={saved}
         >
           <Star className="h-4 w-4" />
-          {saved ? '已加入复习' : '加入复习'}
+          {saved ? '已收藏' : '收藏'}
         </button>
       </div>
     </article>

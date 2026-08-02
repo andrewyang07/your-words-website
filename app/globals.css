@@ -156,6 +156,47 @@
 
 
 @layer components {
+    .memorize-page {
+        @apply bg-[#f3f0e7] text-stone-950 dark:bg-[#11100d] dark:text-stone-50;
+        background-image: linear-gradient(rgba(120, 113, 108, 0.045) 1px, transparent 1px);
+        background-size: 100% 2.25rem;
+    }
+
+    .memorize-icon {
+        @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-stone-900/10 bg-white/55 text-stone-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200;
+    }
+
+    .memorize-primary {
+        @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-stone-950 px-5 text-sm font-medium text-white transition hover:bg-stone-800 dark:bg-stone-50 dark:text-stone-950 dark:hover:bg-white;
+    }
+
+    .memorize-secondary {
+        @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-stone-900/10 bg-white/55 text-sm text-stone-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200;
+    }
+
+    .memorize-verse {
+        @apply mx-auto w-full max-w-2xl break-words rounded-3xl border border-stone-900/10 bg-white/55 px-5 py-7 text-[1.45rem] leading-[2.15] tracking-[0.08em] shadow-[0_24px_70px_rgba(68,64,60,0.08)] transition dark:border-white/10 dark:bg-white/[0.045] sm:px-8 sm:py-10 sm:text-[1.75rem];
+    }
+
+    .memorize-hidden {
+        @apply rounded-sm bg-stone-900/[0.09] text-transparent shadow-[inset_0_-1px_0_rgba(68,64,60,0.28)] dark:bg-white/[0.11] dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.3)];
+    }
+
+    .memorize-revealed {
+        animation: memorize-reveal 180ms ease-out;
+    }
+
+    .memorize-wrong {
+        animation: memorize-wrong 180ms ease-in-out;
+    }
+
+    @keyframes memorize-reveal { from { opacity: 0.25; } to { opacity: 1; } }
+    @keyframes memorize-wrong { 0%, 100% { transform: translateX(0); } 35% { transform: translateX(-3px); } 70% { transform: translateX(3px); } }
+
+    @media (prefers-reduced-motion: reduce) {
+        .memorize-revealed, .memorize-wrong { animation: none; }
+    }
+
     .liquid-glass {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.28));
         border: 1px solid rgba(68, 64, 60, 0.10);
