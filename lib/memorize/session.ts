@@ -25,6 +25,10 @@ export interface MemorizationSession {
     partial30: Set<number>;
     partial65: Set<number>;
   };
+  maskRecall: {
+    partial30: RecallState;
+    partial65: RecallState;
+  };
   recall: RecallState;
 }
 
@@ -65,7 +69,11 @@ export function buildMemorizationSession(
     units,
     recallableCount: recallableIndices.length,
     masks: { partial30, partial65 },
-    recall: { cursor: 0, complete: recallableIndices.length === 0, skipped: false, lastAttempt: 'idle' },
+    maskRecall: {
+      partial30: initialRecallState(partial30.size),
+      partial65: initialRecallState(partial65.size),
+    },
+    recall: initialRecallState(recallableIndices.length),
   };
 }
 
@@ -84,8 +92,28 @@ export function groupedInitialsInput(initials: string): RecallKeyboardInput {
 }
 
 export function pressInitial(state: RecallState, units: VerseCharacter[], input: RecallKeyboardInput): RecallState {
+  return pressInitialAgainstUnits(state, recallableUnits(units), input);
+}
+
+export function pressMaskedInitial(
+  state: RecallState,
+  units: VerseCharacter[],
+  maskedIndices: Set<number>,
+  input: RecallKeyboardInput,
+): RecallState {
+  const maskedUnits = orderedMaskIndices(maskedIndices)
+    .map((index) => units[index])
+    .filter((unit): unit is VerseCharacter => Boolean(unit?.recallable));
+  return pressInitialAgainstUnits(state, maskedUnits, input);
+}
+
+export function orderedMaskIndices(mask: Set<number>): number[] {
+  return [...mask].sort((left, right) => left - right);
+}
+
+function pressInitialAgainstUnits(state: RecallState, units: VerseCharacter[], input: RecallKeyboardInput): RecallState {
   if (state.complete) return state;
-  const current = recallableUnits(units)[state.cursor];
+  const current = units[state.cursor];
   const offeredInitials = input.kind === 'single' ? [input.initial] : input.initials;
   if (!current || !offeredInitials.some((initial) => current.acceptedInitials.includes(initial))) {
     return { ...state, lastAttempt: 'wrong' };
@@ -95,9 +123,13 @@ export function pressInitial(state: RecallState, units: VerseCharacter[], input:
   return {
     ...state,
     cursor,
-    complete: cursor >= recallableUnits(units).length,
+    complete: cursor >= units.length,
     lastAttempt: 'correct',
   };
+}
+
+function initialRecallState(unitCount: number): RecallState {
+  return { cursor: 0, complete: unitCount === 0, skipped: false, lastAttempt: 'idle' };
 }
 
 function normalizeInitial(initial: string): string | null {

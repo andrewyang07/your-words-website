@@ -8,7 +8,9 @@ import { loadCuvVersesById } from '@/lib/memorize/loadVerses';
 import {
   buildMemorizationSession,
   groupedInitialsInput,
+  orderedMaskIndices,
   pressInitial,
+  pressMaskedInitial,
   revealCurrentUnit,
   singleInitialInput,
   skipRecallStage,
@@ -22,8 +24,8 @@ import ErrorMessage from '@/components/ui/ErrorMessage';
 
 const stages = [
   { name: '通读', instruction: '先读一遍，不急着记', initialsRequired: false },
-  { name: '轻遮', instruction: '凭留下的字，补全句子', initialsRequired: false },
-  { name: '深遮', instruction: '只留少量线索，再想一遍', initialsRequired: false },
+  { name: '轻遮', instruction: '凭留下的字，补全句子', initialsRequired: true },
+  { name: '深遮', instruction: '只留少量线索，再想一遍', initialsRequired: true },
   { name: '首字母', instruction: '按每个字的拼音首字母', initialsRequired: true },
 ] as const;
 type MemorizationStage = 0 | 1 | 2 | 3;
@@ -105,9 +107,15 @@ export default function MemorizePageClient() {
   }, [selected, session]);
 
   const submitKeyboardInput = useCallback((input: RecallKeyboardInput) => {
-    if (stage !== finalStage) return;
+    if (stage === 0) return;
     setSession((current) => {
       if (!current) return current;
+      if (stage === 1 || stage === 2) {
+        const key = stage === 1 ? 'partial30' : 'partial65';
+        const recall = pressMaskedInitial(current.maskRecall[key], current.units, current.masks[key], input);
+        if (recall.lastAttempt === 'wrong') navigator.vibrate?.(35);
+        return { ...current, maskRecall: { ...current.maskRecall, [key]: recall } };
+      }
       const recall = pressInitial(current.recall, current.units, input);
       if (recall.lastAttempt === 'wrong') navigator.vibrate?.(35);
       if (recall.complete) setCompleted(true);
@@ -144,19 +152,20 @@ export default function MemorizePageClient() {
     void enterStage(stage + 1);
   };
 
-  const goBack = () => {
-    if (stage === 0) {
-      setSelected(null);
-      setSession(null);
-      return;
-    }
+  const exitVerse = () => {
+    setSelected(null);
+    setSession(null);
+  };
+
+  const goToPreviousStage = () => {
+    if (stage === 0) return;
     setStage((stage - 1) as MemorizationStage);
   };
 
   return (
     <main className="memorize-page flex min-h-[100dvh] flex-col overflow-x-hidden px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
       <header className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
-        <button type="button" onClick={goBack} className="memorize-icon" aria-label={stage === 0 ? '返回经文列表' : '返回上一步'}><ArrowLeft className="h-5 w-5" /></button>
+        <button type="button" onClick={exitVerse} className="memorize-icon" aria-label="返回经文列表"><ArrowLeft className="h-5 w-5" /></button>
         <StageIndicator stage={stage} />
         <button onClick={skip} className="min-h-11 px-2 text-sm text-stone-500 hover:text-stone-950 dark:hover:text-white">跳过</button>
       </header>
@@ -171,21 +180,27 @@ export default function MemorizePageClient() {
           <aside className="mx-auto mt-4 max-w-2xl text-xs leading-6 text-stone-500" aria-label="经文注释">注：{session.notes.join('；')}</aside>
         )}
 
-        {stage === finalStage ? (
+        {stage > 0 ? (
           <div className="mt-5">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <button
-                onClick={() => setSession((current) => {
-                  if (!current) return current;
-                  const recall = revealCurrentUnit(current.recall, current.units);
-                  if (recall.complete) setCompleted(true);
-                  return { ...current, recall };
-                })}
-                className="memorize-secondary !w-auto px-4"
-              ><Eye className="h-4 w-4" />显示这个字</button>
-              <button onClick={skip} className="min-h-11 text-sm text-stone-500">跳过本轮</button>
-            </div>
+            {stage === finalStage && (
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <button
+                  onClick={() => setSession((current) => {
+                    if (!current) return current;
+                    const recall = revealCurrentUnit(current.recall, current.units);
+                    if (recall.complete) setCompleted(true);
+                    return { ...current, recall };
+                  })}
+                  className="memorize-secondary !w-auto px-4"
+                ><Eye className="h-4 w-4" />显示这个字</button>
+                <button onClick={skip} className="min-h-11 text-sm text-stone-500">跳过本轮</button>
+              </div>
+            )}
             <AlphabetKeyboard disabled={loadingInitials} onPress={submitKeyboardInput} />
+            <button type="button" onClick={goToPreviousStage} className="memorize-secondary mx-auto mt-3 max-w-xs"><ArrowLeft className="h-4 w-4" />返回上一步</button>
+            {stage < finalStage && (
+              <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-3 max-w-xs">继续<ChevronRight className="h-4 w-4" /></button>
+            )}
           </div>
         ) : (
           <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-7 max-w-xs">继续<ChevronRight className="h-4 w-4" /></button>
@@ -261,18 +276,27 @@ export function AlphabetKeyboard({ disabled = false, onPress }: { disabled?: boo
 
 export function VerseExercise({ session, stage }: { session: MemorizationSession; stage: MemorizationStage }) {
   let recallOrdinal = 0;
+  const activeRecall = stage === 1 ? session.maskRecall.partial30
+    : stage === 2 ? session.maskRecall.partial65
+      : session.recall;
+  const revealedPartial30 = revealedMaskIndices(session.masks.partial30, session.maskRecall.partial30.cursor);
+  const revealedPartial65 = revealedMaskIndices(session.masks.partial65, session.maskRecall.partial65.cursor);
   return (
-    <p className={`memorize-verse whitespace-pre-wrap ${session.recall.lastAttempt === 'wrong' ? 'memorize-wrong' : ''}`} aria-live="polite">
+    <p className={`memorize-verse whitespace-pre-wrap ${activeRecall.lastAttempt === 'wrong' ? 'memorize-wrong' : ''}`} aria-live="polite">
       {session.units.map((unit, index) => {
         if (!unit.recallable) return <span key={index}>{unit.text}</span>;
         const ordinal = recallOrdinal++;
-        const hidden = stage === 1 ? session.masks.partial30.has(index)
-          : stage === 2 ? session.masks.partial65.has(index)
+        const hidden = stage === 1 ? session.masks.partial30.has(index) && !revealedPartial30.has(index)
+          : stage === 2 ? session.masks.partial65.has(index) && !revealedPartial65.has(index)
             : stage === 3 ? ordinal >= session.recall.cursor : false;
         return <span key={index} className={hidden ? 'memorize-hidden' : 'memorize-revealed'}>{unit.text}</span>;
       })}
     </p>
   );
+}
+
+function revealedMaskIndices(mask: Set<number>, cursor: number): Set<number> {
+  return new Set(orderedMaskIndices(mask).slice(0, cursor));
 }
 
 function VersePicker({ verses, onSelect }: { verses: Verse[]; onSelect: (verse: Verse) => void }) {
