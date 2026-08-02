@@ -3,7 +3,7 @@ import React from 'react';
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import MemorizePageClient, { AlphabetKeyboard, VerseExercise, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
-import { buildMemorizationSession, pressInitial } from '../lib/memorize/session';
+import { buildMemorizationSession, pressInitial, singleInitialInput } from '../lib/memorize/session';
 import { useFavoritesStore } from '../stores/useFavoritesStore';
 
 afterEach(() => {
@@ -13,21 +13,30 @@ afterEach(() => {
 });
 
 describe('deep memorization controls', () => {
-  it('offers a 44px in-page A-Z keyboard and handles taps', () => {
+  it('offers a T9 keyboard by default and accepts grouped initials', () => {
     const onPress = vi.fn();
     const { getByRole } = render(<AlphabetKeyboard onPress={onPress} />);
 
-    const key = getByRole('button', { name: 'A' });
-    expect(key.className).toContain('min-h-11');
+    const key = getByRole('button', { name: '2 ABC' });
+    expect(key.className).toContain('min-h-14');
     fireEvent.click(key);
-    expect(onPress).toHaveBeenCalledWith('A');
+    expect(onPress).toHaveBeenCalledWith({ kind: 'group', initials: ['a', 'b', 'c'] });
+  });
+
+  it('switches to a conventional QWERTY layout', () => {
+    const onPress = vi.fn();
+    const view = render(<AlphabetKeyboard onPress={onPress} />);
+    fireEvent.click(view.getByRole('button', { name: 'QWERTY' }));
+    fireEvent.click(view.getByRole('button', { name: 'Q' }));
+    expect(view.getByLabelText('QWERTY键盘').textContent).toContain('QWERTYUIOP');
+    expect(onPress).toHaveBeenCalledWith({ kind: 'single', initial: 'q' });
   });
 
   it('handles physical desktop letters through the same keyboard seam', () => {
     const onPress = vi.fn();
     render(<AlphabetKeyboard onPress={onPress} />);
     fireEvent.keyDown(window, { key: 'r' });
-    expect(onPress).toHaveBeenCalledWith('R');
+    expect(onPress).toHaveBeenCalledWith({ kind: 'single', initial: 'r' });
   });
 
   it('reveals exactly one Han character after one correct initial', () => {
@@ -35,7 +44,7 @@ describe('deep memorization controls', () => {
     const view = render(<VerseExercise session={session} stage={3} />);
     expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(4);
 
-    const advanced = { ...session, recall: pressInitial(session.recall, session.units, 's') };
+    const advanced = { ...session, recall: pressInitial(session.recall, session.units, singleInitialInput('s')) };
     view.rerender(<VerseExercise session={advanced} stage={3} />);
     expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(3);
     expect(view.container.querySelectorAll('.memorize-revealed')).toHaveLength(1);
@@ -45,13 +54,13 @@ describe('deep memorization controls', () => {
     const initial = buildMemorizationSession('神爱。', 'wrong-key', [['s'], ['a']]);
     function RecallHarness() {
       const [session, setSession] = React.useState(initial);
-      return <><VerseExercise session={session} stage={3} /><AlphabetKeyboard onPress={(letter) => setSession((current) => ({ ...current, recall: pressInitial(current.recall, current.units, letter) }))} /></>;
+      return <><VerseExercise session={session} stage={3} /><AlphabetKeyboard onPress={(input) => setSession((current) => ({ ...current, recall: pressInitial(current.recall, current.units, input) }))} /></>;
     }
 
     const view = render(<RecallHarness />);
-    fireEvent.click(view.getByRole('button', { name: 'S' }));
+    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
     expect(view.container.querySelectorAll('.memorize-revealed')).toHaveLength(1);
-    fireEvent.click(view.getByRole('button', { name: 'X' }));
+    fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
     expect(view.container.querySelectorAll('.memorize-revealed')).toHaveLength(1);
     expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(1);
     expect(view.container.querySelector('.memorize-verse')?.classList.contains('memorize-wrong')).toBe(true);

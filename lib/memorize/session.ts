@@ -11,6 +11,10 @@ export interface RecallState {
   lastAttempt: 'idle' | 'correct' | 'wrong' | 'revealed';
 }
 
+export type RecallKeyboardInput =
+  | { kind: 'single'; initial: string }
+  | { kind: 'group'; initials: readonly string[] };
+
 export interface MemorizationSession {
   seed: string;
   body: string;
@@ -65,11 +69,25 @@ export function buildMemorizationSession(
   };
 }
 
-export function pressInitial(state: RecallState, units: VerseCharacter[], key: string): RecallState {
+export function singleInitialInput(initial: string): RecallKeyboardInput {
+  const normalized = normalizeInitial(initial);
+  if (!normalized) throw new Error('Single recall input must be one A-Z letter');
+  return { kind: 'single', initial: normalized };
+}
+
+export function groupedInitialsInput(initials: string): RecallKeyboardInput {
+  const normalized = Array.from(initials).map(normalizeInitial);
+  if (normalized.length < 2 || normalized.some((initial) => !initial)) {
+    throw new Error('Grouped recall input must contain at least two A-Z letters');
+  }
+  return { kind: 'group', initials: normalized as string[] };
+}
+
+export function pressInitial(state: RecallState, units: VerseCharacter[], input: RecallKeyboardInput): RecallState {
   if (state.complete) return state;
   const current = recallableUnits(units)[state.cursor];
-  const normalized = key.toLocaleLowerCase();
-  if (!current?.acceptedInitials.includes(normalized)) {
+  const offeredInitials = input.kind === 'single' ? [input.initial] : input.initials;
+  if (!current || !offeredInitials.some((initial) => current.acceptedInitials.includes(initial))) {
     return { ...state, lastAttempt: 'wrong' };
   }
 
@@ -80,6 +98,11 @@ export function pressInitial(state: RecallState, units: VerseCharacter[], key: s
     complete: cursor >= recallableUnits(units).length,
     lastAttempt: 'correct',
   };
+}
+
+function normalizeInitial(initial: string): string | null {
+  const normalized = initial.toLocaleLowerCase();
+  return /^[a-z]$/u.test(normalized) ? normalized : null;
 }
 
 export function revealCurrentUnit(state: RecallState, units: VerseCharacter[]): RecallState {

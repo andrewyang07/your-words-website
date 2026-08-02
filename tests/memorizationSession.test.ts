@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildMemorizationSession,
+  groupedInitialsInput,
   pressInitial,
   revealCurrentUnit,
   skipRecallStage,
+  singleInitialInput,
   splitEditorialNotes,
 } from '../lib/memorize/session';
 
@@ -65,10 +67,10 @@ describe('deep memorization session', () => {
       ['y'], ['w'], ['s'], ['a'], ['s'], ['r'],
     ]);
 
-    const wrong = pressInitial(session.recall, session.units, 'x');
+    const wrong = pressInitial(session.recall, session.units, singleInitialInput('x'));
     expect(wrong).toMatchObject({ cursor: 0, lastAttempt: 'wrong', complete: false });
 
-    const correct = pressInitial(wrong, session.units, 'Y');
+    const correct = pressInitial(wrong, session.units, singleInitialInput('Y'));
     expect(correct).toMatchObject({ cursor: 1, lastAttempt: 'correct', complete: false });
 
     const revealed = revealCurrentUnit(correct, session.units);
@@ -78,6 +80,17 @@ describe('deep memorization session', () => {
 
   it('completes when the final recallable character is entered', () => {
     const session = buildMemorizationSession('神。', 'done', [['s']]);
-    expect(pressInitial(session.recall, session.units, 's')).toMatchObject({ cursor: 1, complete: true });
+    expect(pressInitial(session.recall, session.units, singleInitialInput('s'))).toMatchObject({ cursor: 1, complete: true });
+  });
+
+  it('accepts a T9 letter group when it contains the expected initial', () => {
+    const session = buildMemorizationSession('神', 't9', [['s']]);
+    expect(pressInitial(session.recall, session.units, groupedInitialsInput('PQRS'))).toMatchObject({ cursor: 1, complete: true });
+  });
+
+  it('rejects malformed keyboard inputs before they reach recall state', () => {
+    expect(() => singleInitialInput('S!')).toThrow();
+    expect(() => groupedInitialsInput('S!')).toThrow();
+    expect(() => groupedInitialsInput('S')).toThrow();
   });
 });

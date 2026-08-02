@@ -7,10 +7,13 @@ import { decodeVerseList, decodeVerseRef, encodeVerseRef } from '@/lib/bibleBook
 import { loadCuvVersesById } from '@/lib/memorize/loadVerses';
 import {
   buildMemorizationSession,
+  groupedInitialsInput,
   pressInitial,
   revealCurrentUnit,
+  singleInitialInput,
   skipRecallStage,
   type MemorizationSession,
+  type RecallKeyboardInput,
 } from '@/lib/memorize/session';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import type { Verse } from '@/types/verse';
@@ -25,7 +28,19 @@ const stages = [
 ] as const;
 type MemorizationStage = 0 | 1 | 2 | 3;
 const finalStage: MemorizationStage = 3;
-const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+type KeyboardLayout = 't9' | 'qwerty';
+const t9Keys = [
+  { number: '1', letters: '' },
+  { number: '2', letters: 'ABC' },
+  { number: '3', letters: 'DEF' },
+  { number: '4', letters: 'GHI' },
+  { number: '5', letters: 'JKL' },
+  { number: '6', letters: 'MNO' },
+  { number: '7', letters: 'PQRS' },
+  { number: '8', letters: 'TUV' },
+  { number: '9', letters: 'WXYZ' },
+] as const;
+const qwertyRows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'] as const;
 
 export default function MemorizePageClient() {
   const favorites = useFavoritesStore((state) => state.favorites);
@@ -89,11 +104,11 @@ export default function MemorizePageClient() {
     setStage(resolvedStage);
   }, [selected, session]);
 
-  const submitInitial = useCallback((letter: string) => {
+  const submitKeyboardInput = useCallback((input: RecallKeyboardInput) => {
     if (stage !== finalStage) return;
     setSession((current) => {
       if (!current) return current;
-      const recall = pressInitial(current.recall, current.units, letter);
+      const recall = pressInitial(current.recall, current.units, input);
       if (recall.lastAttempt === 'wrong') navigator.vibrate?.(35);
       if (recall.complete) setCompleted(true);
       return { ...current, recall };
@@ -161,7 +176,7 @@ export default function MemorizePageClient() {
               ><Eye className="h-4 w-4" />显示这个字</button>
               <button onClick={skip} className="min-h-11 text-sm text-stone-500">跳过本轮</button>
             </div>
-            <AlphabetKeyboard disabled={loadingInitials} onPress={submitInitial} />
+            <AlphabetKeyboard disabled={loadingInitials} onPress={submitKeyboardInput} />
           </div>
         ) : (
           <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-7 max-w-xs">继续<ChevronRight className="h-4 w-4" /></button>
@@ -171,18 +186,66 @@ export default function MemorizePageClient() {
   );
 }
 
-export function AlphabetKeyboard({ disabled = false, onPress }: { disabled?: boolean; onPress: (letter: string) => void }) {
+export function AlphabetKeyboard({ disabled = false, onPress }: { disabled?: boolean; onPress: (input: RecallKeyboardInput) => void }) {
+  const [layout, setLayout] = useState<KeyboardLayout>('t9');
+
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (!disabled && /^[a-z]$/i.test(event.key)) onPress(event.key.toUpperCase());
+      if (!disabled && /^[a-z]$/i.test(event.key)) onPress(singleInitialInput(event.key));
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [disabled, onPress]);
 
   return (
-    <div className="mx-auto grid w-full max-w-2xl grid-cols-7 gap-1 sm:grid-cols-9" aria-label="字母键盘">
-      {alphabet.map((letter) => <button key={letter} disabled={disabled} onClick={() => onPress(letter)} className="min-h-11 rounded-lg border border-stone-900/10 bg-white/65 text-sm font-semibold shadow-sm active:scale-95 disabled:opacity-40 dark:border-white/10 dark:bg-white/[0.06]">{letter}</button>)}
+    <div className="mx-auto w-full max-w-2xl" aria-label="拼音首字母键盘">
+      <div className="mb-3 flex justify-center" role="group" aria-label="键盘布局">
+        <div className="inline-flex rounded-full border border-stone-900/10 bg-white/45 p-1 dark:border-white/10 dark:bg-white/[0.04]">
+          {([['t9', '九宫格'], ['qwerty', 'QWERTY']] as const).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={layout === value}
+              onClick={() => setLayout(value)}
+              className={`min-h-9 rounded-full px-4 text-xs font-medium transition ${layout === value ? 'bg-stone-950 text-white shadow-sm dark:bg-stone-50 dark:text-stone-950' : 'text-stone-500 hover:text-stone-950 dark:hover:text-white'}`}
+            >{label}</button>
+          ))}
+        </div>
+      </div>
+
+      {layout === 't9' ? (
+        <div className="mx-auto grid max-w-sm grid-cols-3 gap-2" aria-label="九宫格键盘">
+          {t9Keys.map(({ number, letters }) => (
+            <button
+              key={number}
+              type="button"
+              disabled={disabled || !letters}
+              onClick={() => onPress(groupedInitialsInput(letters))}
+              aria-label={letters ? `${number} ${letters}` : number}
+              className="flex min-h-14 items-center justify-center gap-2 rounded-xl border border-stone-900/10 bg-white/65 px-2 shadow-sm active:scale-[0.98] disabled:opacity-30 dark:border-white/10 dark:bg-white/[0.06]"
+            >
+              <span className="text-base font-semibold">{number}</span>
+              {letters && <span className="text-[11px] tracking-[0.16em] text-stone-500 dark:text-stone-400">{letters}</span>}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-1.5" aria-label="QWERTY键盘">
+          {qwertyRows.map((row) => (
+            <div key={row} className="flex justify-center gap-1 sm:gap-1.5">
+              {Array.from(row).map((letter) => (
+                <button
+                  key={letter}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onPress(singleInitialInput(letter))}
+                  className="min-h-11 min-w-0 flex-1 rounded-lg border border-stone-900/10 bg-white/65 text-sm font-semibold shadow-sm active:scale-95 disabled:opacity-40 dark:border-white/10 dark:bg-white/[0.06] sm:max-w-14"
+                >{letter}</button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
