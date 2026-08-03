@@ -163,10 +163,11 @@ describe('deep memorization controls', () => {
 
   it('switches to a conventional QWERTY layout', () => {
     const onPress = vi.fn();
-    const view = render(<AlphabetKeyboard onPress={onPress} />);
+    const view = render(<AlphabetKeyboard hintedInitials={['s']} onPress={onPress} />);
     fireEvent.click(view.getByRole('button', { name: 'QWERTY' }));
     fireEvent.click(view.getByRole('button', { name: 'Q' }));
     expect(view.getByLabelText('QWERTY键盘').textContent).toContain('QWERTYUIOP');
+    expect(view.getByRole('button', { name: 'S' }).getAttribute('data-hinted')).toBe('true');
     expect(onPress).toHaveBeenCalledWith({ kind: 'single', initial: 'q' });
   });
 
@@ -202,6 +203,70 @@ describe('deep memorization controls', () => {
     expect(view.container.querySelectorAll('.memorize-revealed')).toHaveLength(1);
     expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(1);
     expect(view.container.querySelector('.memorize-verse')?.classList.contains('memorize-wrong')).toBe(true);
+  });
+
+  it('announces an error and highlights the correct key after two wrong attempts', async () => {
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 约翰福音: { 3: { 16: '神是世上。' } } }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '凭留下的字，补全句子' });
+
+    fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
+    expect(view.getByRole('status').textContent).toContain('再试一次');
+    fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
+    expect(view.getByRole('button', { name: '7 PQRS' }).getAttribute('data-hinted')).toBe('true');
+  });
+
+  it('offers one-unit reveal in every input stage', async () => {
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '凭留下的字，补全句子' });
+    const partialHidden = view.container.querySelectorAll('.memorize-hidden').length;
+    fireEvent.click(view.getByRole('button', { name: '显示这个字' }));
+    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(partialHidden - 1);
+
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
+    expect(view.getByRole('button', { name: '显示这个字' })).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '按每个字的拼音首字母' });
+    expect(view.getByRole('button', { name: '显示这个字' })).toBeTruthy();
+  });
+
+  it('keeps a skipped input stage usable when navigating back', async () => {
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '凭留下的字，补全句子' });
+    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
+    fireEvent.click(view.getByRole('button', { name: '返回上一步' }));
+
+    const hiddenBeforeReveal = view.container.querySelectorAll('.memorize-hidden').length;
+    fireEvent.click(view.getByRole('button', { name: '显示这个字' }));
+    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(hiddenBeforeReveal - 1);
   });
 
   it('opens a shared verse directly without requiring it in favorites', () => {

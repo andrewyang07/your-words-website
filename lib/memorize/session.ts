@@ -9,6 +9,10 @@ export interface RecallState {
   complete: boolean;
   skipped: boolean;
   lastAttempt: 'idle' | 'correct' | 'wrong' | 'revealed';
+  consecutiveWrongAttempts: number;
+  wrongAttempts: number;
+  assistanceCount: number;
+  hintVisible: boolean;
 }
 
 export type RecallKeyboardInput =
@@ -30,7 +34,10 @@ export interface MemorizationSession {
     partial65: RecallState;
   };
   recall: RecallState;
+  skippedStages: Set<MemorizationStageNumber>;
 }
+
+export type MemorizationStageNumber = 0 | 1 | 2 | 3;
 
 const hanPattern = /\p{Script=Han}/u;
 const notePattern = /（([^（）]*)）|\(([^()]*)\)|【([^【】]*)】|\[([^\[\]]*)\]/gu;
@@ -74,6 +81,20 @@ export function buildMemorizationSession(
       partial65: initialRecallState(partial65.size),
     },
     recall: initialRecallState(recallableIndices.length),
+    skippedStages: new Set(),
+  };
+}
+
+export function withAcceptedInitials(
+  session: MemorizationSession,
+  acceptedInitials: string[][],
+): MemorizationSession {
+  let recallIndex = 0;
+  return {
+    ...session,
+    units: session.units.map((unit) => unit.recallable
+      ? { ...unit, acceptedInitials: acceptedInitials[recallIndex++] ?? [] }
+      : unit),
   };
 }
 
@@ -111,12 +132,32 @@ export function orderedMaskIndices(mask: Set<number>): number[] {
   return [...mask].sort((left, right) => left - right);
 }
 
+export function currentAcceptedInitials(
+  state: RecallState,
+  units: VerseCharacter[],
+  maskedIndices?: Set<number>,
+): string[] {
+  const candidates = maskedIndices
+    ? orderedMaskIndices(maskedIndices).map((index) => units[index]).filter((unit): unit is VerseCharacter => Boolean(unit?.recallable))
+    : recallableUnits(units);
+  return candidates[state.cursor]?.acceptedInitials ?? [];
+}
+
 function pressInitialAgainstUnits(state: RecallState, units: VerseCharacter[], input: RecallKeyboardInput): RecallState {
   if (state.complete) return state;
   const current = units[state.cursor];
   const offeredInitials = input.kind === 'single' ? [input.initial] : input.initials;
   if (!current || !offeredInitials.some((initial) => current.acceptedInitials.includes(initial))) {
-    return { ...state, lastAttempt: 'wrong' };
+    const consecutiveWrongAttempts = state.consecutiveWrongAttempts + 1;
+    const canOfferHint = Boolean(current?.acceptedInitials.length);
+    return {
+      ...state,
+      lastAttempt: 'wrong',
+      consecutiveWrongAttempts,
+      wrongAttempts: state.wrongAttempts + 1,
+      hintVisible: canOfferHint && consecutiveWrongAttempts >= 2,
+      assistanceCount: state.assistanceCount + (canOfferHint && consecutiveWrongAttempts === 2 ? 1 : 0),
+    };
   }
 
   const cursor = state.cursor + 1;
@@ -125,11 +166,22 @@ function pressInitialAgainstUnits(state: RecallState, units: VerseCharacter[], i
     cursor,
     complete: cursor >= units.length,
     lastAttempt: 'correct',
+    consecutiveWrongAttempts: 0,
+    hintVisible: false,
   };
 }
 
 function initialRecallState(unitCount: number): RecallState {
-  return { cursor: 0, complete: unitCount === 0, skipped: false, lastAttempt: 'idle' };
+  return {
+    cursor: 0,
+    complete: unitCount === 0,
+    skipped: false,
+    lastAttempt: 'idle',
+    consecutiveWrongAttempts: 0,
+    wrongAttempts: 0,
+    assistanceCount: 0,
+    hintVisible: false,
+  };
 }
 
 function normalizeInitial(initial: string): string | null {
@@ -138,13 +190,47 @@ function normalizeInitial(initial: string): string | null {
 }
 
 export function revealCurrentUnit(state: RecallState, units: VerseCharacter[]): RecallState {
+  return revealAgainstUnitCount(state, recallableUnits(units).length);
+}
+
+export function revealMaskedCurrentUnit(
+  state: RecallState,
+  units: VerseCharacter[],
+  maskedIndices: Set<number>,
+): RecallState {
+  const unitCount = orderedMaskIndices(maskedIndices)
+    .filter((index) => units[index]?.recallable)
+    .length;
+  return revealAgainstUnitCount(state, unitCount);
+}
+
+function revealAgainstUnitCount(state: RecallState, unitCount: number): RecallState {
   if (state.complete) return state;
-  const cursor = Math.min(state.cursor + 1, recallableUnits(units).length);
-  return { ...state, cursor, complete: cursor >= recallableUnits(units).length, lastAttempt: 'revealed' };
+  const cursor = Math.min(state.cursor + 1, unitCount);
+  return {
+    ...state,
+    cursor,
+    complete: cursor >= unitCount,
+    lastAttempt: 'revealed',
+    consecutiveWrongAttempts: 0,
+    hintVisible: false,
+    assistanceCount: state.assistanceCount + 1,
+  };
 }
 
 export function skipRecallStage(state: RecallState): RecallState {
   return { ...state, complete: true, skipped: true, lastAttempt: 'idle' };
+}
+
+export function skipMemorizationStage(
+  session: MemorizationSession,
+  stage: MemorizationStageNumber,
+): MemorizationSession {
+  const skippedStages = new Set(session.skippedStages).add(stage);
+  if (stage === 3) {
+    return { ...session, skippedStages, recall: skipRecallStage(session.recall) };
+  }
+  return { ...session, skippedStages };
 }
 
 function recallableUnits(units: VerseCharacter[]) {

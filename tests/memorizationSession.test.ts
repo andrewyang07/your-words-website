@@ -3,10 +3,13 @@ import {
   buildMemorizationSession,
   groupedInitialsInput,
   pressInitial,
+  revealMaskedCurrentUnit,
   revealCurrentUnit,
+  skipMemorizationStage,
   skipRecallStage,
   singleInitialInput,
   splitEditorialNotes,
+  withAcceptedInitials,
 } from '../lib/memorize/session';
 
 describe('deep memorization session', () => {
@@ -15,6 +18,14 @@ describe('deep memorization session', () => {
       body: '太初有道，道与神同在。',
       notes: ['有古卷作：话', '小字'],
     });
+  });
+
+  it('keeps editorial notes outside contextual Recall Unit alignment', () => {
+    const session = buildMemorizationSession('神（小字）爱', 'note-initials', [['s'], ['a']]);
+    expect(session.units.filter((unit) => unit.recallable)).toEqual([
+      expect.objectContaining({ text: '神', acceptedInitials: ['s'] }),
+      expect.objectContaining({ text: '爱', acceptedInitials: ['a'] }),
+    ]);
   });
 
   it('creates deterministic nested masks while leaving punctuation visible', () => {
@@ -76,6 +87,59 @@ describe('deep memorization session', () => {
     const revealed = revealCurrentUnit(correct, session.units);
     expect(revealed).toMatchObject({ cursor: 2, lastAttempt: 'revealed' });
     expect(skipRecallStage(revealed)).toMatchObject({ complete: true, skipped: true });
+  });
+
+  it('offers a hint after two consecutive errors and resets the streak after advancing', () => {
+    const session = buildMemorizationSession('神爱', 'hint', [['s'], ['a']]);
+
+    const firstWrong = pressInitial(session.recall, session.units, singleInitialInput('x'));
+    expect(firstWrong).toMatchObject({ cursor: 0, consecutiveWrongAttempts: 1, hintVisible: false, wrongAttempts: 1 });
+
+    const secondWrong = pressInitial(firstWrong, session.units, singleInitialInput('y'));
+    expect(secondWrong).toMatchObject({ cursor: 0, consecutiveWrongAttempts: 2, hintVisible: true, wrongAttempts: 2, assistanceCount: 1 });
+
+    const repeatedWrong = pressInitial(secondWrong, session.units, singleInitialInput('z'));
+    expect(repeatedWrong).toMatchObject({ consecutiveWrongAttempts: 3, assistanceCount: 1 });
+
+    const correct = pressInitial(repeatedWrong, session.units, singleInitialInput('s'));
+    expect(correct).toMatchObject({ cursor: 1, consecutiveWrongAttempts: 0, hintVisible: false, wrongAttempts: 3, assistanceCount: 1 });
+  });
+
+  it('reveals exactly one masked Recall Unit and records assistance', () => {
+    const session = buildMemorizationSession('神爱世人', 'masked-reveal', [['s'], ['a'], ['s'], ['r']]);
+    const mask = new Set([0, 2]);
+
+    const revealed = revealMaskedCurrentUnit(session.maskRecall.partial30, session.units, mask);
+
+    expect(revealed).toMatchObject({ cursor: 1, complete: false, lastAttempt: 'revealed', assistanceCount: 1 });
+  });
+
+  it('records skipped stages only in the transient session', () => {
+    const session = buildMemorizationSession('神爱', 'skip-facts', [['s'], ['a']]);
+    const afterRead = skipMemorizationStage(session, 0);
+    const afterPartial = skipMemorizationStage(afterRead, 1);
+
+    expect([...afterPartial.skippedStages]).toEqual([0, 1]);
+    expect(afterPartial.maskRecall.partial30).toMatchObject({ complete: false, skipped: false });
+    expect(session.skippedStages.size).toBe(0);
+  });
+
+  it('adds resolved readings without resetting current-round facts', () => {
+    const session = skipMemorizationStage(buildMemorizationSession('神爱', 'hydrate'), 0);
+    const hydrated = withAcceptedInitials(session, [['s'], ['a']]);
+
+    expect([...hydrated.skippedStages]).toEqual([0]);
+    expect(hydrated.units.filter((unit) => unit.recallable).map((unit) => unit.acceptedInitials)).toEqual([['s'], ['a']]);
+  });
+
+  it('keeps unresolved readings escapable without claiming a key hint', () => {
+    const session = buildMemorizationSession('神', 'unresolved');
+    const once = pressInitial(session.recall, session.units, singleInitialInput('x'));
+    const twice = pressInitial(once, session.units, singleInitialInput('y'));
+
+    expect(twice).toMatchObject({ cursor: 0, hintVisible: false, assistanceCount: 0 });
+    expect(revealCurrentUnit(twice, session.units)).toMatchObject({ complete: true, assistanceCount: 1 });
+    expect(skipRecallStage(twice)).toMatchObject({ complete: true, skipped: true });
   });
 
   it('completes when the final recallable character is entered', () => {

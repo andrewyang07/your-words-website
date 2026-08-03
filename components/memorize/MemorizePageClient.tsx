@@ -2,18 +2,21 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, BookOpen, ChevronRight, Eye, RotateCcw, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowLeft, BookOpen, ChevronRight, Eye, RotateCcw, Sparkles } from 'lucide-react';
 import { decodeVerseList, decodeVerseRef, encodeVerseRef } from '@/lib/bibleBookMapping';
 import { loadCuvVersesById } from '@/lib/memorize/loadVerses';
 import {
   buildMemorizationSession,
+  currentAcceptedInitials,
   groupedInitialsInput,
   orderedMaskIndices,
   pressInitial,
   pressMaskedInitial,
+  revealMaskedCurrentUnit,
   revealCurrentUnit,
   singleInitialInput,
-  skipRecallStage,
+  skipMemorizationStage,
+  withAcceptedInitials,
   type MemorizationSession,
   type RecallKeyboardInput,
 } from '@/lib/memorize/session';
@@ -35,7 +38,7 @@ const copy = {
     ],
     loadingError: '经文加载失败', backToPicker: '返回经文列表', skip: '跳过', note: '经文注释', notePrefix: '注：',
     reveal: '显示这个字', skipRound: '跳过本轮', previous: '返回上一步', continue: '继续',
-    keyboard: '拼音首字母键盘', keyboardLayout: '键盘布局', t9: '九宫格',
+    keyboard: '拼音首字母键盘', keyboardLayout: '键盘布局', t9: '九宫格', retryInput: '再试一次', hintPrefix: '提示：请按', or: '或', keySuffix: '键',
     stageProgress: (stage: number) => `第 ${stage} 阶段，共 4 阶段`,
     finished: '本轮结束', retry: '重新背诵', chooseAnother: '选择另一节', finishAndReturn: '完成并返回',
     backHome: '返回首页', title: '深度背诵', pickerHeading: '选择一节，慢慢记住',
@@ -50,7 +53,7 @@ const copy = {
     ],
     loadingError: '經文載入失敗', backToPicker: '返回經文列表', skip: '跳過', note: '經文註釋', notePrefix: '註：',
     reveal: '顯示這個字', skipRound: '跳過本輪', previous: '返回上一步', continue: '繼續',
-    keyboard: '拼音首字母鍵盤', keyboardLayout: '鍵盤佈局', t9: '九宮格',
+    keyboard: '拼音首字母鍵盤', keyboardLayout: '鍵盤佈局', t9: '九宮格', retryInput: '再試一次', hintPrefix: '提示：請按', or: '或', keySuffix: '鍵',
     stageProgress: (stage: number) => `第 ${stage} 階段，共 4 階段`,
     finished: '本輪結束', retry: '重新背誦', chooseAnother: '選擇另一節', finishAndReturn: '完成並返回',
     backHome: '返回首頁', title: '深度背誦', pickerHeading: '選擇一節，慢慢記住',
@@ -164,7 +167,8 @@ export default function MemorizePageClient() {
       setLoadingInitials(true);
       try {
         const { buildContextualInitials } = await import('@/lib/memorize/contextualInitials');
-        setSession(buildMemorizationSession(selected.text, session.seed, buildContextualInitials(session.body)));
+        const acceptedInitials = buildContextualInitials(session.body);
+        setSession((current) => current ? withAcceptedInitials(current, acceptedInitials) : current);
       } catch {
         // Keep the all-masked stage available: reveal-current and skip remain escape hatches.
       } finally {
@@ -181,11 +185,9 @@ export default function MemorizePageClient() {
       if (stage === 1 || stage === 2) {
         const key = stage === 1 ? 'partial30' : 'partial65';
         const recall = pressMaskedInitial(current.maskRecall[key], current.units, current.masks[key], input);
-        if (recall.lastAttempt === 'wrong') navigator.vibrate?.(35);
         return { ...current, maskRecall: { ...current.maskRecall, [key]: recall } };
       }
       const recall = pressInitial(current.recall, current.units, input);
-      if (recall.lastAttempt === 'wrong') navigator.vibrate?.(35);
       if (recall.complete) setCompleted(true);
       return { ...current, recall };
     });
@@ -220,8 +222,23 @@ export default function MemorizePageClient() {
   }
 
   const skip = () => {
-    if (stage === finalStage) setSession((current) => current ? { ...current, recall: skipRecallStage(current.recall) } : current);
+    setSession((current) => current ? skipMemorizationStage(current, stage) : current);
     void enterStage(stage + 1);
+  };
+
+  const reveal = () => {
+    if (stage === 0) return;
+    setSession((current) => {
+      if (!current) return current;
+      if (stage === 1 || stage === 2) {
+        const key = stage === 1 ? 'partial30' : 'partial65';
+        const recall = revealMaskedCurrentUnit(current.maskRecall[key], current.units, current.masks[key]);
+        return { ...current, maskRecall: { ...current.maskRecall, [key]: recall } };
+      }
+      const recall = revealCurrentUnit(current.recall, current.units);
+      if (recall.complete) setCompleted(true);
+      return { ...current, recall };
+    });
   };
 
   const exitVerse = () => {
@@ -235,6 +252,16 @@ export default function MemorizePageClient() {
     if (stage === 0) return;
     setStage((stage - 1) as MemorizationStage);
   };
+
+  const activeRecall = stage === 1 ? session.maskRecall.partial30
+    : stage === 2 ? session.maskRecall.partial65
+      : session.recall;
+  const activeMask = stage === 1 ? session.masks.partial30
+    : stage === 2 ? session.masks.partial65
+      : undefined;
+  const hintedInitials = activeRecall.hintVisible
+    ? currentAcceptedInitials(activeRecall, session.units, activeMask)
+    : [];
 
   return (
     <main className="memorize-page flex min-h-[100dvh] flex-col overflow-x-hidden px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
@@ -256,21 +283,14 @@ export default function MemorizePageClient() {
 
         {stage > 0 ? (
           <div className="mt-5">
-            {stage === finalStage && (
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <button
-                  onClick={() => setSession((current) => {
-                    if (!current) return current;
-                    const recall = revealCurrentUnit(current.recall, current.units);
-                    if (recall.complete) setCompleted(true);
-                    return { ...current, recall };
-                  })}
-                  className="memorize-secondary !w-auto px-4"
-                ><Eye className="h-4 w-4" />{activeCopy.reveal}</button>
+            <RecallFeedback language={activeLanguage} recall={activeRecall} hintedInitials={hintedInitials} />
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <button onClick={reveal} className="memorize-secondary !w-auto px-4"><Eye className="h-4 w-4" />{activeCopy.reveal}</button>
+              {stage === finalStage && (
                 <button onClick={skip} className="min-h-11 text-sm text-stone-500">{activeCopy.skipRound}</button>
-              </div>
-            )}
-            <AlphabetKeyboard language={activeLanguage} disabled={loadingInitials} onPress={submitKeyboardInput} />
+              )}
+            </div>
+            <AlphabetKeyboard language={activeLanguage} disabled={loadingInitials} hintedInitials={hintedInitials} onPress={submitKeyboardInput} />
             <button type="button" onClick={goToPreviousStage} className="memorize-secondary mx-auto mt-3 max-w-xs"><ArrowLeft className="h-4 w-4" />{activeCopy.previous}</button>
             {stage < finalStage && (
               <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-3 max-w-xs">{activeCopy.continue}<ChevronRight className="h-4 w-4" /></button>
@@ -284,7 +304,17 @@ export default function MemorizePageClient() {
   );
 }
 
-export function AlphabetKeyboard({ language = 'simplified', disabled = false, onPress }: { language?: Language; disabled?: boolean; onPress: (input: RecallKeyboardInput) => void }) {
+export function AlphabetKeyboard({
+  language = 'simplified',
+  disabled = false,
+  hintedInitials = [],
+  onPress,
+}: {
+  language?: Language;
+  disabled?: boolean;
+  hintedInitials?: readonly string[];
+  onPress: (input: RecallKeyboardInput) => void;
+}) {
   const [layout, setLayout] = useState<KeyboardLayout>('t9');
   const keyboardCopy = copy[language];
 
@@ -321,7 +351,8 @@ export function AlphabetKeyboard({ language = 'simplified', disabled = false, on
               disabled={disabled || !letters}
               onClick={() => onPress(groupedInitialsInput(letters))}
               aria-label={letters ? `${number} ${letters}` : number}
-              className="flex min-h-14 items-center justify-center gap-2 rounded-xl border border-stone-900/10 bg-white/65 px-2 shadow-sm active:scale-[0.98] disabled:opacity-30 dark:border-white/10 dark:bg-white/[0.06]"
+              data-hinted={isHinted(letters, hintedInitials) || undefined}
+              className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border px-2 shadow-sm active:scale-[0.98] disabled:opacity-30 ${isHinted(letters, hintedInitials) ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
             >
               <span className="text-base font-semibold">{number}</span>
               {letters && <span className="text-[11px] tracking-[0.16em] text-stone-500 dark:text-stone-400">{letters}</span>}
@@ -338,7 +369,8 @@ export function AlphabetKeyboard({ language = 'simplified', disabled = false, on
                   type="button"
                   disabled={disabled}
                   onClick={() => onPress(singleInitialInput(letter))}
-                  className="min-h-11 min-w-0 flex-1 rounded-lg border border-stone-900/10 bg-white/65 text-sm font-semibold shadow-sm active:scale-95 disabled:opacity-40 dark:border-white/10 dark:bg-white/[0.06] sm:max-w-14"
+                  data-hinted={hintedInitials.includes(letter.toLocaleLowerCase()) || undefined}
+                  className={`min-h-11 min-w-0 flex-1 rounded-lg border text-sm font-semibold shadow-sm active:scale-95 disabled:opacity-40 sm:max-w-14 ${hintedInitials.includes(letter.toLocaleLowerCase()) ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
                 >{letter}</button>
               ))}
             </div>
@@ -346,6 +378,24 @@ export function AlphabetKeyboard({ language = 'simplified', disabled = false, on
         </div>
       )}
     </div>
+  );
+}
+
+function isHinted(letters: string, hintedInitials: readonly string[]) {
+  return Array.from(letters).some((letter) => hintedInitials.includes(letter.toLocaleLowerCase()));
+}
+
+function RecallFeedback({ language, recall, hintedInitials }: { language: Language; recall: MemorizationSession['recall']; hintedInitials: readonly string[] }) {
+  const feedbackCopy = copy[language];
+  const message = recall.lastAttempt === 'wrong'
+    ? recall.hintVisible && hintedInitials.length > 0
+      ? `${feedbackCopy.retryInput}。${feedbackCopy.hintPrefix} ${hintedInitials.map((initial) => initial.toLocaleUpperCase()).join(` ${feedbackCopy.or} `)} ${feedbackCopy.keySuffix}`
+      : feedbackCopy.retryInput
+    : '';
+  return (
+    <p role="status" aria-live="polite" className="mb-3 flex min-h-6 items-center justify-center gap-1.5 text-sm text-red-800 dark:text-red-300">
+      {message && <><AlertCircle className="h-4 w-4" aria-hidden="true" />{message}</>}
+    </p>
   );
 }
 

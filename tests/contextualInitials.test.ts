@@ -16,4 +16,10 @@ describe('contextual pinyin initials', () => {
   it('returns initials only for Han characters', () => {
     expect(buildContextualInitials('神，2026 A爱')).toEqual([['s'], ['a']]);
   });
+
+  it('fails safely with one empty accepted set per Han Recall Unit', () => {
+    expect(buildContextualInitials('神，2026 A爱', () => {
+      throw new Error('reading data unavailable');
+    })).toEqual([[], []]);
+  });
 });
