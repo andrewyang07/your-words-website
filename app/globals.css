@@ -157,25 +157,50 @@
 
 @layer components {
     .memorize-page {
-        @apply bg-[#f3f0e7] text-stone-950 dark:bg-[#11100d] dark:text-stone-50;
-        background-image: linear-gradient(rgba(120, 113, 108, 0.045) 1px, transparent 1px);
-        background-size: 100% 2.25rem;
+        @apply bg-[#f8f5ee] text-stone-950 transition-colors dark:bg-[#11100d] dark:text-stone-50;
+        background-image:
+            radial-gradient(circle at 12% 0%, rgba(190, 158, 93, 0.13), transparent 31rem),
+            radial-gradient(circle at 88% 100%, rgba(120, 113, 108, 0.07), transparent 28rem),
+            repeating-linear-gradient(103deg, rgba(68, 64, 60, 0.012) 0, rgba(68, 64, 60, 0.012) 1px, transparent 1px, transparent 8px);
+    }
+
+    .dark .memorize-page {
+        background-image:
+            radial-gradient(circle at 12% 0%, rgba(190, 158, 93, 0.14), transparent 31rem),
+            radial-gradient(circle at 88% 100%, rgba(120, 113, 108, 0.07), transparent 28rem),
+            repeating-linear-gradient(103deg, rgba(255, 246, 220, 0.009) 0, rgba(255, 246, 220, 0.009) 1px, transparent 1px, transparent 9px);
     }
 
     .memorize-icon {
-        @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-stone-900/10 bg-white/55 text-stone-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200;
+        @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-stone-900/10 bg-white/45 text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] backdrop-blur-xl transition hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200 dark:hover:bg-white/[0.09];
+    }
+
+    .memorize-help {
+        @apply inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-stone-900/10 bg-white/45 px-2.5 text-xs text-stone-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] backdrop-blur-xl transition hover:bg-white/70 hover:text-stone-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-300 dark:hover:bg-white/[0.09] dark:hover:text-white;
     }
 
     .memorize-primary {
-        @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-stone-950 px-5 text-sm font-medium text-white transition hover:bg-stone-800 dark:bg-stone-50 dark:text-stone-950 dark:hover:bg-white;
+        @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-bible-700 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-bible-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 focus-visible:ring-offset-2 dark:bg-bible-300 dark:text-stone-950 dark:hover:bg-bible-200 dark:focus-visible:ring-bible-300 dark:focus-visible:ring-offset-[#11100d];
     }
 
     .memorize-secondary {
-        @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-stone-900/10 bg-white/55 text-sm text-stone-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200;
+        @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-stone-900/10 bg-white/45 text-sm text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] backdrop-blur-xl transition hover:bg-white/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200 dark:hover:bg-white/[0.09];
     }
 
     .memorize-verse {
-        @apply mx-auto w-full max-w-2xl break-words rounded-3xl border border-stone-900/10 bg-white/55 px-5 py-7 text-[1.45rem] leading-[2.15] tracking-[0.08em] shadow-[0_24px_70px_rgba(68,64,60,0.08)] transition dark:border-white/10 dark:bg-white/[0.045] sm:px-8 sm:py-10 sm:text-[1.75rem];
+        @apply relative mx-auto w-full max-w-2xl break-words overflow-hidden rounded-3xl border border-stone-900/10 bg-white/[0.68] px-5 py-7 text-[1.45rem] leading-[2.15] tracking-[0.08em] shadow-[0_24px_70px_rgba(68,64,60,0.10)] backdrop-blur-xl transition dark:border-white/10 dark:bg-white/[0.045] sm:px-8 sm:py-10 sm:text-[1.75rem];
+        background-image:
+            radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, 0.32), transparent 48%),
+            repeating-linear-gradient(101deg, rgba(68, 64, 60, 0.012) 0, rgba(68, 64, 60, 0.012) 1px, transparent 1px, transparent 11px);
+    }
+
+    .memorize-stage-tab {
+        @apply relative min-h-14 overflow-hidden rounded-xl border border-stone-900/10 bg-white/45 px-1.5 py-2 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04];
+    }
+
+    .memorize-stage-tab::after {
+        content: '';
+        @apply absolute inset-x-0 bottom-0 h-0.5 bg-bible-700/45 dark:bg-bible-300/40;
     }
 
     .memorize-hidden {
@@ -195,6 +220,8 @@
 
     @media (prefers-reduced-motion: reduce) {
         .memorize-revealed, .memorize-wrong { animation: none; }
+        .memorize-page button, .memorize-page a, .memorize-stage-tab { transition-duration: 0.01ms !important; }
+        .memorize-page button:hover, .memorize-page button:active, .memorize-page a:hover, .memorize-page a:active { transform: none !important; }
     }
 
     .liquid-glass {

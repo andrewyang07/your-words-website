@@ -24,6 +24,7 @@ import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import type { Verse } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
+import { MemorizeHelpButton, useMemorizeGuide } from '@/components/memorize/MemorizeGuide';
 import { useAppStore } from '@/stores/useAppStore';
 import booksData from '@/public/data/books.json';
 import type { Language } from '@/types/verse';
@@ -195,19 +196,24 @@ export default function MemorizePageClient() {
 
   const activeLanguage = sessionLanguage ?? language;
   const activeCopy = copy[activeLanguage];
+  const guideSurface = !selected ? 'picker' : completed ? 'complete' : stage > 0 ? 'input' : 'reading';
+  const guide = useMemorizeGuide(guideSurface, activeLanguage);
 
   if (loading) return <LoadingSpinner language={language} />;
   if (error) return <ErrorMessage language={language} message={error} onRetry={() => window.location.reload()} />;
 
   if (!selected || !session) {
     if (versesLanguage !== language) return <LoadingSpinner language={language} />;
-    return <VersePicker verses={verses} language={language} onSelect={(verse) => startVerse(verse, language)} />;
+    return <VersePicker verses={verses} language={language} onSelect={(verse) => startVerse(verse, language)} guide={guide} />;
   }
 
   if (completed) {
     return (
-      <main className="memorize-page flex min-h-[100dvh] items-center justify-center px-5 py-8">
-        <section className="w-full max-w-md text-center">
+      <main className="memorize-page flex min-h-[100dvh] flex-col px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
+        <header className="mx-auto flex w-full max-w-3xl justify-end">
+          <MemorizeHelpButton label={guide.helpLabel} onClick={guide.openGuide} />
+        </header>
+        <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center text-center">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-amber-900/15 bg-white/55 text-amber-800 dark:border-white/10 dark:bg-white/[0.06] dark:text-amber-200"><Sparkles className="h-6 w-6" /></span>
           <p className="mt-6 text-xs tracking-[0.28em] text-stone-500">{reference(selected, activeLanguage)}</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-[0.08em]">{activeCopy.finished}</h1>
@@ -217,6 +223,7 @@ export default function MemorizePageClient() {
             <Link href="/" className="memorize-secondary">{activeCopy.finishAndReturn}</Link>
           </div>
         </section>
+        {guide.dialog}
       </main>
     );
   }
@@ -265,10 +272,13 @@ export default function MemorizePageClient() {
 
   return (
     <main className="memorize-page flex min-h-[100dvh] flex-col overflow-x-hidden px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
-      <header className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
+      <header className="mx-auto grid w-full max-w-3xl grid-cols-[auto_1fr_auto] items-center gap-2">
         <button type="button" onClick={exitVerse} className="memorize-icon" aria-label={activeCopy.backToPicker}><ArrowLeft className="h-5 w-5" /></button>
-        <StageIndicator stage={stage} language={activeLanguage} />
-        <button onClick={skip} className="min-h-11 px-2 text-sm text-stone-500 hover:text-stone-950 dark:hover:text-white">{activeCopy.skip}</button>
+        <div className="flex justify-center"><StageIndicator stage={stage} language={activeLanguage} /></div>
+        <div className="flex items-center justify-end gap-1">
+          <MemorizeHelpButton label={guide.helpLabel} onClick={guide.openGuide} />
+          <button onClick={skip} className="min-h-11 rounded-xl px-2 text-sm text-stone-500 hover:bg-white/55 hover:text-stone-950 dark:hover:bg-white/[0.06] dark:hover:text-white">{activeCopy.skip}</button>
+        </div>
       </header>
 
       <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center py-5 sm:py-8">
@@ -300,6 +310,7 @@ export default function MemorizePageClient() {
           <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-7 max-w-xs">{activeCopy.continue}<ChevronRight className="h-4 w-4" /></button>
         )}
       </section>
+      {guide.dialog}
     </main>
   );
 }
@@ -424,29 +435,54 @@ function revealedMaskIndices(mask: Set<number>, cursor: number): Set<number> {
   return new Set(orderedMaskIndices(mask).slice(0, cursor));
 }
 
-function VersePicker({ verses, language, onSelect }: { verses: Verse[]; language: Language; onSelect: (verse: Verse) => void }) {
+function VersePicker({
+  verses,
+  language,
+  onSelect,
+  guide,
+}: {
+  verses: Verse[];
+  language: Language;
+  onSelect: (verse: Verse) => void;
+  guide: ReturnType<typeof useMemorizeGuide>;
+}) {
   const pickerCopy = copy[language];
   return (
     <main className="memorize-page min-h-[100dvh] px-4 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-2xl">
-        <header className="flex items-center justify-between"><Link href="/" className="memorize-icon" aria-label={pickerCopy.backHome}><ArrowLeft className="h-5 w-5" /></Link><span className="text-xs tracking-[0.24em] text-stone-500">{language === 'traditional' ? 'CUVT' : 'CUV'}</span></header>
-        <section className="py-8 sm:py-12">
+        <header className="flex items-center justify-between gap-3">
+          <Link href="/" className="memorize-icon" aria-label={pickerCopy.backHome}><ArrowLeft className="h-5 w-5" /></Link>
+          <div className="flex items-center gap-2">
+            <span className="text-xs tracking-[0.24em] text-stone-500">{language === 'traditional' ? 'CUVT' : 'CUV'}</span>
+            <MemorizeHelpButton label={guide.helpLabel} onClick={guide.openGuide} />
+          </div>
+        </header>
+        <section className="py-7 sm:py-10">
           <p className="text-xs tracking-[0.28em] text-amber-800/70 dark:text-amber-200/70">{pickerCopy.title}</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-[0.05em] sm:text-4xl">{pickerCopy.pickerHeading}</h1>
           <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-stone-400">{pickerCopy.pickerDescription}</p>
+          <ol className="mt-6 grid grid-cols-4 gap-1.5" aria-label={pickerCopy.pickerDescription}>
+            {pickerCopy.stages.map(({ name }, index) => (
+              <li key={name} className="memorize-stage-tab">
+                <span className="text-[10px] tabular-nums text-stone-400">{index + 1}</span>
+                <span className="mt-1 block text-xs font-medium text-stone-700 dark:text-stone-300">{name}</span>
+              </li>
+            ))}
+          </ol>
         </section>
         {verses.length === 0 ? (
-          <div className="rounded-3xl border border-stone-900/10 bg-white/45 px-6 py-14 text-center dark:border-white/10 dark:bg-white/[0.035]">
+          <div className="liquid-glass rounded-3xl px-6 py-14 text-center">
             <BookOpen className="mx-auto h-6 w-6 text-stone-400" />
             <p className="mt-4 text-lg">{pickerCopy.empty}</p>
             <Link href="/" className="memorize-primary mx-auto mt-6 max-w-xs">{pickerCopy.browse}</Link>
           </div>
         ) : (
           <div className="grid gap-3">
-          {verses.map((verse) => <button key={verse.id} onClick={() => onSelect(verse)} className="group rounded-2xl border border-stone-900/10 bg-white/55 p-5 text-left transition hover:bg-white/80 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07]"><span className="text-xs tracking-[0.18em] text-stone-500">{reference(verse, language)}</span><span className="mt-3 block line-clamp-4 text-lg leading-8">{verse.text}</span></button>)}
+          {verses.map((verse) => <button key={verse.id} onClick={() => onSelect(verse)} className="liquid-glass group min-h-[88px] rounded-2xl p-5 text-left transition hover:-translate-y-0.5 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:hover:bg-white/[0.07]"><span className="text-xs tracking-[0.18em] text-stone-500">{reference(verse, language)}</span><span className="mt-3 block line-clamp-4 text-lg leading-8">{verse.text}</span></button>)}
           </div>
         )}
       </div>
+      {guide.dialog}
     </main>
   );
 }

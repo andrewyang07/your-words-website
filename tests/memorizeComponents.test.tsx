@@ -9,6 +9,15 @@ import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
 
 beforeEach(() => {
+  const values = new Map<string, string>();
+  vi.stubGlobal('localStorage', {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+    clear: () => values.clear(),
+    key: (index: number) => Array.from(values.keys())[index] ?? null,
+    get length() { return values.size; },
+  });
   useFavoritesStore.persist.setOptions({
     storage: {
       getItem: () => null,
@@ -28,6 +37,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  window.localStorage.clear();
   vi.unstubAllGlobals();
   document.documentElement.classList.remove('dark');
   window.history.replaceState({}, '', '/');
@@ -44,6 +54,61 @@ async function returnToPreviousStage(
 }
 
 describe('deep memorization controls', () => {
+  it('introduces one-verse, four-stage practice once and remembers a skipped guide', async () => {
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
+
+    const firstVisit = render(<MemorizePageClient />);
+    expect(await firstVisit.findByRole('dialog', { name: '这样开始深度背诵' })).toBeTruthy();
+    expect(firstVisit.getByText('一轮只练一节经文')).toBeTruthy();
+    expect(firstVisit.getAllByText('通读').length).toBeGreaterThan(0);
+    expect(firstVisit.getAllByText('轻遮').length).toBeGreaterThan(0);
+    expect(firstVisit.getAllByText('深遮').length).toBeGreaterThan(0);
+    expect(firstVisit.getAllByText('首字母').length).toBeGreaterThan(0);
+    fireEvent.click(firstVisit.getByRole('button', { name: '跳过引导' }));
+    expect(firstVisit.queryByRole('dialog')).toBeNull();
+    firstVisit.unmount();
+
+    const returningVisit = render(<MemorizePageClient />);
+    await returningVisit.findByRole('heading', { name: '选择一节，慢慢记住' });
+    expect(returningVisit.queryByRole('dialog')).toBeNull();
+  });
+
+  it('keeps Help reachable and replays the complete guide in simplified Chinese', async () => {
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('dialog', { name: '这样开始深度背诵' });
+    fireEvent.click(view.getByRole('button', { name: '跳过引导' }));
+    fireEvent.click(view.getByRole('button', { name: '帮助' }));
+    expect(view.getByRole('dialog', { name: '这样开始深度背诵' })).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: '下一步：输入提示' }));
+    expect(view.getByRole('dialog', { name: '逐字回想时' })).toBeTruthy();
+    expect(view.getByText('按键错误不会前进；连续两次后会提示正确按键。')).toBeTruthy();
+    expect(view.getByText('想不起来时，可以“显示这个字”，也可以跳过当前阶段。')).toBeTruthy();
+  });
+
+  it('shows the input coach in context and localizes it in Traditional Chinese', async () => {
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    useAppStore.setState({ language: 'traditional' });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 約翰福音: { 3: { 16: '神愛世人。' } }, 约翰福音: { 3: { 16: '神愛世人。' } } }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先讀一遍，不急著記' });
+    expect(view.getByRole('button', { name: '幫助' })).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: '繼續' }));
+    expect(await view.findByRole('dialog', { name: '逐字回想時' })).toBeTruthy();
+    expect(view.getByRole('button', { name: '跳過引導' })).toBeTruthy();
+    const hiddenWhileReadingHelp = view.container.querySelectorAll('.memorize-hidden').length;
+    fireEvent.keyDown(window, { key: 's' });
+    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(hiddenWhileReadingHelp);
+  });
+
   it('snapshots traditional Scripture and copy when a session starts', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
