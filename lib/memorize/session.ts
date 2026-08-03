@@ -2,6 +2,12 @@ export interface VerseCharacter {
   text: string;
   recallable: boolean;
   acceptedInitials: string[];
+  acceptedZhuyin: string[];
+}
+
+export interface AcceptedPhonetics {
+  pinyin: string[];
+  zhuyin: string[];
 }
 
 export interface RecallState {
@@ -73,7 +79,7 @@ export function buildMemorizationSession(
   const units = Array.from(body).map((char): VerseCharacter => {
     const recallable = hanPattern.test(char);
     const initials = recallable ? acceptedInitials[recallIndex++] ?? [] : [];
-    return { text: char, recallable, acceptedInitials: initials };
+    return { text: char, recallable, acceptedInitials: initials, acceptedZhuyin: [] };
   });
   const recallableIndices = units.flatMap((unit, index) => unit.recallable ? [index] : []);
   const partial65 = chooseSpreadMask(units, recallableIndices, Math.round(recallableIndices.length * 0.65), `${seed}:65`);
@@ -108,6 +114,21 @@ export function withAcceptedInitials(
   };
 }
 
+export function withAcceptedPhonetics(
+  session: MemorizationSession,
+  accepted: AcceptedPhonetics[],
+): MemorizationSession {
+  let recallIndex = 0;
+  return {
+    ...session,
+    units: session.units.map((unit) => {
+      if (!unit.recallable) return unit;
+      const phonetics = accepted[recallIndex++] ?? { pinyin: [], zhuyin: [] };
+      return { ...unit, acceptedInitials: phonetics.pinyin, acceptedZhuyin: phonetics.zhuyin };
+    }),
+  };
+}
+
 export function singleInitialInput(initial: string): RecallKeyboardInput {
   const normalized = normalizeInitial(initial);
   if (!normalized) throw new Error('Single recall input must be one A-Z letter');
@@ -120,6 +141,11 @@ export function groupedInitialsInput(initials: string): RecallKeyboardInput {
     throw new Error('Grouped recall input must contain at least two A-Z letters');
   }
   return { kind: 'group', initials: normalized as string[] };
+}
+
+export function singleZhuyinInput(symbol: string): RecallKeyboardInput {
+  if (!/^[ㄅ-ㄩ]$/u.test(symbol)) throw new Error('Single Zhuyin recall input must be one Bopomofo symbol');
+  return { kind: 'single', initial: symbol };
 }
 
 export function pressInitial(state: RecallState, units: VerseCharacter[], input: RecallKeyboardInput): RecallState {
@@ -153,13 +179,24 @@ export function currentAcceptedInitials(
   return candidates[state.cursor]?.acceptedInitials ?? [];
 }
 
+export function currentAcceptedZhuyin(
+  state: RecallState,
+  units: VerseCharacter[],
+  maskedIndices?: Set<number>,
+): string[] {
+  const candidates = maskedIndices
+    ? orderedMaskIndices(maskedIndices).map((index) => units[index]).filter((unit): unit is VerseCharacter => Boolean(unit?.recallable))
+    : recallableUnits(units);
+  return candidates[state.cursor]?.acceptedZhuyin ?? [];
+}
+
 function pressInitialAgainstUnits(state: RecallState, units: VerseCharacter[], input: RecallKeyboardInput): RecallState {
   if (state.complete) return state;
   const current = units[state.cursor];
   const offeredInitials = input.kind === 'single' ? [input.initial] : input.initials;
-  if (!current || !offeredInitials.some((initial) => current.acceptedInitials.includes(initial))) {
+  if (!current || !offeredInitials.some((initial) => current.acceptedInitials.includes(initial) || current.acceptedZhuyin.includes(initial))) {
     const consecutiveWrongAttempts = state.consecutiveWrongAttempts + 1;
-    const canOfferHint = Boolean(current?.acceptedInitials.length);
+    const canOfferHint = Boolean(current && (current.acceptedInitials.length > 0 || current.acceptedZhuyin.length > 0));
     return {
       ...state,
       lastAttempt: 'wrong',

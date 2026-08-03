@@ -4,28 +4,30 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { BookOpenCheck, ChevronRight, Eye, HelpCircle, Keyboard, X } from 'lucide-react';
 import type { Language } from '@/types/verse';
 
-export const MEMORIZE_GUIDE_STORAGE_KEY = 'your-words:memorize-guide:v2';
+export const MEMORIZE_GUIDE_STORAGE_KEY = 'your-words:memorize-guide:v3';
 
-type GuidePage = 'overview' | 'input';
+type GuidePage = 'overview' | 'input' | 'zhuyin';
 type GuideSurface = 'picker' | 'reading' | 'input' | 'complete';
 
 interface GuideProgress {
-  version: 2;
+  version: 3;
   pickerSeen: boolean;
   inputSeen: boolean;
+  zhuyinSeen: boolean;
   dismissed: boolean;
 }
 
 const initialProgress: GuideProgress = {
-  version: 2,
+  version: 3,
   pickerSeen: false,
   inputSeen: false,
+  zhuyinSeen: false,
   dismissed: false,
 };
 
 const guideCopy = {
   simplified: {
-    help: '帮助', close: '关闭帮助', skip: '跳过引导', done: '知道了', next: '下一步：输入提示',
+    help: '帮助', close: '关闭帮助', skip: '跳过引导', done: '知道了', next: '下一步：输入提示', nextZhuyin: '下一步：注音说明', onlyZhuyin: '只看注音说明',
     overviewTitle: '这样开始深度背诵', overviewLead: '一轮只练一节经文',
     overviewBody: '从完整阅读开始，逐步减少文字线索。每个阶段都可以跳过，不会记录分数或进度。',
     stages: [
@@ -34,9 +36,13 @@ const guideCopy = {
     inputTitle: '逐字回想时',
     inputError: '按键错误不会前进；连续两次后会提示正确按键。',
     inputEscape: '想不起来时，可以“显示这个字”，也可以跳过当前阶段。',
+    zhuyinTitle: '注音只按第一个符号',
+    zhuyinBody: '每个汉字只按读音的第一个注音符号，不需要拼完音节，也不用声调。',
+    zhuyinExample: '神 shén → ㄕ',
+    zhuyinPhysical: '电脑端可直接按台湾大千键位；键盘上的字母角标可随时隐藏。',
   },
   traditional: {
-    help: '幫助', close: '關閉幫助', skip: '跳過引導', done: '知道了', next: '下一步：輸入提示',
+    help: '幫助', close: '關閉幫助', skip: '跳過引導', done: '知道了', next: '下一步：輸入提示', nextZhuyin: '下一步：注音說明', onlyZhuyin: '只看注音說明',
     overviewTitle: '這樣開始深度背誦', overviewLead: '一輪只練一節經文',
     overviewBody: '從完整閱讀開始，逐步減少文字線索。每個階段都可以跳過，不會記錄分數或進度。',
     stages: [
@@ -45,6 +51,10 @@ const guideCopy = {
     inputTitle: '逐字回想時',
     inputError: '按鍵錯誤不會前進；連續兩次後會提示正確按鍵。',
     inputEscape: '想不起來時，可以「顯示這個字」，也可以跳過目前階段。',
+    zhuyinTitle: '注音只按第一個符號',
+    zhuyinBody: '每個漢字只按讀音的第一個注音符號，不需要拼完音節，也不用聲調。',
+    zhuyinExample: '神 shén → ㄕ',
+    zhuyinPhysical: '電腦端可直接按台灣大千鍵位；鍵盤上的字母角標可隨時隱藏。',
   },
 } as const;
 
@@ -55,9 +65,10 @@ function readProgress(): GuideProgress {
     const value = JSON.parse(stored) as Partial<GuideProgress>;
     if (value.version !== initialProgress.version) return initialProgress;
     return {
-      version: 2,
+      version: 3,
       pickerSeen: Boolean(value.pickerSeen),
       inputSeen: Boolean(value.inputSeen),
+      zhuyinSeen: Boolean(value.zhuyinSeen),
       dismissed: Boolean(value.dismissed),
     };
   } catch {
@@ -103,8 +114,20 @@ export function useMemorizeGuide(surface: GuideSurface, language: Language) {
     setPage('overview');
   }, []);
 
+  const openZhuyinGuide = useCallback(() => {
+    setReplayingAll(false);
+    setPage('zhuyin');
+  }, []);
+
+  const showZhuyinCoach = useCallback(() => {
+    if (hydrated && !progress.dismissed && !progress.zhuyinSeen) {
+      setReplayingAll(false);
+      setPage('zhuyin');
+    }
+  }, [hydrated, progress.dismissed, progress.zhuyinSeen]);
+
   const skipGuide = useCallback(() => {
-    save({ version: 2, pickerSeen: true, inputSeen: true, dismissed: true });
+    save({ version: 3, pickerSeen: true, inputSeen: true, zhuyinSeen: true, dismissed: true });
     setReplayingAll(false);
     setPage(null);
   }, [save]);
@@ -115,10 +138,16 @@ export function useMemorizeGuide(surface: GuideSurface, language: Language) {
       setPage('input');
       return;
     }
+    if (currentPage === 'input' && replayingAll) {
+      save({ ...progress, inputSeen: true });
+      setPage('zhuyin');
+      return;
+    }
     const next = {
       ...progress,
       pickerSeen: progress.pickerSeen || currentPage === 'overview',
       inputSeen: progress.inputSeen || currentPage === 'input',
+      zhuyinSeen: progress.zhuyinSeen || currentPage === 'zhuyin',
     };
     save(next);
     setReplayingAll(false);
@@ -128,13 +157,16 @@ export function useMemorizeGuide(surface: GuideSurface, language: Language) {
   return {
     helpLabel: guideCopy[language].help,
     openGuide,
+    openZhuyinGuide,
+    showZhuyinCoach,
     dialog: visiblePage ? (
       <MemorizeGuideDialog
         language={language}
         page={visiblePage}
-        showNext={visiblePage === 'overview' && replayingAll}
+        nextLabel={replayingAll && visiblePage === 'overview' ? guideCopy[language].next : replayingAll && visiblePage === 'input' ? guideCopy[language].nextZhuyin : null}
         onContinue={() => finishPage(visiblePage)}
         onSkip={skipGuide}
+        onZhuyin={openZhuyinGuide}
       />
     ) : null,
   };
@@ -143,15 +175,17 @@ export function useMemorizeGuide(surface: GuideSurface, language: Language) {
 function MemorizeGuideDialog({
   language,
   page,
-  showNext,
+  nextLabel,
   onContinue,
   onSkip,
+  onZhuyin,
 }: {
   language: Language;
   page: GuidePage;
-  showNext: boolean;
+  nextLabel: string | null;
   onContinue: () => void;
   onSkip: () => void;
+  onZhuyin: () => void;
 }) {
   const text = guideCopy[language];
   const primaryRef = useRef<HTMLButtonElement>(null);
@@ -190,7 +224,7 @@ function MemorizeGuideDialog({
     return () => window.removeEventListener('keydown', onKeyDown, true);
   }, [onSkip]);
 
-  const title = page === 'overview' ? text.overviewTitle : text.inputTitle;
+  const title = page === 'overview' ? text.overviewTitle : page === 'input' ? text.inputTitle : text.zhuyinTitle;
   return (
     <div className="fixed inset-0 z-[10020] flex items-end justify-center bg-stone-950/35 p-3 backdrop-blur-[2px] sm:items-center sm:p-6">
       <section
@@ -224,7 +258,7 @@ function MemorizeGuideDialog({
               ))}
             </ol>
           </div>
-        ) : (
+        ) : page === 'input' ? (
           <div className="mt-6 space-y-3">
             <div className="flex gap-3 rounded-2xl border border-stone-900/10 bg-white/55 p-4 dark:border-white/10 dark:bg-white/[0.045]">
               <Keyboard className="mt-0.5 h-5 w-5 shrink-0 text-bible-700 dark:text-bible-200" />
@@ -235,13 +269,22 @@ function MemorizeGuideDialog({
               <p className="text-sm leading-6 text-stone-700 dark:text-stone-300">{text.inputEscape}</p>
             </div>
           </div>
+        ) : (
+          <div className="mt-6 space-y-3">
+            <p className="text-sm leading-6 text-stone-700 dark:text-stone-300">{text.zhuyinBody}</p>
+            <div className="rounded-2xl border border-stone-900/10 bg-white/55 p-4 text-center dark:border-white/10 dark:bg-white/[0.045]">
+              <p className="text-xl font-semibold tracking-[0.08em] text-bible-800 dark:text-bible-100">{text.zhuyinExample}</p>
+            </div>
+            <p className="text-xs leading-5 text-stone-500 dark:text-stone-400">{text.zhuyinPhysical}</p>
+          </div>
         )}
 
         <div className="mt-6 grid gap-2 sm:grid-cols-[1fr_auto]">
           <button ref={primaryRef} type="button" onClick={onContinue} className="memorize-primary">
-            {showNext ? text.next : text.done}{showNext && <ChevronRight className="h-4 w-4" />}
+            {nextLabel ?? text.done}{nextLabel && <ChevronRight className="h-4 w-4" />}
           </button>
           <button type="button" onClick={onSkip} className="memorize-secondary px-5 sm:w-auto">{text.skip}</button>
+          {page !== 'zhuyin' && <button type="button" onClick={onZhuyin} className="min-h-11 text-sm text-stone-500 underline-offset-4 hover:underline sm:col-span-2">{text.onlyZhuyin}</button>}
         </div>
       </section>
     </div>

@@ -10,8 +10,10 @@ import {
   skipMemorizationStage,
   skipRecallStage,
   singleInitialInput,
+  singleZhuyinInput,
   splitEditorialNotes,
   withAcceptedInitials,
+  withAcceptedPhonetics,
 } from '../lib/memorize/session';
 
 describe('deep memorization session', () => {
@@ -191,9 +193,35 @@ describe('deep memorization session', () => {
     expect(pressInitial(session.recall, session.units, groupedInitialsInput('PQRS'))).toMatchObject({ cursor: 1, complete: true });
   });
 
+  it('accepts one Zhuyin first symbol without changing pinyin behavior', () => {
+    const session = withAcceptedPhonetics(buildMemorizationSession('神愛', 'zhuyin'), [
+      { pinyin: ['s'], zhuyin: ['ㄕ'] },
+      { pinyin: ['a'], zhuyin: ['ㄞ'] },
+    ]);
+
+    const first = pressInitial(session.recall, session.units, singleZhuyinInput('ㄕ'));
+    expect(first).toMatchObject({ cursor: 1, lastAttempt: 'correct' });
+    expect(pressInitial(first, session.units, singleInitialInput('a'))).toMatchObject({ cursor: 2, complete: true });
+  });
+
+  it('offers Zhuyin alternatives as the same current-unit hint', () => {
+    const session = withAcceptedPhonetics(buildMemorizationSession('圾', 'zhuyin-variants'), [
+      { pinyin: ['j'], zhuyin: ['ㄐ', 'ㄙ'] },
+    ]);
+
+    const twiceWrong = pressInitial(
+      pressInitial(session.recall, session.units, singleZhuyinInput('ㄅ')),
+      session.units,
+      singleZhuyinInput('ㄆ'),
+    );
+    expect(twiceWrong).toMatchObject({ cursor: 0, hintVisible: true, assistanceCount: 1 });
+  });
+
   it('rejects malformed keyboard inputs before they reach recall state', () => {
     expect(() => singleInitialInput('S!')).toThrow();
     expect(() => groupedInitialsInput('S!')).toThrow();
     expect(() => groupedInitialsInput('S')).toThrow();
+    expect(() => singleZhuyinInput('ㄕㄞ')).toThrow();
+    expect(() => singleZhuyinInput('S')).toThrow();
   });
 });

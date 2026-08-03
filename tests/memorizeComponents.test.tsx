@@ -3,7 +3,7 @@ import React from 'react';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
-import MemorizePageClient, { AlphabetKeyboard, VerseExercise, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
+import MemorizePageClient, { AlphabetKeyboard, MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY, VerseExercise, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
 import { CompletionReward } from '../components/memorize/CompletionReward';
 import { buildMemorizationSession, pressInitial, singleInitialInput } from '../lib/memorize/session';
 import { useFavoritesStore } from '../stores/useFavoritesStore';
@@ -308,6 +308,115 @@ describe('deep memorization controls', () => {
     render(<AlphabetKeyboard onPress={onPress} />);
     fireEvent.keyDown(window, { key: 'r' });
     expect(onPress).toHaveBeenCalledWith({ kind: 'single', initial: 'r' });
+  });
+
+  it('offers all 37 Taiwan DaChen symbols and submits one first symbol', () => {
+    const onPress = vi.fn();
+    const view = render(<AlphabetKeyboard onPress={onPress} />);
+
+    fireEvent.click(view.getByRole('button', { name: '注音' }));
+    const keyboard = view.getByLabelText('注音键盘');
+    expect(keyboard.querySelectorAll('button[data-zhuyin-symbol]')).toHaveLength(37);
+    const key = view.getByRole('button', { name: 'ㄕ G' });
+    expect(key.className).toContain('min-h-11');
+    fireEvent.click(key);
+    expect(onPress).toHaveBeenCalledWith({ kind: 'single', initial: 'ㄕ' });
+  });
+
+  it('maps physical DaChen keys only while Zhuyin is selected', () => {
+    const onPress = vi.fn();
+    const view = render(<AlphabetKeyboard onPress={onPress} />);
+
+    fireEvent.keyDown(window, { key: 'g' });
+    expect(onPress).toHaveBeenLastCalledWith({ kind: 'single', initial: 'g' });
+    fireEvent.click(view.getByRole('button', { name: '注音' }));
+    fireEvent.keyDown(window, { key: 'g' });
+    expect(onPress).toHaveBeenLastCalledWith({ kind: 'single', initial: 'ㄕ' });
+    fireEvent.keyDown(window, { key: '4' });
+    expect(onPress).toHaveBeenCalledTimes(2);
+  });
+
+  it('restores the last keyboard layout on this device', async () => {
+    const first = render(<AlphabetKeyboard onPress={vi.fn()} />);
+    fireEvent.click(first.getByRole('button', { name: '注音' }));
+    expect(window.localStorage.getItem(MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY)).toBe('zhuyin');
+    first.unmount();
+
+    const returning = render(<AlphabetKeyboard onPress={vi.fn()} />);
+    await act(async () => undefined);
+    expect(returning.getByRole('button', { name: '注音' }).getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('can show and hide standard physical key positions without changing symbols', () => {
+    const view = render(<AlphabetKeyboard onPress={vi.fn()} />);
+    fireEvent.click(view.getByRole('button', { name: '注音' }));
+    expect(view.getByRole('button', { name: 'ㄕ G' })).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: '隐藏实体键位' }));
+    expect(view.getByRole('button', { name: 'ㄕ' })).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: '显示实体键位' }));
+    expect(view.getByRole('button', { name: 'ㄕ G' })).toBeTruthy();
+  });
+
+  it('coaches the first Zhuyin switch with a concrete first-symbol example and replays it from Help', async () => {
+    window.localStorage.setItem('your-words:memorize-guide:v3', JSON.stringify({
+      version: 3,
+      pickerSeen: true,
+      inputSeen: true,
+      zhuyinSeen: false,
+      dismissed: false,
+    }));
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '凭留下的字，补全句子' });
+    fireEvent.click(view.getByRole('button', { name: '注音' }));
+    expect(view.getByRole('dialog', { name: '注音只按第一个符号' })).toBeTruthy();
+    expect(view.getByText('神 shén → ㄕ')).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: '知道了' }));
+
+    fireEvent.click(view.getByRole('button', { name: '帮助' }));
+    fireEvent.click(view.getByRole('button', { name: '只看注音说明' }));
+    expect(view.getByRole('dialog', { name: '注音只按第一个符号' })).toBeTruthy();
+  });
+
+  it('completes page recall with Zhuyin and highlights its correct key after two errors', async () => {
+    window.localStorage.setItem('your-words:memorize-guide:v3', JSON.stringify({
+      version: 3,
+      pickerSeen: true,
+      inputSeen: true,
+      zhuyinSeen: true,
+      dismissed: true,
+    }));
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 约翰福音: { 3: { 16: '神。' } } }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await view.findByRole('heading', { name: '凭留下的字，补全句子' });
+    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
+    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await view.findByRole('heading', { name: '按每个字的拼音首字母' });
+
+    fireEvent.click(view.getByRole('button', { name: '注音' }));
+    expect(view.getByRole('heading', { name: '按每个字读音的第一个注音符号' })).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: 'ㄅ 1' }));
+    fireEvent.click(view.getByRole('button', { name: 'ㄅ 1' }));
+    expect(view.getByRole('button', { name: 'ㄕ G' }).getAttribute('data-hinted')).toBe('true');
+    fireEvent.click(view.getByRole('button', { name: 'ㄕ G' }));
+    await view.findByRole('heading', { name: '本轮结束' });
   });
 
   it('reveals exactly one Han character after one correct initial', () => {

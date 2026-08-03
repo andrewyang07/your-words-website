@@ -10,6 +10,7 @@ import {
   completionFactsForRound,
   completionFactsForStage,
   currentAcceptedInitials,
+  currentAcceptedZhuyin,
   groupedInitialsInput,
   orderedMaskIndices,
   pressInitial,
@@ -17,8 +18,9 @@ import {
   revealMaskedCurrentUnit,
   revealCurrentUnit,
   singleInitialInput,
+  singleZhuyinInput,
   skipMemorizationStage,
-  withAcceptedInitials,
+  withAcceptedPhonetics,
   type MemorizationSession,
   type RecallKeyboardInput,
 } from '@/lib/memorize/session';
@@ -31,6 +33,7 @@ import { MemorizeHelpButton, useMemorizeGuide } from '@/components/memorize/Memo
 import { useAppStore } from '@/stores/useAppStore';
 import booksData from '@/public/data/books.json';
 import type { Language } from '@/types/verse';
+import { DA_CHEN_ZHUYIN_ROWS, zhuyinForPhysicalKey } from '@/lib/memorize/zhuyinKeyboard';
 
 const copy = {
   simplified: {
@@ -42,7 +45,8 @@ const copy = {
     ],
     loadingError: '经文加载失败', backToPicker: '返回经文列表', skip: '跳过', note: '经文注释', notePrefix: '注：',
     reveal: '显示这个字', skipRound: '跳过本轮', previous: '返回上一步', continue: '继续',
-    keyboard: '拼音首字母键盘', keyboardLayout: '键盘布局', t9: '九宫格', retryInput: '再试一次', hintPrefix: '提示：请按', or: '或', keySuffix: '键',
+    keyboard: '拼音首字母键盘', keyboardLayout: '键盘布局', t9: '九宫格', zhuyin: '注音', zhuyinKeyboard: '注音键盘', showPhysicalKeys: '显示实体键位', hidePhysicalKeys: '隐藏实体键位', retryInput: '再试一次', hintPrefix: '提示：请按', or: '或', keySuffix: '键',
+    zhuyinInstruction: '按每个字读音的第一个注音符号',
     stageProgress: (stage: number) => `第 ${stage} 阶段，共 4 阶段`,
     finished: '本轮结束', retry: '重新背诵', chooseAnother: '选择另一节', finishAndReturn: '完成并返回',
     backHome: '返回首页', title: '深度背诵', pickerHeading: '选择一节，慢慢记住',
@@ -57,7 +61,8 @@ const copy = {
     ],
     loadingError: '經文載入失敗', backToPicker: '返回經文列表', skip: '跳過', note: '經文註釋', notePrefix: '註：',
     reveal: '顯示這個字', skipRound: '跳過本輪', previous: '返回上一步', continue: '繼續',
-    keyboard: '拼音首字母鍵盤', keyboardLayout: '鍵盤佈局', t9: '九宮格', retryInput: '再試一次', hintPrefix: '提示：請按', or: '或', keySuffix: '鍵',
+    keyboard: '拼音首字母鍵盤', keyboardLayout: '鍵盤佈局', t9: '九宮格', zhuyin: '注音', zhuyinKeyboard: '注音鍵盤', showPhysicalKeys: '顯示實體鍵位', hidePhysicalKeys: '隱藏實體鍵位', retryInput: '再試一次', hintPrefix: '提示：請按', or: '或', keySuffix: '鍵',
+    zhuyinInstruction: '按每個字讀音的第一個注音符號',
     stageProgress: (stage: number) => `第 ${stage} 階段，共 4 階段`,
     finished: '本輪結束', retry: '重新背誦', chooseAnother: '選擇另一節', finishAndReturn: '完成並返回',
     backHome: '返回首頁', title: '深度背誦', pickerHeading: '選擇一節，慢慢記住',
@@ -68,7 +73,8 @@ const copy = {
 const stageNeedsInitials = [false, true, true, true] as const;
 type MemorizationStage = 0 | 1 | 2 | 3;
 const finalStage: MemorizationStage = 3;
-type KeyboardLayout = 't9' | 'qwerty';
+export type KeyboardLayout = 't9' | 'qwerty' | 'zhuyin';
+export const MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY = 'your-words:memorize-keyboard-layout:v1';
 const t9Keys = [
   { number: '1', letters: '' },
   { number: '2', letters: 'ABC' },
@@ -97,6 +103,7 @@ export default function MemorizePageClient() {
   const [error, setError] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
   const [sessionLanguage, setSessionLanguage] = useState<Language | null>(null);
+  const [keyboardLayout, setKeyboardLayout] = useState<KeyboardLayout>('t9');
   const sessionActive = useRef(false);
 
   const startVerse = useCallback((verse: Verse, languageSnapshot: Language = language) => {
@@ -170,9 +177,9 @@ export default function MemorizePageClient() {
     if (stageNeedsInitials[resolvedStage] && session.units.some((unit) => unit.recallable && unit.acceptedInitials.length === 0)) {
       setLoadingInitials(true);
       try {
-        const { buildContextualInitials } = await import('@/lib/memorize/contextualInitials');
-        const acceptedInitials = buildContextualInitials(session.body);
-        setSession((current) => current ? withAcceptedInitials(current, acceptedInitials) : current);
+        const { buildContextualPhonetics } = await import('@/lib/memorize/contextualInitials');
+        const acceptedPhonetics = buildContextualPhonetics(session.body);
+        setSession((current) => current ? withAcceptedPhonetics(current, acceptedPhonetics) : current);
       } catch {
         // Keep the all-masked stage available: reveal-current and skip remain escape hatches.
       } finally {
@@ -278,7 +285,9 @@ export default function MemorizePageClient() {
     : stage === 2 ? session.masks.partial65
       : undefined;
   const hintedInitials = activeRecall.hintVisible
-    ? currentAcceptedInitials(activeRecall, session.units, activeMask)
+    ? keyboardLayout === 'zhuyin'
+      ? currentAcceptedZhuyin(activeRecall, session.units, activeMask)
+      : currentAcceptedInitials(activeRecall, session.units, activeMask)
     : [];
   const stageCompletionFacts = completionFactsForStage(session, stage);
 
@@ -296,7 +305,7 @@ export default function MemorizePageClient() {
       <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center py-5 sm:py-8">
         <div className="mb-5 text-center">
           <p className="text-xs tracking-[0.24em] text-stone-500">{reference(selected, activeLanguage)}</p>
-          <h1 className="mt-2 text-lg font-medium">{stageInstruction(stage, activeLanguage)}</h1>
+          <h1 className="mt-2 text-lg font-medium">{stageInstruction(stage, activeLanguage, keyboardLayout)}</h1>
         </div>
         <VerseExercise session={session} stage={stage} />
         {session.notes.length > 0 && (
@@ -322,7 +331,14 @@ export default function MemorizePageClient() {
                 <button onClick={skip} className="min-h-11 text-sm text-stone-500">{activeCopy.skipRound}</button>
               )}
             </div>
-            <AlphabetKeyboard language={activeLanguage} disabled={loadingInitials} hintedInitials={hintedInitials} onPress={submitKeyboardInput} />
+            <AlphabetKeyboard
+              language={activeLanguage}
+              disabled={loadingInitials}
+              hintedInitials={hintedInitials}
+              onPress={submitKeyboardInput}
+              onLayoutChange={setKeyboardLayout}
+              onZhuyinSelected={guide.showZhuyinCoach}
+            />
             <button type="button" onClick={goToPreviousStage} className="memorize-secondary mx-auto mt-3 max-w-xs"><ArrowLeft className="h-4 w-4" />{activeCopy.previous}</button>
             {stage < finalStage && (
               <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-3 max-w-xs">{activeCopy.continue}<ChevronRight className="h-4 w-4" /></button>
@@ -342,34 +358,69 @@ export function AlphabetKeyboard({
   disabled = false,
   hintedInitials = [],
   onPress,
+  onLayoutChange,
+  onZhuyinSelected,
 }: {
   language?: Language;
   disabled?: boolean;
   hintedInitials?: readonly string[];
   onPress: (input: RecallKeyboardInput) => void;
+  onLayoutChange?: (layout: KeyboardLayout) => void;
+  onZhuyinSelected?: () => void;
 }) {
   const [layout, setLayout] = useState<KeyboardLayout>('t9');
+  const [showPhysicalKeys, setShowPhysicalKeys] = useState(true);
   const keyboardCopy = copy[language];
 
   useEffect(() => {
+    let stored: string | null = null;
+    try {
+      stored = window.localStorage.getItem(MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY);
+    } catch {
+      // Storage can be unavailable in privacy-restricted contexts.
+    }
+    if (stored === 't9' || stored === 'qwerty' || stored === 'zhuyin') {
+      setLayout(stored);
+      onLayoutChange?.(stored);
+    }
+  }, [onLayoutChange]);
+
+  const selectLayout = (nextLayout: KeyboardLayout) => {
+    setLayout(nextLayout);
+    onLayoutChange?.(nextLayout);
+    try {
+      window.localStorage.setItem(MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY, nextLayout);
+    } catch {
+      // Keep the keyboard usable without persistence.
+    }
+    if (nextLayout === 'zhuyin' && layout !== 'zhuyin') onZhuyinSelected?.();
+  };
+
+  useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (!disabled && /^[a-z]$/i.test(event.key)) onPress(singleInitialInput(event.key));
+      if (disabled) return;
+      if (layout === 'zhuyin') {
+        const symbol = zhuyinForPhysicalKey(event.key);
+        if (symbol) onPress(singleZhuyinInput(symbol));
+        return;
+      }
+      if (/^[a-z]$/i.test(event.key)) onPress(singleInitialInput(event.key));
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [disabled, onPress]);
+  }, [disabled, layout, onPress]);
 
   return (
-    <div className="mx-auto w-full max-w-2xl" aria-label={keyboardCopy.keyboard}>
+    <div className="mx-auto w-full max-w-2xl" aria-label={layout === 'zhuyin' ? keyboardCopy.zhuyinKeyboard : keyboardCopy.keyboard}>
       <div className="mb-3 flex justify-center" role="group" aria-label={keyboardCopy.keyboardLayout}>
         <div className="inline-flex rounded-full border border-stone-900/10 bg-white/45 p-1 dark:border-white/10 dark:bg-white/[0.04]">
-          {([['t9', keyboardCopy.t9], ['qwerty', 'QWERTY']] as const).map(([value, label]) => (
+          {([['t9', keyboardCopy.t9], ['qwerty', 'QWERTY'], ['zhuyin', keyboardCopy.zhuyin]] as const).map(([value, label]) => (
             <button
               key={value}
               type="button"
               aria-pressed={layout === value}
-              onClick={() => setLayout(value)}
-              className={`min-h-9 rounded-full px-4 text-xs font-medium transition ${layout === value ? 'bg-stone-950 text-white shadow-sm dark:bg-stone-50 dark:text-stone-950' : 'text-stone-500 hover:text-stone-950 dark:hover:text-white'}`}
+              onClick={() => selectLayout(value)}
+              className={`min-h-11 rounded-full px-3 text-xs font-medium transition sm:px-4 ${layout === value ? 'bg-stone-950 text-white shadow-sm dark:bg-stone-50 dark:text-stone-950' : 'text-stone-500 hover:text-stone-950 dark:hover:text-white'}`}
             >{label}</button>
           ))}
         </div>
@@ -392,7 +443,7 @@ export function AlphabetKeyboard({
             </button>
           ))}
         </div>
-      ) : (
+      ) : layout === 'qwerty' ? (
         <div className="space-y-1.5" aria-label="QWERTY键盘">
           {qwertyRows.map((row) => (
             <div key={row} className="flex justify-center gap-1 sm:gap-1.5">
@@ -408,6 +459,39 @@ export function AlphabetKeyboard({
               ))}
             </div>
           ))}
+        </div>
+      ) : (
+        <div>
+          <div className="mb-2 flex justify-end">
+            <button
+              type="button"
+              className="min-h-11 rounded-xl px-3 text-xs text-stone-500 transition hover:bg-white/55 hover:text-stone-950 dark:hover:bg-white/[0.06] dark:hover:text-white"
+              onClick={() => setShowPhysicalKeys((visible) => !visible)}
+            >
+              {showPhysicalKeys ? keyboardCopy.hidePhysicalKeys : keyboardCopy.showPhysicalKeys}
+            </button>
+          </div>
+          <div className="grid grid-cols-7 gap-0.5">
+            {DA_CHEN_ZHUYIN_ROWS.flat().map(({ physicalKey, symbol }) => {
+                  const hinted = hintedInitials.includes(symbol);
+                  const keyLabel = /^[a-z]$/u.test(physicalKey) ? physicalKey.toLocaleUpperCase() : physicalKey;
+                  return (
+                    <button
+                      key={symbol}
+                      type="button"
+                      disabled={disabled}
+                      data-zhuyin-symbol={symbol}
+                      data-hinted={hinted || undefined}
+                      aria-label={showPhysicalKeys ? `${symbol} ${keyLabel}` : symbol}
+                      onClick={() => onPress(singleZhuyinInput(symbol))}
+                      className={`relative flex min-h-11 min-w-11 items-center justify-center rounded-xl border text-lg font-semibold shadow-sm transition active:scale-95 disabled:opacity-40 ${hinted ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
+                    >
+                      {symbol}
+                      {showPhysicalKeys && <span aria-hidden="true" className="absolute right-1.5 top-1 text-[8px] font-medium leading-none text-stone-400 dark:text-stone-500">{keyLabel}</span>}
+                    </button>
+                  );
+                })}
+          </div>
         </div>
       )}
     </div>
@@ -514,7 +598,8 @@ function StageIndicator({ stage, language }: { stage: MemorizationStage; languag
   return <div className="flex items-center gap-1.5" aria-label={stageCopy.stageProgress(stage + 1)}>{stageCopy.stages.map(({ name }, index) => <span key={name} className={`h-1.5 rounded-full transition-all ${index === stage ? 'w-8 bg-amber-800 dark:bg-amber-200' : index < stage ? 'w-4 bg-amber-800/35 dark:bg-amber-200/35' : 'w-4 bg-stone-900/10 dark:bg-white/10'}`} title={name} />)}</div>;
 }
 
-function stageInstruction(stage: MemorizationStage, language: Language) {
+function stageInstruction(stage: MemorizationStage, language: Language, keyboardLayout: KeyboardLayout) {
+  if (stage === finalStage && keyboardLayout === 'zhuyin') return copy[language].zhuyinInstruction;
   return copy[language].stages[stage].instruction;
 }
 
