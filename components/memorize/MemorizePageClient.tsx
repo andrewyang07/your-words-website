@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, BookOpen, ChevronRight, Eye, RotateCcw, Sparkles } from 'lucide-react';
 import { decodeVerseList, decodeVerseRef, encodeVerseRef } from '@/lib/bibleBookMapping';
 import { loadCuvVersesById } from '@/lib/memorize/loadVerses';
@@ -21,13 +21,44 @@ import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import type { Verse } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
+import { useAppStore } from '@/stores/useAppStore';
+import booksData from '@/public/data/books.json';
+import type { Language } from '@/types/verse';
 
-const stages = [
-  { name: '通读', instruction: '先读一遍，不急着记', initialsRequired: false },
-  { name: '轻遮', instruction: '凭留下的字，补全句子', initialsRequired: true },
-  { name: '深遮', instruction: '只留少量线索，再想一遍', initialsRequired: true },
-  { name: '首字母', instruction: '按每个字的拼音首字母', initialsRequired: true },
-] as const;
+const copy = {
+  simplified: {
+    stages: [
+      { name: '通读', instruction: '先读一遍，不急着记' },
+      { name: '轻遮', instruction: '凭留下的字，补全句子' },
+      { name: '深遮', instruction: '只留少量线索，再想一遍' },
+      { name: '首字母', instruction: '按每个字的拼音首字母' },
+    ],
+    loadingError: '经文加载失败', backToPicker: '返回经文列表', skip: '跳过', note: '经文注释', notePrefix: '注：',
+    reveal: '显示这个字', skipRound: '跳过本轮', previous: '返回上一步', continue: '继续',
+    keyboard: '拼音首字母键盘', keyboardLayout: '键盘布局', t9: '九宫格',
+    stageProgress: (stage: number) => `第 ${stage} 阶段，共 4 阶段`,
+    finished: '本轮结束', retry: '重新背诵', chooseAnother: '选择另一节', finishAndReturn: '完成并返回',
+    backHome: '返回首页', title: '深度背诵', pickerHeading: '选择一节，慢慢记住',
+    pickerDescription: '每次只背一节。四个阶段都可以跳过。', empty: '先收藏一节想背的经文', browse: '浏览经文',
+  },
+  traditional: {
+    stages: [
+      { name: '通讀', instruction: '先讀一遍，不急著記' },
+      { name: '輕遮', instruction: '憑留下的字，補全句子' },
+      { name: '深遮', instruction: '只留少量線索，再想一遍' },
+      { name: '首字母', instruction: '按每個字的拼音首字母' },
+    ],
+    loadingError: '經文載入失敗', backToPicker: '返回經文列表', skip: '跳過', note: '經文註釋', notePrefix: '註：',
+    reveal: '顯示這個字', skipRound: '跳過本輪', previous: '返回上一步', continue: '繼續',
+    keyboard: '拼音首字母鍵盤', keyboardLayout: '鍵盤佈局', t9: '九宮格',
+    stageProgress: (stage: number) => `第 ${stage} 階段，共 4 階段`,
+    finished: '本輪結束', retry: '重新背誦', chooseAnother: '選擇另一節', finishAndReturn: '完成並返回',
+    backHome: '返回首頁', title: '深度背誦', pickerHeading: '選擇一節，慢慢記住',
+    pickerDescription: '每次只背一節。四個階段都可以跳過。', empty: '先收藏一節想背的經文', browse: '瀏覽經文',
+  },
+} as const;
+
+const stageNeedsInitials = [false, true, true, true] as const;
 type MemorizationStage = 0 | 1 | 2 | 3;
 const finalStage: MemorizationStage = 3;
 type KeyboardLayout = 't9' | 'qwerty';
@@ -45,9 +76,12 @@ const t9Keys = [
 const qwertyRows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'] as const;
 
 export default function MemorizePageClient() {
+  const language = useAppStore((state) => state.language);
+  const theme = useAppStore((state) => state.theme);
   const favorites = useFavoritesStore((state) => state.favorites);
   const favoriteIds = useMemo(() => Array.from(favorites), [favorites]);
   const [verses, setVerses] = useState<Verse[]>([]);
+  const [versesLanguage, setVersesLanguage] = useState<Language | null>(null);
   const [selected, setSelected] = useState<Verse | null>(null);
   const [session, setSession] = useState<MemorizationSession | null>(null);
   const [stage, setStage] = useState<MemorizationStage>(0);
@@ -55,44 +89,78 @@ export default function MemorizePageClient() {
   const [loadingInitials, setLoadingInitials] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
+  const [sessionLanguage, setSessionLanguage] = useState<Language | null>(null);
+  const sessionActive = useRef(false);
 
-  const startVerse = useCallback((verse: Verse) => {
+  const startVerse = useCallback((verse: Verse, languageSnapshot: Language = language) => {
     const seed = `${verse.id}:${crypto.randomUUID?.() ?? Date.now()}`;
+    sessionActive.current = true;
     setSelected(verse);
     setSession(buildMemorizationSession(verse.text, seed));
+    setSessionLanguage(languageSnapshot);
     setStage(0);
     setCompleted(false);
-  }, []);
+  }, [language]);
+
+  useEffect(() => {
+    const mediaQuery = typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-color-scheme: dark)')
+      : null;
+    const updateTheme = () => {
+      const isDark = theme === 'dark' || (theme === 'system' && Boolean(mediaQuery?.matches));
+      document.documentElement.classList.toggle('dark', isDark);
+    };
+    updateTheme();
+    if (theme !== 'system' || !mediaQuery) return;
+    mediaQuery.addEventListener('change', updateTheme);
+    return () => mediaQuery.removeEventListener('change', updateTheme);
+  }, [theme]);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
         const { ids, directId } = resolveMemorizeSourceIds(window.location.search, favoriteIds);
-        const loaded = await loadCuvVersesById(ids);
+        const requestLanguage = language;
+        const loaded = await loadCuvVersesById(ids, requestLanguage);
         if (cancelled) return;
         const favoriteSet = new Set(favoriteIds);
         setVerses(loaded.filter((verse) => favoriteSet.has(verse.id)));
+        setVersesLanguage(requestLanguage);
         const directVerse = directId ? loaded.find((verse) => verse.id === directId) : null;
-        if (directVerse) startVerse(directVerse);
+        if (directVerse && !sessionActive.current) startVerse(directVerse, requestLanguage);
       } catch (reason) {
-        if (!cancelled) setError(reason instanceof Error ? reason.message : '经文加载失败');
+        if (!cancelled) setError(reason instanceof Error ? reason.message : copy[language].loadingError);
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
     load();
     return () => { cancelled = true; };
-  }, [favoriteIds, startVerse]);
+  }, [favoriteIds, language, startVerse]);
+
+  const restartVerse = useCallback(async () => {
+    if (!selected) return;
+    setLoading(true);
+    try {
+      const [latestVerse] = await loadCuvVersesById([selected.id], language);
+      if (!latestVerse) throw new Error(copy[language].loadingError);
+      startVerse(latestVerse, language);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : copy[language].loadingError);
+    } finally {
+      setLoading(false);
+    }
+  }, [language, selected, startVerse]);
 
   const enterStage = useCallback(async (nextStage: number) => {
     if (!selected || !session) return;
-    if (nextStage >= stages.length) {
+    if (nextStage >= stageNeedsInitials.length) {
       setCompleted(true);
       return;
     }
     const resolvedStage = nextStage as MemorizationStage;
-    if (stages[resolvedStage].initialsRequired && session.units.some((unit) => unit.recallable && unit.acceptedInitials.length === 0)) {
+    if (stageNeedsInitials[resolvedStage] && session.units.some((unit) => unit.recallable && unit.acceptedInitials.length === 0)) {
       setLoadingInitials(true);
       try {
         const { buildContextualInitials } = await import('@/lib/memorize/contextualInitials');
@@ -123,11 +191,15 @@ export default function MemorizePageClient() {
     });
   }, [stage]);
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
+  const activeLanguage = sessionLanguage ?? language;
+  const activeCopy = copy[activeLanguage];
+
+  if (loading) return <LoadingSpinner language={language} />;
+  if (error) return <ErrorMessage language={language} message={error} onRetry={() => window.location.reload()} />;
 
   if (!selected || !session) {
-    return <VersePicker verses={verses} onSelect={startVerse} />;
+    if (versesLanguage !== language) return <LoadingSpinner language={language} />;
+    return <VersePicker verses={verses} language={language} onSelect={(verse) => startVerse(verse, language)} />;
   }
 
   if (completed) {
@@ -135,12 +207,12 @@ export default function MemorizePageClient() {
       <main className="memorize-page flex min-h-[100dvh] items-center justify-center px-5 py-8">
         <section className="w-full max-w-md text-center">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-amber-900/15 bg-white/55 text-amber-800 dark:border-white/10 dark:bg-white/[0.06] dark:text-amber-200"><Sparkles className="h-6 w-6" /></span>
-          <p className="mt-6 text-xs tracking-[0.28em] text-stone-500">{reference(selected)}</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[0.08em]">本轮结束</h1>
+          <p className="mt-6 text-xs tracking-[0.28em] text-stone-500">{reference(selected, activeLanguage)}</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-[0.08em]">{activeCopy.finished}</h1>
           <div className="mt-8 grid gap-3">
-            <button onClick={() => startVerse(selected)} className="memorize-primary"><RotateCcw className="h-4 w-4" />重新背诵</button>
-            <button onClick={() => { setSelected(null); setSession(null); setCompleted(false); }} className="memorize-secondary">选择另一节</button>
-            <Link href="/" className="memorize-secondary">完成并返回</Link>
+            <button onClick={() => void restartVerse()} className="memorize-primary"><RotateCcw className="h-4 w-4" />{activeCopy.retry}</button>
+            <button onClick={() => { sessionActive.current = false; setSelected(null); setSession(null); setSessionLanguage(null); setCompleted(false); }} className="memorize-secondary">{activeCopy.chooseAnother}</button>
+            <Link href="/" className="memorize-secondary">{activeCopy.finishAndReturn}</Link>
           </div>
         </section>
       </main>
@@ -153,8 +225,10 @@ export default function MemorizePageClient() {
   };
 
   const exitVerse = () => {
+    sessionActive.current = false;
     setSelected(null);
     setSession(null);
+    setSessionLanguage(null);
   };
 
   const goToPreviousStage = () => {
@@ -165,19 +239,19 @@ export default function MemorizePageClient() {
   return (
     <main className="memorize-page flex min-h-[100dvh] flex-col overflow-x-hidden px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
       <header className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
-        <button type="button" onClick={exitVerse} className="memorize-icon" aria-label="返回经文列表"><ArrowLeft className="h-5 w-5" /></button>
-        <StageIndicator stage={stage} />
-        <button onClick={skip} className="min-h-11 px-2 text-sm text-stone-500 hover:text-stone-950 dark:hover:text-white">跳过</button>
+        <button type="button" onClick={exitVerse} className="memorize-icon" aria-label={activeCopy.backToPicker}><ArrowLeft className="h-5 w-5" /></button>
+        <StageIndicator stage={stage} language={activeLanguage} />
+        <button onClick={skip} className="min-h-11 px-2 text-sm text-stone-500 hover:text-stone-950 dark:hover:text-white">{activeCopy.skip}</button>
       </header>
 
       <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center py-5 sm:py-8">
         <div className="mb-5 text-center">
-          <p className="text-xs tracking-[0.24em] text-stone-500">{reference(selected)}</p>
-          <h1 className="mt-2 text-lg font-medium">{stageInstruction(stage)}</h1>
+          <p className="text-xs tracking-[0.24em] text-stone-500">{reference(selected, activeLanguage)}</p>
+          <h1 className="mt-2 text-lg font-medium">{stageInstruction(stage, activeLanguage)}</h1>
         </div>
         <VerseExercise session={session} stage={stage} />
         {session.notes.length > 0 && (
-          <aside className="mx-auto mt-4 max-w-2xl text-xs leading-6 text-stone-500" aria-label="经文注释">注：{session.notes.join('；')}</aside>
+          <aside className="mx-auto mt-4 max-w-2xl text-xs leading-6 text-stone-500" aria-label={activeCopy.note}>{activeCopy.notePrefix}{session.notes.join('；')}</aside>
         )}
 
         {stage > 0 ? (
@@ -192,26 +266,27 @@ export default function MemorizePageClient() {
                     return { ...current, recall };
                   })}
                   className="memorize-secondary !w-auto px-4"
-                ><Eye className="h-4 w-4" />显示这个字</button>
-                <button onClick={skip} className="min-h-11 text-sm text-stone-500">跳过本轮</button>
+                ><Eye className="h-4 w-4" />{activeCopy.reveal}</button>
+                <button onClick={skip} className="min-h-11 text-sm text-stone-500">{activeCopy.skipRound}</button>
               </div>
             )}
-            <AlphabetKeyboard disabled={loadingInitials} onPress={submitKeyboardInput} />
-            <button type="button" onClick={goToPreviousStage} className="memorize-secondary mx-auto mt-3 max-w-xs"><ArrowLeft className="h-4 w-4" />返回上一步</button>
+            <AlphabetKeyboard language={activeLanguage} disabled={loadingInitials} onPress={submitKeyboardInput} />
+            <button type="button" onClick={goToPreviousStage} className="memorize-secondary mx-auto mt-3 max-w-xs"><ArrowLeft className="h-4 w-4" />{activeCopy.previous}</button>
             {stage < finalStage && (
-              <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-3 max-w-xs">继续<ChevronRight className="h-4 w-4" /></button>
+              <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-3 max-w-xs">{activeCopy.continue}<ChevronRight className="h-4 w-4" /></button>
             )}
           </div>
         ) : (
-          <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-7 max-w-xs">继续<ChevronRight className="h-4 w-4" /></button>
+          <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-7 max-w-xs">{activeCopy.continue}<ChevronRight className="h-4 w-4" /></button>
         )}
       </section>
     </main>
   );
 }
 
-export function AlphabetKeyboard({ disabled = false, onPress }: { disabled?: boolean; onPress: (input: RecallKeyboardInput) => void }) {
+export function AlphabetKeyboard({ language = 'simplified', disabled = false, onPress }: { language?: Language; disabled?: boolean; onPress: (input: RecallKeyboardInput) => void }) {
   const [layout, setLayout] = useState<KeyboardLayout>('t9');
+  const keyboardCopy = copy[language];
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
@@ -222,10 +297,10 @@ export function AlphabetKeyboard({ disabled = false, onPress }: { disabled?: boo
   }, [disabled, onPress]);
 
   return (
-    <div className="mx-auto w-full max-w-2xl" aria-label="拼音首字母键盘">
-      <div className="mb-3 flex justify-center" role="group" aria-label="键盘布局">
+    <div className="mx-auto w-full max-w-2xl" aria-label={keyboardCopy.keyboard}>
+      <div className="mb-3 flex justify-center" role="group" aria-label={keyboardCopy.keyboardLayout}>
         <div className="inline-flex rounded-full border border-stone-900/10 bg-white/45 p-1 dark:border-white/10 dark:bg-white/[0.04]">
-          {([['t9', '九宫格'], ['qwerty', 'QWERTY']] as const).map(([value, label]) => (
+          {([['t9', keyboardCopy.t9], ['qwerty', 'QWERTY']] as const).map(([value, label]) => (
             <button
               key={value}
               type="button"
@@ -299,25 +374,26 @@ function revealedMaskIndices(mask: Set<number>, cursor: number): Set<number> {
   return new Set(orderedMaskIndices(mask).slice(0, cursor));
 }
 
-function VersePicker({ verses, onSelect }: { verses: Verse[]; onSelect: (verse: Verse) => void }) {
+function VersePicker({ verses, language, onSelect }: { verses: Verse[]; language: Language; onSelect: (verse: Verse) => void }) {
+  const pickerCopy = copy[language];
   return (
     <main className="memorize-page min-h-[100dvh] px-4 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-2xl">
-        <header className="flex items-center justify-between"><Link href="/" className="memorize-icon" aria-label="返回首页"><ArrowLeft className="h-5 w-5" /></Link><span className="text-xs tracking-[0.24em] text-stone-500">CUV</span></header>
+        <header className="flex items-center justify-between"><Link href="/" className="memorize-icon" aria-label={pickerCopy.backHome}><ArrowLeft className="h-5 w-5" /></Link><span className="text-xs tracking-[0.24em] text-stone-500">{language === 'traditional' ? 'CUVT' : 'CUV'}</span></header>
         <section className="py-8 sm:py-12">
-          <p className="text-xs tracking-[0.28em] text-amber-800/70 dark:text-amber-200/70">深度背诵</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[0.05em] sm:text-4xl">选择一节，慢慢记住</h1>
-          <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-stone-400">每次只背一节。四个阶段都可以跳过。</p>
+          <p className="text-xs tracking-[0.28em] text-amber-800/70 dark:text-amber-200/70">{pickerCopy.title}</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-[0.05em] sm:text-4xl">{pickerCopy.pickerHeading}</h1>
+          <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-stone-400">{pickerCopy.pickerDescription}</p>
         </section>
         {verses.length === 0 ? (
           <div className="rounded-3xl border border-stone-900/10 bg-white/45 px-6 py-14 text-center dark:border-white/10 dark:bg-white/[0.035]">
             <BookOpen className="mx-auto h-6 w-6 text-stone-400" />
-            <p className="mt-4 text-lg">先收藏一节想背的经文</p>
-            <Link href="/" className="memorize-primary mx-auto mt-6 max-w-xs">浏览经文</Link>
+            <p className="mt-4 text-lg">{pickerCopy.empty}</p>
+            <Link href="/" className="memorize-primary mx-auto mt-6 max-w-xs">{pickerCopy.browse}</Link>
           </div>
         ) : (
           <div className="grid gap-3">
-            {verses.map((verse) => <button key={verse.id} onClick={() => onSelect(verse)} className="group rounded-2xl border border-stone-900/10 bg-white/55 p-5 text-left transition hover:bg-white/80 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07]"><span className="text-xs tracking-[0.18em] text-stone-500">{reference(verse)}</span><span className="mt-3 block line-clamp-4 text-lg leading-8">{verse.text}</span></button>)}
+          {verses.map((verse) => <button key={verse.id} onClick={() => onSelect(verse)} className="group rounded-2xl border border-stone-900/10 bg-white/55 p-5 text-left transition hover:bg-white/80 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07]"><span className="text-xs tracking-[0.18em] text-stone-500">{reference(verse, language)}</span><span className="mt-3 block line-clamp-4 text-lg leading-8">{verse.text}</span></button>)}
           </div>
         )}
       </div>
@@ -325,15 +401,20 @@ function VersePicker({ verses, onSelect }: { verses: Verse[]; onSelect: (verse: 
   );
 }
 
-function StageIndicator({ stage }: { stage: MemorizationStage }) {
-  return <div className="flex items-center gap-1.5" aria-label={`第 ${stage + 1} 阶段，共 4 阶段`}>{stages.map(({ name }, index) => <span key={name} className={`h-1.5 rounded-full transition-all ${index === stage ? 'w-8 bg-amber-800 dark:bg-amber-200' : index < stage ? 'w-4 bg-amber-800/35 dark:bg-amber-200/35' : 'w-4 bg-stone-900/10 dark:bg-white/10'}`} title={name} />)}</div>;
+function StageIndicator({ stage, language }: { stage: MemorizationStage; language: Language }) {
+  const stageCopy = copy[language];
+  return <div className="flex items-center gap-1.5" aria-label={stageCopy.stageProgress(stage + 1)}>{stageCopy.stages.map(({ name }, index) => <span key={name} className={`h-1.5 rounded-full transition-all ${index === stage ? 'w-8 bg-amber-800 dark:bg-amber-200' : index < stage ? 'w-4 bg-amber-800/35 dark:bg-amber-200/35' : 'w-4 bg-stone-900/10 dark:bg-white/10'}`} title={name} />)}</div>;
 }
 
-function stageInstruction(stage: MemorizationStage) {
-  return stages[stage].instruction;
+function stageInstruction(stage: MemorizationStage, language: Language) {
+  return copy[language].stages[stage].instruction;
 }
 
-function reference(verse: Verse) { return `${verse.book} ${verse.chapter}:${verse.verse}`; }
+function reference(verse: Verse, language: Language) {
+  const book = booksData.books.find((candidate) => candidate.key === verse.bookKey);
+  const name = book ? (language === 'traditional' ? book.nameTraditional : book.nameSimplified) : verse.book;
+  return `${name} ${verse.chapter}:${verse.verse}`;
+}
 
 export function memorizeHref(verse: Verse) {
   return `/memorize?v=${encodeURIComponent(encodeVerseRef(verse.bookKey, verse.chapter, verse.verse))}`;

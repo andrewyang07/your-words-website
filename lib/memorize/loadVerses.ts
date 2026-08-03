@@ -1,8 +1,8 @@
 import { loadChapterVerses } from '@/lib/dataLoader';
 import { parseVerseId } from '@/lib/bibleBookMapping';
-import type { Verse } from '@/types/verse';
+import type { Language, Verse } from '@/types/verse';
 
-export async function loadCuvVersesById(ids: string[]): Promise<Verse[]> {
+export async function loadCuvVersesById(ids: string[], language: Language = 'simplified'): Promise<Verse[]> {
   const requested = ids.map(parseVerseId).filter((value): value is NonNullable<typeof value> => Boolean(value));
   const groups = new Map<string, Set<number>>();
   requested.forEach(({ bookKey, chapter, verse }) => {
@@ -15,7 +15,7 @@ export async function loadCuvVersesById(ids: string[]): Promise<Verse[]> {
   const loaded = new Map<string, Verse>();
   for (const [key, verseNumbers] of groups) {
     const [bookKey, chapterText] = key.split('\u0000');
-    const verses = await loadChapterVerses(bookKey, Number(chapterText), 'simplified');
+    const verses = await loadChapterVerses(bookKey, Number(chapterText), language);
     verses.filter((verse) => verseNumbers.has(verse.verse)).forEach((verse) => loaded.set(verse.id, verse));
   }
 
