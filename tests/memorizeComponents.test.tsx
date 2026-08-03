@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
 import MemorizePageClient, { AlphabetKeyboard, VerseExercise, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
+import { CompletionReward } from '../components/memorize/CompletionReward';
 import { buildMemorizationSession, pressInitial, singleInitialInput } from '../lib/memorize/session';
 import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
@@ -107,6 +108,72 @@ describe('deep memorization controls', () => {
     const hiddenWhileReadingHelp = view.container.querySelectorAll('.memorize-hidden').length;
     fireEvent.keyDown(window, { key: 's' });
     expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(hiddenWhileReadingHelp);
+  });
+
+  it('announces an independently completed stage with a factual simplified seal', () => {
+    const view = render(<CompletionReward kind="stage" language="simplified" assistanceCount={0} skippedStageCount={0} />);
+
+    expect(view.getByRole('status').textContent).toContain('熟记');
+    expect(view.getByRole('status').textContent).toContain('本阶段未使用提示，已独立完成');
+    expect(view.getByLabelText('熟记朱印')).toBeTruthy();
+  });
+
+  it('uses a lighter traditional seal after assisted stage completion', () => {
+    const view = render(<CompletionReward kind="stage" language="traditional" assistanceCount={2} skippedStageCount={0} />);
+
+    expect(view.getByRole('status').textContent).toContain('漸熟');
+    expect(view.getByRole('status').textContent).toContain('本階段借助了 2 次提示，繼續慢慢熟悉');
+    expect(view.getByLabelText('漸熟朱印')).toBeTruthy();
+  });
+
+  it('reports a skipped stage statically without a mastery seal', () => {
+    const view = render(<CompletionReward kind="stage" language="simplified" assistanceCount={0} skippedStageCount={1} />);
+
+    expect(view.getByRole('status').textContent).toBe('本阶段已跳过，不计作完成。');
+    expect(view.queryByRole('img')).toBeNull();
+  });
+
+  it('announces current-round assistance and skips with the full-round seal', () => {
+    const view = render(<CompletionReward kind="round" language="simplified" assistanceCount={3} skippedStageCount={1} />);
+
+    expect(view.getByRole('status').textContent).toContain('藏于心');
+    expect(view.getByRole('status').textContent).toContain('本轮使用了 3 次提示，跳过了 1 个阶段');
+    expect(view.getByLabelText('藏于心朱印')).toBeTruthy();
+  });
+
+  it('keeps traditional completion semantics in reduced-motion mode', () => {
+    const view = render(<CompletionReward kind="round" language="traditional" assistanceCount={0} skippedStageCount={0} reducedMotion />);
+
+    expect(view.getByRole('status').textContent).toContain('藏於心');
+    expect(view.getByRole('status').textContent).toContain('本輪未使用提示，也沒有跳過階段');
+    expect(view.getByLabelText('藏於心朱印')).toBeTruthy();
+  });
+
+  it('shows stage feedback and a factual round summary without delaying controls', async () => {
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 约翰福音: { 3: { 16: '神。' } } }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByText('本阶段未使用提示，已独立完成。');
+
+    const continueButton = view.getByRole('button', { name: '继续' });
+    expect(continueButton.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(continueButton);
+    await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
+    fireEvent.click(view.getByRole('button', { name: '显示这个字' }));
+    await view.findByText('本阶段借助了 1 次提示，继续慢慢熟悉。');
+
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '按每个字的拼音首字母' });
+    fireEvent.click(view.getByRole('button', { name: '跳过本轮' }));
+    await view.findByText('本轮使用了 1 次提示，跳过了 1 个阶段。');
+    expect(view.getByRole('button', { name: '重新背诵' }).hasAttribute('disabled')).toBe(false);
   });
 
   it('snapshots traditional Scripture and copy when a session starts', async () => {

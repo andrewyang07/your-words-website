@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, ArrowLeft, BookOpen, ChevronRight, Eye, RotateCcw, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowLeft, BookOpen, ChevronRight, Eye, RotateCcw } from 'lucide-react';
 import { decodeVerseList, decodeVerseRef, encodeVerseRef } from '@/lib/bibleBookMapping';
 import { loadCuvVersesById } from '@/lib/memorize/loadVerses';
 import {
   buildMemorizationSession,
+  completionFactsForRound,
+  completionFactsForStage,
   currentAcceptedInitials,
   groupedInitialsInput,
   orderedMaskIndices,
@@ -20,6 +22,7 @@ import {
   type MemorizationSession,
   type RecallKeyboardInput,
 } from '@/lib/memorize/session';
+import { CompletionReward } from '@/components/memorize/CompletionReward';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import type { Verse } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -208,15 +211,23 @@ export default function MemorizePageClient() {
   }
 
   if (completed) {
+    const completionFacts = completionFactsForRound(session);
     return (
       <main className="memorize-page flex min-h-[100dvh] flex-col px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
         <header className="mx-auto flex w-full max-w-3xl justify-end">
           <MemorizeHelpButton label={guide.helpLabel} onClick={guide.openGuide} />
         </header>
         <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-amber-900/15 bg-white/55 text-amber-800 dark:border-white/10 dark:bg-white/[0.06] dark:text-amber-200"><Sparkles className="h-6 w-6" /></span>
-          <p className="mt-6 text-xs tracking-[0.28em] text-stone-500">{reference(selected, activeLanguage)}</p>
+          <p className="text-xs tracking-[0.28em] text-stone-500">{reference(selected, activeLanguage)}</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-[0.08em]">{activeCopy.finished}</h1>
+          <div className="mt-6">
+            <CompletionReward
+              kind="round"
+              language={activeLanguage}
+              assistanceCount={completionFacts.assistanceCount}
+              skippedStageCount={completionFacts.skippedStageCount}
+            />
+          </div>
           <div className="mt-8 grid gap-3">
             <button onClick={() => void restartVerse()} className="memorize-primary"><RotateCcw className="h-4 w-4" />{activeCopy.retry}</button>
             <button onClick={() => { sessionActive.current = false; setSelected(null); setSession(null); setSessionLanguage(null); setCompleted(false); }} className="memorize-secondary">{activeCopy.chooseAnother}</button>
@@ -269,6 +280,7 @@ export default function MemorizePageClient() {
   const hintedInitials = activeRecall.hintVisible
     ? currentAcceptedInitials(activeRecall, session.units, activeMask)
     : [];
+  const stageCompletionFacts = completionFactsForStage(session, stage);
 
   return (
     <main className="memorize-page flex min-h-[100dvh] flex-col overflow-x-hidden px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
@@ -293,6 +305,16 @@ export default function MemorizePageClient() {
 
         {stage > 0 ? (
           <div className="mt-5">
+            {stageCompletionFacts.outcome !== 'incomplete' && (
+              <div className="mb-4">
+                <CompletionReward
+                  kind="stage"
+                  language={activeLanguage}
+                  assistanceCount={stageCompletionFacts.assistanceCount}
+                  skippedStageCount={stageCompletionFacts.outcome === 'skipped' ? 1 : 0}
+                />
+              </div>
+            )}
             <RecallFeedback language={activeLanguage} recall={activeRecall} hintedInitials={hintedInitials} />
             <div className="mb-3 flex items-center justify-between gap-3">
               <button onClick={reveal} className="memorize-secondary !w-auto px-4"><Eye className="h-4 w-4" />{activeCopy.reveal}</button>

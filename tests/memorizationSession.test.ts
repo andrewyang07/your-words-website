@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildMemorizationSession,
+  completionFactsForRound,
+  completionFactsForStage,
   groupedInitialsInput,
   pressInitial,
   revealMaskedCurrentUnit,
@@ -140,6 +142,43 @@ describe('deep memorization session', () => {
     expect(twice).toMatchObject({ cursor: 0, hintVisible: false, assistanceCount: 0 });
     expect(revealCurrentUnit(twice, session.units)).toMatchObject({ complete: true, assistanceCount: 1 });
     expect(skipRecallStage(twice)).toMatchObject({ complete: true, skipped: true });
+  });
+
+  it('reports independent, assisted, and skipped stage completion from transient facts', () => {
+    const initial = buildMemorizationSession('神', 'completion-facts', [['s']]);
+    const independent = {
+      ...initial,
+      maskRecall: {
+        ...initial.maskRecall,
+        partial30: { ...initial.maskRecall.partial30, complete: true },
+      },
+    };
+    expect(completionFactsForStage(independent, 1)).toEqual({ outcome: 'independent', assistanceCount: 0 });
+
+    const assisted = {
+      ...independent,
+      maskRecall: {
+        ...independent.maskRecall,
+        partial30: { ...independent.maskRecall.partial30, assistanceCount: 2 },
+      },
+    };
+    expect(completionFactsForStage(assisted, 1)).toEqual({ outcome: 'assisted', assistanceCount: 2 });
+    expect(completionFactsForStage(skipMemorizationStage(assisted, 1), 1)).toEqual({ outcome: 'skipped', assistanceCount: 2 });
+  });
+
+  it('summarizes only current-round assistance and skipped stages', () => {
+    const initial = buildMemorizationSession('神爱', 'round-facts', [['s'], ['a']]);
+    const session = skipMemorizationStage({
+      ...initial,
+      maskRecall: {
+        partial30: { ...initial.maskRecall.partial30, assistanceCount: 1 },
+        partial65: { ...initial.maskRecall.partial65, assistanceCount: 2 },
+      },
+      recall: { ...initial.recall, assistanceCount: 1 },
+    }, 0);
+
+    expect(completionFactsForRound(session)).toEqual({ assistanceCount: 4, skippedStageCount: 1 });
+    expect(completionFactsForRound(initial)).toEqual({ assistanceCount: 0, skippedStageCount: 0 });
   });
 
   it('completes when the final recallable character is entered', () => {

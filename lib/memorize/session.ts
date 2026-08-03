@@ -39,6 +39,16 @@ export interface MemorizationSession {
 
 export type MemorizationStageNumber = 0 | 1 | 2 | 3;
 
+export type StageCompletionFacts =
+  | { outcome: 'incomplete'; assistanceCount: number }
+  | { outcome: 'independent'; assistanceCount: 0 }
+  | { outcome: 'assisted' | 'skipped'; assistanceCount: number };
+
+export interface RoundCompletionFacts {
+  assistanceCount: number;
+  skippedStageCount: number;
+}
+
 const hanPattern = /\p{Script=Han}/u;
 const notePattern = /（([^（）]*)）|\(([^()]*)\)|【([^【】]*)】|\[([^\[\]]*)\]/gu;
 
@@ -231,6 +241,36 @@ export function skipMemorizationStage(
     return { ...session, skippedStages, recall: skipRecallStage(session.recall) };
   }
   return { ...session, skippedStages };
+}
+
+export function completionFactsForStage(
+  session: MemorizationSession,
+  stage: MemorizationStageNumber,
+): StageCompletionFacts {
+  const recall = recallStateForStage(session, stage);
+  const assistanceCount = recall?.assistanceCount ?? 0;
+  if (session.skippedStages.has(stage)) return { outcome: 'skipped', assistanceCount };
+  if (!recall?.complete) return { outcome: 'incomplete', assistanceCount };
+  return assistanceCount > 0
+    ? { outcome: 'assisted', assistanceCount }
+    : { outcome: 'independent', assistanceCount: 0 };
+}
+
+export function completionFactsForRound(session: MemorizationSession): RoundCompletionFacts {
+  return {
+    assistanceCount:
+      session.maskRecall.partial30.assistanceCount
+      + session.maskRecall.partial65.assistanceCount
+      + session.recall.assistanceCount,
+    skippedStageCount: session.skippedStages.size,
+  };
+}
+
+function recallStateForStage(session: MemorizationSession, stage: MemorizationStageNumber): RecallState | null {
+  if (stage === 1) return session.maskRecall.partial30;
+  if (stage === 2) return session.maskRecall.partial65;
+  if (stage === 3) return session.recall;
+  return null;
 }
 
 function recallableUnits(units: VerseCharacter[]) {
