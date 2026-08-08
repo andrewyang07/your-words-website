@@ -360,6 +360,61 @@ describe('deep memorization controls', () => {
     expect(fetchBible).toHaveBeenCalledWith('/data/CUVT_bible.json');
   });
 
+  it('keeps an active session usable when a cross-tab language reload fails', async () => {
+    useFavoritesStore.setState({ favorites: new Set(['约翰福音-3-16']) });
+    const fetchBible = vi.fn(async (url: string) => {
+      if (url.includes('CUVT')) throw new Error('CUVT unavailable');
+      return {
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchBible);
+
+    const view = render(<><AppStoreStorageSync /><MemorizePageClient /></>);
+    fireEvent.click(await view.findByRole('button', { name: /神爱世人/ }));
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '凭留下的字，补全句子' });
+
+    act(() => window.dispatchEvent(new StorageEvent('storage', {
+      key: 'your-words-app',
+      newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
+    })));
+    await waitFor(() => expect(fetchBible).toHaveBeenCalledWith('/data/CUVT_bible.json'));
+
+    expect(view.queryByRole('heading', { name: '出錯了' })).toBeNull();
+    expect(view.getByRole('heading', { name: '凭留下的字，补全句子' })).toBeTruthy();
+    expect(view.getByText('爱')).toBeTruthy();
+    expect(view.getByRole('group', { name: '拼音首字母键盘' })).toBeTruthy();
+
+    fireEvent.click(view.getByRole('button', { name: '返回经文列表' }));
+    expect(await view.findByRole('heading', { name: '出錯了' })).toBeTruthy();
+    expect(view.getByText('經文載入失敗')).toBeTruthy();
+  });
+
+  it('clears a stale picker error after a cross-tab language change loads successfully', async () => {
+    useFavoritesStore.setState({ favorites: new Set(['约翰福音-3-16']) });
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url.includes('CUV_bible')) throw new Error('CUV unavailable');
+      return {
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '神愛世人。' } } }),
+      };
+    }));
+
+    const view = render(<><AppStoreStorageSync /><MemorizePageClient /></>);
+    await view.findByRole('heading', { name: '出错了' });
+
+    act(() => window.dispatchEvent(new StorageEvent('storage', {
+      key: 'your-words-app',
+      newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
+    })));
+
+    expect(await view.findByRole('button', { name: /神愛世人/ })).toBeTruthy();
+    expect(view.queryByRole('heading', { name: '出錯了' })).toBeNull();
+  });
+
   it('uses the latest language when retrying a completed session', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });

@@ -100,7 +100,7 @@ export default function MemorizePageClient() {
   const [stage, setStage] = useState<MemorizationStage>(0);
   const [loading, setLoading] = useState(true);
   const [loadingInitials, setLoadingInitials] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{ message: string; deferWhileSession: boolean } | null>(null);
   const [completed, setCompleted] = useState(false);
   const [sessionLanguage, setSessionLanguage] = useState<Language | null>(null);
   const [keyboardLayout, setKeyboardLayout] = useState<KeyboardLayout>('t9');
@@ -148,9 +148,10 @@ export default function MemorizePageClient() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
+      const requestLanguage = language;
+      setLoadError(null);
       try {
         const { ids, directId } = resolveMemorizeSourceIds(window.location.search, favoriteIds);
-        const requestLanguage = language;
         const loaded = await loadCuvVersesById(ids, requestLanguage);
         if (cancelled) return;
         const favoriteSet = new Set(favoriteIds);
@@ -158,8 +159,13 @@ export default function MemorizePageClient() {
         setVersesLanguage(requestLanguage);
         const directVerse = directId ? loaded.find((verse) => verse.id === directId) : null;
         if (directVerse && !sessionActive.current) startVerse(directVerse, requestLanguage);
-      } catch (reason) {
-        if (!cancelled) setError(reason instanceof Error ? reason.message : copy[language].loadingError);
+      } catch {
+        if (!cancelled) {
+          setLoadError({
+            message: copy[requestLanguage].loadingError,
+            deferWhileSession: sessionActive.current,
+          });
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -171,12 +177,13 @@ export default function MemorizePageClient() {
   const restartVerse = useCallback(async () => {
     if (!selected) return;
     setLoading(true);
+    setLoadError(null);
     try {
       const [latestVerse] = await loadCuvVersesById([selected.id], language);
       if (!latestVerse) throw new Error(copy[language].loadingError);
       startVerse(latestVerse, language);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : copy[language].loadingError);
+    } catch {
+      setLoadError({ message: copy[language].loadingError, deferWhileSession: false });
     } finally {
       setLoading(false);
     }
@@ -251,7 +258,9 @@ export default function MemorizePageClient() {
   const guide = useMemorizeGuide(guideSurface, activeLanguage);
 
   if (loading) return <LoadingSpinner language={language} />;
-  if (error) return <ErrorMessage language={language} message={error} onRetry={() => window.location.reload()} />;
+  if (loadError && (!loadError.deferWhileSession || !selected || !session)) {
+    return <ErrorMessage language={language} message={loadError.message} onRetry={() => window.location.reload()} />;
+  }
 
   if (!selected || !session) {
     if (versesLanguage !== language) return <LoadingSpinner language={language} />;
