@@ -54,6 +54,15 @@ async function returnToPreviousStage(
   await view.findByRole('heading', { name: previousInstruction });
 }
 
+async function skipStageAndContinue(
+  view: ReturnType<typeof render>,
+  skipLabel: '跳过' | '跳过本轮' = '跳过',
+) {
+  fireEvent.click(view.getByRole('button', { name: skipLabel }));
+  await view.findByText('本阶段已跳过，不计作完成。');
+  fireEvent.click(view.getByRole('button', { name: '继续' }));
+}
+
 describe('deep memorization controls', () => {
   it('introduces one-verse, four-stage practice once and remembers a skipped guide', async () => {
     useFavoritesStore.setState({ favorites: new Set() });
@@ -173,8 +182,64 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '按每个字的拼音首字母' });
     fireEvent.click(view.getByRole('button', { name: '跳过本轮' }));
+    await view.findByText('本阶段已跳过，不计作完成。');
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByText('本轮使用了 1 次提示，跳过了 1 个阶段。');
     expect(view.getByRole('button', { name: '重新背诵' }).hasAttribute('disabled')).toBe(false);
+  });
+
+  it('acknowledges every skipped stage before continuing, including the final stage', async () => {
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+
+    for (const nextHeading of ['凭留下的字，补全句子', '只留少量线索，再想一遍', '按每个字的拼音首字母']) {
+      fireEvent.click(view.getByRole('button', { name: '跳过' }));
+      expect(await view.findByText('本阶段已跳过，不计作完成。')).toBeTruthy();
+      expect(view.queryByRole('heading', { name: nextHeading })).toBeNull();
+      fireEvent.click(view.getByRole('button', { name: '继续' }));
+      await view.findByRole('heading', { name: nextHeading });
+    }
+
+    fireEvent.click(view.getByRole('button', { name: '跳过本轮' }));
+    expect(await view.findByText('本阶段已跳过，不计作完成。')).toBeTruthy();
+    expect(view.queryByRole('heading', { name: '本轮结束' })).toBeNull();
+    expect(view.queryByLabelText('藏于心朱印')).toBeNull();
+    const continueButton = view.getByRole('button', { name: '继续' });
+    expect(continueButton.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(continueButton);
+    await view.findByRole('heading', { name: '本轮结束' });
+    expect(view.getByText('本轮未使用提示，跳过了 4 个阶段。')).toBeTruthy();
+  });
+
+  it('acknowledges independent final-stage completion before the round summary', async () => {
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 约翰福音: { 3: { 16: '神。' } } }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    await skipStageAndContinue(view);
+    await view.findByRole('heading', { name: '凭留下的字，补全句子' });
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
+    await skipStageAndContinue(view);
+    await view.findByRole('heading', { name: '按每个字的拼音首字母' });
+
+    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
+    expect(await view.findByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
+    expect(view.queryByRole('heading', { name: '本轮结束' })).toBeNull();
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '本轮结束' });
   });
 
   it('snapshots traditional Scripture and copy when a session starts', async () => {
@@ -236,13 +301,13 @@ describe('deep memorization controls', () => {
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
-    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await skipStageAndContinue(view);
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
-    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await skipStageAndContinue(view);
     await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
-    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await skipStageAndContinue(view);
     await view.findByRole('heading', { name: '按每个字的拼音首字母' });
-    fireEvent.click(view.getByRole('button', { name: '跳过本轮' }));
+    await skipStageAndContinue(view, '跳过本轮');
     await view.findByRole('heading', { name: '本轮结束' });
 
     act(() => useAppStore.setState({ language: 'traditional' }));
@@ -417,11 +482,11 @@ describe('deep memorization controls', () => {
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
-    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await skipStageAndContinue(view);
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
-    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
-    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await skipStageAndContinue(view);
     await view.findByRole('heading', { name: '按每个字的拼音首字母' });
 
     fireEvent.click(view.getByRole('button', { name: '注音' }));
@@ -430,6 +495,8 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: 'ㄅ 1' }));
     expect(view.getByRole('button', { name: 'ㄕ G' }).getAttribute('data-hinted')).toBe('true');
     fireEvent.click(view.getByRole('button', { name: 'ㄕ G' }));
+    await view.findByText('本阶段借助了 1 次提示，继续慢慢熟悉。');
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '本轮结束' });
   });
 
@@ -520,6 +587,8 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
     fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await view.findByText('本阶段已跳过，不计作完成。');
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
     fireEvent.click(view.getByRole('button', { name: '返回上一步' }));
 
@@ -633,13 +702,13 @@ describe('deep memorization controls', () => {
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
-    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await skipStageAndContinue(view);
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
-    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await skipStageAndContinue(view);
     await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
-    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await skipStageAndContinue(view);
     await view.findByRole('heading', { name: '按每个字的拼音首字母' });
-    fireEvent.click(view.getByRole('button', { name: '跳过本轮' }));
+    await skipStageAndContinue(view, '跳过本轮');
     await view.findByRole('heading', { name: '本轮结束' });
 
     fireEvent.click(view.getByRole('button', { name: '选择另一节' }));

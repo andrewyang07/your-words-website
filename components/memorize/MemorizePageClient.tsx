@@ -199,7 +199,6 @@ export default function MemorizePageClient() {
         return { ...current, maskRecall: { ...current.maskRecall, [key]: recall } };
       }
       const recall = pressInitial(current.recall, current.units, input);
-      if (recall.complete) setCompleted(true);
       return { ...current, recall };
     });
   }, [stage]);
@@ -248,7 +247,6 @@ export default function MemorizePageClient() {
 
   const skip = () => {
     setSession((current) => current ? skipMemorizationStage(current, stage) : current);
-    void enterStage(stage + 1);
   };
 
   const reveal = () => {
@@ -261,7 +259,6 @@ export default function MemorizePageClient() {
         return { ...current, maskRecall: { ...current.maskRecall, [key]: recall } };
       }
       const recall = revealCurrentUnit(current.recall, current.units);
-      if (recall.complete) setCompleted(true);
       return { ...current, recall };
     });
   };
@@ -298,7 +295,9 @@ export default function MemorizePageClient() {
         <div className="flex justify-center"><StageIndicator stage={stage} language={activeLanguage} /></div>
         <div className="flex items-center justify-end gap-1">
           <MemorizeHelpButton label={guide.helpLabel} onClick={guide.openGuide} />
-          <button onClick={skip} className="min-h-11 rounded-xl px-2 text-sm text-stone-500 hover:bg-white/55 hover:text-stone-950 dark:hover:bg-white/[0.06] dark:hover:text-white">{activeCopy.skip}</button>
+          {stageCompletionFacts.outcome === 'incomplete' && (
+            <button onClick={skip} className="min-h-11 rounded-xl px-2 text-sm text-stone-500 hover:bg-white/55 hover:text-stone-950 dark:hover:bg-white/[0.06] dark:hover:text-white">{activeCopy.skip}</button>
+          )}
         </div>
       </header>
 
@@ -311,23 +310,23 @@ export default function MemorizePageClient() {
         {session.notes.length > 0 && (
           <aside className="mx-auto mt-4 max-w-2xl text-xs leading-6 text-stone-500" aria-label={activeCopy.note}>{activeCopy.notePrefix}{session.notes.join('；')}</aside>
         )}
+        {stageCompletionFacts.outcome !== 'incomplete' && (
+          <div className="mt-5">
+            <CompletionReward
+              kind="stage"
+              language={activeLanguage}
+              assistanceCount={stageCompletionFacts.assistanceCount}
+              skippedStageCount={stageCompletionFacts.outcome === 'skipped' ? 1 : 0}
+            />
+          </div>
+        )}
 
         {stage > 0 ? (
           <div className="mt-5">
-            {stageCompletionFacts.outcome !== 'incomplete' && (
-              <div className="mb-4">
-                <CompletionReward
-                  kind="stage"
-                  language={activeLanguage}
-                  assistanceCount={stageCompletionFacts.assistanceCount}
-                  skippedStageCount={stageCompletionFacts.outcome === 'skipped' ? 1 : 0}
-                />
-              </div>
-            )}
             <RecallFeedback language={activeLanguage} recall={activeRecall} hintedInitials={hintedInitials} />
             <div className="mb-3 flex items-center justify-between gap-3">
               <button onClick={reveal} className="memorize-secondary !w-auto px-4"><Eye className="h-4 w-4" />{activeCopy.reveal}</button>
-              {stage === finalStage && (
+              {stage === finalStage && stageCompletionFacts.outcome === 'incomplete' && (
                 <button onClick={skip} className="min-h-11 text-sm text-stone-500">{activeCopy.skipRound}</button>
               )}
             </div>
@@ -342,7 +341,7 @@ export default function MemorizePageClient() {
               onZhuyinSelected={guide.showZhuyinCoach}
             />
             <button type="button" onClick={goToPreviousStage} className="memorize-secondary mx-auto mt-3 max-w-xs"><ArrowLeft className="h-4 w-4" />{activeCopy.previous}</button>
-            {stage < finalStage && (
+            {(stage < finalStage || stageCompletionFacts.outcome !== 'incomplete') && (
               <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-3 max-w-xs">{activeCopy.continue}<ChevronRight className="h-4 w-4" /></button>
             )}
           </div>
