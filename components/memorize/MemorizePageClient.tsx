@@ -45,7 +45,7 @@ const copy = {
     ],
     loadingError: '经文加载失败', backToPicker: '返回经文列表', skip: '跳过', note: '经文注释', notePrefix: '注：',
     reveal: '显示这个字', skipRound: '跳过本轮', previous: '返回上一步', continue: '继续',
-    keyboard: '拼音首字母键盘', keyboardLayout: '键盘布局', t9: '九宫格', zhuyin: '注音', zhuyinKeyboard: '注音键盘', showPhysicalKeys: '显示实体键位', hidePhysicalKeys: '隐藏实体键位', retryInput: '再试一次', hintPrefix: '提示：请按', or: '或', keySuffix: '键',
+    keyboard: '拼音首字母键盘', keyboardLayout: '键盘布局', t9: '九宫格', t9Keyboard: '九宫格键盘', qwertyKeyboard: 'QWERTY键盘', zhuyin: '注音', zhuyinKeyboard: '注音键盘', showPhysicalKeys: '显示实体键位', hidePhysicalKeys: '隐藏实体键位', retryInput: '再试一次', hintPrefix: '提示：请按', or: '或', keySuffix: '键',
     zhuyinInstruction: '按每个字读音的第一个注音符号',
     stageProgress: (stage: number) => `第 ${stage} 阶段，共 4 阶段`,
     finished: '本轮结束', retry: '重新背诵', chooseAnother: '选择另一节', finishAndReturn: '完成并返回',
@@ -61,7 +61,7 @@ const copy = {
     ],
     loadingError: '經文載入失敗', backToPicker: '返回經文列表', skip: '跳過', note: '經文註釋', notePrefix: '註：',
     reveal: '顯示這個字', skipRound: '跳過本輪', previous: '返回上一步', continue: '繼續',
-    keyboard: '拼音首字母鍵盤', keyboardLayout: '鍵盤佈局', t9: '九宮格', zhuyin: '注音', zhuyinKeyboard: '注音鍵盤', showPhysicalKeys: '顯示實體鍵位', hidePhysicalKeys: '隱藏實體鍵位', retryInput: '再試一次', hintPrefix: '提示：請按', or: '或', keySuffix: '鍵',
+    keyboard: '拼音首字母鍵盤', keyboardLayout: '鍵盤佈局', t9: '九宮格', t9Keyboard: '九宮格鍵盤', qwertyKeyboard: 'QWERTY 鍵盤', zhuyin: '注音', zhuyinKeyboard: '注音鍵盤', showPhysicalKeys: '顯示實體鍵位', hidePhysicalKeys: '隱藏實體鍵位', retryInput: '再試一次', hintPrefix: '提示：請按', or: '或', keySuffix: '鍵',
     zhuyinInstruction: '按每個字讀音的第一個注音符號',
     stageProgress: (stage: number) => `第 ${stage} 階段，共 4 階段`,
     finished: '本輪結束', retry: '重新背誦', chooseAnother: '選擇另一節', finishAndReturn: '完成並返回',
@@ -411,7 +411,7 @@ export function AlphabetKeyboard({
   }, [disabled, layout, onPress]);
 
   return (
-    <div className="mx-auto w-full max-w-2xl" aria-label={layout === 'zhuyin' ? keyboardCopy.zhuyinKeyboard : keyboardCopy.keyboard}>
+    <div className="mx-auto w-full max-w-2xl" role="group" aria-label={layout === 'zhuyin' ? keyboardCopy.zhuyinKeyboard : keyboardCopy.keyboard}>
       <div className="mb-3 flex justify-center" role="group" aria-label={keyboardCopy.keyboardLayout}>
         <div className="inline-flex rounded-full border border-stone-900/10 bg-white/45 p-1 dark:border-white/10 dark:bg-white/[0.04]">
           {([['t9', keyboardCopy.t9], ['qwerty', 'QWERTY'], ['zhuyin', keyboardCopy.zhuyin]] as const).map(([value, label]) => (
@@ -427,7 +427,7 @@ export function AlphabetKeyboard({
       </div>
 
       {layout === 't9' ? (
-        <div className="mx-auto grid max-w-sm grid-cols-3 gap-2" aria-label="九宫格键盘">
+        <div className="mx-auto grid max-w-sm grid-cols-3 gap-2" role="group" aria-label={keyboardCopy.t9Keyboard}>
           {t9Keys.map(({ number, letters }) => (
             <button
               key={number}
@@ -444,7 +444,7 @@ export function AlphabetKeyboard({
           ))}
         </div>
       ) : layout === 'qwerty' ? (
-        <div className="space-y-1.5" aria-label="QWERTY键盘">
+        <div className="space-y-1.5" role="group" aria-label={keyboardCopy.qwertyKeyboard}>
           {qwertyRows.map((row) => (
             <div key={row} className="flex justify-center gap-1 sm:gap-1.5">
               {Array.from(row).map((letter) => (
@@ -595,7 +595,7 @@ function VersePicker({
 
 function StageIndicator({ stage, language }: { stage: MemorizationStage; language: Language }) {
   const stageCopy = copy[language];
-  return <div className="flex items-center gap-1.5" aria-label={stageCopy.stageProgress(stage + 1)}>{stageCopy.stages.map(({ name }, index) => <span key={name} className={`h-1.5 rounded-full transition-all ${index === stage ? 'w-8 bg-amber-800 dark:bg-amber-200' : index < stage ? 'w-4 bg-amber-800/35 dark:bg-amber-200/35' : 'w-4 bg-stone-900/10 dark:bg-white/10'}`} title={name} />)}</div>;
+  return <div className="flex items-center gap-1.5" role="progressbar" aria-label={stageCopy.stageProgress(stage + 1)} aria-valuemin={1} aria-valuemax={stageNeedsInitials.length} aria-valuenow={stage + 1}>{stageCopy.stages.map(({ name }, index) => <span key={name} className={`h-1.5 rounded-full transition-all ${index === stage ? 'w-8 bg-amber-800 dark:bg-amber-200' : index < stage ? 'w-4 bg-amber-800/35 dark:bg-amber-200/35' : 'w-4 bg-stone-900/10 dark:bg-white/10'}`} title={name} />)}</div>;
 }
 
 function stageInstruction(stage: MemorizationStage, language: Language, keyboardLayout: KeyboardLayout) {

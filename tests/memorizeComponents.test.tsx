@@ -104,6 +104,7 @@ describe('deep memorization controls', () => {
     expect(view.getByRole('button', { name: '幫助' })).toBeTruthy();
     fireEvent.click(view.getByRole('button', { name: '繼續' }));
     expect(await view.findByRole('dialog', { name: '逐字回想時' })).toBeTruthy();
+    expect(view.getByRole('progressbar', { name: '第 2 階段，共 4 階段' })).toBeTruthy();
     expect(view.getByRole('button', { name: '跳過引導' })).toBeTruthy();
     const hiddenWhileReadingHelp = view.container.querySelectorAll('.memorize-hidden').length;
     fireEvent.keyDown(window, { key: 's' });
@@ -291,6 +292,16 @@ describe('deep memorization controls', () => {
     expect(key.className).toContain('min-h-14');
     fireEvent.click(key);
     expect(onPress).toHaveBeenCalledWith({ kind: 'group', initials: ['a', 'b', 'c'] });
+  });
+
+  it('exposes localized keyboard regions through valid group semantics', () => {
+    const view = render(<AlphabetKeyboard language="traditional" onPress={vi.fn()} />);
+
+    expect(view.getByRole('group', { name: '拼音首字母鍵盤' })).toBeTruthy();
+    expect(view.getByRole('group', { name: '九宮格鍵盤' })).toBeTruthy();
+
+    fireEvent.click(view.getByRole('button', { name: 'QWERTY' }));
+    expect(view.getByRole('group', { name: 'QWERTY 鍵盤' })).toBeTruthy();
   });
 
   it('switches to a conventional QWERTY layout', () => {

@@ -205,12 +205,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </head>
             <body className={`${notoSans.className} antialiased`} suppressHydrationWarning>
                 <nav className="sr-only" aria-label="主要頁面">
-                    <a href="/memorize">深度背誦</a>
-                    <a href="/search">聖經搜索</a>
-                    <a href="/note">聖經筆記本</a>
-                    <a href="/rankings">聖經經文排行榜</a>
-                    <a href="/about">關於你的話語</a>
-                    <a href="/help">使用幫助</a>
+                    <a href="/memorize" tabIndex={-1}>深度背誦</a>
+                    <a href="/search" tabIndex={-1}>聖經搜索</a>
+                    <a href="/note" tabIndex={-1}>聖經筆記本</a>
+                    <a href="/rankings" tabIndex={-1}>聖經經文排行榜</a>
+                    <a href="/about" tabIndex={-1}>關於你的話語</a>
+                    <a href="/help" tabIndex={-1}>使用幫助</a>
                 </nav>
                 <ErrorBoundary>{children}</ErrorBoundary>
                 <Analytics />
