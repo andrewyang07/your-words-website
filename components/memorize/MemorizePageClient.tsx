@@ -105,6 +105,13 @@ export default function MemorizePageClient() {
   const [sessionLanguage, setSessionLanguage] = useState<Language | null>(null);
   const [keyboardLayout, setKeyboardLayout] = useState<KeyboardLayout>('t9');
   const sessionActive = useRef(false);
+  const sessionRef = useRef<MemorizationSession | null>(null);
+  const taiwanReadingsSeed = useRef<string | null>(null);
+  const loadingTaiwanReadingsSeed = useRef<string | null>(null);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   useEffect(() => {
     const globalNavigation = document.querySelector<HTMLElement>('nav[aria-label="主要頁面"]');
@@ -210,6 +217,33 @@ export default function MemorizePageClient() {
       return { ...current, recall };
     });
   }, [stage]);
+
+  const handleKeyboardLayoutChange = useCallback((layout: KeyboardLayout) => {
+    setKeyboardLayout(layout);
+    const target = sessionRef.current;
+    if (layout !== 'zhuyin' || !target) return;
+    if (taiwanReadingsSeed.current === target.seed || loadingTaiwanReadingsSeed.current === target.seed) return;
+
+    loadingTaiwanReadingsSeed.current = target.seed;
+    setLoadingInitials(true);
+    void import('@/lib/memorize/taiwanZhuyin')
+      .then(({ buildTaiwanContextualPhonetics }) => {
+        const acceptedPhonetics = buildTaiwanContextualPhonetics(target.body);
+        setSession((current) => current?.seed === target.seed
+          ? withAcceptedPhonetics(current, acceptedPhonetics)
+          : current);
+        taiwanReadingsSeed.current = target.seed;
+      })
+      .catch(() => {
+        // Retain the pinyin-derived Zhuyin readings if the optional model cannot load.
+      })
+      .finally(() => {
+        if (loadingTaiwanReadingsSeed.current === target.seed) {
+          loadingTaiwanReadingsSeed.current = null;
+          setLoadingInitials(false);
+        }
+      });
+  }, []);
 
   const activeLanguage = sessionLanguage ?? language;
   const activeCopy = copy[activeLanguage];
@@ -345,7 +379,7 @@ export default function MemorizePageClient() {
               wrongInitials={activeRecall.lastAttempt === 'wrong' ? activeRecall.lastAttemptedInputs : []}
               wrongAttempt={activeRecall.wrongAttempts}
               onPress={submitKeyboardInput}
-              onLayoutChange={setKeyboardLayout}
+              onLayoutChange={handleKeyboardLayoutChange}
               onZhuyinSelected={guide.showZhuyinCoach}
             />
             <button type="button" onClick={goToPreviousStage} className="memorize-secondary mx-auto mt-3 max-w-xs"><ArrowLeft className="h-4 w-4" />{activeCopy.previous}</button>

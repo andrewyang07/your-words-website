@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
 import MemorizePageClient, { AlphabetKeyboard, MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
@@ -535,7 +535,7 @@ describe('deep memorization controls', () => {
     expect(view.getByRole('dialog', { name: '注音只按第一个符号' })).toBeTruthy();
   });
 
-  it('completes page recall with Zhuyin and highlights its correct key after two errors', async () => {
+  it('loads Taiwan-primary readings when Zhuyin is selected', async () => {
     window.localStorage.setItem('your-words:memorize-guide:v3', JSON.stringify({
       version: 3,
       pickerSeen: true,
@@ -547,7 +547,7 @@ describe('deep memorization controls', () => {
     useFavoritesStore.setState({ favorites: new Set() });
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
-      json: async () => ({ 约翰福音: { 3: { 16: '神。' } } }),
+      json: async () => ({ 约翰福音: { 3: { 16: '蜗。' } } }),
     })));
 
     const view = render(<MemorizePageClient />);
@@ -561,10 +561,11 @@ describe('deep memorization controls', () => {
 
     fireEvent.click(view.getByRole('button', { name: '注音' }));
     expect(view.getByRole('heading', { name: '按每个字读音的第一个注音符号' })).toBeTruthy();
+    await waitFor(() => expect((view.getByRole('button', { name: 'ㄅ 1' }) as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(view.getByRole('button', { name: 'ㄅ 1' }));
     fireEvent.click(view.getByRole('button', { name: /^ㄅ 1/u }));
-    const hintedKey = view.getByRole('button', { name: 'ㄕ G，提示按键' });
-    expect(view.getByRole('status').textContent).toContain('提示：请按 ㄕ 键');
+    const hintedKey = view.getByRole('button', { name: 'ㄍ E，提示按键' });
+    expect(view.getByRole('status').textContent).toContain('提示：请按 ㄍ 或 ㄨ 键');
     fireEvent.click(hintedKey);
     await view.findByText('本阶段借助了 1 次提示，继续慢慢熟悉。');
     fireEvent.click(view.getByRole('button', { name: '继续' }));

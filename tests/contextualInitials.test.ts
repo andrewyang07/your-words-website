@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildContextualInitials, buildContextualPhonetics } from '../lib/memorize/contextualInitials';
+import { buildTaiwanContextualPhonetics } from '../lib/memorize/taiwanZhuyin';
 
 describe('contextual pinyin initials', () => {
   it('computes primary readings from the complete phrase', () => {
@@ -25,18 +26,22 @@ describe('contextual pinyin initials', () => {
 });
 
 describe('contextual Zhuyin first symbols', () => {
-  it('maps contextual phrase readings to the first Taiwan Zhuyin symbol', () => {
-    expect(buildContextualPhonetics('银行长老重复爱').map((reading) => reading.zhuyin[0])).toEqual([
-      'ㄧ', 'ㄏ', 'ㄓ', 'ㄌ', 'ㄔ', 'ㄈ', 'ㄞ',
-    ]);
+  it.each([
+    ['亞伯拉罕急忙進帳棚見撒拉', 'ㄧㄅㄌㄏㄐㄇㄐㄓㄆㄐㄙㄌ'],
+    ['亚伯拉罕急忙进帐棚见撒拉', 'ㄧㄅㄌㄏㄐㄇㄐㄓㄆㄐㄙㄌ'],
+    ['聖靈降臨在你們身上', 'ㄕㄌㄐㄌㄗㄋㄇㄕㄕ'],
+    ['圣灵降临在你们身上', 'ㄕㄌㄐㄌㄗㄋㄇㄕㄕ'],
+  ])('uses Taiwan-primary readings across sampled CUV/CUVT text: %s', async (phrase, expected) => {
+    const readings = await buildTaiwanContextualPhonetics(phrase);
+    expect(readings.map((reading) => reading.zhuyin[0]).join('')).toBe(expected);
   });
 
-  it('uses known Taiwan phrase readings as primary and Mainland readings as supplemental', () => {
-    const readings = buildContextualPhonetics('垃圾暴露');
-    expect(readings.map((reading) => reading.zhuyin[0])).toEqual(['ㄌ', 'ㄙ', 'ㄆ', 'ㄌ']);
-    expect(readings[1].zhuyin.slice(1)).toContain('ㄐ');
-    expect(readings[2].zhuyin.slice(1)).toContain('ㄅ');
-    expect(readings.map((reading) => reading.pinyin[0])).toEqual(['l', 's', 'p', 'l']);
+  it.each(['願他們像蝸牛消化過去', '愿他们像蜗牛消化过去'])('makes the known Taiwan 蝸牛 reading primary and keeps pinyin-pro supplemental: %s', async (phrase) => {
+    const readings = await buildTaiwanContextualPhonetics(phrase);
+    const snail = readings[4];
+    expect(snail.zhuyin[0]).toBe('ㄍ');
+    expect(snail.zhuyin.slice(1)).toContain('ㄨ');
+    expect(snail.pinyin[0]).toBe('w');
   });
 
   it('keeps reasonable polyphonic first symbols as supplemental readings', () => {
