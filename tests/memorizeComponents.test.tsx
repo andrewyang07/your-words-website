@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
 import MemorizePageClient, { AlphabetKeyboard, MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
@@ -465,7 +465,7 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '注音' }));
     expect(view.getAllByRole('button', { name: /^[ㄅ-ㄩ]/u })).toHaveLength(37);
     expect(view.getAllByRole('group', { name: /^注音键盘 [1-4]$/u }).map((row) =>
-      row.querySelectorAll('button').length,
+      within(row).getAllByRole('button').length,
     )).toEqual([7, 10, 10, 10]);
     const key = view.getByRole('button', { name: 'ㄕ G' });
     fireEvent.click(key);
