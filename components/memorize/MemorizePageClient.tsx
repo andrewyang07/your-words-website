@@ -45,7 +45,7 @@ const copy = {
     ],
     loadingError: '经文加载失败', backToPicker: '返回经文列表', skip: '跳过', note: '经文注释', notePrefix: '注：',
     reveal: '显示这个字', skipRound: '跳过本轮', previous: '返回上一步', continue: '继续',
-    keyboard: '拼音首字母键盘', keyboardLayout: '键盘布局', t9: '九宫格', t9Keyboard: '九宫格键盘', qwertyKeyboard: 'QWERTY键盘', zhuyin: '注音', zhuyinKeyboard: '注音键盘', showPhysicalKeys: '显示实体键位', hidePhysicalKeys: '隐藏实体键位', retryInput: '再试一次', hintPrefix: '提示：请按', or: '或', keySuffix: '键',
+    keyboard: '拼音首字母键盘', keyboardLayout: '键盘布局', t9: '九宫格', t9Keyboard: '九宫格键盘', qwertyKeyboard: 'QWERTY键盘', zhuyin: '注音', zhuyinKeyboard: '注音键盘', showPhysicalKeys: '显示实体键位', hidePhysicalKeys: '隐藏实体键位', hintedKey: '提示按键', retryInput: '再试一次', hintPrefix: '提示：请按', or: '或', keySuffix: '键',
     zhuyinInstruction: '按每个字读音的第一个注音符号',
     stageProgress: (stage: number) => `第 ${stage} 阶段，共 4 阶段`,
     finished: '本轮结束', retry: '重新背诵', chooseAnother: '选择另一节', finishAndReturn: '完成并返回',
@@ -61,7 +61,7 @@ const copy = {
     ],
     loadingError: '經文載入失敗', backToPicker: '返回經文列表', skip: '跳過', note: '經文註釋', notePrefix: '註：',
     reveal: '顯示這個字', skipRound: '跳過本輪', previous: '返回上一步', continue: '繼續',
-    keyboard: '拼音首字母鍵盤', keyboardLayout: '鍵盤佈局', t9: '九宮格', t9Keyboard: '九宮格鍵盤', qwertyKeyboard: 'QWERTY 鍵盤', zhuyin: '注音', zhuyinKeyboard: '注音鍵盤', showPhysicalKeys: '顯示實體鍵位', hidePhysicalKeys: '隱藏實體鍵位', retryInput: '再試一次', hintPrefix: '提示：請按', or: '或', keySuffix: '鍵',
+    keyboard: '拼音首字母鍵盤', keyboardLayout: '鍵盤佈局', t9: '九宮格', t9Keyboard: '九宮格鍵盤', qwertyKeyboard: 'QWERTY 鍵盤', zhuyin: '注音', zhuyinKeyboard: '注音鍵盤', showPhysicalKeys: '顯示實體鍵位', hidePhysicalKeys: '隱藏實體鍵位', hintedKey: '提示按鍵', retryInput: '再試一次', hintPrefix: '提示：請按', or: '或', keySuffix: '鍵',
     zhuyinInstruction: '按每個字讀音的第一個注音符號',
     stageProgress: (stage: number) => `第 ${stage} 階段，共 4 階段`,
     finished: '本輪結束', retry: '重新背誦', chooseAnother: '選擇另一節', finishAndReturn: '完成並返回',
@@ -105,6 +105,14 @@ export default function MemorizePageClient() {
   const [sessionLanguage, setSessionLanguage] = useState<Language | null>(null);
   const [keyboardLayout, setKeyboardLayout] = useState<KeyboardLayout>('t9');
   const sessionActive = useRef(false);
+
+  useEffect(() => {
+    const globalNavigation = document.querySelector<HTMLElement>('nav[aria-label="主要頁面"]');
+    if (!globalNavigation) return;
+    const wasInert = Boolean(globalNavigation.inert);
+    globalNavigation.inert = true;
+    return () => { globalNavigation.inert = wasInert; };
+  }, []);
 
   const startVerse = useCallback((verse: Verse, languageSnapshot: Language = language) => {
     const seed = `${verse.id}:${crypto.randomUUID?.() ?? Date.now()}`;
@@ -433,21 +441,25 @@ export function AlphabetKeyboard({
 
       {layout === 't9' ? (
         <div className="mx-auto grid max-w-sm grid-cols-3 gap-2" role="group" aria-label={keyboardCopy.t9Keyboard}>
-          {t9Keys.map(({ number, letters }) => (
-            <button
-              key={`${number}-${isWrong(letters, wrongInitials) ? wrongAttempt : 0}`}
-              type="button"
-              disabled={disabled || !letters}
-              onClick={() => onPress(groupedInitialsInput(letters))}
-              aria-label={letters ? `${number} ${letters}` : number}
-              data-hinted={isHinted(letters, hintedInitials) || undefined}
-              data-wrong={isWrong(letters, wrongInitials) || undefined}
-              className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border px-2 shadow-sm active:scale-[0.98] disabled:opacity-30 ${isWrong(letters, wrongInitials) ? 'memorize-wrong-key border-red-900 bg-red-950/10 text-red-950 ring-2 ring-red-900/20 dark:border-red-400 dark:bg-red-950/35 dark:text-red-100' : isHinted(letters, hintedInitials) ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
-            >
-              <span className="text-base font-semibold">{number}</span>
-              {letters && <span className="text-[11px] tracking-[0.16em] text-stone-500 dark:text-stone-400">{letters}</span>}
-            </button>
-          ))}
+          {t9Keys.map(({ number, letters }) => {
+            const hinted = isHinted(letters, hintedInitials);
+            const wrong = isWrong(letters, wrongInitials);
+            const label = letters ? `${number} ${letters}` : number;
+            const stateLabel = [wrong ? keyboardCopy.retryInput : '', hinted ? keyboardCopy.hintedKey : ''].filter(Boolean).join('，');
+            return (
+              <button
+                key={`${number}-${wrong ? wrongAttempt : 0}`}
+                type="button"
+                disabled={disabled || !letters}
+                onClick={() => onPress(groupedInitialsInput(letters))}
+                aria-label={stateLabel ? `${label}，${stateLabel}` : label}
+                className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border px-2 shadow-sm active:scale-[0.98] disabled:opacity-30 ${wrong ? 'memorize-wrong-key border-red-900 bg-red-950/10 text-red-950 ring-2 ring-red-900/20 dark:border-red-400 dark:bg-red-950/35 dark:text-red-100' : hinted ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
+              >
+                <span className="text-base font-semibold">{number}</span>
+                {letters && <span className={`text-[11px] tracking-[0.16em] ${wrong ? 'text-red-950 dark:text-red-100' : hinted ? 'text-amber-950 dark:text-amber-100' : 'text-stone-500 dark:text-stone-400'}`}>{letters}</span>}
+              </button>
+            );
+          })}
         </div>
       ) : layout === 'qwerty' ? (
         <div className="space-y-1.5" role="group" aria-label={keyboardCopy.qwertyKeyboard}>
@@ -459,8 +471,7 @@ export function AlphabetKeyboard({
                   type="button"
                   disabled={disabled}
                   onClick={() => onPress(singleInitialInput(letter))}
-                  data-hinted={hintedInitials.includes(letter.toLocaleLowerCase()) || undefined}
-                  data-wrong={wrongInitials.includes(letter.toLocaleLowerCase()) || undefined}
+                  aria-label={`${letter}${wrongInitials.includes(letter.toLocaleLowerCase()) ? `，${keyboardCopy.retryInput}` : ''}${hintedInitials.includes(letter.toLocaleLowerCase()) ? `，${keyboardCopy.hintedKey}` : ''}`}
                   className={`min-h-11 min-w-0 flex-1 rounded-lg border text-sm font-semibold shadow-sm active:scale-95 disabled:opacity-40 sm:max-w-14 ${wrongInitials.includes(letter.toLocaleLowerCase()) ? 'memorize-wrong-key border-red-900 bg-red-950/10 text-red-950 ring-2 ring-red-900/20 dark:border-red-400 dark:bg-red-950/35 dark:text-red-100' : hintedInitials.includes(letter.toLocaleLowerCase()) ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
                 >{letter}</button>
               ))}
@@ -478,14 +489,13 @@ export function AlphabetKeyboard({
               {showPhysicalKeys ? keyboardCopy.hidePhysicalKeys : keyboardCopy.showPhysicalKeys}
             </button>
           </div>
-          <div className="overflow-x-auto pb-1" data-zhuyin-scroll-region>
+          <div className="overflow-x-auto pb-1">
             <div className="mx-auto w-[476px] space-y-1">
               {DA_CHEN_ZHUYIN_ROWS.map((row, rowIndex) => (
                 <div
                   key={rowIndex}
                   role="group"
                   aria-label={`${keyboardCopy.zhuyinKeyboard} ${rowIndex + 1}`}
-                  data-zhuyin-row={rowIndex + 1}
                   className="flex justify-center gap-1"
                 >
                   {row.map(({ physicalKey, symbol }) => {
@@ -497,10 +507,7 @@ export function AlphabetKeyboard({
                         key={`${symbol}-${wrong ? wrongAttempt : 0}`}
                         type="button"
                         disabled={disabled}
-                        data-zhuyin-symbol={symbol}
-                        data-hinted={hinted || undefined}
-                        data-wrong={wrong || undefined}
-                        aria-label={showPhysicalKeys ? `${symbol} ${keyLabel}` : symbol}
+                        aria-label={`${showPhysicalKeys ? `${symbol} ${keyLabel}` : symbol}${wrong ? `，${keyboardCopy.retryInput}` : ''}${hinted ? `，${keyboardCopy.hintedKey}` : ''}`}
                         onClick={() => onPress(singleZhuyinInput(symbol))}
                         className={`relative flex h-11 min-h-11 w-11 min-w-11 shrink-0 items-center justify-center rounded-xl border text-lg font-semibold shadow-sm transition active:scale-95 disabled:opacity-40 ${wrong ? 'memorize-wrong-key border-red-900 bg-red-950/10 text-red-950 ring-2 ring-red-900/20 dark:border-red-400 dark:bg-red-950/35 dark:text-red-100' : hinted ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
                       >

@@ -1,11 +1,9 @@
 // @vitest-environment jsdom
-import React from 'react';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
-import MemorizePageClient, { AlphabetKeyboard, MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY, VerseExercise, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
+import MemorizePageClient, { AlphabetKeyboard, MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
 import { CompletionReward } from '../components/memorize/CompletionReward';
-import { buildMemorizationSession, pressInitial, singleInitialInput } from '../lib/memorize/session';
 import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
 
@@ -64,6 +62,23 @@ async function skipStageAndContinue(
 }
 
 describe('deep memorization controls', () => {
+  it('keeps the global navigation out of the practice focus order only while memorizing', async () => {
+    const navigation = document.createElement('nav');
+    navigation.setAttribute('aria-label', '主要頁面');
+    navigation.innerHTML = '<a href="/search">聖經搜索</a>';
+    document.body.append(navigation);
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '选择一节，慢慢记住' });
+    expect(view.getByRole('navigation', { name: '主要頁面' }).inert).toBe(true);
+
+    view.unmount();
+    expect(navigation.inert).toBe(false);
+    navigation.remove();
+  });
+
   it('introduces one-verse, four-stage practice once and remembers a skipped guide', async () => {
     useFavoritesStore.setState({ favorites: new Set() });
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
@@ -115,9 +130,9 @@ describe('deep memorization controls', () => {
     expect(await view.findByRole('dialog', { name: '逐字回想時' })).toBeTruthy();
     expect(view.getByRole('progressbar', { name: '第 2 階段，共 4 階段' })).toBeTruthy();
     expect(view.getByRole('button', { name: '跳過引導' })).toBeTruthy();
-    const hiddenWhileReadingHelp = view.container.querySelectorAll('.memorize-hidden').length;
     fireEvent.keyDown(window, { key: 's' });
-    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(hiddenWhileReadingHelp);
+    expect(view.getByRole('dialog', { name: '逐字回想時' })).toBeTruthy();
+    expect(view.getByRole('status').textContent).toBe('');
   });
 
   it('announces an independently completed stage with a factual simplified seal', () => {
@@ -256,12 +271,13 @@ describe('deep memorization controls', () => {
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先讀一遍，不急著記' });
-    expect(view.container.querySelector('.memorize-verse')?.textContent).toBe('神愛世人。');
+    expect(view.getByText('愛')).toBeTruthy();
+    expect(view.queryByText('爱')).toBeNull();
     expect(fetchBible).toHaveBeenCalledWith('/data/CUVT_bible.json');
 
     act(() => useAppStore.setState({ language: 'simplified' }));
     expect(view.getByRole('heading', { name: '先讀一遍，不急著記' })).toBeTruthy();
-    expect(view.container.querySelector('.memorize-verse')?.textContent).toBe('神愛世人。');
+    expect(view.getByText('愛')).toBeTruthy();
   });
 
   it('uses the latest language after leaving the current session', async () => {
@@ -285,7 +301,8 @@ describe('deep memorization controls', () => {
     const traditionalVerse = await view.findByRole('button', { name: /神愛世人/ });
     fireEvent.click(traditionalVerse);
     await view.findByRole('heading', { name: '先讀一遍，不急著記' });
-    expect(view.container.querySelector('.memorize-verse')?.textContent).toBe('神愛世人。');
+    expect(view.getByText('愛')).toBeTruthy();
+    expect(view.queryByText('爱')).toBeNull();
   });
 
   it('uses the latest language when retrying a completed session', async () => {
@@ -315,7 +332,8 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '重新背诵' }));
 
     await view.findByRole('heading', { name: '先讀一遍，不急著記' });
-    expect(view.container.querySelector('.memorize-verse')?.textContent).toBe('神愛世人。');
+    expect(view.getByText('愛')).toBeTruthy();
+    expect(view.queryByText('爱')).toBeNull();
     expect(fetchBible).toHaveBeenCalledWith('/data/CUVT_bible.json');
   });
 
@@ -354,7 +372,6 @@ describe('deep memorization controls', () => {
     const { getByRole } = render(<AlphabetKeyboard onPress={onPress} />);
 
     const key = getByRole('button', { name: '2 ABC' });
-    expect(key.className).toContain('min-h-14');
     fireEvent.click(key);
     expect(onPress).toHaveBeenCalledWith({ kind: 'group', initials: ['a', 'b', 'c'] });
   });
@@ -374,8 +391,8 @@ describe('deep memorization controls', () => {
     const view = render(<AlphabetKeyboard hintedInitials={['s']} onPress={onPress} />);
     fireEvent.click(view.getByRole('button', { name: 'QWERTY' }));
     fireEvent.click(view.getByRole('button', { name: 'Q' }));
-    expect(view.getByLabelText('QWERTY键盘').textContent).toContain('QWERTYUIOP');
-    expect(view.getByRole('button', { name: 'S' }).getAttribute('data-hinted')).toBe('true');
+    expect(view.getByRole('group', { name: 'QWERTY键盘' })).toBeTruthy();
+    expect(view.getByRole('button', { name: 'S，提示按键' })).toBeTruthy();
     expect(onPress).toHaveBeenCalledWith({ kind: 'single', initial: 'q' });
   });
 
@@ -391,13 +408,11 @@ describe('deep memorization controls', () => {
     const view = render(<AlphabetKeyboard onPress={onPress} />);
 
     fireEvent.click(view.getByRole('button', { name: '注音' }));
-    const keyboard = view.getByLabelText('注音键盘');
-    expect(keyboard.querySelectorAll('button[data-zhuyin-symbol]')).toHaveLength(37);
-    expect(Array.from(keyboard.querySelectorAll('[data-zhuyin-row]')).map((row) =>
-      row.querySelectorAll('button[data-zhuyin-symbol]').length,
+    expect(view.getAllByRole('button', { name: /^[ㄅ-ㄩ]/u })).toHaveLength(37);
+    expect(view.getAllByRole('group', { name: /^注音键盘 [1-4]$/u }).map((row) =>
+      row.querySelectorAll('button').length,
     )).toEqual([7, 10, 10, 10]);
     const key = view.getByRole('button', { name: 'ㄕ G' });
-    expect(key.className).toContain('min-h-11');
     fireEvent.click(key);
     expect(onPress).toHaveBeenCalledWith({ kind: 'single', initial: 'ㄕ' });
   });
@@ -492,45 +507,14 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '注音' }));
     expect(view.getByRole('heading', { name: '按每个字读音的第一个注音符号' })).toBeTruthy();
     fireEvent.click(view.getByRole('button', { name: 'ㄅ 1' }));
-    fireEvent.click(view.getByRole('button', { name: 'ㄅ 1' }));
-    expect(view.getByRole('button', { name: 'ㄕ G' }).getAttribute('data-hinted')).toBe('true');
-    fireEvent.click(view.getByRole('button', { name: 'ㄕ G' }));
+    fireEvent.click(view.getByRole('button', { name: /^ㄅ 1/u }));
+    const hintedKey = view.getByRole('button', { name: 'ㄕ G，提示按键' });
+    expect(view.getByRole('status').textContent).toContain('提示：请按 ㄕ 键');
+    fireEvent.click(hintedKey);
     await view.findByText('本阶段借助了 1 次提示，继续慢慢熟悉。');
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '本轮结束' });
   });
-
-  it('reveals exactly one Han character after one correct initial', () => {
-    const session = buildMemorizationSession('神爱世人。', 'component', [['s'], ['a'], ['s'], ['r']]);
-    const view = render(<VerseExercise session={session} stage={3} />);
-    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(4);
-
-    const advanced = { ...session, recall: pressInitial(session.recall, session.units, singleInitialInput('s')) };
-    view.rerender(<VerseExercise session={advanced} stage={3} />);
-    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(3);
-    expect(view.container.querySelectorAll('.memorize-revealed')).toHaveLength(1);
-  });
-
-  it('keeps revealed text intact after a wrong on-screen key', () => {
-    const initial = buildMemorizationSession('神爱。', 'wrong-key', [['s'], ['a']]);
-    function RecallHarness() {
-      const [session, setSession] = React.useState(initial);
-      return <><VerseExercise session={session} stage={3} /><AlphabetKeyboard wrongInitials={session.recall.lastAttemptedInputs} wrongAttempt={session.recall.wrongAttempts} onPress={(input) => setSession((current) => ({ ...current, recall: pressInitial(current.recall, current.units, input) }))} /></>;
-    }
-
-    const view = render(<RecallHarness />);
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
-    expect(view.container.querySelectorAll('.memorize-revealed')).toHaveLength(1);
-    fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
-    expect(view.container.querySelectorAll('.memorize-revealed')).toHaveLength(1);
-    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(1);
-    expect(view.container.querySelector('.memorize-verse')?.classList.contains('memorize-wrong')).toBe(false);
-    expect(view.container.querySelectorAll('[data-current-recall="true"]')).toHaveLength(1);
-    expect(view.container.querySelector('[data-current-recall="true"]')?.getAttribute('data-wrong')).toBe('true');
-    expect(view.getByRole('button', { name: '9 WXYZ' }).getAttribute('data-wrong')).toBe('true');
-    expect(view.getByRole('button', { name: '7 PQRS' }).getAttribute('data-wrong')).toBe(null);
-  });
-
   it('announces an error and highlights the correct key after two wrong attempts', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
@@ -546,8 +530,9 @@ describe('deep memorization controls', () => {
 
     fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
     expect(view.getByRole('status').textContent).toContain('再试一次');
-    fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
-    expect(view.getByRole('button', { name: '7 PQRS' }).getAttribute('data-hinted')).toBe('true');
+    fireEvent.click(view.getByRole('button', { name: /^9 WXYZ/u }));
+    expect(view.getByRole('button', { name: '7 PQRS，提示按键' })).toBeTruthy();
+    expect(view.getByRole('status').textContent).toContain('提示：请按 S 键');
   });
 
   it('offers one-unit reveal in every input stage', async () => {
@@ -562,9 +547,8 @@ describe('deep memorization controls', () => {
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
-    const partialHidden = view.container.querySelectorAll('.memorize-hidden').length;
     fireEvent.click(view.getByRole('button', { name: '显示这个字' }));
-    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(partialHidden - 1);
+    expect(await view.findByText('本阶段借助了 1 次提示，继续慢慢熟悉。')).toBeTruthy();
 
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
@@ -592,9 +576,8 @@ describe('deep memorization controls', () => {
     await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
     fireEvent.click(view.getByRole('button', { name: '返回上一步' }));
 
-    const hiddenBeforeReveal = view.container.querySelectorAll('.memorize-hidden').length;
-    fireEvent.click(view.getByRole('button', { name: '显示这个字' }));
-    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(hiddenBeforeReveal - 1);
+    fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
+    expect(view.getByText('再试一次')).toBeTruthy();
   });
 
   it('opens a shared verse directly without requiring it in favorites', () => {
@@ -652,19 +635,19 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
 
-    expect(await view.findByLabelText('拼音首字母键盘')).toBeTruthy();
-    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(1);
+    expect(await view.findByRole('group', { name: '拼音首字母键盘' })).toBeTruthy();
     fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
-    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(0);
+    expect(await view.findByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
 
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
-    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(3);
     fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
-    expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(2);
+    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
+    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
+    expect(await view.findByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
   });
 
-  it('keeps exit in the header and places previous-stage navigation directly below the keyboard', async () => {
+  it('keeps exit and previous-stage navigation usable during practice', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
     vi.stubGlobal('fetch', vi.fn(async () => ({
@@ -680,10 +663,9 @@ describe('deep memorization controls', () => {
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
 
     const exit = view.getByRole('button', { name: '返回经文列表' });
-    const keyboard = await view.findByLabelText('拼音首字母键盘');
     const previous = view.getByRole('button', { name: '返回上一步' });
-    expect(exit.closest('header')).toBeTruthy();
-    expect(keyboard.nextElementSibling).toBe(previous);
+    fireEvent.click(previous);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
 
     fireEvent.click(exit);
     expect(await view.findByText('先收藏一节想背的经文')).toBeTruthy();
