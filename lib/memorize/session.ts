@@ -19,6 +19,7 @@ export interface RecallState {
   wrongAttempts: number;
   assistanceCount: number;
   hintVisible: boolean;
+  lastAttemptedInputs: string[];
 }
 
 export type RecallKeyboardInput =
@@ -204,6 +205,7 @@ function pressInitialAgainstUnits(state: RecallState, units: VerseCharacter[], i
       wrongAttempts: state.wrongAttempts + 1,
       hintVisible: canOfferHint && consecutiveWrongAttempts >= 2,
       assistanceCount: state.assistanceCount + (canOfferHint && consecutiveWrongAttempts === 2 ? 1 : 0),
+      lastAttemptedInputs: [...offeredInitials],
     };
   }
 
@@ -215,6 +217,7 @@ function pressInitialAgainstUnits(state: RecallState, units: VerseCharacter[], i
     lastAttempt: 'correct',
     consecutiveWrongAttempts: 0,
     hintVisible: false,
+    lastAttemptedInputs: [],
   };
 }
 
@@ -228,6 +231,7 @@ function initialRecallState(unitCount: number): RecallState {
     wrongAttempts: 0,
     assistanceCount: 0,
     hintVisible: false,
+    lastAttemptedInputs: [],
   };
 }
 
@@ -262,11 +266,12 @@ function revealAgainstUnitCount(state: RecallState, unitCount: number): RecallSt
     consecutiveWrongAttempts: 0,
     hintVisible: false,
     assistanceCount: state.assistanceCount + 1,
+    lastAttemptedInputs: [],
   };
 }
 
 export function skipRecallStage(state: RecallState): RecallState {
-  return { ...state, complete: true, skipped: true, lastAttempt: 'idle' };
+  return { ...state, complete: true, skipped: true, lastAttempt: 'idle', lastAttemptedInputs: [] };
 }
 
 export function skipMemorizationStage(

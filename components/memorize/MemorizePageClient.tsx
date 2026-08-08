@@ -335,6 +335,8 @@ export default function MemorizePageClient() {
               language={activeLanguage}
               disabled={loadingInitials}
               hintedInitials={hintedInitials}
+              wrongInitials={activeRecall.lastAttempt === 'wrong' ? activeRecall.lastAttemptedInputs : []}
+              wrongAttempt={activeRecall.wrongAttempts}
               onPress={submitKeyboardInput}
               onLayoutChange={setKeyboardLayout}
               onZhuyinSelected={guide.showZhuyinCoach}
@@ -357,6 +359,8 @@ export function AlphabetKeyboard({
   language = 'simplified',
   disabled = false,
   hintedInitials = [],
+  wrongInitials = [],
+  wrongAttempt = 0,
   onPress,
   onLayoutChange,
   onZhuyinSelected,
@@ -364,6 +368,8 @@ export function AlphabetKeyboard({
   language?: Language;
   disabled?: boolean;
   hintedInitials?: readonly string[];
+  wrongInitials?: readonly string[];
+  wrongAttempt?: number;
   onPress: (input: RecallKeyboardInput) => void;
   onLayoutChange?: (layout: KeyboardLayout) => void;
   onZhuyinSelected?: () => void;
@@ -430,13 +436,14 @@ export function AlphabetKeyboard({
         <div className="mx-auto grid max-w-sm grid-cols-3 gap-2" role="group" aria-label={keyboardCopy.t9Keyboard}>
           {t9Keys.map(({ number, letters }) => (
             <button
-              key={number}
+              key={`${number}-${isWrong(letters, wrongInitials) ? wrongAttempt : 0}`}
               type="button"
               disabled={disabled || !letters}
               onClick={() => onPress(groupedInitialsInput(letters))}
               aria-label={letters ? `${number} ${letters}` : number}
               data-hinted={isHinted(letters, hintedInitials) || undefined}
-              className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border px-2 shadow-sm active:scale-[0.98] disabled:opacity-30 ${isHinted(letters, hintedInitials) ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
+              data-wrong={isWrong(letters, wrongInitials) || undefined}
+              className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border px-2 shadow-sm active:scale-[0.98] disabled:opacity-30 ${isWrong(letters, wrongInitials) ? 'memorize-wrong-key border-red-900 bg-red-950/10 text-red-950 ring-2 ring-red-900/20 dark:border-red-400 dark:bg-red-950/35 dark:text-red-100' : isHinted(letters, hintedInitials) ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
             >
               <span className="text-base font-semibold">{number}</span>
               {letters && <span className="text-[11px] tracking-[0.16em] text-stone-500 dark:text-stone-400">{letters}</span>}
@@ -449,12 +456,13 @@ export function AlphabetKeyboard({
             <div key={row} className="flex justify-center gap-1 sm:gap-1.5">
               {Array.from(row).map((letter) => (
                 <button
-                  key={letter}
+                  key={`${letter}-${wrongInitials.includes(letter.toLocaleLowerCase()) ? wrongAttempt : 0}`}
                   type="button"
                   disabled={disabled}
                   onClick={() => onPress(singleInitialInput(letter))}
                   data-hinted={hintedInitials.includes(letter.toLocaleLowerCase()) || undefined}
-                  className={`min-h-11 min-w-0 flex-1 rounded-lg border text-sm font-semibold shadow-sm active:scale-95 disabled:opacity-40 sm:max-w-14 ${hintedInitials.includes(letter.toLocaleLowerCase()) ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
+                  data-wrong={wrongInitials.includes(letter.toLocaleLowerCase()) || undefined}
+                  className={`min-h-11 min-w-0 flex-1 rounded-lg border text-sm font-semibold shadow-sm active:scale-95 disabled:opacity-40 sm:max-w-14 ${wrongInitials.includes(letter.toLocaleLowerCase()) ? 'memorize-wrong-key border-red-900 bg-red-950/10 text-red-950 ring-2 ring-red-900/20 dark:border-red-400 dark:bg-red-950/35 dark:text-red-100' : hintedInitials.includes(letter.toLocaleLowerCase()) ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
                 >{letter}</button>
               ))}
             </div>
@@ -471,26 +479,40 @@ export function AlphabetKeyboard({
               {showPhysicalKeys ? keyboardCopy.hidePhysicalKeys : keyboardCopy.showPhysicalKeys}
             </button>
           </div>
-          <div className="grid grid-cols-7 gap-0.5">
-            {DA_CHEN_ZHUYIN_ROWS.flat().map(({ physicalKey, symbol }) => {
-                  const hinted = hintedInitials.includes(symbol);
-                  const keyLabel = /^[a-z]$/u.test(physicalKey) ? physicalKey.toLocaleUpperCase() : physicalKey;
-                  return (
-                    <button
-                      key={symbol}
-                      type="button"
-                      disabled={disabled}
-                      data-zhuyin-symbol={symbol}
-                      data-hinted={hinted || undefined}
-                      aria-label={showPhysicalKeys ? `${symbol} ${keyLabel}` : symbol}
-                      onClick={() => onPress(singleZhuyinInput(symbol))}
-                      className={`relative flex min-h-11 min-w-11 items-center justify-center rounded-xl border text-lg font-semibold shadow-sm transition active:scale-95 disabled:opacity-40 ${hinted ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
-                    >
-                      {symbol}
-                      {showPhysicalKeys && <span aria-hidden="true" className="absolute right-1.5 top-1 text-[8px] font-medium leading-none text-stone-400 dark:text-stone-500">{keyLabel}</span>}
-                    </button>
-                  );
-                })}
+          <div className="overflow-x-auto pb-1" data-zhuyin-scroll-region>
+            <div className="mx-auto w-[476px] space-y-1">
+              {DA_CHEN_ZHUYIN_ROWS.map((row, rowIndex) => (
+                <div
+                  key={rowIndex}
+                  role="group"
+                  aria-label={`${keyboardCopy.zhuyinKeyboard} ${rowIndex + 1}`}
+                  data-zhuyin-row={rowIndex + 1}
+                  className="flex justify-center gap-1"
+                >
+                  {row.map(({ physicalKey, symbol }) => {
+                    const hinted = hintedInitials.includes(symbol);
+                    const wrong = wrongInitials.includes(symbol);
+                    const keyLabel = /^[a-z]$/u.test(physicalKey) ? physicalKey.toLocaleUpperCase() : physicalKey;
+                    return (
+                      <button
+                        key={`${symbol}-${wrong ? wrongAttempt : 0}`}
+                        type="button"
+                        disabled={disabled}
+                        data-zhuyin-symbol={symbol}
+                        data-hinted={hinted || undefined}
+                        data-wrong={wrong || undefined}
+                        aria-label={showPhysicalKeys ? `${symbol} ${keyLabel}` : symbol}
+                        onClick={() => onPress(singleZhuyinInput(symbol))}
+                        className={`relative flex h-11 min-h-11 w-11 min-w-11 shrink-0 items-center justify-center rounded-xl border text-lg font-semibold shadow-sm transition active:scale-95 disabled:opacity-40 ${wrong ? 'memorize-wrong-key border-red-900 bg-red-950/10 text-red-950 ring-2 ring-red-900/20 dark:border-red-400 dark:bg-red-950/35 dark:text-red-100' : hinted ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
+                      >
+                        {symbol}
+                        {showPhysicalKeys && <span aria-hidden="true" className="absolute right-1.5 top-1 text-[8px] font-medium leading-none text-stone-400 dark:text-stone-500">{keyLabel}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -500,6 +522,10 @@ export function AlphabetKeyboard({
 
 function isHinted(letters: string, hintedInitials: readonly string[]) {
   return Array.from(letters).some((letter) => hintedInitials.includes(letter.toLocaleLowerCase()));
+}
+
+function isWrong(letters: string, wrongInitials: readonly string[]) {
+  return Boolean(letters) && Array.from(letters).some((letter) => wrongInitials.includes(letter.toLocaleLowerCase()));
 }
 
 function RecallFeedback({ language, recall, hintedInitials }: { language: Language; recall: MemorizationSession['recall']; hintedInitials: readonly string[] }) {
@@ -523,15 +549,22 @@ export function VerseExercise({ session, stage }: { session: MemorizationSession
       : session.recall;
   const revealedPartial30 = revealedMaskIndices(session.masks.partial30, session.maskRecall.partial30.cursor);
   const revealedPartial65 = revealedMaskIndices(session.masks.partial65, session.maskRecall.partial65.cursor);
+  const activeMask = stage === 1 ? session.masks.partial30 : stage === 2 ? session.masks.partial65 : null;
+  const currentUnitIndex = activeMask
+    ? orderedMaskIndices(activeMask)[activeRecall.cursor]
+    : session.units.flatMap((unit, index) => unit.recallable ? [index] : [])[activeRecall.cursor];
+  const showWrongTarget = activeRecall.lastAttempt === 'wrong';
   return (
-    <p className={`memorize-verse whitespace-pre-wrap ${activeRecall.lastAttempt === 'wrong' ? 'memorize-wrong' : ''}`} aria-live="polite">
+    <p className="memorize-verse whitespace-pre-wrap" aria-live="polite">
       {session.units.map((unit, index) => {
         if (!unit.recallable) return <span key={index}>{unit.text}</span>;
         const ordinal = recallOrdinal++;
         const hidden = stage === 1 ? session.masks.partial30.has(index) && !revealedPartial30.has(index)
           : stage === 2 ? session.masks.partial65.has(index) && !revealedPartial65.has(index)
             : stage === 3 ? ordinal >= session.recall.cursor : false;
-        return <span key={index} className={hidden ? 'memorize-hidden' : 'memorize-revealed'}>{unit.text}</span>;
+        const current = hidden && index === currentUnitIndex;
+        const wrong = current && showWrongTarget;
+        return <span key={`${index}-${wrong ? activeRecall.wrongAttempts : 0}`} data-current-recall={current || undefined} data-wrong={wrong || undefined} className={`${hidden ? 'memorize-hidden' : 'memorize-revealed'} ${wrong ? 'memorize-wrong-target' : ''}`}>{unit.text}</span>;
       })}
     </p>
   );

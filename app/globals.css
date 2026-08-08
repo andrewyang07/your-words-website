@@ -211,17 +211,23 @@
         animation: memorize-reveal 180ms ease-out;
     }
 
-    .memorize-wrong {
-        animation: memorize-wrong 180ms ease-in-out;
+    .memorize-wrong-target {
+        @apply bg-red-950/15 text-transparent ring-1 ring-red-900/55 dark:bg-red-950/45 dark:ring-red-400/70;
+        animation: memorize-wrong-target 180ms ease-in-out;
+    }
+
+    .memorize-wrong-key {
+        animation: memorize-wrong-key 180ms ease-out;
     }
 
     @keyframes memorize-reveal { from { opacity: 0.25; } to { opacity: 1; } }
-    @keyframes memorize-wrong { 0%, 100% { transform: translateX(0); } 35% { transform: translateX(-3px); } 70% { transform: translateX(3px); } }
+    @keyframes memorize-wrong-target { 0%, 100% { transform: translateX(0); } 35% { transform: translateX(-2px); } 70% { transform: translateX(2px); } }
+    @keyframes memorize-wrong-key { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(2px); } }
     @keyframes memorize-wrong-fade { from { opacity: 0.72; } to { opacity: 1; } }
 
     @media (prefers-reduced-motion: reduce) {
         .memorize-revealed { animation: none; }
-        .memorize-wrong { animation: memorize-wrong-fade 180ms ease-out; }
+        .memorize-wrong-target, .memorize-wrong-key { animation: memorize-wrong-fade 180ms ease-out; }
         .memorize-page button, .memorize-page a, .memorize-stage-tab { transition-duration: 0.01ms !important; }
         .memorize-page button:hover, .memorize-page button:active, .memorize-page a:hover, .memorize-page a:active { transform: none !important; }
     }

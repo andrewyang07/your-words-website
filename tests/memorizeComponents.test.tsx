@@ -328,6 +328,9 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '注音' }));
     const keyboard = view.getByLabelText('注音键盘');
     expect(keyboard.querySelectorAll('button[data-zhuyin-symbol]')).toHaveLength(37);
+    expect(Array.from(keyboard.querySelectorAll('[data-zhuyin-row]')).map((row) =>
+      row.querySelectorAll('button[data-zhuyin-symbol]').length,
+    )).toEqual([7, 10, 10, 10]);
     const key = view.getByRole('button', { name: 'ㄕ G' });
     expect(key.className).toContain('min-h-11');
     fireEvent.click(key);
@@ -445,7 +448,7 @@ describe('deep memorization controls', () => {
     const initial = buildMemorizationSession('神爱。', 'wrong-key', [['s'], ['a']]);
     function RecallHarness() {
       const [session, setSession] = React.useState(initial);
-      return <><VerseExercise session={session} stage={3} /><AlphabetKeyboard onPress={(input) => setSession((current) => ({ ...current, recall: pressInitial(current.recall, current.units, input) }))} /></>;
+      return <><VerseExercise session={session} stage={3} /><AlphabetKeyboard wrongInitials={session.recall.lastAttemptedInputs} wrongAttempt={session.recall.wrongAttempts} onPress={(input) => setSession((current) => ({ ...current, recall: pressInitial(current.recall, current.units, input) }))} /></>;
     }
 
     const view = render(<RecallHarness />);
@@ -454,7 +457,11 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
     expect(view.container.querySelectorAll('.memorize-revealed')).toHaveLength(1);
     expect(view.container.querySelectorAll('.memorize-hidden')).toHaveLength(1);
-    expect(view.container.querySelector('.memorize-verse')?.classList.contains('memorize-wrong')).toBe(true);
+    expect(view.container.querySelector('.memorize-verse')?.classList.contains('memorize-wrong')).toBe(false);
+    expect(view.container.querySelectorAll('[data-current-recall="true"]')).toHaveLength(1);
+    expect(view.container.querySelector('[data-current-recall="true"]')?.getAttribute('data-wrong')).toBe('true');
+    expect(view.getByRole('button', { name: '9 WXYZ' }).getAttribute('data-wrong')).toBe('true');
+    expect(view.getByRole('button', { name: '7 PQRS' }).getAttribute('data-wrong')).toBe(null);
   });
 
   it('announces an error and highlights the correct key after two wrong attempts', async () => {

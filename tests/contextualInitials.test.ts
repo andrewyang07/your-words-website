@@ -31,10 +31,17 @@ describe('contextual Zhuyin first symbols', () => {
     ]);
   });
 
-  it('keeps reasonable polyphonic and Taiwan regional first symbols', () => {
-    const readings = buildContextualPhonetics('長圾');
+  it('uses known Taiwan phrase readings as primary and Mainland readings as supplemental', () => {
+    const readings = buildContextualPhonetics('垃圾暴露');
+    expect(readings.map((reading) => reading.zhuyin[0])).toEqual(['ㄌ', 'ㄙ', 'ㄆ', 'ㄌ']);
+    expect(readings[1].zhuyin.slice(1)).toContain('ㄐ');
+    expect(readings[2].zhuyin.slice(1)).toContain('ㄅ');
+    expect(readings.map((reading) => reading.pinyin[0])).toEqual(['l', 's', 'p', 'l']);
+  });
+
+  it('keeps reasonable polyphonic first symbols as supplemental readings', () => {
+    const readings = buildContextualPhonetics('長');
     expect(readings[0].zhuyin).toEqual(expect.arrayContaining(['ㄔ', 'ㄓ']));
-    expect(readings[1].zhuyin).toEqual(expect.arrayContaining(['ㄐ', 'ㄙ']));
   });
 
   it('aligns phonetics only with Han Recall Units and fails safely', () => {

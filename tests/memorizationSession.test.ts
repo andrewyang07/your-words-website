@@ -83,10 +83,10 @@ describe('deep memorization session', () => {
     ]);
 
     const wrong = pressInitial(session.recall, session.units, singleInitialInput('x'));
-    expect(wrong).toMatchObject({ cursor: 0, lastAttempt: 'wrong', complete: false });
+    expect(wrong).toMatchObject({ cursor: 0, lastAttempt: 'wrong', lastAttemptedInputs: ['x'], complete: false });
 
     const correct = pressInitial(wrong, session.units, singleInitialInput('Y'));
-    expect(correct).toMatchObject({ cursor: 1, lastAttempt: 'correct', complete: false });
+    expect(correct).toMatchObject({ cursor: 1, lastAttempt: 'correct', lastAttemptedInputs: [], complete: false });
 
     const revealed = revealCurrentUnit(correct, session.units);
     expect(revealed).toMatchObject({ cursor: 2, lastAttempt: 'revealed' });
