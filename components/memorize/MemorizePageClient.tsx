@@ -349,7 +349,7 @@ export default function MemorizePageClient() {
               onZhuyinSelected={guide.showZhuyinCoach}
             />
             <button type="button" onClick={goToPreviousStage} className="memorize-secondary mx-auto mt-3 max-w-xs"><ArrowLeft className="h-4 w-4" />{activeCopy.previous}</button>
-            {(stage < finalStage || stageCompletionFacts.outcome !== 'incomplete') && (
+            {stageCompletionFacts.outcome !== 'incomplete' && (
               <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-3 max-w-xs">{activeCopy.continue}<ChevronRight className="h-4 w-4" /></button>
             )}
           </div>

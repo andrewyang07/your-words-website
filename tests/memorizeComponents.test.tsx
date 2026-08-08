@@ -234,6 +234,28 @@ describe('deep memorization controls', () => {
     expect(view.getByText('本轮未使用提示，跳过了 4 个阶段。')).toBeTruthy();
   });
 
+  it('does not offer Continue for an incomplete masked stage', async () => {
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+    })));
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '凭留下的字，补全句子' });
+
+    expect(view.queryByRole('button', { name: '继续' })).toBeNull();
+    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await view.findByText('本阶段已跳过，不计作完成。');
+    expect(view.getByRole('button', { name: '继续' })).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
+    expect(view.queryByRole('button', { name: '继续' })).toBeNull();
+  });
+
   it('acknowledges independent final-stage completion before the round summary', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
@@ -586,7 +608,7 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
     expect(view.getByRole('button', { name: '显示这个字' })).toBeTruthy();
-    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await skipStageAndContinue(view);
     await view.findByRole('heading', { name: '按每个字的拼音首字母' });
     expect(view.getByRole('button', { name: '显示这个字' })).toBeTruthy();
   });
@@ -645,11 +667,13 @@ describe('deep memorization controls', () => {
     await returnToPreviousStage(view, '凭留下的字，补全句子', '先读一遍，不急着记');
 
     fireEvent.click(view.getByRole('button', { name: '继续' }));
-    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '凭留下的字，补全句子' });
+    await skipStageAndContinue(view);
     await returnToPreviousStage(view, '只留少量线索，再想一遍', '凭留下的字，补全句子');
 
     fireEvent.click(view.getByRole('button', { name: '继续' }));
-    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
+    await skipStageAndContinue(view);
     await returnToPreviousStage(view, '按每个字的拼音首字母', '只留少量线索，再想一遍');
   });
 
