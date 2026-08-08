@@ -6,6 +6,7 @@ import MemorizePageClient, { AlphabetKeyboard, MEMORIZE_KEYBOARD_LAYOUT_STORAGE_
 import { CompletionReward } from '../components/memorize/CompletionReward';
 import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
+import AppStoreStorageSync from '../components/AppStoreStorageSync';
 
 beforeEach(() => {
   const values = new Map<string, string>();
@@ -303,6 +304,38 @@ describe('deep memorization controls', () => {
     await view.findByRole('heading', { name: '先讀一遍，不急著記' });
     expect(view.getByText('愛')).toBeTruthy();
     expect(view.queryByText('爱')).toBeNull();
+  });
+
+  it('keeps the active session snapshot when another tab changes the persisted language', async () => {
+    useFavoritesStore.setState({ favorites: new Set(['约翰福音-3-16']) });
+    const fetchBible = vi.fn(async (url: string) => ({
+      ok: true,
+      json: async () => ({
+        约翰福音: { 3: { 16: url.includes('CUVT') ? '神愛世人。' : '神爱世人。' } },
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchBible);
+
+    const view = render(<><AppStoreStorageSync /><MemorizePageClient /></>);
+    fireEvent.click(await view.findByRole('button', { name: /神爱世人/ }));
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+
+    act(() => window.dispatchEvent(new StorageEvent('storage', {
+      key: 'your-words-app',
+      newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
+    })));
+
+    expect(useAppStore.getState().language).toBe('traditional');
+    expect(view.getByRole('heading', { name: '先读一遍，不急着记' })).toBeTruthy();
+    expect(view.getByText('爱')).toBeTruthy();
+    expect(view.queryByText('愛')).toBeNull();
+
+    fireEvent.click(view.getByRole('button', { name: '返回经文列表' }));
+    const traditionalVerse = await view.findByRole('button', { name: /神愛世人/ });
+    fireEvent.click(traditionalVerse);
+    await view.findByRole('heading', { name: '先讀一遍，不急著記' });
+    expect(view.getByText('愛')).toBeTruthy();
+    expect(fetchBible).toHaveBeenCalledWith('/data/CUVT_bible.json');
   });
 
   it('uses the latest language when retrying a completed session', async () => {

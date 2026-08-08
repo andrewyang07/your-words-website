@@ -4,6 +4,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Noto_Sans_SC } from 'next/font/google';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import AppStoreStorageSync from '@/components/AppStoreStorageSync';
 import './globals.css';
 
 const notoSans = Noto_Sans_SC({
@@ -204,6 +205,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 />
             </head>
             <body className={`${notoSans.className} antialiased`} suppressHydrationWarning>
+                <AppStoreStorageSync />
                 <nav className="sr-only" aria-label="主要頁面">
                     <a href="/memorize">深度背誦</a>
                     <a href="/search">聖經搜索</a>
