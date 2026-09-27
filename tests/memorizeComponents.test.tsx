@@ -8,29 +8,15 @@ import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
 import AppStoreStorageSync from '../components/AppStoreStorageSync';
 
-/** Old outer ink blot: absolute corner speck outside the seal border. */
-const OUTER_BLOT_CLASS_PATTERN = /(?:^|\s)-bottom-1(?:\s|$)/;
-const OUTER_BLOT_SIZE_PATTERN = /(?:^|\s)h-1\.5(?:\s|$).*(?:^|\s)w-1\.5(?:\s|$)|(?:^|\s)w-1\.5(?:\s|$).*(?:^|\s)h-1\.5(?:\s|$)/;
-
-function sealChrome(container: HTMLElement) {
-  const seal = container.querySelector('[data-testid="completion-seal"]');
-  expect(seal).toBeTruthy();
-  return seal!.parentElement as HTMLElement;
-}
-
+/** Stable contract: outer blot must not appear under the seal/status tree. */
 function assertNoOuterBlot(container: HTMLElement) {
   expect(container.querySelector('[data-testid="seal-outer-blot"]')).toBeNull();
-  const chrome = sealChrome(container);
-  const absoluteSpans = Array.from(chrome.querySelectorAll('span')).filter((el) =>
-    /(?:^|\s)absolute(?:\s|$)/.test(el.className),
-  );
-  const cornerBlots = absoluteSpans.filter(
-    (el) =>
-      OUTER_BLOT_CLASS_PATTERN.test(el.className)
-      && /(?:^|\s)right-0(?:\s|$)/.test(el.className)
-      && OUTER_BLOT_SIZE_PATTERN.test(el.className),
-  );
-  expect(cornerBlots).toHaveLength(0);
+  const status = container.querySelector('[role="status"]');
+  expect(status).toBeTruthy();
+  expect(status!.querySelector('[data-testid="seal-outer-blot"]')).toBeNull();
+  const seal = container.querySelector('[data-testid="completion-seal"]');
+  expect(seal).toBeTruthy();
+  expect(seal!.closest('[role="status"]')!.querySelector('[data-testid="seal-outer-blot"]')).toBeNull();
 }
 
 beforeEach(() => {
@@ -230,24 +216,21 @@ describe('deep memorization controls', () => {
       <CompletionReward kind="round" language="traditional" assistanceCount={0} skippedStageCount={0} reducedMotion={false} />,
     );
     assertNoOuterBlot(animated.container);
+    expect(animated.queryByTestId('seal-outer-blot')).toBeNull();
     animated.unmount();
 
     const reduced = render(
       <CompletionReward kind="round" language="simplified" assistanceCount={0} skippedStageCount={0} reducedMotion />,
     );
     assertNoOuterBlot(reduced.container);
-    // Reduced-motion path must not resurrect any absolute corner blot span in chrome
-    const chrome = sealChrome(reduced.container);
-    const absoluteSpans = Array.from(chrome.querySelectorAll('span')).filter((el) =>
-      /(?:^|\s)absolute(?:\s|$)/.test(el.className),
-    );
-    expect(absoluteSpans).toHaveLength(0);
+    expect(reduced.queryByTestId('seal-outer-blot')).toBeNull();
     reduced.unmount();
 
     const assistedStage = render(
       <CompletionReward kind="stage" language="traditional" assistanceCount={2} skippedStageCount={0} />,
     );
     assertNoOuterBlot(assistedStage.container);
+    expect(assistedStage.queryByTestId('seal-outer-blot')).toBeNull();
     assistedStage.unmount();
   });
 

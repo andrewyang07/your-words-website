@@ -3,7 +3,12 @@
 import { CheckCircle2, MinusCircle } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import type { Language } from '@/types/verse';
-import { SEAL_BORDER, sealCharacterLayout } from '@/lib/memorize/sealLayout';
+import {
+  SEAL_BORDER,
+  SEAL_DECORATION_PATH,
+  SEAL_VIEWBOX_SIZE,
+  sealCharacterLayout,
+} from '@/lib/memorize/sealLayout';
 
 const rewardCopy = {
   simplified: {
@@ -115,7 +120,8 @@ function Seal({
 }) {
   const size = kind === 'round' ? 124 : 82;
   const characters = Array.from(seal);
-  const { textSize, step, startY } = sealCharacterLayout(characters.length);
+  const layout = sealCharacterLayout(characters.length);
+  const { textSize, step, startY, paddingY } = layout;
 
   return (
     <motion.div
@@ -135,10 +141,11 @@ function Seal({
         />
       )}
       <svg
-        viewBox="0 0 120 120"
+        viewBox={`0 0 ${SEAL_VIEWBOX_SIZE} ${SEAL_VIEWBOX_SIZE}`}
         role="img"
         aria-label={label}
         data-testid="completion-seal"
+        data-seal-padding-y={paddingY}
         className="relative h-full w-full text-[#963a30] dark:text-[#d58375]"
       >
         <rect
@@ -153,7 +160,7 @@ function Seal({
         />
         {/* Light hand-cut strokes kept inside the border and subordinate to text */}
         <path
-          d="M22 22 C48 18 72 26 98 22 M98 38 C94 58 100 80 96 98 M22 90 C36 100 64 98 86 100"
+          d={SEAL_DECORATION_PATH}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.25"
