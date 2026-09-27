@@ -19,9 +19,13 @@ export const SEAL_BORDER = {
 export const SEAL_CONTENT_INSET =
   SEAL_BORDER.x + SEAL_BORDER.strokeWidth / 2;
 
+/** Stroke width for the light hand-cut decoration path. */
+export const SEAL_DECORATION_STROKE_WIDTH = 1.25;
+
 /**
  * Light hand-cut decorative strokes kept inside the border.
  * Numeric coordinates must stay within SEAL_CONTENT_INSET … SEAL_VIEWBOX_SIZE - SEAL_CONTENT_INSET.
+ * Stroked bounds (coords ± half SEAL_DECORATION_STROKE_WIDTH) must also stay inside that inset.
  */
 export const SEAL_DECORATION_PATH =
   'M22 22 C48 18 72 26 98 22 M98 38 C94 58 100 80 96 98 M22 90 C36 100 64 98 86 100';

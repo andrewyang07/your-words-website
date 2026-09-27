@@ -6,6 +6,7 @@ import type { Language } from '@/types/verse';
 import {
   SEAL_BORDER,
   SEAL_DECORATION_PATH,
+  SEAL_DECORATION_STROKE_WIDTH,
   SEAL_VIEWBOX_SIZE,
   sealCharacterLayout,
 } from '@/lib/memorize/sealLayout';
@@ -125,6 +126,7 @@ function Seal({
 
   return (
     <motion.div
+      data-testid="completion-seal-chrome"
       className="relative shrink-0 pointer-events-none"
       initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: kind === 'round' ? -18 : -12, rotate: -4, scale: 1.12 }}
       animate={reducedMotion ? { opacity: 1 } : { opacity: assisted ? 0.7 : 0.92, y: 0, rotate: -1.5, scale: 1 }}
@@ -163,7 +165,7 @@ function Seal({
           d={SEAL_DECORATION_PATH}
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.25"
+          strokeWidth={SEAL_DECORATION_STROKE_WIDTH}
           strokeLinecap="round"
           opacity="0.4"
         />

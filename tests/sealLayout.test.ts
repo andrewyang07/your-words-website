@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   SEAL_CONTENT_INSET,
   SEAL_DECORATION_PATH,
+  SEAL_DECORATION_STROKE_WIDTH,
   SEAL_VIEWBOX_SIZE,
   sealCharacterLayout,
 } from '../lib/memorize/sealLayout';
@@ -40,11 +41,29 @@ describe('SEAL_DECORATION_PATH', () => {
   it('keeps numeric coordinates inside the content inset', () => {
     const coords = [...SEAL_DECORATION_PATH.matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
     expect(coords.length).toBeGreaterThan(0);
+    expect(coords.length % 2).toBe(0);
+
+    const xs = coords.filter((_, i) => i % 2 === 0);
+    const ys = coords.filter((_, i) => i % 2 === 1);
+    const bbox = {
+      minX: Math.min(...xs),
+      maxX: Math.max(...xs),
+      minY: Math.min(...ys),
+      maxY: Math.max(...ys),
+    };
+
+    const halfStroke = SEAL_DECORATION_STROKE_WIDTH / 2;
+    const stroked = {
+      minX: bbox.minX - halfStroke,
+      maxX: bbox.maxX + halfStroke,
+      minY: bbox.minY - halfStroke,
+      maxY: bbox.maxY + halfStroke,
+    };
 
     const max = SEAL_VIEWBOX_SIZE - SEAL_CONTENT_INSET;
-    for (const value of coords) {
-      expect(value).toBeGreaterThanOrEqual(SEAL_CONTENT_INSET);
-      expect(value).toBeLessThanOrEqual(max);
-    }
+    expect(stroked.minX).toBeGreaterThanOrEqual(SEAL_CONTENT_INSET);
+    expect(stroked.maxX).toBeLessThanOrEqual(max);
+    expect(stroked.minY).toBeGreaterThanOrEqual(SEAL_CONTENT_INSET);
+    expect(stroked.maxY).toBeLessThanOrEqual(max);
   });
 });
