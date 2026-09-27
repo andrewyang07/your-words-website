@@ -8,6 +8,31 @@ import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
 import AppStoreStorageSync from '../components/AppStoreStorageSync';
 
+/** Old outer ink blot: absolute corner speck outside the seal border. */
+const OUTER_BLOT_CLASS_PATTERN = /(?:^|\s)-bottom-1(?:\s|$)/;
+const OUTER_BLOT_SIZE_PATTERN = /(?:^|\s)h-1\.5(?:\s|$).*(?:^|\s)w-1\.5(?:\s|$)|(?:^|\s)w-1\.5(?:\s|$).*(?:^|\s)h-1\.5(?:\s|$)/;
+
+function sealChrome(container: HTMLElement) {
+  const seal = container.querySelector('[data-testid="completion-seal"]');
+  expect(seal).toBeTruthy();
+  return seal!.parentElement as HTMLElement;
+}
+
+function assertNoOuterBlot(container: HTMLElement) {
+  expect(container.querySelector('[data-testid="seal-outer-blot"]')).toBeNull();
+  const chrome = sealChrome(container);
+  const absoluteSpans = Array.from(chrome.querySelectorAll('span')).filter((el) =>
+    /(?:^|\s)absolute(?:\s|$)/.test(el.className),
+  );
+  const cornerBlots = absoluteSpans.filter(
+    (el) =>
+      OUTER_BLOT_CLASS_PATTERN.test(el.className)
+      && /(?:^|\s)right-0(?:\s|$)/.test(el.className)
+      && OUTER_BLOT_SIZE_PATTERN.test(el.className),
+  );
+  expect(cornerBlots).toHaveLength(0);
+}
+
 beforeEach(() => {
   const values = new Map<string, string>();
   vi.stubGlobal('localStorage', {
@@ -173,6 +198,57 @@ describe('deep memorization controls', () => {
     expect(view.getByRole('status').textContent).toContain('藏於心');
     expect(view.getByRole('status').textContent).toContain('本輪未使用提示，也沒有跳過階段');
     expect(view.getByLabelText('藏於心朱印')).toBeTruthy();
+  });
+
+  it('exposes round and stage seal accessible names in Traditional and Simplified', () => {
+    const cases = [
+      { kind: 'round' as const, language: 'traditional' as const, assistanceCount: 0, label: '藏於心朱印' },
+      { kind: 'round' as const, language: 'simplified' as const, assistanceCount: 0, label: '藏于心朱印' },
+      { kind: 'stage' as const, language: 'traditional' as const, assistanceCount: 0, label: '熟記朱印' },
+      { kind: 'stage' as const, language: 'simplified' as const, assistanceCount: 0, label: '熟记朱印' },
+      { kind: 'stage' as const, language: 'traditional' as const, assistanceCount: 1, label: '漸熟朱印' },
+      { kind: 'stage' as const, language: 'simplified' as const, assistanceCount: 1, label: '渐熟朱印' },
+    ];
+
+    for (const { kind, language, assistanceCount, label } of cases) {
+      const view = render(
+        <CompletionReward
+          kind={kind}
+          language={language}
+          assistanceCount={assistanceCount}
+          skippedStageCount={0}
+        />,
+      );
+      expect(view.getByLabelText(label)).toBeTruthy();
+      expect(view.getByTestId('completion-seal').getAttribute('aria-label')).toBe(label);
+      view.unmount();
+    }
+  });
+
+  it('does not render the removed outer blot on animated or reduced-motion seals', () => {
+    const animated = render(
+      <CompletionReward kind="round" language="traditional" assistanceCount={0} skippedStageCount={0} reducedMotion={false} />,
+    );
+    assertNoOuterBlot(animated.container);
+    animated.unmount();
+
+    const reduced = render(
+      <CompletionReward kind="round" language="simplified" assistanceCount={0} skippedStageCount={0} reducedMotion />,
+    );
+    assertNoOuterBlot(reduced.container);
+    // Reduced-motion path must not resurrect any absolute corner blot span in chrome
+    const chrome = sealChrome(reduced.container);
+    const absoluteSpans = Array.from(chrome.querySelectorAll('span')).filter((el) =>
+      /(?:^|\s)absolute(?:\s|$)/.test(el.className),
+    );
+    expect(absoluteSpans).toHaveLength(0);
+    reduced.unmount();
+
+    const assistedStage = render(
+      <CompletionReward kind="stage" language="traditional" assistanceCount={2} skippedStageCount={0} />,
+    );
+    assertNoOuterBlot(assistedStage.container);
+    assistedStage.unmount();
   });
 
   it('shows stage feedback and a factual round summary without delaying controls', async () => {
