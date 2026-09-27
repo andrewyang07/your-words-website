@@ -3,6 +3,13 @@
 import { CheckCircle2, MinusCircle } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import type { Language } from '@/types/verse';
+import {
+  SEAL_BORDER,
+  SEAL_DECORATION_PATH,
+  SEAL_DECORATION_STROKE_WIDTH,
+  SEAL_VIEWBOX_SIZE,
+  sealCharacterLayout,
+} from '@/lib/memorize/sealLayout';
 
 const rewardCopy = {
   simplified: {
@@ -114,12 +121,12 @@ function Seal({
 }) {
   const size = kind === 'round' ? 124 : 82;
   const characters = Array.from(seal);
-  const textSize = characters.length >= 4 ? 22 : characters.length === 3 ? 25 : 29;
-  const step = characters.length >= 4 ? 25 : characters.length === 3 ? 30 : 34;
-  const startY = 60 - ((characters.length - 1) * step) / 2;
+  const layout = sealCharacterLayout(characters.length);
+  const { textSize, step, startY, paddingY } = layout;
 
   return (
     <motion.div
+      data-testid="completion-seal-chrome"
       className="relative shrink-0 pointer-events-none"
       initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: kind === 'round' ? -18 : -12, rotate: -4, scale: 1.12 }}
       animate={reducedMotion ? { opacity: 1 } : { opacity: assisted ? 0.7 : 0.92, y: 0, rotate: -1.5, scale: 1 }}
@@ -135,9 +142,33 @@ function Seal({
           transition={{ duration: kind === 'round' ? 1.05 : 0.62, times: [0, 0.55, 1] }}
         />
       )}
-      <svg viewBox="0 0 120 120" role="img" aria-label={label} className="relative h-full w-full overflow-visible text-[#963a30] dark:text-[#d58375]">
-        <rect x="12" y="11" width="96" height="98" rx="5" fill="none" stroke="currentColor" strokeWidth="5" />
-        <path d="M18 16 C42 8 77 15 103 12 M108 33 C101 57 110 85 102 104 M15 88 C27 109 62 103 87 108" fill="none" stroke="currentColor" strokeWidth="1.8" opacity="0.72" />
+      <svg
+        viewBox={`0 0 ${SEAL_VIEWBOX_SIZE} ${SEAL_VIEWBOX_SIZE}`}
+        role="img"
+        aria-label={label}
+        data-testid="completion-seal"
+        data-seal-padding-y={paddingY}
+        className="relative h-full w-full text-[#963a30] dark:text-[#d58375]"
+      >
+        <rect
+          x={SEAL_BORDER.x}
+          y={SEAL_BORDER.y}
+          width={SEAL_BORDER.width}
+          height={SEAL_BORDER.height}
+          rx={SEAL_BORDER.rx}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={SEAL_BORDER.strokeWidth}
+        />
+        {/* Light hand-cut strokes kept inside the border and subordinate to text */}
+        <path
+          d={SEAL_DECORATION_PATH}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={SEAL_DECORATION_STROKE_WIDTH}
+          strokeLinecap="round"
+          opacity="0.4"
+        />
         <text
           x="60"
           y={startY}
@@ -153,9 +184,6 @@ function Seal({
           ))}
         </text>
       </svg>
-      {!reducedMotion && (
-        <span aria-hidden="true" className="absolute -bottom-1 right-0 h-1.5 w-1.5 rounded-full bg-[#963a30]/45 dark:bg-[#d58375]/45" />
-      )}
     </motion.div>
   );
 }

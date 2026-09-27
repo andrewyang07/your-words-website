@@ -8,6 +8,54 @@ import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
 import AppStoreStorageSync from '../components/AppStoreStorageSync';
 
+/** True when className matches the legacy detached outer blot signature. */
+function hasLegacyDetachedBlotSignature(className: string): boolean {
+  return (
+    className.includes('absolute')
+    && className.includes('-bottom-1')
+    && className.includes('right-0')
+    && (className.includes('h-1.5') || className.includes('w-1.5'))
+  );
+}
+
+function elementClassName(el: Element): string {
+  return el.getAttribute('class') ?? '';
+}
+
+/**
+ * Strong blot-absence contract:
+ * - no legacy detached blot signature anywhere in the tree
+ * - under completion-seal-chrome, absolute direct children must be soft glow only
+ * - seal-outer-blot test id remains absent (secondary)
+ */
+function assertNoOuterBlot(container: HTMLElement) {
+  expect(container.querySelector('[data-testid="seal-outer-blot"]')).toBeNull();
+
+  for (const el of Array.from(container.querySelectorAll('*'))) {
+    expect(hasLegacyDetachedBlotSignature(elementClassName(el))).toBe(false);
+  }
+
+  const chrome = container.querySelector('[data-testid="completion-seal-chrome"]');
+  expect(chrome).toBeTruthy();
+  for (const child of Array.from(chrome!.children)) {
+    const className = elementClassName(child);
+    if (!className.includes('absolute')) continue;
+    expect(className.includes('inset-[')).toBe(true);
+    const hasCornerOffset = className.includes('-bottom-1')
+      || className.includes('-top-1')
+      || className.includes('right-0');
+    const hasTinySize = className.includes('h-1.5') || className.includes('w-1.5');
+    expect(hasCornerOffset && hasTinySize).toBe(false);
+  }
+
+  const status = container.querySelector('[role="status"]');
+  expect(status).toBeTruthy();
+  expect(status!.querySelector('[data-testid="seal-outer-blot"]')).toBeNull();
+  const seal = container.querySelector('[data-testid="completion-seal"]');
+  expect(seal).toBeTruthy();
+  expect(seal!.closest('[role="status"]')!.querySelector('[data-testid="seal-outer-blot"]')).toBeNull();
+}
+
 beforeEach(() => {
   const values = new Map<string, string>();
   vi.stubGlobal('localStorage', {
@@ -173,6 +221,54 @@ describe('deep memorization controls', () => {
     expect(view.getByRole('status').textContent).toContain('藏於心');
     expect(view.getByRole('status').textContent).toContain('本輪未使用提示，也沒有跳過階段');
     expect(view.getByLabelText('藏於心朱印')).toBeTruthy();
+  });
+
+  it('exposes round and stage seal accessible names in Traditional and Simplified', () => {
+    const cases = [
+      { kind: 'round' as const, language: 'traditional' as const, assistanceCount: 0, label: '藏於心朱印' },
+      { kind: 'round' as const, language: 'simplified' as const, assistanceCount: 0, label: '藏于心朱印' },
+      { kind: 'stage' as const, language: 'traditional' as const, assistanceCount: 0, label: '熟記朱印' },
+      { kind: 'stage' as const, language: 'simplified' as const, assistanceCount: 0, label: '熟记朱印' },
+      { kind: 'stage' as const, language: 'traditional' as const, assistanceCount: 1, label: '漸熟朱印' },
+      { kind: 'stage' as const, language: 'simplified' as const, assistanceCount: 1, label: '渐熟朱印' },
+    ];
+
+    for (const { kind, language, assistanceCount, label } of cases) {
+      const view = render(
+        <CompletionReward
+          kind={kind}
+          language={language}
+          assistanceCount={assistanceCount}
+          skippedStageCount={0}
+        />,
+      );
+      expect(view.getByLabelText(label)).toBeTruthy();
+      expect(view.getByTestId('completion-seal').getAttribute('aria-label')).toBe(label);
+      view.unmount();
+    }
+  });
+
+  it('does not render the removed outer blot on animated or reduced-motion seals', () => {
+    const animated = render(
+      <CompletionReward kind="round" language="traditional" assistanceCount={0} skippedStageCount={0} reducedMotion={false} />,
+    );
+    assertNoOuterBlot(animated.container);
+    expect(animated.queryByTestId('seal-outer-blot')).toBeNull();
+    animated.unmount();
+
+    const reduced = render(
+      <CompletionReward kind="round" language="simplified" assistanceCount={0} skippedStageCount={0} reducedMotion />,
+    );
+    assertNoOuterBlot(reduced.container);
+    expect(reduced.queryByTestId('seal-outer-blot')).toBeNull();
+    reduced.unmount();
+
+    const assistedStage = render(
+      <CompletionReward kind="stage" language="traditional" assistanceCount={2} skippedStageCount={0} />,
+    );
+    assertNoOuterBlot(assistedStage.container);
+    expect(assistedStage.queryByTestId('seal-outer-blot')).toBeNull();
+    assistedStage.unmount();
   });
 
   it('shows stage feedback and a factual round summary without delaying controls', async () => {
