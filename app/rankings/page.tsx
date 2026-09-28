@@ -98,7 +98,7 @@ export default function RankingsPage() {
             <PageHeader
                 onMenuClick={() => setShowSideMenu(true)}
                 showHelp={false}
-                subtitle={<span className="rounded-full border border-stone-900/10 px-2.5 py-1 text-xs text-stone-500 dark:border-white/10 dark:text-stone-400">{language === 'traditional' ? '全站排行榜' : '全站排行榜'}</span>}
+                subtitle={<span className="rounded-full border border-stone-900/10 px-2.5 py-1 text-xs text-stone-500 dark:border-white/10 dark:text-stone-400">全站排行榜</span>}
                 rightContent={
                     <>
                         <button
@@ -318,7 +318,7 @@ export default function RankingsPage() {
                         <span>{language === 'traditional' ? '如何使用全站經文排行榜' : '如何使用全站经文排行榜'}</span>
                         <span className="text-xs font-normal text-stone-400 dark:text-stone-500">
                             <span className="group-open:hidden">{language === 'traditional' ? '展開' : '展开'}</span>
-                            <span className="hidden group-open:inline">{language === 'traditional' ? '收起' : '收起'}</span>
+                            <span className="hidden group-open:inline">收起</span>
                         </span>
                     </summary>
                     <p className="mt-3">

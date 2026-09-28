@@ -125,7 +125,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                                     <Star className="w-3 h-3 fill-current text-amber-600 dark:text-amber-300" />
                                     <span className="text-sm font-semibold text-amber-600 dark:text-amber-300">{item.favorites.toLocaleString()}</span>
                                     <span className="text-xs text-gray-600 dark:text-gray-400">
-                                        {language === 'traditional' ? '人全站收藏' : '人全站收藏'}
+                                        人全站收藏
                                     </span>
                                 </div>
                             </div>
@@ -138,11 +138,11 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                                 onClick={(e) => handleToggleFavorite(e, item.fullVerseId, item.verseId)}
                                 className="p-2 rounded-lg hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors touch-manipulation"
                                 title={isFav
-                                    ? (language === 'traditional' ? '取消我的收藏' : '取消我的收藏')
-                                    : (language === 'traditional' ? '加入我的收藏' : '加入我的收藏')}
+                                    ? '取消我的收藏'
+                                    : '加入我的收藏'}
                                 aria-label={isFav
-                                    ? (language === 'traditional' ? '取消我的收藏' : '取消我的收藏')
-                                    : (language === 'traditional' ? '加入我的收藏' : '加入我的收藏')}
+                                    ? '取消我的收藏'
+                                    : '加入我的收藏'}
                                 style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
                                 <Star

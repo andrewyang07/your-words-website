@@ -32,12 +32,12 @@ describe('hasCjk / detectSearchLangFromQuery', () => {
     expect(hasCjk('')).toBe(false);
   });
 
-  it('defaults searchLang to zh for CJK queries only', () => {
+  it('defaults searchLang to zh for CJK and en for Latin-only queries', () => {
     expect(detectSearchLangFromQuery('神愛世人')).toBe('zh');
     expect(detectSearchLangFromQuery('神爱世人')).toBe('zh');
     expect(detectSearchLangFromQuery(' 永生 ')).toBe('zh');
-    expect(detectSearchLangFromQuery('love')).toBeNull();
-    expect(detectSearchLangFromQuery('God so loved')).toBeNull();
+    expect(detectSearchLangFromQuery('love')).toBe('en');
+    expect(detectSearchLangFromQuery('God so loved')).toBe('en');
     expect(detectSearchLangFromQuery('')).toBeNull();
     expect(detectSearchLangFromQuery('   ')).toBeNull();
   });

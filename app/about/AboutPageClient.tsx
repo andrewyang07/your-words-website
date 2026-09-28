@@ -159,9 +159,13 @@ export default function AboutPageClient() {
                                         />
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-lg font-bold text-stone-950 dark:text-stone-50 font-chinese mb-2">iPhone 用戶推薦</h4>
+                                        <h4 className="text-lg font-bold text-stone-950 dark:text-stone-50 font-chinese mb-2">
+                                            {language === 'traditional' ? 'iPhone 用戶推薦' : 'iPhone 用户推荐'}
+                                        </h4>
                                         <p className="text-sm text-stone-700 dark:text-stone-300 font-chinese leading-relaxed mb-3">
-                                            使用 iPhone？試試「心版」iOS App！ 將經文以小組件形式展示在主屏幕上， 每次解鎖手機，第一眼就看到神的話語。
+                                            {language === 'traditional'
+                                                ? '使用 iPhone？試試「心版」iOS App！ 將經文以小組件形式展示在主屏幕上， 每次解鎖手機，第一眼就看到神的話語。'
+                                                : '使用 iPhone？试试「心版」iOS App！ 将经文以小组件形式展示在主屏幕上， 每次解锁手机，第一眼就看到神的话语。'}
                                         </p>
                                         <p className="text-xs text-stone-600 dark:text-stone-400 font-chinese mb-3">
                                             我也為這個 App 付出了大量心血，並讓它全球上架。
@@ -173,7 +177,7 @@ export default function AboutPageClient() {
                                             rel="noopener noreferrer"
                                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-chinese text-sm shadow-md"
                                         >
-                                            前往 App Store 下載
+                                            {language === 'traditional' ? '前往 App Store 下載' : '前往 App Store 下载'}
                                             <span>→</span>
                                         </a>
                                     </div>

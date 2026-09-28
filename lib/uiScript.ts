@@ -20,7 +20,7 @@ export function getBookDisplayName(
   book: BookNameSource | string | null | undefined,
   language: UiScript
 ): string {
-  if (!book) return language === 'traditional' ? '未知' : '未知';
+  if (!book) return '未知';
 
   if (typeof book === 'string') {
     const match = booksData.books.find(

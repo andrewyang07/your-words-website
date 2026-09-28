@@ -8,13 +8,14 @@ export function hasCjk(value: string): boolean {
 }
 
 /**
- * When the query contains CJK, prefer Chinese corpus display.
- * Latin-only / empty queries return null so callers keep navigator/persisted lang.
+ * Prefer corpus language from the query script.
+ * CJK → Chinese; non-empty Latin-only → English (clears a prior zh after CJK search).
+ * Empty queries return null so callers keep navigator/persisted lang.
  */
-export function detectSearchLangFromQuery(query: string): 'zh' | null {
+export function detectSearchLangFromQuery(query: string): 'zh' | 'en' | null {
   const trimmed = query.trim();
   if (!trimmed) return null;
-  return hasCjk(trimmed) ? 'zh' : null;
+  return hasCjk(trimmed) ? 'zh' : 'en';
 }
 
 export function formatResultCount(

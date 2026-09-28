@@ -89,7 +89,7 @@ export default function NoteEditor({ content, onChange, noteEditorRef }: NoteEdi
             onChange(nextMarkdown);
             return true;
         },
-    }), [noteEditorRef, onChange]);
+    }), [onChange]);
 
     const handleChange = (markdown: string) => {
         latestMarkdownRef.current = markdown;
