@@ -97,7 +97,7 @@ export default function RankingsPage() {
             <PageHeader
                 onMenuClick={() => setShowSideMenu(true)}
                 showHelp={false}
-                subtitle={<span className="rounded-full border border-stone-900/10 px-2.5 py-1 text-xs text-stone-500 dark:border-white/10 dark:text-stone-400">總排行榜</span>}
+                subtitle={<span className="rounded-full border border-stone-900/10 px-2.5 py-1 text-xs text-stone-500 dark:border-white/10 dark:text-stone-400">{language === 'traditional' ? '全站排行榜' : '全站排行榜'}</span>}
                 rightContent={
                     <>
                         <button
@@ -152,14 +152,20 @@ export default function RankingsPage() {
                 {/* 说明文字 */}
                 <div className="mb-6 yw-panel p-4">
                     <p className="text-sm text-stone-700 dark:text-stone-300 font-chinese text-center">
-                        📊 最多收藏的聖經經文（按收藏次數排序） · 每小時更新
+                        {language === 'traditional'
+                            ? '📊 全站最多收藏的聖經經文（按全站收藏次數排序，非個人收藏） · 每小時更新'
+                            : '📊 全站最多收藏的圣经经文（按全站收藏次数排序，非个人收藏） · 每小时更新'}
                     </p>
                 </div>
 
                 <section className="mb-6 yw-panel p-5 font-chinese text-sm leading-7 text-stone-700 dark:text-stone-300">
-                    <h2 className="mb-2 text-base font-semibold text-stone-950 dark:text-stone-50">如何使用經文排行榜</h2>
+                    <h2 className="mb-2 text-base font-semibold text-stone-950 dark:text-stone-50">
+                        {language === 'traditional' ? '如何使用全站經文排行榜' : '如何使用全站经文排行榜'}
+                    </h2>
                     <p>
-                        排行榜整理較常被收藏的聖經經文，幫助你找到適合背誦、默想和查經分享的段落。你可以切換閱讀模式查看完整內容，也可以按舊約、新約或書卷篩選，把常被弟兄姊妹收藏的經文加入自己的背誦計劃。
+                        {language === 'traditional'
+                            ? '此排行榜反映全站人氣（累計收藏次數），與你本機的「我的收藏」數量無關。可用來找適合背誦、默想和查經分享的段落；切換閱讀模式可看全文，也可按舊約、新約或書卷篩選，再把經文加入「我的收藏」。'
+                            : '此排行榜反映全站人气（累计收藏次数），与你本机的「我的收藏」数量无关。可用来找适合背诵、默想和查经分享的段落；切换阅读模式可看全文，也可按旧约、新约或书卷筛选，再把经文加入「我的收藏」。'}
                     </p>
                 </section>
                 

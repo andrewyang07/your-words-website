@@ -112,7 +112,7 @@ export default function DiscoveryPageClient() {
 
   function handleSave(verse: Verse) {
     addFavorite(verse.id);
-    setToast(`${getVerseReference(verse)} 已收藏`);
+    setToast(`${getVerseReference(verse)} 已加入我的收藏`);
   }
 
   if (loading) return <LoadingSpinner />;

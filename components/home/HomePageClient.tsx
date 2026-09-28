@@ -998,13 +998,16 @@ export default function HomePage() {
                         </div>
 
                         <div className="liquid-glass flex shrink-0 items-center gap-1 rounded-full p-1 md:gap-1.5">
-                            {/* 全局统计 - 桌面端（完整信息）*/}
-                            <div className="hidden lg:flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition hover:bg-white/50 dark:text-stone-300 dark:hover:bg-white/[0.06]">
+                            {/* 全站统计 - 桌面端（完整信息；与「我的收藏」区分）*/}
+                            <div
+                                className="hidden lg:flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition hover:bg-white/50 dark:text-stone-300 dark:hover:bg-white/[0.06]"
+                                title={language === 'traditional' ? '全站統計（非我的收藏）' : '全站统计（非我的收藏）'}
+                            >
                                 {statsLoading ? (
                                     <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
                                     <span className="whitespace-nowrap text-xs tracking-[0.08em] text-stone-600 dark:text-stone-300 font-chinese">
-                                        {globalStats.totalUsers.toLocaleString()} {language === 'traditional' ? '訪客' : '访客'} · {globalStats.totalFavorites.toLocaleString()} {language === 'traditional' ? '收藏' : '收藏'}
+                                        {globalStats.totalUsers.toLocaleString()} {language === 'traditional' ? '訪客' : '访客'} · {globalStats.totalFavorites.toLocaleString()} {language === 'traditional' ? '全站收藏次數' : '全站收藏次数'}
                                     </span>
                                 )}
                             </div>
@@ -1013,7 +1016,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowStatsModal(true)}
                                 className="hidden md:flex lg:hidden items-center gap-1 px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
-                                title={language === 'traditional' ? '點擊查看詳情' : '点击查看详情'}
+                                title={language === 'traditional' ? '查看全站統計（非我的收藏）' : '查看全站统计（非我的收藏）'}
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 {statsLoading ? (
@@ -1029,11 +1032,11 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowStatsModal(true)}
                                 className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[44px]"
-                                title={language === 'traditional' ? '查看統計' : '查看统计'}
+                                title={language === 'traditional' ? '查看全站統計' : '查看全站统计'}
                                 aria-label={
                                     statsLoading
                                         ? (language === 'traditional' ? '查看統計' : '查看统计')
-                                        : `${language === 'traditional' ? '查看統計，訪客' : '查看统计，访客'} ${globalStats.totalUsers.toLocaleString()}，${language === 'traditional' ? '收藏' : '收藏'} ${globalStats.totalFavorites.toLocaleString()}`
+                                        : `${language === 'traditional' ? '查看統計，訪客' : '查看统计，访客'} ${globalStats.totalUsers.toLocaleString()}，${language === 'traditional' ? '全站收藏次數' : '全站收藏次数'} ${globalStats.totalFavorites.toLocaleString()}`
                                 }
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
@@ -1214,10 +1217,22 @@ export default function HomePage() {
                                     ? 'bg-gold-500 dark:bg-gold-600 text-white shadow-[0_10px_24px_rgba(217,119,6,0.24)] hover:bg-gold-600 dark:hover:bg-gold-700'
                                     : 'bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 text-stone-600 dark:text-stone-300 border border-bible-200/80 dark:border-gray-700 shadow-sm'
                             }`}
-                            title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
+                            title={
+                                filterType === 'favorites'
+                                    ? (language === 'traditional' ? '顯示全部經文' : '显示全部经文')
+                                    : (language === 'traditional' ? '只看我的收藏（本機）' : '只看我的收藏（本机）')
+                            }
+                            aria-label={
+                                language === 'traditional'
+                                    ? `我的收藏 ${favoritesCount}`
+                                    : `我的收藏 ${favoritesCount}`
+                            }
                         >
                             <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
-                            <span className="hidden sm:inline font-chinese text-sm">{filterType === 'favorites' ? '已收藏' : '收藏'}</span>
+                            <span className="font-chinese text-sm">
+                                <span className="hidden sm:inline">{language === 'traditional' ? '我的收藏' : '我的收藏'}</span>
+                                <span className="sm:ml-1 tabular-nums">{favoritesCount}</span>
+                            </span>
                         </button>
 
                         {/* 分享收藏按钮 - 只在收藏筛选模式下显示 */}
@@ -1575,16 +1590,24 @@ export default function HomePage() {
                 {showStatsModal && (
                     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowStatsModal(false)}>
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-                            <h3 className="text-center text-lg font-semibold text-stone-800 dark:text-stone-200 mb-4 font-chinese">全球統計</h3>
+                            <h3 className="text-center text-lg font-semibold text-stone-800 dark:text-stone-200 mb-4 font-chinese">
+                                {language === 'traditional' ? '全站統計' : '全站统计'}
+                            </h3>
                             <p className="text-center text-sm text-stone-600 dark:text-stone-300 leading-relaxed font-chinese">
-                                已有 <span className="font-bold text-stone-900 dark:text-stone-100">{globalStats.totalUsers.toLocaleString()}</span>{' '}
-                                位访客在此背誦神的話語
+                                {language === 'traditional' ? '已有' : '已有'}{' '}
+                                <span className="font-bold text-stone-900 dark:text-stone-100">{globalStats.totalUsers.toLocaleString()}</span>{' '}
+                                {language === 'traditional' ? '位訪客在此背誦神的話語' : '位访客在此背诵神的话语'}
                                 <br />
-                                共收藏{' '}
+                                {language === 'traditional' ? '全站收藏次數' : '全站收藏次数'}{' '}
                                 <span className="font-bold text-stone-900 dark:text-stone-100">
                                     {globalStats.totalFavorites.toLocaleString()}
-                                </span>{' '}
-                                次經文
+                                </span>
+                                <br />
+                                <span className="mt-2 inline-block text-xs text-stone-500 dark:text-stone-400">
+                                    {language === 'traditional'
+                                        ? '與「我的收藏」無關，不會隨本機星標即時變動'
+                                        : '与「我的收藏」无关，不会随本机星标即时变动'}
+                                </span>
                             </p>
                             <button
                                 onClick={() => setShowStatsModal(false)}
@@ -1803,7 +1826,7 @@ export default function HomePage() {
                                 <>
                                     <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
                                         <Star className="w-3 h-3 fill-current" />
-                                        已收藏
+                                        {language === 'traditional' ? '我的收藏' : '我的收藏'} {favoritesCount}
                                     </span>
                                     {favoritesCount > 0 && (
                                         <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">可生成鏈接分享</span>
@@ -2250,22 +2273,33 @@ export default function HomePage() {
 
                 {/* 页脚 */}
                 <footer className="mt-12 border-t border-stone-900/10 dark:border-white/10">
-                    {/* 全局统计栏 */}
+                    {/* 全站统计栏（与「我的收藏」本机计数区分） */}
                     <div className="border-b border-stone-900/10 bg-white/25 dark:border-white/10 dark:bg-white/[0.025]">
                         <div className="max-w-7xl mx-auto px-4 py-4">
-                            <p className="mb-2 text-center text-[10px] tracking-[0.28em] text-stone-500 dark:text-stone-400 font-chinese">GLOBAL PRESENCE</p>
+                            <p className="mb-2 text-center text-[10px] tracking-[0.28em] text-stone-500 dark:text-stone-400 font-chinese">
+                                {language === 'traditional' ? '全站數據' : '全站数据'}
+                            </p>
                             <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm font-chinese">
                                 <div className="flex items-center gap-1.5">
                                     <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
                                     <span className="font-bold text-stone-800 dark:text-stone-200">{globalStats.totalUsers.toLocaleString()}</span>
-                                    <span className="text-xs text-stone-500 dark:text-stone-400">位用戶</span>
+                                    <span className="text-xs text-stone-500 dark:text-stone-400">
+                                        {language === 'traditional' ? '位訪客' : '位访客'}
+                                    </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
                                     <span className="font-bold text-gold-600 dark:text-gold-400">{globalStats.totalFavorites.toLocaleString()}</span>
-                                    <span className="text-xs text-stone-500 dark:text-stone-400">次收藏</span>
+                                    <span className="text-xs text-stone-500 dark:text-stone-400">
+                                        {language === 'traditional' ? '全站收藏次數' : '全站收藏次数'}
+                                    </span>
                                 </div>
                             </div>
+                            <p className="mt-2 text-center text-[11px] text-stone-500 dark:text-stone-400 font-chinese">
+                                {language === 'traditional'
+                                    ? '全站統計與「我的收藏」分開計算'
+                                    : '全站统计与「我的收藏」分开计算'}
+                            </p>
                         </div>
                     </div>
 

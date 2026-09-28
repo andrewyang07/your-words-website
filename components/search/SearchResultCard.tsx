@@ -141,7 +141,8 @@ export default function SearchResultCard({
               handleFavorite();
             }}
             className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
-            title={favorited ? '取消收藏' : '收藏'}
+            title={favorited ? '取消我的收藏' : '加入我的收藏'}
+            aria-label={favorited ? '取消我的收藏' : '加入我的收藏'}
           >
             <Star
               className={`w-4 h-4 ${

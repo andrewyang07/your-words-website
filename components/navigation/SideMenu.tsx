@@ -254,7 +254,9 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     <div className="liquid-button rounded-[1.25rem] p-4">
                                         <div className="flex items-center gap-2 mb-3">
                                             <TrendingUp className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-                                            <h3 className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">最多收藏經文</h3>
+                                            <h3 className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">
+                                                {language === 'traditional' ? '全站最多收藏' : '全站最多收藏'}
+                                            </h3>
                                         </div>
                                         <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-thin">
                                             {topVersesLoading ? (
@@ -295,7 +297,9 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                                         <p className="flex items-center gap-1 mt-1">
                                                             <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
                                                             <span className="font-semibold text-gold-600 dark:text-gold-400">{verse.favorites.toLocaleString()}</span>
-                                                            <span className="text-gray-600 dark:text-gray-400">人收藏</span>
+                                                            <span className="text-gray-600 dark:text-gray-400">
+                                                                {language === 'traditional' ? '人全站收藏' : '人全站收藏'}
+                                                            </span>
                                                         </p>
                                                     </div>
                                                     {/* 查看章节按钮 */}
@@ -323,7 +327,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                             className="liquid-button mt-3 flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-white/65 dark:text-stone-200 dark:hover:bg-white/[0.08] font-chinese"
                                         >
                                             <TrendingUp className="w-4 h-4" />
-                                            <span>查看總排行榜</span>
+                                            <span>{language === 'traditional' ? '查看全站排行榜' : '查看全站排行榜'}</span>
                                         </Link>
                                     </div>
                                 </div>

@@ -126,9 +126,11 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
                 <button
                     onClick={handleToggleFavorite}
                     className="-m-1 rounded-full p-2 text-stone-400 transition-all hover:scale-105 hover:bg-stone-900/5 dark:text-stone-500 dark:hover:bg-white/10 touch-manipulation"
-                    title={isFav ? '取消收藏' : '收藏'}
+                    title={isFav ? '取消我的收藏' : '加入我的收藏'}
                     aria-label={
-                        isFav ? `取消收藏 ${verse.book} ${verse.chapter}:${verse.verse}` : `收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
+                        isFav
+                            ? `取消我的收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
+                            : `加入我的收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
                     }
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
