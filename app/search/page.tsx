@@ -7,6 +7,8 @@ import { HelpCircle, Menu } from 'lucide-react';
 import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { getSearchEngine } from '@/lib/search/searchEngine';
+import { runClientSearch } from '@/lib/search/runClientSearch';
+import { detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
 import SideMenu from '@/components/navigation/SideMenu';
 import SearchBox from '@/components/search/SearchBox';
 import SearchResults from '@/components/search/SearchResults';
@@ -23,6 +25,7 @@ function SearchPageInner() {
     engineReady,
     setResults,
     setLoading,
+    setSearchLang,
     results,
     query,
     loading,
@@ -48,10 +51,12 @@ function SearchPageInner() {
 
         if (!cancelled && q) {
           setQuery(q);
+          const langFromQuery = detectSearchLangFromQuery(q);
+          if (langFromQuery) setSearchLang(langFromQuery);
           setLoading(true);
-          const searched = await engine.search(q);
+          const { results: searched, truncated } = await runClientSearch(q);
           if (!cancelled) {
-            setResults(searched);
+            setResults(searched, truncated);
             setLoading(false);
           }
         }

@@ -775,7 +775,8 @@ export default function HomePage() {
                 let results: SearchResult[];
                 try {
                     const { searchWithPagefind } = await import('@/lib/search/pagefindClient');
-                    results = await searchWithPagefind(value.trim());
+                    const pagefindResponse = await searchWithPagefind(value.trim());
+                    results = pagefindResponse.results;
                 } catch (pagefindErr) {
                     logError('HomePage:pagefindSearchFallback', pagefindErr);
                     await initSearchEngine();

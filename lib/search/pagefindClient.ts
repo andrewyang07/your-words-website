@@ -1,4 +1,12 @@
 import type { SearchResult } from '@/types/search';
+import {
+  DEFAULT_SEARCH_LIMIT,
+  hasCjk,
+  phraseScore,
+  type SearchResponse,
+} from './searchHelpers';
+
+export { hasCjk } from './searchHelpers';
 
 type PagefindResultData = {
   meta?: Record<string, string>;
@@ -51,8 +59,6 @@ const toNumber = (value: string | undefined): number => {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
 };
-
-const hasCjk = (value: string) => /[\u3400-\u9fff]/.test(value);
 
 const COMMON_SEARCH_TERMS = [
   'love', 'loved', 'beginning', 'faith', 'hope', 'grace', 'peace', 'truth', 'life', 'light',
@@ -115,25 +121,6 @@ async function getQueryVariants(query: string): Promise<string[]> {
   return unique(variants);
 }
 
-function phraseScore(query: string, result: SearchResult): number {
-  const normalizedQuery = query.toLowerCase().replace(/\s+/g, '');
-  const normalizedWithSpaces = query.toLowerCase().trim();
-  const haystacks = [
-    result.bookTraditional,
-    result.bookEnglish,
-    result.textChinese,
-    result.textEnglish,
-  ].map((value) => value.toLowerCase());
-
-  let boost = 0;
-  if (haystacks.some((value) => value.includes(normalizedWithSpaces))) boost += 100_000;
-  if (normalizedQuery.length > 1 && haystacks.some((value) => value.replace(/\s+/g, '').includes(normalizedQuery))) {
-    boost += 80_000;
-  }
-
-  return boost + result.score;
-}
-
 function mapPagefindData(data: PagefindResultData, fallbackScore: number, query: string): SearchResult | null {
   const meta = data.meta || {};
   const id = meta.id;
@@ -163,9 +150,16 @@ function mapPagefindData(data: PagefindResultData, fallbackScore: number, query:
   };
 }
 
-export async function searchWithPagefind(query: string, limit = 50): Promise<SearchResult[]> {
+/**
+ * Pagefind search with OpenCC query variants + phrase boost.
+ * Returns truncated=true when more than `limit` unique hits exist.
+ */
+export async function searchWithPagefind(
+  query: string,
+  limit = DEFAULT_SEARCH_LIMIT
+): Promise<SearchResponse> {
   const trimmed = query.trim();
-  if (!trimmed) return [];
+  if (!trimmed) return { results: [], truncated: false };
 
   const pagefind = await loadPagefind();
   const variants = await getQueryVariants(trimmed);
@@ -190,5 +184,10 @@ export async function searchWithPagefind(query: string, limit = 50): Promise<Sea
     }
   }
 
-  return merged.sort((a, b) => b.score - a.score).slice(0, limit);
+  const sorted = merged.sort((a, b) => b.score - a.score);
+  const truncated = sorted.length > limit;
+  return {
+    results: sorted.slice(0, limit),
+    truncated,
+  };
 }

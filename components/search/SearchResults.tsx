@@ -2,6 +2,7 @@
 
 import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
+import { formatResultCount } from '@/lib/search/searchHelpers';
 import SearchResultCard from './SearchResultCard';
 
 interface SearchResultsProps {
@@ -9,7 +10,7 @@ interface SearchResultsProps {
 }
 
 export default function SearchResults({ showKeyboardHint = true }: SearchResultsProps) {
-  const { results, selectedIndex, loading, query } = useSearchStore();
+  const { results, resultsTruncated, selectedIndex, loading, query } = useSearchStore();
   const language = useAppStore((s) => s.language);
 
   if (loading) {
@@ -49,9 +50,10 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
   return (
     <div className="w-full max-w-3xl mx-auto mt-5 space-y-4">
       <p className="text-xs text-stone-500 dark:text-stone-400 font-chinese px-1">
-        {language === 'traditional'
-          ? `找到 ${results.length} 條結果`
-          : `找到 ${results.length} 条结果`}
+        {formatResultCount(results.length, {
+          truncated: resultsTruncated,
+          traditional: language === 'traditional',
+        })}
       </p>
       {results.map((result, index) => (
         <SearchResultCard

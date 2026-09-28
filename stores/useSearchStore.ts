@@ -7,6 +7,7 @@ export type SearchLang = 'zh' | 'en';
 interface SearchState {
   query: string;
   results: SearchResult[];
+  resultsTruncated: boolean;
   selectedIndex: number;
   searchLang: SearchLang;
   contextVerse: {
@@ -19,7 +20,7 @@ interface SearchState {
   engineReady: boolean;
 
   setQuery: (query: string) => void;
-  setResults: (results: SearchResult[]) => void;
+  setResults: (results: SearchResult[], truncated?: boolean) => void;
   setSelectedIndex: (index: number) => void;
   setSearchLang: (lang: SearchLang) => void;
   setContextVerse: (ctx: SearchState['contextVerse']) => void;
@@ -40,6 +41,7 @@ export const useSearchStore = create<SearchState>()(
     (set) => ({
       query: '',
       results: [],
+      resultsTruncated: false,
       selectedIndex: -1,
       searchLang: detectDefaultLang(),
       contextVerse: null,
@@ -47,14 +49,21 @@ export const useSearchStore = create<SearchState>()(
       engineReady: false,
 
       setQuery: (query) => set({ query }),
-      setResults: (results) => set({ results, selectedIndex: -1 }),
+      setResults: (results, truncated = false) =>
+        set({ results, resultsTruncated: truncated, selectedIndex: -1 }),
       setSelectedIndex: (selectedIndex) => set({ selectedIndex }),
       setSearchLang: (searchLang) => set({ searchLang }),
       setContextVerse: (contextVerse) => set({ contextVerse }),
       setLoading: (loading) => set({ loading }),
       setEngineReady: (engineReady) => set({ engineReady }),
       clearSearch: () =>
-        set({ query: '', results: [], selectedIndex: -1, contextVerse: null }),
+        set({
+          query: '',
+          results: [],
+          resultsTruncated: false,
+          selectedIndex: -1,
+          contextVerse: null,
+        }),
     }),
     {
       name: 'bible-search',
