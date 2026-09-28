@@ -13,7 +13,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function applyThemeToDocument(theme: AppState['theme']) {
+  const prefersDark =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+  document.documentElement.classList.toggle('dark', isDark);
+}
+
 export default function AppStoreStorageSync() {
+  const theme = useAppStore((state) => state.theme);
+
+  // 全域套用主題，讓側欄「自動 / 淺色 / 深色」在任意頁面立即生效
+  useEffect(() => {
+    applyThemeToDocument(theme);
+    if (theme !== 'system' || typeof window.matchMedia !== 'function') return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => applyThemeToDocument('system');
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [theme]);
+
   useEffect(() => {
     const syncPreferences = (event: StorageEvent) => {
       if (event.key !== APP_STORE_STORAGE_KEY || !event.newValue) return;

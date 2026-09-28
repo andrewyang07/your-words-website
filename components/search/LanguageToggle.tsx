@@ -2,6 +2,8 @@
 
 import { useSearchStore, type SearchLang } from '@/stores/useSearchStore';
 
+// Corpus language for /search results (CUV Chinese vs WEB English).
+// Not the product UI 简/繁 script — that lives in useAppStore.language / SideMenu.
 const options: { value: SearchLang; label: string }[] = [
   { value: 'zh', label: '中文' },
   { value: 'en', label: 'English' },

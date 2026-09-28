@@ -30,6 +30,8 @@ import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
+import { bookMatchesFilter, getBookDisplayName, getChromeCopy, getTestamentLabel } from '@/lib/uiScript';
+import { formatResultCount } from '@/lib/search/searchHelpers';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { Verse, Book } from '@/types/verse';
@@ -56,6 +58,7 @@ type BookFilterType = 'all' | 'old' | 'new' | string; // string 为具体书卷�
 
 export default function HomePage() {
     const { language, theme, setLanguage, setTheme } = useAppStore();
+    const chrome = getChromeCopy(language);
     const { verses, books, loadVerses, loadBooks } = useVerseStore();
     const { isFavorite, addFavorites, getFavoritesList } = useFavoritesStore();
     const [loading, setLoading] = useState(true);
@@ -136,8 +139,8 @@ export default function HomePage() {
     const [statsLoading, setStatsLoading] = useState(true);
     const [showStatsModal, setShowStatsModal] = useState(false); // 移动端统计 modal
     const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
-    const maskModeLabel = maskMode === 'punctuation' ? (language === 'traditional' ? '每句' : '每句') : (language === 'traditional' ? '開頭' : '开头');
-    const maskCharsLabel = maskCharsType === 'fixed' ? `${language === 'traditional' ? '最多提示' : '最多提示'}${maskCharsFixed}字` : `${language === 'traditional' ? '隨機提示' : '随机提示'}${maskCharsMin}-${maskCharsMax}字`;
+    const maskModeLabel = maskMode === 'punctuation' ? '每句' : (language === 'traditional' ? '開頭' : '开头');
+    const maskCharsLabel = maskCharsType === 'fixed' ? `最多提示${maskCharsFixed}字` : `${language === 'traditional' ? '隨機提示' : '随机提示'}${maskCharsMin}-${maskCharsMax}字`;
     const maskSettingsSummary = `${maskModeLabel}·${maskCharsLabel}`;
 
     // 滚动监听 - 懒加载更多卡片
@@ -511,19 +514,19 @@ export default function HomePage() {
             // 按书卷筛选
             if (favoritesBookFilter === 'old') {
                 favFiltered = favFiltered.filter((v) => {
-                    const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                    const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                     return book?.testament === 'old';
                 });
             } else if (favoritesBookFilter === 'new') {
                 favFiltered = favFiltered.filter((v) => {
-                    const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                    const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                     return book?.testament === 'new';
                 });
             } else if (favoritesBookFilter !== 'all') {
                 // 具体书卷
                 favFiltered = favFiltered.filter((v) => {
                     const book = books.find((b) => b.key === favoritesBookFilter);
-                    return v.book === favoritesBookFilter || v.book === book?.nameTraditional;
+                    return v.book === favoritesBookFilter || v.bookKey === favoritesBookFilter || v.book === book?.name || v.book === book?.nameTraditional || v.book === book?.nameSimplified;
                 });
             }
 
@@ -540,17 +543,20 @@ export default function HomePage() {
         // 1. 先按书卷筛选
         if (bookFilter === 'old') {
             filtered = verses.filter((v) => {
-                const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                 return book?.testament === 'old';
             });
         } else if (bookFilter === 'new') {
             filtered = verses.filter((v) => {
-                const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                 return book?.testament === 'new';
             });
         } else if (bookFilter !== 'all') {
             // 具体书卷
-            filtered = verses.filter((v) => v.book === bookFilter || v.book === books.find((b) => b.key === bookFilter)?.nameTraditional);
+            filtered = verses.filter((v) => {
+                const book = books.find((b) => b.key === bookFilter);
+                return book ? bookMatchesFilter(v.book, v.bookKey, book) : v.book === bookFilter;
+            });
         }
 
         // 2. 随机或默认排序
@@ -559,8 +565,8 @@ export default function HomePage() {
         } else {
             // 默认按圣经顺序
             filtered = [...filtered].sort((a, b) => {
-                const bookA = books.find((bk) => bk.key === a.book || bk.nameTraditional === a.book);
-                const bookB = books.find((bk) => bk.key === b.book || bk.nameTraditional === b.book);
+                const bookA = books.find((bk) => bk.key === a.book || bk.key === a.bookKey || bk.nameTraditional === a.book || bk.nameSimplified === a.book || bk.name === a.book);
+                const bookB = books.find((bk) => bk.key === b.book || bk.key === b.bookKey || bk.nameTraditional === b.book || bk.nameSimplified === b.book || bk.name === b.book);
                 if (bookA && bookB && bookA.order !== bookB.order) {
                     return bookA.order - bookB.order;
                 }
@@ -775,7 +781,8 @@ export default function HomePage() {
                 let results: SearchResult[];
                 try {
                     const { searchWithPagefind } = await import('@/lib/search/pagefindClient');
-                    results = await searchWithPagefind(value.trim());
+                    const pagefindResponse = await searchWithPagefind(value.trim());
+                    results = pagefindResponse.results;
                 } catch (pagefindErr) {
                     logError('HomePage:pagefindSearchFallback', pagefindErr);
                     await initSearchEngine();
@@ -947,7 +954,7 @@ export default function HomePage() {
         };
 
         favoritesVersesData.forEach((verse) => {
-            const book = books.find((b) => b.key === verse.book || b.nameTraditional === verse.book);
+            const book = books.find((b) => b.key === verse.book || b.key === verse.bookKey || b.nameTraditional === verse.book || b.nameSimplified === verse.book || b.name === verse.book);
             if (book) {
                 if (book.testament === 'old') counts.old++;
                 if (book.testament === 'new') counts.new++;
@@ -997,13 +1004,16 @@ export default function HomePage() {
                         </div>
 
                         <div className="liquid-glass flex shrink-0 items-center gap-1 rounded-full p-1 md:gap-1.5">
-                            {/* 全局统计 - 桌面端（完整信息）*/}
-                            <div className="hidden lg:flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition hover:bg-white/50 dark:text-stone-300 dark:hover:bg-white/[0.06]">
+                            {/* 全站统计 - 桌面端（完整信息；与「我的收藏」区分）*/}
+                            <div
+                                className="hidden lg:flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition hover:bg-white/50 dark:text-stone-300 dark:hover:bg-white/[0.06]"
+                                title={language === 'traditional' ? '全站統計（非我的收藏）' : '全站统计（非我的收藏）'}
+                            >
                                 {statsLoading ? (
                                     <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                                 ) : (
                                     <span className="whitespace-nowrap text-xs tracking-[0.08em] text-stone-600 dark:text-stone-300 font-chinese">
-                                        {globalStats.totalUsers.toLocaleString()} {language === 'traditional' ? '訪客' : '访客'} · {globalStats.totalFavorites.toLocaleString()} {language === 'traditional' ? '收藏' : '收藏'}
+                                        {globalStats.totalUsers.toLocaleString()} {language === 'traditional' ? '訪客' : '访客'} · {globalStats.totalFavorites.toLocaleString()} {language === 'traditional' ? '全站收藏次數' : '全站收藏次数'}
                                     </span>
                                 )}
                             </div>
@@ -1012,7 +1022,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowStatsModal(true)}
                                 className="hidden md:flex lg:hidden items-center gap-1 px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
-                                title={language === 'traditional' ? '點擊查看詳情' : '点击查看详情'}
+                                title={language === 'traditional' ? '查看全站統計（非我的收藏）' : '查看全站统计（非我的收藏）'}
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
                                 {statsLoading ? (
@@ -1028,11 +1038,11 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowStatsModal(true)}
                                 className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[44px]"
-                                title={language === 'traditional' ? '查看統計' : '查看统计'}
+                                title={language === 'traditional' ? '查看全站統計' : '查看全站统计'}
                                 aria-label={
                                     statsLoading
                                         ? (language === 'traditional' ? '查看統計' : '查看统计')
-                                        : `${language === 'traditional' ? '查看統計，訪客' : '查看统计，访客'} ${globalStats.totalUsers.toLocaleString()}，${language === 'traditional' ? '收藏' : '收藏'} ${globalStats.totalFavorites.toLocaleString()}`
+                                        : `${language === 'traditional' ? '查看統計，訪客' : '查看统计，访客'} ${globalStats.totalUsers.toLocaleString()}，${language === 'traditional' ? '全站收藏次數' : '全站收藏次数'} ${globalStats.totalFavorites.toLocaleString()}`
                                 }
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             >
@@ -1158,7 +1168,7 @@ export default function HomePage() {
                                 <button
                                     onClick={handleClearSearch}
                                     className="absolute right-3 rounded-full p-1.5 text-bible-500 transition hover:bg-bible-100 hover:text-bible-800 dark:text-bible-300 dark:hover:bg-gray-700 dark:hover:text-bible-100"
-                                    title={language === 'traditional' ? '清除搜索' : '清除搜索'}
+                                    title="清除搜索"
                                     aria-label="清除搜索"
                                 >
                                     <X className="w-3.5 h-3.5" />
@@ -1213,10 +1223,22 @@ export default function HomePage() {
                                     ? 'bg-gold-500 dark:bg-gold-600 text-white shadow-[0_10px_24px_rgba(217,119,6,0.24)] hover:bg-gold-600 dark:hover:bg-gold-700'
                                     : 'bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 text-stone-600 dark:text-stone-300 border border-bible-200/80 dark:border-gray-700 shadow-sm'
                             }`}
-                            title={filterType === 'favorites' ? '显示全部' : '只看已收藏'}
+                            title={
+                                filterType === 'favorites'
+                                    ? (language === 'traditional' ? '顯示全部經文' : '显示全部经文')
+                                    : (language === 'traditional' ? '只看我的收藏（本機）' : '只看我的收藏（本机）')
+                            }
+                            aria-label={
+                                language === 'traditional'
+                                    ? `我的收藏 ${favoritesCount}`
+                                    : `我的收藏 ${favoritesCount}`
+                            }
                         >
                             <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
-                            <span className="hidden sm:inline font-chinese text-sm">{filterType === 'favorites' ? '已收藏' : '收藏'}</span>
+                            <span className="font-chinese text-sm">
+                                <span className="hidden sm:inline">我的收藏</span>
+                                <span className="sm:ml-1 tabular-nums">{favoritesCount}</span>
+                            </span>
                         </button>
 
                         {/* 分享收藏按钮 - 只在收藏筛选模式下显示 */}
@@ -1347,7 +1369,7 @@ export default function HomePage() {
                                     {({ open }) => (
                                         <div className="relative z-[220] overflow-visible">
                                             <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
-                                                <span className="block">{selectedChapter ? `${language === 'traditional' ? '第' : '第'} ${selectedChapter} ${language === 'traditional' ? '章' : '章'}` : (language === 'traditional' ? '所有章節' : '所有章节')}</span>
+                                                <span className="block">{selectedChapter ? `第 ${selectedChapter} 章` : (language === 'traditional' ? '所有章節' : '所有章节')}</span>
                                                 <ChevronDown
                                                     className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400 transition-transform ${
                                                         open ? 'rotate-180' : ''
@@ -1399,7 +1421,7 @@ export default function HomePage() {
                                                             {({ selected }) => (
                                                                 <>
                                                                     <span className={`block ${selected ? 'font-semibold' : 'font-normal'}`}>
-                                                                        {language === 'traditional' ? '第' : '第'} {ch} {language === 'traditional' ? '章' : '章'}
+                                                                        第 {ch} 章
                                                                     </span>
                                                                     {selected && (
                                                                         <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400" />
@@ -1450,7 +1472,7 @@ export default function HomePage() {
                                 onClick={handleShuffle}
                                 className="liquid-button flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] touch-manipulation"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                title={language === 'traditional' ? '重新排列' : '重新排列'}
+                                title="重新排列"
                             >
                                 <Shuffle className="w-4 h-4 text-stone-600 dark:text-stone-300" />
                                 <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">{language === 'traditional' ? '隨機' : '随机'}</span>
@@ -1574,16 +1596,24 @@ export default function HomePage() {
                 {showStatsModal && (
                     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowStatsModal(false)}>
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-                            <h3 className="text-center text-lg font-semibold text-stone-800 dark:text-stone-200 mb-4 font-chinese">全球統計</h3>
+                            <h3 className="text-center text-lg font-semibold text-stone-800 dark:text-stone-200 mb-4 font-chinese">
+                                {language === 'traditional' ? '全站統計' : '全站统计'}
+                            </h3>
                             <p className="text-center text-sm text-stone-600 dark:text-stone-300 leading-relaxed font-chinese">
-                                已有 <span className="font-bold text-stone-900 dark:text-stone-100">{globalStats.totalUsers.toLocaleString()}</span>{' '}
-                                位访客在此背誦神的話語
+                                已有{' '}
+                                <span className="font-bold text-stone-900 dark:text-stone-100">{globalStats.totalUsers.toLocaleString()}</span>{' '}
+                                {language === 'traditional' ? '位訪客在此背誦神的話語' : '位访客在此背诵神的话语'}
                                 <br />
-                                共收藏{' '}
+                                {language === 'traditional' ? '全站收藏次數' : '全站收藏次数'}{' '}
                                 <span className="font-bold text-stone-900 dark:text-stone-100">
                                     {globalStats.totalFavorites.toLocaleString()}
-                                </span>{' '}
-                                次經文
+                                </span>
+                                <br />
+                                <span className="mt-2 inline-block text-xs text-stone-500 dark:text-stone-400">
+                                    {language === 'traditional'
+                                        ? '與「我的收藏」無關，不會隨本機星標即時變動'
+                                        : '与「我的收藏」无关，不会随本机星标即时变动'}
+                                </span>
                             </p>
                             <button
                                 onClick={() => setShowStatsModal(false)}
@@ -1729,15 +1759,24 @@ export default function HomePage() {
                                                 <div>
                                                     <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">心版 iOS App</p>
                                                     <p className="text-stone-500 dark:text-stone-400">
-                                                        將經文以<span className="font-semibold">小組件</span>形式展示在主屏幕，
-                                                        每次解鎖第一眼看到神的話語。
+                                                        {language === 'traditional' ? (
+                                                            <>
+                                                                將經文以<span className="font-semibold">小組件</span>形式展示在主屏幕，
+                                                                每次解鎖第一眼看到神的話語。
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                将经文以<span className="font-semibold">小组件</span>形式展示在主屏幕，
+                                                                每次解锁第一眼看到神的话语。
+                                                            </>
+                                                        )}
                                                         <a
                                                             href="https://apps.apple.com/app/6744570052"
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="inline-flex items-center ml-1 text-blue-600 dark:text-blue-400 font-semibold hover:underline"
                                                         >
-                                                            前往下載 →
+                                                            {language === 'traditional' ? '前往下載 →' : '前往下载 →'}
                                                         </a>
                                                     </p>
                                                 </div>
@@ -1777,7 +1816,7 @@ export default function HomePage() {
                                     <div className="flex flex-col gap-0.5">
                                         <span className="text-xs font-semibold text-stone-800 dark:text-stone-200 font-chinese">搜索「{searchQuery}」</span>
                                         <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">
-                                            {isSearching ? '正在匹配经文索引。' : `找到 ${searchResults.length} 条结果。`}
+                                            {isSearching ? chrome.matchingIndex : `${formatResultCount(searchResults.length, { traditional: language === 'traditional' })}。`}
                                         </span>
                                     </div>
                                 </div>
@@ -1802,7 +1841,7 @@ export default function HomePage() {
                                 <>
                                     <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 rounded-full text-xs font-medium border border-gold-200 dark:border-gold-800">
                                         <Star className="w-3 h-3 fill-current" />
-                                        已收藏
+                                        我的收藏 {favoritesCount}
                                     </span>
                                     {favoritesCount > 0 && (
                                         <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">可生成鏈接分享</span>
@@ -1860,11 +1899,11 @@ export default function HomePage() {
                                                     {/* 计算{language === 'traditional' ? '舊約' : '旧约'}{language === 'traditional' ? '新約' : '新约'}经文数量 */}
                                                     {(() => {
                                                         const oldCount = verses.filter((v) => {
-                                                            const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                                                            const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                                                             return book?.testament === 'old';
                                                         }).length;
                                                         const newCount = verses.filter((v) => {
-                                                            const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                                                            const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                                                             return book?.testament === 'new';
                                                         }).length;
 
@@ -1879,7 +1918,7 @@ export default function HomePage() {
                                                                         >
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                                    舊約
+                                                                                    {getTestamentLabel("old", language)}
                                                                                 </span>
                                                                                 <div className="flex items-center gap-2">
                                                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -1902,7 +1941,7 @@ export default function HomePage() {
                                                                         >
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                                    新約
+                                                                                    {getTestamentLabel("new", language)}
                                                                                 </span>
                                                                                 <div className="flex items-center gap-2">
                                                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -1926,7 +1965,7 @@ export default function HomePage() {
                                                     {/* 各书卷 */}
                                                     {books.map((book) => {
                                                         const count = verses.filter(
-                                                            (v) => v.book === book.key || v.book === book.nameTraditional
+                                                            (v) => bookMatchesFilter(v.book, v.bookKey, book)
                                                         ).length;
                                                         if (count === 0) return null;
 
@@ -1940,7 +1979,7 @@ export default function HomePage() {
                                                                     >
                                                                         <div className="flex items-center justify-between">
                                                                             <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                                {book.nameTraditional}
+                                                                                {getBookDisplayName(book, language)}
                                                                             </span>
                                                                             <div className="flex items-center gap-2">
                                                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -2011,7 +2050,7 @@ export default function HomePage() {
                                                             >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                        舊約
+                                                                        {getTestamentLabel("old", language)}
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -2030,7 +2069,7 @@ export default function HomePage() {
                                                             >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                        新約
+                                                                        {getTestamentLabel("new", language)}
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -2061,7 +2100,7 @@ export default function HomePage() {
                                                                     >
                                                                         <div className="flex items-center justify-between">
                                                                             <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                                {book.nameTraditional}
+                                                                                {getBookDisplayName(book, language)}
                                                                             </span>
                                                                             <div className="flex items-center gap-2">
                                                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -2171,7 +2210,7 @@ export default function HomePage() {
                                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-bible-100 dark:bg-gray-700 rounded-lg">
                                         <div className="w-4 h-4 border-2 border-bible-400 dark:border-bible-300 border-t-transparent rounded-full animate-spin"></div>
                                         <span className="text-sm text-bible-600 dark:text-bible-300 font-chinese">
-                                            載入更多 ({visibleCount} / {displayVerses.length})
+                                            {chrome.loadMore} ({visibleCount} / {displayVerses.length})
                                         </span>
                                     </div>
                                 </div>
@@ -2231,7 +2270,9 @@ export default function HomePage() {
                                             </div>
                                         </div>
                                         <p className="line-clamp-1 text-xs text-bible-600 dark:text-gray-400 font-chinese md:text-sm">
-                                            主屏幕小組件 · 雙語對照 · 把經文放在每天第一眼
+                                            {language === 'traditional'
+                                                ? '主屏幕小組件 · 雙語對照 · 把經文放在每天第一眼'
+                                                : '主屏幕小组件 · 双语对照 · 把经文放在每天第一眼'}
                                         </p>
                                     </div>
 
@@ -2249,27 +2290,38 @@ export default function HomePage() {
 
                 {/* 页脚 */}
                 <footer className="mt-12 border-t border-stone-900/10 dark:border-white/10">
-                    {/* 全局统计栏 */}
+                    {/* 全站统计栏（与「我的收藏」本机计数区分） */}
                     <div className="border-b border-stone-900/10 bg-white/25 dark:border-white/10 dark:bg-white/[0.025]">
                         <div className="max-w-7xl mx-auto px-4 py-4">
-                            <p className="mb-2 text-center text-[10px] tracking-[0.28em] text-stone-500 dark:text-stone-400 font-chinese">GLOBAL PRESENCE</p>
+                            <p className="mb-2 text-center text-[10px] tracking-[0.28em] text-stone-500 dark:text-stone-400 font-chinese">
+                                {language === 'traditional' ? '全站數據' : '全站数据'}
+                            </p>
                             <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm font-chinese">
                                 <div className="flex items-center gap-1.5">
                                     <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
                                     <span className="font-bold text-stone-800 dark:text-stone-200">{globalStats.totalUsers.toLocaleString()}</span>
-                                    <span className="text-xs text-stone-500 dark:text-stone-400">位用戶</span>
+                                    <span className="text-xs text-stone-500 dark:text-stone-400">
+                                        {language === 'traditional' ? '位訪客' : '位访客'}
+                                    </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
                                     <span className="font-bold text-gold-600 dark:text-gold-400">{globalStats.totalFavorites.toLocaleString()}</span>
-                                    <span className="text-xs text-stone-500 dark:text-stone-400">次收藏</span>
+                                    <span className="text-xs text-stone-500 dark:text-stone-400">
+                                        {language === 'traditional' ? '全站收藏次數' : '全站收藏次数'}
+                                    </span>
                                 </div>
                             </div>
+                            <p className="mt-2 text-center text-[11px] text-stone-500 dark:text-stone-400 font-chinese">
+                                {language === 'traditional'
+                                    ? '全站統計與「我的收藏」分開計算'
+                                    : '全站统计与「我的收藏」分开计算'}
+                            </p>
                         </div>
                     </div>
 
                     <div className="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
-                        <p>願神的話語常在你心中</p>
+                        <p>{chrome.blessing}</p>
                         <p className="mt-2 text-xs">© 2025 你的話語 · Made for Christ</p>
                     </div>
                 </footer>

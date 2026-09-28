@@ -4,7 +4,9 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Star, ChevronRight } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
+import { useAppStore } from '@/stores/useAppStore';
 import { sendStats } from '@/lib/statsUtils';
+import { getBookDisplayName, getTestamentLabel } from '@/lib/uiScript';
 import booksData from '@/public/data/books.json';
 
 interface RankingItem {
@@ -20,6 +22,7 @@ interface RankingsListProps {
 export default function RankingsList({ rankings }: RankingsListProps) {
     const router = useRouter();
     const { isFavorite, toggleFavorite } = useFavoritesStore();
+    const language = useAppStore((s) => s.language);
 
     // 解析 verseId 并获取书卷信息
     const enrichedRankings = useMemo(() => {
@@ -41,13 +44,13 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                 bookIndex,
                 chapter,
                 verse,
-                bookName: book?.nameTraditional || '未知',
+                bookName: getBookDisplayName(book, language),
                 bookKey,
                 testament: book?.testament || 'unknown',
                 fullVerseId, // 用于收藏功能
             };
         });
-    }, [rankings]);
+    }, [rankings, language]);
 
     const handleViewChapter = (bookName: string, chapter: number) => {
         router.push(`/?book=${encodeURIComponent(bookName)}&chapter=${chapter}`);
@@ -116,12 +119,14 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                                             : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                                     }`}
                                 >
-                                    {item.testament === 'old' ? '舊約' : '新約'}
+                                    {getTestamentLabel(item.testament, language)}
                                 </span>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1" title={language === 'traditional' ? '全站人氣（非我的收藏）' : '全站人气（非我的收藏）'}>
                                     <Star className="w-3 h-3 fill-current text-amber-600 dark:text-amber-300" />
                                     <span className="text-sm font-semibold text-amber-600 dark:text-amber-300">{item.favorites.toLocaleString()}</span>
-                                    <span className="text-xs text-gray-600 dark:text-gray-400">人收藏</span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                                        人全站收藏
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -132,8 +137,12 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                             <button
                                 onClick={(e) => handleToggleFavorite(e, item.fullVerseId, item.verseId)}
                                 className="p-2 rounded-lg hover:bg-bible-50 dark:hover:bg-gray-700 transition-colors touch-manipulation"
-                                title={isFav ? '取消收藏' : '收藏'}
-                                aria-label={isFav ? '取消收藏' : '收藏'}
+                                title={isFav
+                                    ? '取消我的收藏'
+                                    : '加入我的收藏'}
+                                aria-label={isFav
+                                    ? '取消我的收藏'
+                                    : '加入我的收藏'}
                                 style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
                                 <Star

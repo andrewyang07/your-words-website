@@ -38,8 +38,7 @@ export default function ContextViewer() {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-bible-200 dark:border-gray-700">
               <h3 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                {contextVerse.bookKey} {contextVerse.chapter}
-                {language === 'traditional' ? '章' : '章'}
+                {contextVerse.bookKey} {contextVerse.chapter}章
               </h3>
               <button
                 onClick={() => setContextVerse(null)}

@@ -9,6 +9,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import RankingsList from '@/components/rankings/RankingsList';
 import PageHeader from '@/components/layout/PageHeader';
 import booksData from '@/public/data/books.json';
+import { getBookDisplayName, getChromeCopy } from '@/lib/uiScript';
 import dynamic from 'next/dynamic';
 
 // 动态导入侧边栏
@@ -25,6 +26,7 @@ type BookFilterType = 'all' | 'old' | 'new' | string;
 export default function RankingsPage() {
     const router = useRouter();
     const { language, theme, setLanguage, setTheme } = useAppStore();
+    const chrome = getChromeCopy(language);
     const [rankings, setRankings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -97,7 +99,7 @@ export default function RankingsPage() {
             <PageHeader
                 onMenuClick={() => setShowSideMenu(true)}
                 showHelp={false}
-                subtitle={<span className="rounded-full border border-stone-900/10 px-2.5 py-1 text-xs text-stone-500 dark:border-white/10 dark:text-stone-400">總排行榜</span>}
+                subtitle={<span className="rounded-full border border-stone-900/10 px-2.5 py-1 text-xs text-stone-500 dark:border-white/10 dark:text-stone-400">全站排行榜</span>}
                 rightContent={
                     <>
                         <button
@@ -112,7 +114,7 @@ export default function RankingsPage() {
                         </button>
                         <button
                             onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
-                            className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                            className="liquid-button hidden md:flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
                             aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
@@ -149,20 +151,19 @@ export default function RankingsPage() {
 
             {/* 主内容 */}
             <main className="yw-shell">
-                {/* 说明文字 */}
-                <div className="mb-6 yw-panel p-4">
-                    <p className="text-sm text-stone-700 dark:text-stone-300 font-chinese text-center">
-                        📊 最多收藏的聖經經文（按收藏次數排序） · 每小時更新
-                    </p>
+                {/* 緊湊狀態列：短詞組 + nowrap，避免 ~390px 中段斷行 */}
+                <div className="mb-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-1 font-chinese text-xs text-stone-500 dark:text-stone-400 sm:text-sm">
+                    <span className="whitespace-nowrap">📊 全站最多收藏</span>
+                    <span aria-hidden className="text-stone-300 dark:text-stone-600">·</span>
+                    <span className="whitespace-nowrap">
+                        {language === 'traditional' ? '按全站收藏次數排序' : '按全站收藏次数排序'}
+                    </span>
+                    <span aria-hidden className="text-stone-300 dark:text-stone-600">·</span>
+                    <span className="whitespace-nowrap">
+                        {language === 'traditional' ? '每小時更新' : '每小时更新'}
+                    </span>
                 </div>
 
-                <section className="mb-6 yw-panel p-5 font-chinese text-sm leading-7 text-stone-700 dark:text-stone-300">
-                    <h2 className="mb-2 text-base font-semibold text-stone-950 dark:text-stone-50">如何使用經文排行榜</h2>
-                    <p>
-                        排行榜整理較常被收藏的聖經經文，幫助你找到適合背誦、默想和查經分享的段落。你可以切換閱讀模式查看完整內容，也可以按舊約、新約或書卷篩選，把常被弟兄姊妹收藏的經文加入自己的背誦計劃。
-                    </p>
-                </section>
-                
                 {/* 筛选工具栏 */}
                 {rankings.length > 0 && !loading && !error && (
                     <div className="relative z-[200] mb-6 flex items-center justify-between flex-wrap gap-3 overflow-visible">
@@ -211,7 +212,7 @@ export default function RankingsPage() {
                                                 <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-sm font-chinese text-stone-950 dark:text-stone-50">
-                                                            舊約
+                                                            {language === 'traditional' ? '舊約' : '旧约'}
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -229,7 +230,7 @@ export default function RankingsPage() {
                                                 <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-sm font-chinese text-stone-950 dark:text-stone-50">
-                                                            新約
+                                                            {language === 'traditional' ? '新約' : '新约'}
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -256,7 +257,7 @@ export default function RankingsPage() {
                                                         <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                             <div className="flex items-center justify-between">
                                                                 <span className="text-sm font-chinese text-stone-950 dark:text-stone-50">
-                                                                    {book.nameTraditional}
+                                                                    {getBookDisplayName(book, language)}
                                                                 </span>
                                                                 <div className="flex items-center gap-2">
                                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -307,16 +308,32 @@ export default function RankingsPage() {
                     </div>
                 ) : (
                     <div className="text-center py-12">
-                        <p className="text-stone-500 dark:text-stone-400 font-chinese mb-2">暫無排行榜數據</p>
-                        <p className="text-sm text-bible-400 dark:text-bible-500 font-chinese">開始收藏經文吧！</p>
+                        <p className="text-stone-500 dark:text-stone-400 font-chinese mb-2">{chrome.rankingsEmpty}</p>
+                        <p className="text-sm text-bible-400 dark:text-bible-500 font-chinese">{chrome.rankingsEmptyHint}</p>
                     </div>
                 )}
+
+                {/* SEO / 使用說明移到列表下方並預設摺疊，避免擠佔窄屏主視口 */}
+                <details className="mt-8 yw-panel group p-4 font-chinese text-sm leading-7 text-stone-700 dark:text-stone-300">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-stone-950 dark:text-stone-50 [&::-webkit-details-marker]:hidden">
+                        <span>{language === 'traditional' ? '如何使用全站經文排行榜' : '如何使用全站经文排行榜'}</span>
+                        <span className="text-xs font-normal text-stone-400 dark:text-stone-500">
+                            <span className="group-open:hidden">{language === 'traditional' ? '展開' : '展开'}</span>
+                            <span className="hidden group-open:inline">收起</span>
+                        </span>
+                    </summary>
+                    <p className="mt-3">
+                        {language === 'traditional'
+                            ? '此排行榜反映全站人氣（累計收藏次數），與你本機的「我的收藏」數量無關。可用來找適合背誦、默想和查經分享的段落；切換閱讀模式可看全文，也可按舊約、新約或書卷篩選，再把經文加入「我的收藏」。'
+                            : '此排行榜反映全站人气（累计收藏次数），与你本机的「我的收藏」数量无关。可用来找适合背诵、默想和查经分享的段落；切换阅读模式可看全文，也可按旧约、新约或书卷筛选，再把经文加入「我的收藏」。'}
+                    </p>
+                </details>
             </main>
 
             {/* 页脚 */}
             <footer className="border-t border-bible-200 dark:border-gray-700 mt-12">
                 <div className="max-w-4xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
-                    <p>願神的話語常在你心中 🙏</p>
+                    <p>{chrome.blessing} 🙏</p>
                     <p className="mt-2 text-xs">© 2025 你的話語 · Made with ❤️ for Christ</p>
                 </div>
             </footer>

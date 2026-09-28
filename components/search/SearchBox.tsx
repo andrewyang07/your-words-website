@@ -4,6 +4,8 @@ import { useRef, useEffect, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 import { useSearchStore } from '@/stores/useSearchStore';
 import { getSearchEngine } from '@/lib/search/searchEngine';
+import { runClientSearch } from '@/lib/search/runClientSearch';
+import { detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
 
 const PLACEHOLDER_EXAMPLES = [
   '约3:16 · John 3:16 · 永生 · love',
@@ -27,6 +29,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
     setResults,
     setLoading,
     setEngineReady,
+    setSearchLang,
     selectedIndex,
     setSelectedIndex,
     results,
@@ -61,15 +64,23 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         setLoading(false);
         return;
       }
+
+      const langFromQuery = detectSearchLangFromQuery(searchQuery);
+      if (langFromQuery) setSearchLang(langFromQuery);
+
       setLoading(true);
       try {
+        // Warm MiniSearch in parallel so fallback / ContextViewer stay available.
         const engine = getSearchEngine();
-        if (!engine.initialized) {
-          await engine.initialize();
-          setEngineReady(true);
-        }
-        const results = await engine.search(searchQuery);
-        setResults(results);
+        const warm = engine.initialized
+          ? Promise.resolve()
+          : engine.initialize().then(() => setEngineReady(true));
+        if (engine.initialized) setEngineReady(true);
+
+        const { results: searched, truncated } = await runClientSearch(searchQuery);
+        setResults(searched, truncated);
+        await warm.catch(() => {});
+        if (getSearchEngine().initialized) setEngineReady(true);
       } catch (error) {
         console.error('Search error:', error);
         setResults([]);
@@ -77,7 +88,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         setLoading(false);
       }
     },
-    [setResults, setLoading]
+    [setResults, setLoading, setEngineReady, setSearchLang]
   );
 
   const handleChange = useCallback(

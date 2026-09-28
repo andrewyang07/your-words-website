@@ -5,6 +5,8 @@ import { X, Info, FileText, Sun, Moon, Monitor, Check, BookOpen, HelpCircle, Tre
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import ReaderTextSizeSetting from '@/components/settings/ReaderTextSizeSetting';
+import { getBookDisplayName, getMenuCopy } from '@/lib/uiScript';
+import booksData from '@/public/data/books.json';
 
 interface SideMenuProps {
     isOpen: boolean;
@@ -28,6 +30,17 @@ interface TopVerse {
 export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onViewChapter, language, onLanguageChange }: SideMenuProps) {
     const [topVerses, setTopVerses] = useState<TopVerse[]>([]);
     const [topVersesLoading, setTopVersesLoading] = useState(true);
+    const copy = getMenuCopy(language);
+
+    const resolveBookLabel = (verse: TopVerse) => {
+        const parts = verse.verseId.split('-');
+        if (parts.length === 3) {
+            const order = parseInt(parts[0], 10);
+            const book = booksData.books.find((b) => b.order === order);
+            if (book) return getBookDisplayName(book, language);
+        }
+        return getBookDisplayName(verse.book, language);
+    };
 
     // 获取热门经文排行榜（带加载状态和错误处理）
     useEffect(() => {
@@ -53,6 +66,16 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
         }
     }, [isOpen]);
 
+    // Esc 關閉；保持鍵盤可用，不鎖死焦點陷阱行為
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [isOpen, onClose]);
+
     // 查看章节功能（通过回调函数）
     const handleViewChapter = (book: string, chapter: number) => {
         if (onViewChapter) {
@@ -71,7 +94,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-[10000] bg-stone-950/28 backdrop-blur-sm dark:bg-black/58"
+                        className="fixed inset-0 z-[10000] bg-stone-950/20 dark:bg-black/40"
                         onClick={onClose}
                     />
 
@@ -81,15 +104,18 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={copy.menu}
                         className="liquid-glass fixed bottom-3 right-3 top-3 z-[10001] flex w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[1.75rem]"
                     >
                         {/* 头部 */}
                         <div className="flex items-center justify-between border-b border-stone-900/10 p-4 dark:border-white/10">
-                            <h2 className="text-lg font-semibold tracking-[0.12em] text-stone-900 dark:text-stone-100 font-chinese">菜單</h2>
+                            <h2 className="text-lg font-semibold tracking-[0.12em] text-stone-900 dark:text-stone-100 font-chinese">{copy.menu}</h2>
                             <button
                                 onClick={onClose}
                                 className="rounded-full p-2 text-stone-500 transition-colors hover:bg-white/55 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-white/[0.08] dark:hover:text-stone-50"
-                                aria-label="关闭菜单"
+                                aria-label={copy.closeMenu}
                             >
                                 <X className="h-5 w-5" />
                             </button>
@@ -105,7 +131,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-white/55 dark:hover:bg-white/[0.07]"
                                 >
                                     <BookOpen className="h-5 w-5 text-stone-500 transition-colors group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-stone-50" />
-                                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">背經文</span>
+                                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">{copy.memorize}</span>
                                 </Link>
 
                                 {/* 搜索 */}
@@ -115,9 +141,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-white/55 dark:hover:bg-white/[0.07]"
                                 >
                                     <Search className="h-5 w-5 text-stone-500 transition-colors group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-stone-50" />
-                                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">
-                                        {language === 'traditional' ? '經文搜索' : '经文搜索'}
-                                    </span>
+                                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">{copy.search}</span>
                                 </Link>
 
                                 {/* 圣经笔记本 */}
@@ -127,7 +151,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-white/55 dark:hover:bg-white/[0.07]"
                                 >
                                     <FileText className="h-5 w-5 text-stone-500 transition-colors group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-stone-50" />
-                                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">筆記本</span>
+                                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">{copy.notebook}</span>
                                 </Link>
 
                                 {/* 帮助 */}
@@ -137,7 +161,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-white/55 dark:hover:bg-white/[0.07]"
                                 >
                                     <HelpCircle className="h-5 w-5 text-stone-500 transition-colors group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-stone-50" />
-                                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">幫助</span>
+                                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">{copy.help}</span>
                                 </Link>
 
                                 {/* 关于 */}
@@ -147,7 +171,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-white/55 dark:hover:bg-white/[0.07]"
                                 >
                                     <Info className="h-5 w-5 text-stone-500 transition-colors group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-stone-50" />
-                                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">關於</span>
+                                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">{copy.about}</span>
                                 </Link>
 
                                 {/* 分隔线 */}
@@ -156,13 +180,14 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                 {/* 外观设置 */}
                                 <div>
                                     <div className="px-4 py-2">
-                                        <p className="text-[11px] font-semibold tracking-[0.22em] text-stone-500 dark:text-stone-400 font-chinese">外觀</p>
+                                        <p className="text-[11px] font-semibold tracking-[0.22em] text-stone-500 dark:text-stone-400 font-chinese">{copy.appearance}</p>
                                     </div>
-                                    <div className="space-y-1 mt-2">
+                                    <div className="space-y-1 mt-2" role="group" aria-label={copy.appearance}>
                                         {/* 浅色模式 */}
                                         <button
-                                            onClick={theme !== 'light' ? () => onThemeChange('light') : undefined}
-                                            disabled={theme === 'light'}
+                                            type="button"
+                                            onClick={() => onThemeChange('light')}
+                                            aria-pressed={theme === 'light'}
                                             className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                                 theme === 'light'
                                                     ? 'liquid-button cursor-default'
@@ -171,15 +196,16 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                         >
                                             <div className="flex items-center gap-3">
                                                 <Sun className="w-4 h-4 text-stone-500 dark:text-stone-400" />
-                                                <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">淺色</span>
+                                                <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">{copy.light}</span>
                                             </div>
-                                            {theme === 'light' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
+                                            {theme === 'light' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" aria-hidden />}
                                         </button>
 
                                         {/* 深色模式 */}
                                         <button
-                                            onClick={theme !== 'dark' ? () => onThemeChange('dark') : undefined}
-                                            disabled={theme === 'dark'}
+                                            type="button"
+                                            onClick={() => onThemeChange('dark')}
+                                            aria-pressed={theme === 'dark'}
                                             className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                                 theme === 'dark'
                                                     ? 'liquid-button cursor-default'
@@ -188,26 +214,30 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                         >
                                             <div className="flex items-center gap-3">
                                                 <Moon className="w-4 h-4 text-stone-500 dark:text-stone-400" />
-                                                <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">深色</span>
+                                                <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">{copy.dark}</span>
                                             </div>
-                                            {theme === 'dark' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
+                                            {theme === 'dark' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" aria-hidden />}
                                         </button>
 
-                                        {/* 跟随系统 */}
+                                        {/* 跟随系统 — 已啟用；標明含義避免被誤認為不可用 */}
                                         <button
-                                            onClick={theme !== 'system' ? () => onThemeChange('system') : undefined}
-                                            disabled={theme === 'system'}
+                                            type="button"
+                                            onClick={() => onThemeChange('system')}
+                                            aria-pressed={theme === 'system'}
                                             className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                                 theme === 'system'
                                                     ? 'liquid-button cursor-default'
                                                     : 'hover:bg-white/50 dark:hover:bg-white/[0.06] cursor-pointer'
                                             }`}
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <Monitor className="w-4 h-4 text-stone-500 dark:text-stone-400" />
-                                                <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">自動</span>
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <Monitor className="w-4 h-4 shrink-0 text-stone-500 dark:text-stone-400" />
+                                                <span className="flex min-w-0 flex-col items-start text-left">
+                                                    <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">{copy.auto}</span>
+                                                    <span className="text-[11px] leading-tight text-stone-500 dark:text-stone-400 font-chinese">{copy.followSystem}</span>
+                                                </span>
                                             </div>
-                                            {theme === 'system' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
+                                            {theme === 'system' && <Check className="w-4 h-4 shrink-0 text-stone-500 dark:text-stone-400" aria-hidden />}
                                         </button>
                                     </div>
                                     <ReaderTextSizeSetting language={language} className="mx-4 mt-3" />
@@ -216,7 +246,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                 {/* 语言设置 */}
                                 <div className="mt-4">
                                     <div className="px-4 py-2">
-                                        <p className="text-[11px] font-semibold tracking-[0.22em] text-stone-500 dark:text-stone-400 font-chinese">語言</p>
+                                        <p className="text-[11px] font-semibold tracking-[0.22em] text-stone-500 dark:text-stone-400 font-chinese">{copy.language}</p>
                                     </div>
                                     <div className="space-y-1 mt-2">
                                         {/* 简体 */}
@@ -229,7 +259,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                                     : 'hover:bg-white/50 dark:hover:bg-white/[0.06] cursor-pointer'
                                             }`}
                                         >
-                                            <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">简体中文</span>
+                                            <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">{copy.simplifiedLabel}</span>
                                             {language === 'simplified' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
                                         </button>
 
@@ -243,7 +273,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                                     : 'hover:bg-white/50 dark:hover:bg-white/[0.06] cursor-pointer'
                                             }`}
                                         >
-                                            <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">繁體中文</span>
+                                            <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">{copy.traditionalLabel}</span>
                                             {language === 'traditional' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
                                         </button>
                                     </div>
@@ -254,7 +284,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     <div className="liquid-button rounded-[1.25rem] p-4">
                                         <div className="flex items-center gap-2 mb-3">
                                             <TrendingUp className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-                                            <h3 className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">最多收藏經文</h3>
+                                            <h3 className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">{copy.topFavorites}</h3>
                                         </div>
                                         <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-thin">
                                             {topVersesLoading ? (
@@ -284,7 +314,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                                     </span>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="font-semibold text-stone-800 dark:text-stone-200 font-chinese truncate">
-                                                            {verse.book} {verse.chapter}:{verse.verse}
+                                                            {resolveBookLabel(verse)} {verse.chapter}:{verse.verse}
                                                         </p>
                                                         {/* 经文内容 - 小字显示，完整内容 */}
                                                         {verse.text && (
@@ -295,15 +325,15 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                                         <p className="flex items-center gap-1 mt-1">
                                                             <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
                                                             <span className="font-semibold text-gold-600 dark:text-gold-400">{verse.favorites.toLocaleString()}</span>
-                                                            <span className="text-gray-600 dark:text-gray-400">人收藏</span>
+                                                            <span className="text-gray-600 dark:text-gray-400">{copy.peopleFavorited}</span>
                                                         </p>
                                                     </div>
                                                     {/* 查看章节按钮 */}
                                                     <button
-                                                        onClick={() => handleViewChapter(verse.book, verse.chapter)}
+                                                        onClick={() => handleViewChapter(resolveBookLabel(verse), verse.chapter)}
                                                         className="shrink-0 p-1.5 rounded hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
-                                                        title="查看章节"
-                                                        aria-label={`查看 ${verse.book} ${verse.chapter}章`}
+                                                        title={copy.viewChapter}
+                                                        aria-label={`${copy.viewChapter} ${resolveBookLabel(verse)} ${verse.chapter}`}
                                                     >
                                                         <ChevronRight className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                     </button>
@@ -312,7 +342,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                             ) : (
                                                 // 空状态
                                                 <div className="text-center py-4">
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-chinese">暫無數據</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-chinese">{copy.noData}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -323,7 +353,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                             className="liquid-button mt-3 flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-white/65 dark:text-stone-200 dark:hover:bg-white/[0.08] font-chinese"
                                         >
                                             <TrendingUp className="w-4 h-4" />
-                                            <span>查看總排行榜</span>
+                                            <span>{copy.viewRankings}</span>
                                         </Link>
                                     </div>
                                 </div>
@@ -332,7 +362,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
 
                         {/* 底部信息 */}
                         <div className="border-t border-stone-900/10 p-4 dark:border-white/10">
-                            <p className="text-center text-xs text-stone-500 dark:text-stone-500 font-chinese">你的話語 © 2025</p>
+                            <p className="text-center text-xs text-stone-500 dark:text-stone-500 font-chinese">{copy.brand} © 2025</p>
                         </div>
                     </motion.div>
                 </>

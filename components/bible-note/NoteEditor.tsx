@@ -26,6 +26,9 @@ import {
     thematicBreakPlugin,
     toolbarPlugin,
 } from '@mdxeditor/editor';
+import { useAppStore } from '@/stores/useAppStore';
+import { getChromeCopy } from '@/lib/uiScript';
+import { createMdxEditorTranslation } from '@/lib/mdxEditorI18n';
 
 interface NoteEditorProps {
     content: string;
@@ -40,6 +43,8 @@ export interface NoteEditorHandle {
 export default function NoteEditor({ content, onChange, noteEditorRef }: NoteEditorProps) {
     const editorRef = useRef<MDXEditorMethods>(null);
     const latestMarkdownRef = useRef(content);
+    const language = useAppStore((state) => state.language);
+    const translation = useMemo(() => createMdxEditorTranslation(language), [language]);
 
     useEffect(() => {
         if (content === latestMarkdownRef.current) return;
@@ -85,7 +90,7 @@ export default function NoteEditor({ content, onChange, noteEditorRef }: NoteEdi
             onChange(nextMarkdown);
             return true;
         },
-    }), [noteEditorRef, onChange]);
+    }), [onChange]);
 
     const handleChange = (markdown: string) => {
         latestMarkdownRef.current = markdown;
@@ -95,13 +100,15 @@ export default function NoteEditor({ content, onChange, noteEditorRef }: NoteEdi
     return (
         <div className="bible-note-mdx-editor overflow-hidden rounded-[1.75rem] border border-stone-200/70 bg-white/85 shadow-[0_24px_80px_rgba(68,64,60,0.08)] backdrop-blur-sm transition-all dark:border-amber-200/15 dark:bg-[#191612]/80">
             <MDXEditor
+                key={language}
                 ref={editorRef}
                 markdown={content}
                 onChange={handleChange}
                 plugins={plugins}
+                translation={translation}
                 placeholder={
                     <div className="text-stone-400">
-                        開始記錄今天的靈修筆記…
+                        {getChromeCopy(language).notePlaceholder}
                         <br />
                         <br />
                         直接寫下經文引用，如 約3:16 或 John 3:17
