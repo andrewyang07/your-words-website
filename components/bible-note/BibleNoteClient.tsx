@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { Download, Trash2, FileDown, Copy, ChevronDown, BookOpen, HelpCircle, X, FileText, Search, Loader2, Check, AlertCircle, MoreHorizontal } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
@@ -42,6 +43,7 @@ export default function BibleNoteClient() {
     const [isExpanding, setIsExpanding] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
+    const [isNarrowViewport, setIsNarrowViewport] = useState(true);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [showSideMenu, setShowSideMenu] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
@@ -136,6 +138,16 @@ export default function BibleNoteClient() {
             return () => clearTimeout(timer);
         }
     }, [toastMessage]);
+
+
+    // Track < md so overflow menus can portal (header backdrop-filter traps position:fixed)
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 767px)');
+        const sync = () => setIsNarrowViewport(mq.matches);
+        sync();
+        mq.addEventListener('change', sync);
+        return () => mq.removeEventListener('change', sync);
+    }, []);
 
     const showToast = useCallback((message: string) => {
         setToastMessage(message);
@@ -370,7 +382,7 @@ export default function BibleNoteClient() {
 
                         <button
                             onClick={() => setShowNoteList(true)}
-                            className="flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] md:px-4 touch-manipulation"
+                            className="flex min-h-[44px] items-center gap-2 rounded-xl px-2.5 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] sm:px-3 md:px-4 touch-manipulation"
                             title="笔记列表"
                             aria-label="打开笔记列表"
                         >
@@ -382,7 +394,7 @@ export default function BibleNoteClient() {
                             <button
                                 onClick={() => setShowExportMenu(!showExportMenu)}
                                 disabled={!content}
-                                className="flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-stone-600 transition hover:bg-white/55 disabled:cursor-not-allowed disabled:opacity-45 dark:text-stone-300 dark:hover:bg-white/[0.06] md:px-4 touch-manipulation"
+                                className="flex min-h-[44px] items-center gap-2 rounded-xl px-2.5 py-2 text-stone-600 transition hover:bg-white/55 disabled:cursor-not-allowed disabled:opacity-45 dark:text-stone-300 dark:hover:bg-white/[0.06] sm:px-3 md:px-4 touch-manipulation"
                                 style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                 title="導出筆記"
                                 aria-label="導出筆記"
@@ -392,33 +404,42 @@ export default function BibleNoteClient() {
                                 <ChevronDown className="h-3 w-3 md:h-4 md:w-4" />
                             </button>
 
-                            {showExportMenu && content && (
-                                <>
-                                    <div className="fixed inset-0 z-[9998]" onClick={() => setShowExportMenu(false)} />
-                                    <div className="fixed bottom-0 left-0 right-0 z-[9999] w-full rounded-t-2xl border-t border-stone-900/10 bg-white py-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:absolute md:bottom-auto md:left-auto md:right-0 md:mt-2 md:w-52 md:rounded-2xl md:border dark:border-amber-200/10 dark:bg-[#17130f] md:py-1">
-                                        <button
-                                            onClick={handleCopyToClipboard}
-                                            className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-stone-100 dark:hover:bg-white/[0.08] md:min-h-0 md:py-2"
+                            {showExportMenu && content && (() => {
+                                const exportPanel = (
+                                    <>
+                                        <div className="fixed inset-0 z-[9998]" onClick={() => setShowExportMenu(false)} />
+                                        <div
+                                            className={
+                                                isNarrowViewport
+                                                    ? 'fixed bottom-0 left-0 right-0 z-[9999] w-full rounded-t-2xl border-t border-stone-900/10 bg-white py-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-amber-200/10 dark:bg-[#17130f]'
+                                                    : 'absolute right-0 z-[9999] mt-2 w-52 rounded-2xl border border-stone-900/10 bg-white py-1 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-amber-200/10 dark:bg-[#17130f]'
+                                            }
                                         >
-                                            <Copy className="h-5 w-5 text-stone-600 dark:text-stone-300 md:h-4 md:w-4" />
-                                            <span className="font-chinese text-base text-stone-700 dark:text-stone-200 md:text-sm">複製到剪貼板</span>
-                                        </button>
-                                        <button
-                                            onClick={handleExportToFile}
-                                            className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-stone-100 dark:hover:bg-white/[0.08] md:min-h-0 md:py-2"
-                                        >
-                                            <FileDown className="h-5 w-5 text-stone-600 dark:text-stone-300 md:h-4 md:w-4" />
-                                            <span className="font-chinese text-base text-stone-700 dark:text-stone-200 md:text-sm">下載 MD 文件</span>
-                                        </button>
-                                    </div>
-                                </>
-                            )}
+                                            <button
+                                                onClick={handleCopyToClipboard}
+                                                className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-stone-100 dark:hover:bg-white/[0.08] md:min-h-0 md:py-2"
+                                            >
+                                                <Copy className="h-5 w-5 text-stone-600 dark:text-stone-300 md:h-4 md:w-4" />
+                                                <span className="font-chinese text-base text-stone-700 dark:text-stone-200 md:text-sm">複製到剪貼板</span>
+                                            </button>
+                                            <button
+                                                onClick={handleExportToFile}
+                                                className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-stone-100 dark:hover:bg-white/[0.08] md:min-h-0 md:py-2"
+                                            >
+                                                <FileDown className="h-5 w-5 text-stone-600 dark:text-stone-300 md:h-4 md:w-4" />
+                                                <span className="font-chinese text-base text-stone-700 dark:text-stone-200 md:text-sm">下載 MD 文件</span>
+                                            </button>
+                                        </div>
+                                    </>
+                                );
+                                return isNarrowViewport ? createPortal(exportPanel, document.body) : exportPanel;
+                            })()}
                         </div>
 
                         <div className="relative z-[220] overflow-visible">
                             <button
                                 onClick={() => setShowMoreMenu(!showMoreMenu)}
-                                className="flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] md:px-4 touch-manipulation"
+                                className="flex min-h-[44px] items-center gap-2 rounded-xl px-2.5 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] sm:px-3 md:px-4 touch-manipulation"
                                 title="更多笔记工具"
                                 aria-label="更多笔记工具"
                             >
@@ -426,29 +447,40 @@ export default function BibleNoteClient() {
                                 <span className="hidden text-sm font-chinese sm:inline">更多</span>
                             </button>
 
-                            {showMoreMenu && (
-                                <>
-                                    <div className="fixed inset-0 z-[9998]" onClick={() => setShowMoreMenu(false)} />
-                                    <div className="fixed bottom-0 left-0 right-0 z-[9999] space-y-1 rounded-t-2xl border-t border-stone-900/10 bg-white p-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] md:absolute md:bottom-auto md:left-auto md:right-0 md:mt-2 md:w-56 md:rounded-2xl md:border dark:border-amber-200/10 dark:bg-[#17130f]">
-                                        <OcrImporter onInsertReferences={handleInsertFromOcr} />
-                                        <button
-                                            onClick={() => { setShowHelp(true); setShowMoreMenu(false); }}
-                                            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-white/[0.08]"
+                            {showMoreMenu && (() => {
+                                const morePanel = (
+                                    <>
+                                        <div className="fixed inset-0 z-[9998]" onClick={() => setShowMoreMenu(false)} />
+                                        <div
+                                            className={
+                                                isNarrowViewport
+                                                    ? 'fixed bottom-0 left-0 right-0 z-[9999] space-y-1 rounded-t-2xl border-t border-stone-900/10 bg-white p-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-amber-200/10 dark:bg-[#17130f]'
+                                                    : 'absolute right-0 z-[9999] mt-2 w-56 space-y-1 rounded-2xl border border-stone-900/10 bg-white p-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-amber-200/10 dark:bg-[#17130f]'
+                                            }
+                                            role="menu"
+                                            aria-label="更多笔记工具"
                                         >
-                                            <HelpCircle className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-                                            <span className="font-chinese">使用说明</span>
-                                        </button>
-                                        <button
-                                            onClick={() => { handleClear(); setShowMoreMenu(false); }}
-                                            disabled={!content}
-                                            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-300 dark:hover:bg-red-950/30"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                            <span className="font-chinese">清空当前笔记</span>
-                                        </button>
-                                    </div>
-                                </>
-                            )}
+                                            <OcrImporter onInsertReferences={handleInsertFromOcr} />
+                                            <button
+                                                onClick={() => { setShowHelp(true); setShowMoreMenu(false); }}
+                                                className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-white/[0.08]"
+                                            >
+                                                <HelpCircle className="h-4 w-4 text-stone-500 dark:text-stone-400" />
+                                                <span className="font-chinese">使用说明</span>
+                                            </button>
+                                            <button
+                                                onClick={() => { handleClear(); setShowMoreMenu(false); }}
+                                                disabled={!content}
+                                                className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-300 dark:hover:bg-red-950/30"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                <span className="font-chinese">清空当前笔记</span>
+                                            </button>
+                                        </div>
+                                    </>
+                                );
+                                return isNarrowViewport ? createPortal(morePanel, document.body) : morePanel;
+                            })()}
                         </div>
                     </>
                 }
