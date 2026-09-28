@@ -53,6 +53,16 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
         }
     }, [isOpen]);
 
+    // Esc 關閉；保持鍵盤可用，不鎖死焦點陷阱行為
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [isOpen, onClose]);
+
     // 查看章节功能（通过回调函数）
     const handleViewChapter = (book: string, chapter: number) => {
         if (onViewChapter) {
@@ -71,7 +81,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-[10000] bg-stone-950/28 backdrop-blur-sm dark:bg-black/58"
+                        className="fixed inset-0 z-[10000] bg-stone-950/20 dark:bg-black/40"
                         onClick={onClose}
                     />
 
@@ -81,6 +91,9 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="菜單"
                         className="liquid-glass fixed bottom-3 right-3 top-3 z-[10001] flex w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[1.75rem]"
                     >
                         {/* 头部 */}
@@ -158,11 +171,12 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                     <div className="px-4 py-2">
                                         <p className="text-[11px] font-semibold tracking-[0.22em] text-stone-500 dark:text-stone-400 font-chinese">外觀</p>
                                     </div>
-                                    <div className="space-y-1 mt-2">
+                                    <div className="space-y-1 mt-2" role="group" aria-label="主題">
                                         {/* 浅色模式 */}
                                         <button
-                                            onClick={theme !== 'light' ? () => onThemeChange('light') : undefined}
-                                            disabled={theme === 'light'}
+                                            type="button"
+                                            onClick={() => onThemeChange('light')}
+                                            aria-pressed={theme === 'light'}
                                             className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                                 theme === 'light'
                                                     ? 'liquid-button cursor-default'
@@ -173,13 +187,14 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                                 <Sun className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                 <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">淺色</span>
                                             </div>
-                                            {theme === 'light' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
+                                            {theme === 'light' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" aria-hidden />}
                                         </button>
 
                                         {/* 深色模式 */}
                                         <button
-                                            onClick={theme !== 'dark' ? () => onThemeChange('dark') : undefined}
-                                            disabled={theme === 'dark'}
+                                            type="button"
+                                            onClick={() => onThemeChange('dark')}
+                                            aria-pressed={theme === 'dark'}
                                             className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                                 theme === 'dark'
                                                     ? 'liquid-button cursor-default'
@@ -190,24 +205,28 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                                                 <Moon className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                                                 <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">深色</span>
                                             </div>
-                                            {theme === 'dark' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
+                                            {theme === 'dark' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" aria-hidden />}
                                         </button>
 
-                                        {/* 跟随系统 */}
+                                        {/* 跟随系统 — 已啟用；標明含義避免被誤認為不可用 */}
                                         <button
-                                            onClick={theme !== 'system' ? () => onThemeChange('system') : undefined}
-                                            disabled={theme === 'system'}
+                                            type="button"
+                                            onClick={() => onThemeChange('system')}
+                                            aria-pressed={theme === 'system'}
                                             className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                                 theme === 'system'
                                                     ? 'liquid-button cursor-default'
                                                     : 'hover:bg-white/50 dark:hover:bg-white/[0.06] cursor-pointer'
                                             }`}
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <Monitor className="w-4 h-4 text-stone-500 dark:text-stone-400" />
-                                                <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">自動</span>
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <Monitor className="w-4 h-4 shrink-0 text-stone-500 dark:text-stone-400" />
+                                                <span className="flex min-w-0 flex-col items-start text-left">
+                                                    <span className="text-stone-800 dark:text-stone-200 font-chinese text-sm">自動</span>
+                                                    <span className="text-[11px] leading-tight text-stone-500 dark:text-stone-400 font-chinese">跟隨系統外觀</span>
+                                                </span>
                                             </div>
-                                            {theme === 'system' && <Check className="w-4 h-4 text-stone-500 dark:text-stone-400" />}
+                                            {theme === 'system' && <Check className="w-4 h-4 shrink-0 text-stone-500 dark:text-stone-400" aria-hidden />}
                                         </button>
                                     </div>
                                     <ReaderTextSizeSetting language={language} className="mx-4 mt-3" />

@@ -149,26 +149,19 @@ export default function RankingsPage() {
 
             {/* 主内容 */}
             <main className="yw-shell">
-                {/* 说明文字 */}
-                <div className="mb-6 yw-panel p-4">
-                    <p className="text-sm text-stone-700 dark:text-stone-300 font-chinese text-center">
-                        {language === 'traditional'
-                            ? '📊 全站最多收藏的聖經經文（按全站收藏次數排序，非個人收藏） · 每小時更新'
-                            : '📊 全站最多收藏的圣经经文（按全站收藏次数排序，非个人收藏） · 每小时更新'}
-                    </p>
+                {/* 緊湊狀態列：短詞組 + nowrap，避免 ~390px 中段斷行 */}
+                <div className="mb-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-1 font-chinese text-xs text-stone-500 dark:text-stone-400 sm:text-sm">
+                    <span className="whitespace-nowrap">📊 全站最多收藏</span>
+                    <span aria-hidden className="text-stone-300 dark:text-stone-600">·</span>
+                    <span className="whitespace-nowrap">
+                        {language === 'traditional' ? '按全站收藏次數排序' : '按全站收藏次数排序'}
+                    </span>
+                    <span aria-hidden className="text-stone-300 dark:text-stone-600">·</span>
+                    <span className="whitespace-nowrap">
+                        {language === 'traditional' ? '每小時更新' : '每小时更新'}
+                    </span>
                 </div>
 
-                <section className="mb-6 yw-panel p-5 font-chinese text-sm leading-7 text-stone-700 dark:text-stone-300">
-                    <h2 className="mb-2 text-base font-semibold text-stone-950 dark:text-stone-50">
-                        {language === 'traditional' ? '如何使用全站經文排行榜' : '如何使用全站经文排行榜'}
-                    </h2>
-                    <p>
-                        {language === 'traditional'
-                            ? '此排行榜反映全站人氣（累計收藏次數），與你本機的「我的收藏」數量無關。可用來找適合背誦、默想和查經分享的段落；切換閱讀模式可看全文，也可按舊約、新約或書卷篩選，再把經文加入「我的收藏」。'
-                            : '此排行榜反映全站人气（累计收藏次数），与你本机的「我的收藏」数量无关。可用来找适合背诵、默想和查经分享的段落；切换阅读模式可看全文，也可按旧约、新约或书卷筛选，再把经文加入「我的收藏」。'}
-                    </p>
-                </section>
-                
                 {/* 筛选工具栏 */}
                 {rankings.length > 0 && !loading && !error && (
                     <div className="relative z-[200] mb-6 flex items-center justify-between flex-wrap gap-3 overflow-visible">
@@ -317,6 +310,22 @@ export default function RankingsPage() {
                         <p className="text-sm text-bible-400 dark:text-bible-500 font-chinese">開始收藏經文吧！</p>
                     </div>
                 )}
+
+                {/* SEO / 使用說明移到列表下方並預設摺疊，避免擠佔窄屏主視口 */}
+                <details className="mt-8 yw-panel group p-4 font-chinese text-sm leading-7 text-stone-700 dark:text-stone-300">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-stone-950 dark:text-stone-50 [&::-webkit-details-marker]:hidden">
+                        <span>{language === 'traditional' ? '如何使用全站經文排行榜' : '如何使用全站经文排行榜'}</span>
+                        <span className="text-xs font-normal text-stone-400 dark:text-stone-500">
+                            <span className="group-open:hidden">{language === 'traditional' ? '展開' : '展开'}</span>
+                            <span className="hidden group-open:inline">{language === 'traditional' ? '收起' : '收起'}</span>
+                        </span>
+                    </summary>
+                    <p className="mt-3">
+                        {language === 'traditional'
+                            ? '此排行榜反映全站人氣（累計收藏次數），與你本機的「我的收藏」數量無關。可用來找適合背誦、默想和查經分享的段落；切換閱讀模式可看全文，也可按舊約、新約或書卷篩選，再把經文加入「我的收藏」。'
+                            : '此排行榜反映全站人气（累计收藏次数），与你本机的「我的收藏」数量无关。可用来找适合背诵、默想和查经分享的段落；切换阅读模式可看全文，也可按旧约、新约或书卷筛选，再把经文加入「我的收藏」。'}
+                    </p>
+                </details>
             </main>
 
             {/* 页脚 */}
