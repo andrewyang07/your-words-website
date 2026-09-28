@@ -6,6 +6,7 @@ import { Star, ChevronRight } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { sendStats } from '@/lib/statsUtils';
+import { getBookDisplayName } from '@/lib/uiScript';
 import booksData from '@/public/data/books.json';
 
 interface RankingItem {
@@ -22,6 +23,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
     const router = useRouter();
     const { language } = useAppStore();
     const { isFavorite, toggleFavorite } = useFavoritesStore();
+    const language = useAppStore((s) => s.language);
 
     // 解析 verseId 并获取书卷信息
     const enrichedRankings = useMemo(() => {
@@ -43,13 +45,13 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                 bookIndex,
                 chapter,
                 verse,
-                bookName: book?.nameTraditional || '未知',
+                bookName: getBookDisplayName(book, language),
                 bookKey,
                 testament: book?.testament || 'unknown',
                 fullVerseId, // 用于收藏功能
             };
         });
-    }, [rankings]);
+    }, [rankings, language]);
 
     const handleViewChapter = (bookName: string, chapter: number) => {
         router.push(`/?book=${encodeURIComponent(bookName)}&chapter=${chapter}`);

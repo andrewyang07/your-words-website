@@ -9,6 +9,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import RankingsList from '@/components/rankings/RankingsList';
 import PageHeader from '@/components/layout/PageHeader';
 import booksData from '@/public/data/books.json';
+import { getBookDisplayName } from '@/lib/uiScript';
 import dynamic from 'next/dynamic';
 
 // 动态导入侧边栏
@@ -112,7 +113,7 @@ export default function RankingsPage() {
                         </button>
                         <button
                             onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
-                            className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
+                            className="liquid-button hidden md:flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
                             aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
@@ -210,7 +211,7 @@ export default function RankingsPage() {
                                                 <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-sm font-chinese text-stone-950 dark:text-stone-50">
-                                                            舊約
+                                                            {language === 'traditional' ? '舊約' : '旧约'}
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -228,7 +229,7 @@ export default function RankingsPage() {
                                                 <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-sm font-chinese text-stone-950 dark:text-stone-50">
-                                                            新約
+                                                            {language === 'traditional' ? '新約' : '新约'}
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -255,7 +256,7 @@ export default function RankingsPage() {
                                                         <div className={`px-4 py-2 cursor-pointer ${active ? 'bg-bible-50 dark:bg-gray-700' : ''}`}>
                                                             <div className="flex items-center justify-between">
                                                                 <span className="text-sm font-chinese text-stone-950 dark:text-stone-50">
-                                                                    {book.nameTraditional}
+                                                                    {getBookDisplayName(book, language)}
                                                                 </span>
                                                                 <div className="flex items-center gap-2">
                                                                     <span className="text-xs text-gray-500 dark:text-gray-400">

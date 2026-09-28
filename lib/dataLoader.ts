@@ -3,6 +3,7 @@
 import { Verse, Book, Language } from '@/types/verse';
 import { PRESET_VERSE_REFERENCES } from './constants';
 import { logError, logWarning } from './errorHandler';
+import { getBookDisplayName } from './uiScript';
 
 // 从完整圣经 JSON 中提取指定的经文
 export async function loadPresetVerses(language: Language): Promise<Verse[]> {
@@ -37,7 +38,7 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
 
             verses.push({
                 id: `${ref.book}-${ref.chapter}-${ref.verse}`,
-                book: ref.book,
+                book: getBookDisplayName(ref.book, language),
                 bookKey: ref.book,
                 chapter: ref.chapter,
                 verse: ref.verse,
@@ -85,7 +86,7 @@ export async function loadChapterVerses(bookKey: string, chapter: number, langua
             const verseNumber = parseInt(verseNum);
             verses.push({
                 id: `${bookKey}-${chapter}-${verseNumber}`,
-                book: bookKey,
+                book: getBookDisplayName(bookKey, language),
                 bookKey: bookKey,
                 chapter,
                 verse: verseNumber,

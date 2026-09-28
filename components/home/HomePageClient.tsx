@@ -30,6 +30,7 @@ import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
+import { bookMatchesFilter, getBookDisplayName } from '@/lib/uiScript';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { Verse, Book } from '@/types/verse';
@@ -511,19 +512,19 @@ export default function HomePage() {
             // 按书卷筛选
             if (favoritesBookFilter === 'old') {
                 favFiltered = favFiltered.filter((v) => {
-                    const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                    const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                     return book?.testament === 'old';
                 });
             } else if (favoritesBookFilter === 'new') {
                 favFiltered = favFiltered.filter((v) => {
-                    const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                    const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                     return book?.testament === 'new';
                 });
             } else if (favoritesBookFilter !== 'all') {
                 // 具体书卷
                 favFiltered = favFiltered.filter((v) => {
                     const book = books.find((b) => b.key === favoritesBookFilter);
-                    return v.book === favoritesBookFilter || v.book === book?.nameTraditional;
+                    return v.book === favoritesBookFilter || v.bookKey === favoritesBookFilter || v.book === book?.name || v.book === book?.nameTraditional || v.book === book?.nameSimplified;
                 });
             }
 
@@ -540,17 +541,20 @@ export default function HomePage() {
         // 1. 先按书卷筛选
         if (bookFilter === 'old') {
             filtered = verses.filter((v) => {
-                const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                 return book?.testament === 'old';
             });
         } else if (bookFilter === 'new') {
             filtered = verses.filter((v) => {
-                const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                 return book?.testament === 'new';
             });
         } else if (bookFilter !== 'all') {
             // 具体书卷
-            filtered = verses.filter((v) => v.book === bookFilter || v.book === books.find((b) => b.key === bookFilter)?.nameTraditional);
+            filtered = verses.filter((v) => {
+                const book = books.find((b) => b.key === bookFilter);
+                return book ? bookMatchesFilter(v.book, v.bookKey, book) : v.book === bookFilter;
+            });
         }
 
         // 2. 随机或默认排序
@@ -559,8 +563,8 @@ export default function HomePage() {
         } else {
             // 默认按圣经顺序
             filtered = [...filtered].sort((a, b) => {
-                const bookA = books.find((bk) => bk.key === a.book || bk.nameTraditional === a.book);
-                const bookB = books.find((bk) => bk.key === b.book || bk.nameTraditional === b.book);
+                const bookA = books.find((bk) => bk.key === a.book || bk.key === a.bookKey || bk.nameTraditional === a.book || bk.nameSimplified === a.book || bk.name === a.book);
+                const bookB = books.find((bk) => bk.key === b.book || bk.key === b.bookKey || bk.nameTraditional === b.book || bk.nameSimplified === b.book || bk.name === b.book);
                 if (bookA && bookB && bookA.order !== bookB.order) {
                     return bookA.order - bookB.order;
                 }
@@ -948,7 +952,7 @@ export default function HomePage() {
         };
 
         favoritesVersesData.forEach((verse) => {
-            const book = books.find((b) => b.key === verse.book || b.nameTraditional === verse.book);
+            const book = books.find((b) => b.key === verse.book || b.key === verse.bookKey || b.nameTraditional === verse.book || b.nameSimplified === verse.book || b.name === verse.book);
             if (book) {
                 if (book.testament === 'old') counts.old++;
                 if (book.testament === 'new') counts.new++;
@@ -1884,11 +1888,11 @@ export default function HomePage() {
                                                     {/* 计算{language === 'traditional' ? '舊約' : '旧约'}{language === 'traditional' ? '新約' : '新约'}经文数量 */}
                                                     {(() => {
                                                         const oldCount = verses.filter((v) => {
-                                                            const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                                                            const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                                                             return book?.testament === 'old';
                                                         }).length;
                                                         const newCount = verses.filter((v) => {
-                                                            const book = books.find((b) => b.key === v.book || b.nameTraditional === v.book);
+                                                            const book = books.find((b) => b.key === v.book || b.key === v.bookKey || b.nameTraditional === v.book || b.nameSimplified === v.book || b.name === v.book);
                                                             return book?.testament === 'new';
                                                         }).length;
 
@@ -1950,7 +1954,7 @@ export default function HomePage() {
                                                     {/* 各书卷 */}
                                                     {books.map((book) => {
                                                         const count = verses.filter(
-                                                            (v) => v.book === book.key || v.book === book.nameTraditional
+                                                            (v) => bookMatchesFilter(v.book, v.bookKey, book)
                                                         ).length;
                                                         if (count === 0) return null;
 
@@ -1964,7 +1968,7 @@ export default function HomePage() {
                                                                     >
                                                                         <div className="flex items-center justify-between">
                                                                             <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                                {book.nameTraditional}
+                                                                                {getBookDisplayName(book, language)}
                                                                             </span>
                                                                             <div className="flex items-center gap-2">
                                                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -2085,7 +2089,7 @@ export default function HomePage() {
                                                                     >
                                                                         <div className="flex items-center justify-between">
                                                                             <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                                {book.nameTraditional}
+                                                                                {getBookDisplayName(book, language)}
                                                                             </span>
                                                                             <div className="flex items-center gap-2">
                                                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
