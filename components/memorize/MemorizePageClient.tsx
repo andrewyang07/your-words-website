@@ -196,6 +196,8 @@ export default function MemorizePageClient() {
       return;
     }
     const resolvedStage = nextStage as MemorizationStage;
+    // Advance immediately so Skip does not linger on a skipped-stage acknowledgment.
+    setStage(resolvedStage);
     if (stageNeedsInitials[resolvedStage] && session.units.some((unit) => unit.recallable && unit.acceptedInitials.length === 0)) {
       setLoadingInitials(true);
       try {
@@ -208,7 +210,6 @@ export default function MemorizePageClient() {
         setLoadingInitials(false);
       }
     }
-    setStage(resolvedStage);
   }, [selected, session]);
 
   const submitKeyboardInput = useCallback((input: RecallKeyboardInput) => {
@@ -298,6 +299,7 @@ export default function MemorizePageClient() {
 
   const skip = () => {
     setSession((current) => current ? skipMemorizationStage(current, stage) : current);
+    void enterStage(stage + 1);
   };
 
   const reveal = () => {
