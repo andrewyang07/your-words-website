@@ -21,7 +21,6 @@ interface RankingsListProps {
 
 export default function RankingsList({ rankings }: RankingsListProps) {
     const router = useRouter();
-    const { language } = useAppStore();
     const { isFavorite, toggleFavorite } = useFavoritesStore();
     const language = useAppStore((s) => s.language);
 
