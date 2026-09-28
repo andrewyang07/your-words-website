@@ -14,6 +14,10 @@ import type {
   BibleData,
   BookMapping,
 } from '@/types/search';
+import {
+  DEFAULT_SEARCH_LIMIT,
+  type SearchResponse,
+} from './searchHelpers';
 
 type BibleJSON = Record<string, Record<string, Record<string, string>>>;
 
@@ -157,19 +161,31 @@ class SearchEngine {
   }
 
   async search(query: string): Promise<SearchResult[]> {
-    if (!this._initialized || !this.bibleData) return [];
+    const { results } = await this.searchWithMeta(query);
+    return results;
+  }
+
+  async searchWithMeta(
+    query: string,
+    limit = DEFAULT_SEARCH_LIMIT
+  ): Promise<SearchResponse> {
+    if (!this._initialized || !this.bibleData) {
+      return { results: [], truncated: false };
+    }
     const trimmed = query.trim();
-    if (!trimmed) return [];
+    if (!trimmed) return { results: [], truncated: false };
 
     // Try reference parse first (O(1))
     const ref = parseReference(trimmed, this.bookMappings);
     if (ref && (ref.bookChinese || ref.bookEnglish)) {
       const refResults = this.searchByReference(ref);
-      if (refResults.length > 0) return refResults;
+      if (refResults.length > 0) {
+        return { results: refResults, truncated: false };
+      }
     }
 
     // Keyword search
-    return this.searchByKeyword(trimmed);
+    return this.searchByKeyword(trimmed, limit);
   }
 
   private searchByReference(ref: {
@@ -266,8 +282,13 @@ class SearchEngine {
     return results;
   }
 
-  private searchByKeyword(query: string): SearchResult[] {
-    if (!this.bibleData || !this.miniSearch) return [];
+  private searchByKeyword(
+    query: string,
+    limit = DEFAULT_SEARCH_LIMIT
+  ): SearchResponse {
+    if (!this.bibleData || !this.miniSearch) {
+      return { results: [], truncated: false };
+    }
 
     const scores = new Map<string, number>();
     const hasCJK = /[\u4e00-\u9fff]/.test(query);
@@ -312,10 +333,11 @@ class SearchEngine {
       }
     }
 
-    // Sort by score descending, take top 50 for boosting
+    // Sort by score descending, take top `limit` for boosting
     const scoreEntries = Array.from(scores.entries());
     scoreEntries.sort((a, b) => b[1] - a[1]);
-    const topEntries = scoreEntries.slice(0, 50);
+    const truncated = scoreEntries.length > limit;
+    const topEntries = scoreEntries.slice(0, limit);
 
     // Build result objects with score boosting
     const { chinese, english } = this.bibleData;
@@ -361,7 +383,7 @@ class SearchEngine {
     }
 
     results.sort((a, b) => b.score - a.score);
-    return results;
+    return { results, truncated };
   }
 
   getContext(
