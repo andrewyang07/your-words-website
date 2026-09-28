@@ -30,7 +30,8 @@ import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
-import { bookMatchesFilter, getBookDisplayName } from '@/lib/uiScript';
+import { bookMatchesFilter, getBookDisplayName, getChromeCopy, getTestamentLabel } from '@/lib/uiScript';
+import { formatResultCount } from '@/lib/search/searchHelpers';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { Verse, Book } from '@/types/verse';
@@ -57,6 +58,7 @@ type BookFilterType = 'all' | 'old' | 'new' | string; // string 为具体书卷�
 
 export default function HomePage() {
     const { language, theme, setLanguage, setTheme } = useAppStore();
+    const chrome = getChromeCopy(language);
     const { verses, books, loadVerses, loadBooks } = useVerseStore();
     const { isFavorite, addFavorites, getFavoritesList } = useFavoritesStore();
     const [loading, setLoading] = useState(true);
@@ -1814,7 +1816,7 @@ export default function HomePage() {
                                     <div className="flex flex-col gap-0.5">
                                         <span className="text-xs font-semibold text-stone-800 dark:text-stone-200 font-chinese">搜索「{searchQuery}」</span>
                                         <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">
-                                            {isSearching ? '正在匹配经文索引。' : `找到 ${searchResults.length} 条结果。`}
+                                            {isSearching ? chrome.matchingIndex : `${formatResultCount(searchResults.length, { traditional: language === 'traditional' })}。`}
                                         </span>
                                     </div>
                                 </div>
@@ -1916,7 +1918,7 @@ export default function HomePage() {
                                                                         >
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                                    舊約
+                                                                                    {getTestamentLabel("old", language)}
                                                                                 </span>
                                                                                 <div className="flex items-center gap-2">
                                                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -1939,7 +1941,7 @@ export default function HomePage() {
                                                                         >
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                                    新約
+                                                                                    {getTestamentLabel("new", language)}
                                                                                 </span>
                                                                                 <div className="flex items-center gap-2">
                                                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -2048,7 +2050,7 @@ export default function HomePage() {
                                                             >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                        舊約
+                                                                        {getTestamentLabel("old", language)}
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -2067,7 +2069,7 @@ export default function HomePage() {
                                                             >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-sm font-chinese text-stone-800 dark:text-stone-200">
-                                                                        新約
+                                                                        {getTestamentLabel("new", language)}
                                                                     </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -2208,7 +2210,7 @@ export default function HomePage() {
                                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-bible-100 dark:bg-gray-700 rounded-lg">
                                         <div className="w-4 h-4 border-2 border-bible-400 dark:border-bible-300 border-t-transparent rounded-full animate-spin"></div>
                                         <span className="text-sm text-bible-600 dark:text-bible-300 font-chinese">
-                                            載入更多 ({visibleCount} / {displayVerses.length})
+                                            {chrome.loadMore} ({visibleCount} / {displayVerses.length})
                                         </span>
                                     </div>
                                 </div>
@@ -2319,7 +2321,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
-                        <p>願神的話語常在你心中</p>
+                        <p>{chrome.blessing}</p>
                         <p className="mt-2 text-xs">© 2025 你的話語 · Made for Christ</p>
                     </div>
                 </footer>

@@ -9,7 +9,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import RankingsList from '@/components/rankings/RankingsList';
 import PageHeader from '@/components/layout/PageHeader';
 import booksData from '@/public/data/books.json';
-import { getBookDisplayName } from '@/lib/uiScript';
+import { getBookDisplayName, getChromeCopy } from '@/lib/uiScript';
 import dynamic from 'next/dynamic';
 
 // 动态导入侧边栏
@@ -26,6 +26,7 @@ type BookFilterType = 'all' | 'old' | 'new' | string;
 export default function RankingsPage() {
     const router = useRouter();
     const { language, theme, setLanguage, setTheme } = useAppStore();
+    const chrome = getChromeCopy(language);
     const [rankings, setRankings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -307,8 +308,8 @@ export default function RankingsPage() {
                     </div>
                 ) : (
                     <div className="text-center py-12">
-                        <p className="text-stone-500 dark:text-stone-400 font-chinese mb-2">暫無排行榜數據</p>
-                        <p className="text-sm text-bible-400 dark:text-bible-500 font-chinese">開始收藏經文吧！</p>
+                        <p className="text-stone-500 dark:text-stone-400 font-chinese mb-2">{chrome.rankingsEmpty}</p>
+                        <p className="text-sm text-bible-400 dark:text-bible-500 font-chinese">{chrome.rankingsEmptyHint}</p>
                     </div>
                 )}
 
@@ -332,7 +333,7 @@ export default function RankingsPage() {
             {/* 页脚 */}
             <footer className="border-t border-bible-200 dark:border-gray-700 mt-12">
                 <div className="max-w-4xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
-                    <p>願神的話語常在你心中 🙏</p>
+                    <p>{chrome.blessing} 🙏</p>
                     <p className="mt-2 text-xs">© 2025 你的話語 · Made with ❤️ for Christ</p>
                 </div>
             </footer>

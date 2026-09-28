@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { bookMatchesFilter, getBookDisplayName, getMenuCopy } from '@/lib/uiScript';
+import {
+  bookMatchesFilter,
+  getBookDisplayName,
+  getChromeCopy,
+  getMenuCopy,
+  getTestamentLabel,
+} from '@/lib/uiScript';
 
 describe('uiScript', () => {
   it('returns Simplified or Traditional book labels', () => {
@@ -31,5 +37,21 @@ describe('uiScript', () => {
     expect(getMenuCopy('traditional').memorize).toBe('背經文');
     expect(getMenuCopy('simplified').search).toBe('经文搜索');
     expect(getMenuCopy('traditional').search).toBe('經文搜索');
+  });
+
+  it('returns testament labels per script', () => {
+    expect(getTestamentLabel('old', 'simplified')).toBe('旧约');
+    expect(getTestamentLabel('old', 'traditional')).toBe('舊約');
+    expect(getTestamentLabel('new', 'simplified')).toBe('新约');
+    expect(getTestamentLabel('new', 'traditional')).toBe('新約');
+  });
+
+  it('keeps shared chrome strings consistent per script', () => {
+    expect(getChromeCopy('simplified').loadMore).toBe('加载更多');
+    expect(getChromeCopy('traditional').loadMore).toBe('載入更多');
+    expect(getChromeCopy('simplified').blessing).toBe('愿神的话语常在你心中');
+    expect(getChromeCopy('traditional').blessing).toBe('願神的話語常在你心中');
+    expect(getChromeCopy('simplified').notePlaceholder).toBe('开始记录今天的灵修笔记…');
+    expect(getChromeCopy('traditional').notePlaceholder).toBe('開始記錄今天的靈修筆記…');
   });
 });

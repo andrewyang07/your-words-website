@@ -6,7 +6,7 @@ import { Star, ChevronRight } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { sendStats } from '@/lib/statsUtils';
-import { getBookDisplayName } from '@/lib/uiScript';
+import { getBookDisplayName, getTestamentLabel } from '@/lib/uiScript';
 import booksData from '@/public/data/books.json';
 
 interface RankingItem {
@@ -119,7 +119,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                                             : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                                     }`}
                                 >
-                                    {item.testament === 'old' ? '舊約' : '新約'}
+                                    {getTestamentLabel(item.testament, language)}
                                 </span>
                                 <div className="flex items-center gap-1" title={language === 'traditional' ? '全站人氣（非我的收藏）' : '全站人气（非我的收藏）'}>
                                     <Star className="w-3 h-3 fill-current text-amber-600 dark:text-amber-300" />

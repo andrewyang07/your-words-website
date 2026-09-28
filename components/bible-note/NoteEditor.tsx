@@ -27,6 +27,7 @@ import {
     toolbarPlugin,
 } from '@mdxeditor/editor';
 import { useAppStore } from '@/stores/useAppStore';
+import { getChromeCopy } from '@/lib/uiScript';
 import { createMdxEditorTranslation } from '@/lib/mdxEditorI18n';
 
 interface NoteEditorProps {
@@ -107,7 +108,7 @@ export default function NoteEditor({ content, onChange, noteEditorRef }: NoteEdi
                 translation={translation}
                 placeholder={
                     <div className="text-stone-400">
-                        開始記錄今天的靈修筆記…
+                        {getChromeCopy(language).notePlaceholder}
                         <br />
                         <br />
                         直接寫下經文引用，如 約3:16 或 John 3:17

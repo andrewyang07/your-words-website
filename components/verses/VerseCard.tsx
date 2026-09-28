@@ -11,6 +11,8 @@ import { maskVerseText } from '@/lib/utils';
 import { getVerseNumericId, sendStats } from '@/lib/statsUtils';
 import { getReaderTextStyle } from '@/lib/readerPreferences';
 import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
+import { useAppStore } from '@/stores/useAppStore';
+import { getTestamentLabel } from '@/lib/uiScript';
 
 interface VerseCardProps {
     verse: Verse;
@@ -24,6 +26,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
     const { isFavorite, toggleFavorite } = useFavoritesStore();
     const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
     const textSize = useReaderPreferencesStore((state) => state.textSize);
+    const language = useAppStore((state) => state.language);
     const [isRevealed, setIsRevealed] = useState(defaultRevealed);
     const isFav = isFavorite(verse.id);
 
@@ -160,7 +163,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
             {/* 底部信息栏 */}
             <div className="mt-4 flex items-center justify-between border-t border-stone-900/10 pt-3 dark:border-white/10">
                 <span className="rounded-full bg-stone-900/[0.035] px-2 py-1 text-[11px] text-stone-500 dark:bg-white/[0.055] dark:text-stone-400 font-chinese">
-                    {verse.testament === 'old' ? '旧约' : '新约'}
+                    {getTestamentLabel(verse.testament, language)}
                 </span>
 
                 <div className="flex items-center gap-1.5">

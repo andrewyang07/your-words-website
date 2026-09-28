@@ -5,6 +5,8 @@ import type { Verse } from '@/types/verse';
 import { getVerseReference } from './discoveryHelpers';
 import { getReaderTextStyle } from '@/lib/readerPreferences';
 import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
+import { useAppStore } from '@/stores/useAppStore';
+import { getTestamentLabel } from '@/lib/uiScript';
 
 interface DiscoveryVerseCardProps {
   verse: Verse;
@@ -14,6 +16,7 @@ interface DiscoveryVerseCardProps {
 
 export default function DiscoveryVerseCard({ verse, saved, onSave }: DiscoveryVerseCardProps) {
   const textSize = useReaderPreferencesStore((state) => state.textSize);
+  const language = useAppStore((state) => state.language);
 
   return (
     <article className="rounded-lg border border-stone-900/10 bg-white/78 p-4 shadow-[0_18px_50px_rgba(68,64,60,0.08)] dark:border-white/10 dark:bg-white/[0.045]">
@@ -25,7 +28,7 @@ export default function DiscoveryVerseCard({ verse, saved, onSave }: DiscoveryVe
           >
             {getVerseReference(verse)}
           </p>
-          <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">{verse.testament === 'new' ? '新约' : '旧约'}</p>
+          <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">{getTestamentLabel(verse.testament, language)}</p>
         </div>
         {saved && (
           <span className="inline-flex items-center gap-1 rounded border border-emerald-700/20 bg-emerald-50 px-2 py-1 text-xs text-emerald-700 dark:border-emerald-300/20 dark:bg-emerald-300/10 dark:text-emerald-200">
