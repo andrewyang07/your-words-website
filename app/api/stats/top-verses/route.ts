@@ -4,7 +4,7 @@ import { decodeVerseRef } from '@/lib/bibleBookMapping';
 import booksData from '@/public/data/books.json';
 import bibleDataTraditional from '@/public/data/CUVT_bible.json';
 
-export const dynamic = 'force-dynamic';
+import { cacheControl, RANKINGS_CACHE, EMPTY_RESULT_CACHE, NO_STORE } from '@/lib/cachePolicy';
 
 // 本地开发环境检测
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -22,6 +22,7 @@ interface TopVerse {
 /**
  * GET /api/stats/top-verses
  * 获取热门经文排行榜（Top 7）
+ * 缓存策略：Cache-Control s-maxage=600, stale-while-revalidate=1800（空结果/故障仅缓存 30 秒）。
  */
 export async function GET() {
     // 本地开发且未配置 Redis，返回模拟数据
@@ -57,7 +58,7 @@ export async function GET() {
                     text: '你們的光也當這樣照在人前，叫他們看見你們的好行為，便將榮耀歸給你們在天上的父。',
                 },
             ],
-        });
+        }, { headers: { 'Cache-Control': NO_STORE } });
     }
 
     try {
@@ -65,7 +66,7 @@ export async function GET() {
         const keys = await safeRedisScan('verse:*', 100);
 
         if (keys.length === 0) {
-            return NextResponse.json({ topVerses: [] });
+            return NextResponse.json({ topVerses: [] }, { headers: { 'Cache-Control': cacheControl(EMPTY_RESULT_CACHE) } });
         }
 
         // 过滤掉旧格式的 key（verse:*:favorites 和 verse:*:clicks）
@@ -75,7 +76,7 @@ export async function GET() {
         });
 
         if (validKeys.length === 0) {
-            return NextResponse.json({ topVerses: [] });
+            return NextResponse.json({ topVerses: [] }, { headers: { 'Cache-Control': cacheControl(EMPTY_RESULT_CACHE) } });
         }
 
         // 批量获取所有 key 的值
@@ -170,10 +171,10 @@ export async function GET() {
             }
         });
 
-        return NextResponse.json({ topVerses });
+        return NextResponse.json({ topVerses }, { headers: { 'Cache-Control': cacheControl(RANKINGS_CACHE) } });
     } catch (error) {
         console.error('Failed to fetch top verses:', error);
         // 返回空数组，不影响页面渲染
-        return NextResponse.json({ topVerses: [] });
+        return NextResponse.json({ topVerses: [] }, { headers: { 'Cache-Control': NO_STORE } });
     }
 }
