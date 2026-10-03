@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, waitFor, within } from '@testing-library/react';
+import { act, cleanup, configure, fireEvent, render, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
 import MemorizePageClient, { AlphabetKeyboard, MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
@@ -7,6 +7,10 @@ import { CompletionReward } from '../components/memorize/CompletionReward';
 import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
 import AppStoreStorageSync from '../components/AppStoreStorageSync';
+
+// CI runners are slow: these tests load multi-MB data and were observed at 890-1110ms against the
+// default 1000ms findBy*/waitFor timeout (flaky on GitHub Actions). Give async queries more headroom.
+configure({ asyncUtilTimeout: 5000 });
 
 /** True when className matches the legacy detached outer blot signature. */
 function hasLegacyDetachedBlotSignature(className: string): boolean {
