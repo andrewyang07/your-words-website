@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, FileText } from 'lucide-react';
 import { getAllNotes, deleteNote, createNote } from '@/lib/noteStorage';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 interface NoteSummary {
     id: string;
@@ -28,6 +29,7 @@ function relativeTime(ts: number): string {
 }
 
 export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote, onNewNote }: NoteListProps) {
+    const pick = useScriptPick();
     const [notes, setNotes] = useState<NoteSummary[]>([]);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -131,7 +133,7 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
                                                     onClick={(e) => { e.stopPropagation(); void handleDelete(note.id); }}
                                                     className="px-2 py-0.5 rounded text-xs font-chinese bg-red-500 hover:bg-red-600 text-white transition-colors"
                                                 >
-                                                    刪除
+                                                    {pick('刪除', '删除')}
                                                 </button>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }}

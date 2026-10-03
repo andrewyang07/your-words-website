@@ -29,6 +29,7 @@ import {
 import { useAppStore } from '@/stores/useAppStore';
 import { getChromeCopy } from '@/lib/uiScript';
 import { createMdxEditorTranslation } from '@/lib/mdxEditorI18n';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 interface NoteEditorProps {
     content: string;
@@ -41,6 +42,7 @@ export interface NoteEditorHandle {
 }
 
 export default function NoteEditor({ content, onChange, noteEditorRef }: NoteEditorProps) {
+    const pick = useScriptPick();
     const editorRef = useRef<MDXEditorMethods>(null);
     const latestMarkdownRef = useRef(content);
     const language = useAppStore((state) => state.language);
@@ -111,7 +113,7 @@ export default function NoteEditor({ content, onChange, noteEditorRef }: NoteEdi
                         {getChromeCopy(language).notePlaceholder}
                         <br />
                         <br />
-                        直接寫下經文引用，如 約3:16 或 John 3:17
+                        {pick('直接寫下經文引用，如 約3:16 或 John 3:17', '直接写下经文引用，如 约3:16 或 John 3:17')}
                     </div>
                 }
                 className="min-h-[620px] text-stone-900 dark:text-gray-100"

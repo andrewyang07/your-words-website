@@ -11,6 +11,7 @@ import PageHeader from '@/components/layout/PageHeader';
 import booksData from '@/public/data/books.json';
 import { getBookDisplayName, getChromeCopy } from '@/lib/uiScript';
 import dynamic from 'next/dynamic';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 // 动态导入侧边栏
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -24,12 +25,13 @@ const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
 type BookFilterType = 'all' | 'old' | 'new' | string;
 
 export default function RankingsPage() {
+    const pick = useScriptPick();
     const router = useRouter();
     const { language, theme, setLanguage, setTheme } = useAppStore();
     const chrome = getChromeCopy(language);
     const [rankings, setRankings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<'load' | 'network' | null>(null);
     const [showSideMenu, setShowSideMenu] = useState(false);
     const [showAllContent, setShowAllContent] = useState(false);
     const [bookFilter, setBookFilter] = useState<BookFilterType>('all');
@@ -43,11 +45,11 @@ export default function RankingsPage() {
                     const data = await response.json();
                     setRankings(data.rankings || []);
                 } else {
-                    setError('加載失敗，請稍後重試');
+                    setError('load');
                 }
             } catch (err) {
                 console.error('Failed to fetch rankings:', err);
-                setError('網絡連接失敗');
+                setError('network');
             } finally {
                 setLoading(false);
             }
@@ -176,7 +178,7 @@ export default function RankingsPage() {
                             <div className="relative z-[220] overflow-visible">
                                 <Listbox.Button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bible-50 dark:bg-gray-800 hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors">
                                     <Filter className="w-4 h-4 text-stone-600 dark:text-stone-400" />
-                                    <span className="text-xs text-stone-700 dark:text-stone-300 font-chinese">篩選</span>
+                                    <span className="text-xs text-stone-700 dark:text-stone-300 font-chinese">{pick('篩選', '筛选')}</span>
                                     <ChevronDown className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                                 </Listbox.Button>
                                 <Transition
@@ -282,23 +284,23 @@ export default function RankingsPage() {
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
-                        <p className="mt-4 text-stone-600 dark:text-stone-400 font-chinese">加載排行榜中...</p>
+                        <p className="mt-4 text-stone-600 dark:text-stone-400 font-chinese">{pick('加載排行榜中...', '加载排行榜中...')}</p>
                     </div>
                 ) : error ? (
                     <div className="text-center py-12">
-                        <p className="text-stone-600 dark:text-stone-400 font-chinese mb-4">{error}</p>
+                        <p className="text-stone-600 dark:text-stone-400 font-chinese mb-4">{error === 'load' ? pick('加載失敗，請稍後重試', '加载失败，请稍后重试') : pick('網絡連接失敗', '网络连接失败')}</p>
                         <Link
                             href="/"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors font-chinese"
                         >
-                            返回主頁
+                            {pick('返回主頁', '返回主页')}
                         </Link>
                     </div>
                 ) : filteredRankings.length > 0 ? (
                     <RankingsList rankings={filteredRankings} />
                 ) : rankings.length > 0 ? (
                     <div className="text-center py-12">
-                        <p className="text-stone-500 dark:text-stone-400 font-chinese mb-2">該篩選條件下沒有經文</p>
+                        <p className="text-stone-500 dark:text-stone-400 font-chinese mb-2">{pick('該篩選條件下沒有經文', '该筛选条件下没有经文')}</p>
                         <button
                             onClick={() => setBookFilter('all')}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors font-chinese"
@@ -334,7 +336,7 @@ export default function RankingsPage() {
             <footer className="border-t border-bible-200 dark:border-gray-700 mt-12">
                 <div className="max-w-4xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
                     <p>{chrome.blessing} 🙏</p>
-                    <p className="mt-2 text-xs">© 2025 你的話語 · Made with ❤️ for Christ</p>
+                    <p className="mt-2 text-xs">{pick('© 2025 你的話語 · Made with ❤️ for Christ', '© 2025 你的话语 · Made with ❤️ for Christ')}</p>
                 </div>
             </footer>
         </div>

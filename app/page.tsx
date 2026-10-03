@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import DocumentTitle from '@/components/layout/DocumentTitle';
 import HomePageClient from '@/components/home/HomePageClient';
 
 const primaryPages = [
@@ -13,6 +14,7 @@ const primaryPages = [
 export default function HomePage() {
     return (
         <>
+            <DocumentTitle absolute traditional="你的話語 - 免費聖經背誦與搜索工具" simplified="你的话语 - 免费圣经背诵与搜索工具" />
             <section className="sr-only" aria-label="你的话语简介">
                 <h1>你的话语 - 免费圣经背诵与搜索工具</h1>
                 <p>
