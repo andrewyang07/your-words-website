@@ -10,6 +10,10 @@ const redis = vi.hoisted(() => ({
 const limiter = vi.hoisted(() => ({ checkRateLimit: vi.fn() }));
 
 vi.mock('../lib/redisUtils', () => redis);
+// The real Bible JSON is several MB; a tiny stand-in keeps this suite cheap (CI runners are small).
+vi.mock('@/public/data/CUVT_bible.json', () => ({
+  default: { 约翰福音: { 3: { 16: '神愛世人' } }, 诗篇: { 23: { 1: '耶和華是我的牧者' } } },
+}));
 vi.mock('../lib/rateLimit', async () => {
   const actual = await vi.importActual<typeof import('../lib/rateLimit')>('../lib/rateLimit');
   return { ...actual, checkRateLimit: limiter.checkRateLimit };
