@@ -71,7 +71,6 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
 
         document.addEventListener('paste', handlePaste);
         return () => document.removeEventListener('paste', handlePaste);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     const references = useMemo(() => parseVerseReferences(ocrText), [ocrText]);
