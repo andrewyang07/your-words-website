@@ -9,7 +9,8 @@
 /** Longest legal id is "66-150-176" (10 chars); leave a little headroom. */
 export const VERSE_ID_MAX_LENGTH = 16;
 
-const VERSE_ID_PATTERN = /^\d+-\d+-\d+$/;
+/** Canonical positive integers only: no leading zeros, so "01-01-01" can't mint a duplicate key for 1-1-1. */
+const VERSE_ID_PATTERN = /^[1-9]\d*-[1-9]\d*-[1-9]\d*$/;
 
 const MAX_BOOK = 66;
 const MAX_CHAPTER = 150; // Psalms
@@ -17,8 +18,8 @@ const MAX_VERSE = 176; // Psalm 119
 
 /**
  * Strict type guard for an encoded verse id such as "43-3-16".
- * Rejects non-strings, empty/overlong strings, anything not `\d+-\d+-\d+`
- * (e.g. "../", "1-1", "1-2-3-4", " 1-2-3", "1-2-3\n"), and numbers outside the
+ * Rejects non-strings, empty/overlong strings, anything not three canonical (no leading zero) integers joined by `-`
+ * (e.g. "../", "1-1", "01-01-01", "1-2-3-4", " 1-2-3", "1-2-3\n"), and numbers outside the
  * canonical Bible range (book 1-66, chapter 1-150, verse 1-176).
  */
 export function isValidVerseId(value: unknown): value is string {

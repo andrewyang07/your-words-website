@@ -38,7 +38,7 @@ describe('sendStats', () => {
   });
 
   it('skips ids the server would reject (no request)', async () => {
-    for (const id of ['', '../', '1-1', 'x'.repeat(100)]) expect(await sendStats('favorite', id)).toBe('skipped');
+    for (const id of ['', '../', '1-1', '01-01-01', '001-0001-0001', '1-01-1', '1-1-01', '0-1-1', 'x'.repeat(100)]) expect(await sendStats('favorite', id)).toBe('skipped');
     expect(await sendStats('click', '43-3-16')).toBe('skipped');
     expect(fetchMock).not.toHaveBeenCalled();
   });
