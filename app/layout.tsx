@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Noto_Sans_SC } from 'next/font/google';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import AppStoreStorageSync from '@/components/AppStoreStorageSync';
+import ScriptText from '@/components/ui/ScriptText';
 import './globals.css';
 
 const notoSans = Noto_Sans_SC({
@@ -207,12 +208,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body className={`${notoSans.className} antialiased`} suppressHydrationWarning>
                 <AppStoreStorageSync />
                 <nav className="sr-only" aria-label="主要頁面">
-                    <a href="/memorize">深度背誦</a>
-                    <a href="/search">聖經搜索</a>
-                    <a href="/note">聖經筆記本</a>
-                    <a href="/rankings">聖經經文排行榜</a>
-                    <a href="/about">關於你的話語</a>
-                    <a href="/help">使用幫助</a>
+                    <a href="/memorize"><ScriptText traditional="深度背誦" simplified="深度背诵" /></a>
+                    <a href="/search"><ScriptText traditional="聖經搜索" simplified="圣经搜索" /></a>
+                    <a href="/note"><ScriptText traditional="聖經筆記本" simplified="圣经笔记本" /></a>
+                    <a href="/rankings"><ScriptText traditional="聖經經文排行榜" simplified="圣经经文排行榜" /></a>
+                    <a href="/about"><ScriptText traditional="關於你的話語" simplified="关于你的话语" /></a>
+                    <a href="/help"><ScriptText traditional="使用幫助" simplified="使用帮助" /></a>
                 </nav>
                 <ErrorBoundary>{children}</ErrorBoundary>
                 <Analytics />

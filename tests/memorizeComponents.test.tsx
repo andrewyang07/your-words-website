@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, configure, fireEvent, render, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
 import MemorizePageClient, { AlphabetKeyboard, MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
 import { CompletionReward } from '../components/memorize/CompletionReward';
@@ -11,6 +11,24 @@ import AppStoreStorageSync from '../components/AppStoreStorageSync';
 // CI runners are slow: these tests load multi-MB data and were observed at 890-1110ms against the
 // default 1000ms findBy*/waitFor timeout (flaky on GitHub Actions). Give async queries more headroom.
 configure({ asyncUtilTimeout: 5000 });
+
+// asyncUtilTimeout (5s) must be strictly below the per-test timeout, otherwise a slow runner is reported as a
+// generic "Test timed out in 5000ms" instead of a useful findBy*/waitFor failure. Multi-step tests below chain
+// several async queries, so give each test (and the one-off warm-up hook) generous headroom.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 60_000 });
+
+/**
+ * MemorizePageClient lazy-loads the multi-MB contextual-pinyin and Taiwan-Zhuyin models with dynamic import().
+ * The first import in a worker pays the transform/parse cost (seconds on a loaded CI runner) while the stage
+ * heading is already on screen and the recall keys are still disabled. Pre-load them once so every test sees
+ * the same (cached) timing regardless of execution order or runner speed.
+ */
+beforeAll(async () => {
+  await Promise.all([
+    import('../lib/memorize/contextualInitials'),
+    import('../lib/memorize/taiwanZhuyin'),
+  ]);
+});
 
 /** True when className matches the legacy detached outer blot signature. */
 function hasLegacyDetachedBlotSignature(className: string): boolean {
@@ -118,8 +136,13 @@ async function skipStage(
  * (this raced on slow CI runners).
  */
 async function pressKey(view: ReturnType<typeof render>, name: string) {
-  await waitFor(() => expect(view.getByRole('button', { name }).hasAttribute('disabled')).toBe(false));
+  await waitForKeyEnabled(view, name);
   fireEvent.click(view.getByRole('button', { name }));
+}
+
+/** Wait until a recall key exists and is enabled (contextual initials / Taiwan readings finished loading). */
+async function waitForKeyEnabled(view: ReturnType<typeof render>, name: string | RegExp) {
+  await waitFor(() => expect((view.getByRole('button', { name }) as HTMLButtonElement).disabled).toBe(false));
 }
 
 describe('deep memorization controls', () => {
@@ -131,13 +154,17 @@ describe('deep memorization controls', () => {
     useFavoritesStore.setState({ favorites: new Set() });
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
 
-    const view = render(<MemorizePageClient />);
-    await view.findByRole('heading', { name: '选择一节，慢慢记住' });
-    expect(view.getByRole('navigation', { name: '主要頁面' }).inert).toBe(true);
+    try {
+      const view = render(<MemorizePageClient />);
+      await view.findByRole('heading', { name: '选择一节，慢慢记住' });
+      expect(view.getByRole('navigation', { name: '主要頁面' }).inert).toBe(true);
 
-    view.unmount();
-    expect(navigation.inert).toBe(false);
-    navigation.remove();
+      view.unmount();
+      expect(navigation.inert).toBe(false);
+    } finally {
+      // Never leak the fake global nav into later tests, even when an assertion above fails.
+      navigation.remove();
+    }
   });
 
   it('introduces one-verse, four-stage practice once and remembers a skipped guide', async () => {
@@ -480,6 +507,11 @@ describe('deep memorization controls', () => {
       newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
     })));
     await waitFor(() => expect(fetchBible).toHaveBeenCalledWith('/data/CUVT_bible.json'));
+    // The rejected reload must be fully handled before asserting that nothing broke; otherwise the
+    // "no error heading" check could pass vacuously before the failure is even processed.
+    await act(async () => {
+      await Promise.allSettled(fetchBible.mock.results.map((result) => result.value));
+    });
 
     expect(view.queryByRole('heading', { name: '出錯了' })).toBeNull();
     expect(view.getByRole('heading', { name: '凭留下的字，补全句子' })).toBeTruthy();
@@ -645,8 +677,7 @@ describe('deep memorization controls', () => {
     first.unmount();
 
     const returning = render(<AlphabetKeyboard onPress={vi.fn()} />);
-    await act(async () => undefined);
-    expect(returning.getByRole('button', { name: '注音' }).getAttribute('aria-pressed')).toBe('true');
+    await waitFor(() => expect(returning.getByRole('button', { name: '注音' }).getAttribute('aria-pressed')).toBe('true'));
   });
 
   it('can show and hide standard physical key positions without changing symbols', () => {
@@ -714,8 +745,7 @@ describe('deep memorization controls', () => {
 
     fireEvent.click(view.getByRole('button', { name: '注音' }));
     expect(view.getByRole('heading', { name: '按每个字读音的第一个注音符号' })).toBeTruthy();
-    await waitFor(() => expect((view.getByRole('button', { name: 'ㄅ 1' }) as HTMLButtonElement).disabled).toBe(false));
-    fireEvent.click(view.getByRole('button', { name: 'ㄅ 1' }));
+    await pressKey(view, 'ㄅ 1');
     fireEvent.click(view.getByRole('button', { name: /^ㄅ 1/u }));
     const hintedKey = view.getByRole('button', { name: 'ㄍ E，提示按键' });
     expect(view.getByRole('status').textContent).toContain('提示：请按 ㄍ 或 ㄨ 键');

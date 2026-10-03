@@ -149,3 +149,19 @@ export const CHROME_COPY = {
 export function getChromeCopy(language: UiScript) {
   return CHROME_COPY[language];
 }
+
+/** Pick the string that matches the active UI script (Traditional first, Simplified second). */
+export function pickScript(language: UiScript, traditional: string, simplified: string): string {
+  return language === 'traditional' ? traditional : simplified;
+}
+
+const BRAND_SUFFIX = { traditional: ' | 你的話語', simplified: ' | 你的话语' } as const;
+
+/** Browser-tab title for a page in the given UI script (mirrors the `%s | 你的話語` metadata template). */
+export function getDocumentTitle(
+  language: UiScript,
+  title: { traditional: string; simplified: string },
+  absolute = false
+): string {
+  return `${title[language]}${absolute ? '' : BRAND_SUFFIX[language]}`;
+}

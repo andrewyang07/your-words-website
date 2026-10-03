@@ -3,8 +3,10 @@ import {
   bookMatchesFilter,
   getBookDisplayName,
   getChromeCopy,
+  getDocumentTitle,
   getMenuCopy,
   getTestamentLabel,
+  pickScript,
 } from '@/lib/uiScript';
 
 describe('uiScript', () => {
@@ -53,5 +55,19 @@ describe('uiScript', () => {
     expect(getChromeCopy('traditional').blessing).toBe('願神的話語常在你心中');
     expect(getChromeCopy('simplified').notePlaceholder).toBe('开始记录今天的灵修笔记…');
     expect(getChromeCopy('traditional').notePlaceholder).toBe('開始記錄今天的靈修筆記…');
+  });
+});
+
+describe('script picking helpers', () => {
+  it('picks the Traditional or Simplified variant', () => {
+    expect(pickScript('traditional', '關於', '关于')).toBe('關於');
+    expect(pickScript('simplified', '關於', '关于')).toBe('关于');
+  });
+
+  it('builds brand-suffixed document titles per script', () => {
+    const title = { traditional: '聖經筆記本', simplified: '圣经笔记本' };
+    expect(getDocumentTitle('traditional', title)).toBe('聖經筆記本 | 你的話語');
+    expect(getDocumentTitle('simplified', title)).toBe('圣经笔记本 | 你的话语');
+    expect(getDocumentTitle('simplified', title, true)).toBe('圣经笔记本');
   });
 });

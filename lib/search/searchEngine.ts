@@ -16,6 +16,7 @@ import type {
 } from '@/types/search';
 import {
   DEFAULT_SEARCH_LIMIT,
+  hasCjk,
   type SearchResponse,
 } from './searchHelpers';
 
@@ -39,6 +40,17 @@ function chineseTokenizer(text: string): string[] {
   // English word tokens
   const words = text.toLowerCase().match(/[a-z']+/g) || [];
   return [...cjk, ...words];
+}
+
+let toSimplifiedPromise: Promise<(value: string) => string> | null = null;
+
+/** The corpus is Simplified (CUV), so Traditional CJK queries must be normalized before keyword search. */
+async function normalizeToSimplified(query: string): Promise<string> {
+  if (!hasCjk(query)) return query;
+  toSimplifiedPromise ??= import('opencc-js').then((opencc) =>
+    opencc.Converter({ from: 'tw', to: 'cn' })
+  );
+  return (await toSimplifiedPromise)(query);
 }
 
 interface DocRecord {
@@ -184,8 +196,8 @@ class SearchEngine {
       }
     }
 
-    // Keyword search
-    return this.searchByKeyword(trimmed, limit);
+    // Keyword search (corpus is Simplified, so convert Traditional queries first)
+    return this.searchByKeyword(await normalizeToSimplified(trimmed), limit);
   }
 
   private searchByReference(ref: {

@@ -6,6 +6,7 @@ import { Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { getChapter, getBookMetadata } from '@/lib/verseLoader';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 interface ChapterViewerProps {
     isOpen: boolean;
@@ -18,6 +19,7 @@ interface ChapterViewerProps {
 }
 
 export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVerse, onInsertVerses, onChapterChange }: ChapterViewerProps) {
+    const pick = useScriptPick();
     const [verses, setVerses] = useState<Record<number, string>>({});
     const [loading, setLoading] = useState(false);
     const [isInserting, setIsInserting] = useState(false);
@@ -323,14 +325,14 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                     onClick={onClose}
                                     className="min-h-[40px] rounded-full px-3 py-2 font-chinese text-sm text-stone-600 transition-colors hover:bg-white/70 dark:text-stone-300 dark:hover:bg-white/[0.08] md:min-h-[44px]"
                                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                    title="關閉"
-                                    aria-label="關閉章節查看器"
+                                    title={pick('關閉', '关闭')}
+                                    aria-label={pick('關閉章節查看器', '关闭章节查看器')}
                                 >
                                     <span>收起整章</span>
                                 </button>
                             </div>
 
-                            <p className="font-chinese text-xs text-stone-500 dark:text-stone-400 md:text-sm">{Object.keys(verses).length} 節經文{targetVerse ? ` · 已定位第 ${targetVerse} 節` : ''}</p>
+                            <p className="font-chinese text-xs text-stone-500 dark:text-stone-400 md:text-sm">{Object.keys(verses).length} {pick('節經文', '节经文')}{targetVerse ? pick(` · 已定位第 ${targetVerse} 節`, ` · 已定位第 ${targetVerse} 节`) : ''}</p>
                         </div>
 
                         {/* 内容区域 */}
@@ -338,7 +340,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                             {loading ? (
                                 <div className="flex items-center justify-center py-12">
                                     <Loader2 className="h-8 w-8 animate-spin text-stone-500 dark:text-stone-400" />
-                                    <span className="ml-3 font-chinese text-sm text-stone-500 dark:text-stone-400 md:text-base">加載中...</span>
+                                    <span className="ml-3 font-chinese text-sm text-stone-500 dark:text-stone-400 md:text-base">{pick('加載中...', '加载中...')}</span>
                                 </div>
                             ) : (
                                 <div className="mx-auto max-w-5xl space-y-1.5">
@@ -376,7 +378,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                                             checked={isSelected}
                                                             onChange={() => {}}
                                                             className="pointer-events-none mt-1 h-5 w-5 rounded border-stone-300 text-amber-600 focus:ring-amber-500 md:h-4 md:w-4"
-                                                            aria-label={`選擇第 ${verseNum} 節`}
+                                                            aria-label={pick(`選擇第 ${verseNum} 節`, `选择第 ${verseNum} 节`)}
                                                         />
 
                                                         {/* 节数标记 */}
@@ -399,8 +401,8 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                                             disabled={isInserting}
                                                             className="flex min-h-[40px] min-w-[40px] flex-shrink-0 items-center justify-center gap-1 rounded-full border border-stone-900/10 bg-white/80 px-3 py-2 text-stone-700 shadow-sm transition-colors hover:bg-white disabled:opacity-40 dark:border-white/10 dark:bg-white/[0.07] dark:text-stone-100 dark:hover:bg-white/[0.1] md:min-w-0"
                                                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                                            title="插入此節"
-                                                            aria-label="插入此節"
+                                                            title={pick('插入此節', '插入此节')}
+                                                            aria-label={pick('插入此節', '插入此节')}
                                                         >
                                                             <Plus className="h-4 w-4 md:h-5 md:w-5" />
                                                             <span className="hidden font-chinese text-xs md:inline">插入</span>
@@ -417,7 +419,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                         <div className="flex min-h-[52px] items-center justify-between gap-3 border-t border-stone-900/10 bg-white/65 p-2.5 backdrop-blur-xl dark:border-amber-200/10 dark:bg-[#211b13]/70 md:p-3">
                             {/* 左侧：选择提示 */}
                             <div className="font-chinese text-xs text-stone-500 dark:text-stone-400 md:text-sm">
-                                {selectedVerses.size > 0 ? `已選 ${selectedVerses.size} 節，可批量插入` : '點擊經文多選，或用右側按鈕插入單節'}
+                                {selectedVerses.size > 0 ? pick(`已選 ${selectedVerses.size} 節，可批量插入`, `已选 ${selectedVerses.size} 节，可批量插入`) : pick('點擊經文多選，或用右側按鈕插入單節', '点击经文多选，或用右侧按钮插入单节')}
                             </div>
 
                             {/* 右侧：操作按钮 */}
@@ -438,7 +440,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                                         >
                                             {isInserting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                                            <span>插入選中 ({selectedVerses.size})</span>
+                                            <span>{pick('插入選中 (', '插入选中 (')}{selectedVerses.size})</span>
                                         </button>
                                     </>
                                 )}

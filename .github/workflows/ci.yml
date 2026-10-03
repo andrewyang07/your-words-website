@@ -32,3 +32,9 @@ jobs:
 
       - name: Run unit tests
         run: npm run test:unit
+
+      # No Upstash/Redis secrets are provided on purpose: the production build must not depend on them.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'

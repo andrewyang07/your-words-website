@@ -2,6 +2,11 @@ import { create } from 'zustand';
 import { VerseState } from '@/types/store';
 import { loadPresetVerses, loadChapterVerses, loadBooks } from '@/lib/dataLoader';
 
+// The persisted UI language is applied after hydration, so loads for the default script can still be in
+// flight when the saved script's load starts. Only the most recent request may write to the store.
+let latestVersesRequest = 0;
+let latestBooksRequest = 0;
+
 export const useVerseStore = create<VerseState>((set, get) => ({
   // 初始状态
   verses: [],
@@ -19,8 +24,9 @@ export const useVerseStore = create<VerseState>((set, get) => ({
   loadVerses: async (mode, language) => {
     try {
       if (mode === 'preset') {
+        const request = ++latestVersesRequest;
         const verses = await loadPresetVerses(language);
-        get().setVerses(verses);
+        if (request === latestVersesRequest) get().setVerses(verses);
       }
       // chapter 模式在选择书卷章节时动态加载
     } catch (error) {
@@ -32,8 +38,9 @@ export const useVerseStore = create<VerseState>((set, get) => ({
   // 加载书卷信息
   loadBooks: async (language = 'traditional') => {
     try {
+      const request = ++latestBooksRequest;
       const books = await loadBooks(language);
-      get().setBooks(books);
+      if (request === latestBooksRequest) get().setBooks(books);
     } catch (error) {
       console.error('加载书卷信息失败:', error);
       throw error;

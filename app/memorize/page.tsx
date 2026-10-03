@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import DocumentTitle from '@/components/layout/DocumentTitle';
 import MemorizePageClient from '@/components/memorize/MemorizePageClient';
 
 export const metadata: Metadata = {
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function MemorizePage() {
-  return <MemorizePageClient />;
+  return (
+    <>
+      <DocumentTitle traditional="深度背誦" simplified="深度背诵" />
+      <MemorizePageClient />
+    </>
+  );
 }

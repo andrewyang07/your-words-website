@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import AboutPageClient from './AboutPageClient';
+import ScriptText from '@/components/ui/ScriptText';
+import DocumentTitle from '@/components/layout/DocumentTitle';
 
 export const metadata: Metadata = {
     title: '關於你的話語',
@@ -46,9 +48,10 @@ export const metadata: Metadata = {
 export default function AboutPage() {
     return (
         <>
+            <DocumentTitle traditional="關於你的話語" simplified="关于你的话语" />
             <section className="sr-only" aria-label="關於你的話語簡介">
-                <h1>關於你的話語</h1>
-                <p>了解你的話語聖經背誦工具的功能特色、開發背景和使用方法。</p>
+                <h1><ScriptText traditional="關於你的話語" simplified="关于你的话语" /></h1>
+                <p><ScriptText traditional="了解你的話語聖經背誦工具的功能特色、開發背景和使用方法。" simplified="了解你的话语圣经背诵工具的功能特色、开发背景和使用方法。" /></p>
             </section>
             <AboutPageClient />
         </>

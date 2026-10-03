@@ -2,6 +2,7 @@
 
 import { Component, ReactNode } from 'react';
 import { logError } from '@/lib/errorHandler';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 interface Props {
     children: ReactNode;
@@ -11,6 +12,27 @@ interface Props {
 interface State {
     hasError: boolean;
     error: Error | null;
+}
+
+function ErrorFallback() {
+    const pick = useScriptPick();
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-bible-50 dark:bg-gray-900 p-4">
+            <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+                <div className="mb-4">
+                    <span className="text-6xl">😔</span>
+                </div>
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 font-chinese">{pick('出現錯誤', '出现错误')}</h1>
+                <p className="text-gray-600 dark:text-gray-400 mb-6 font-chinese">{pick('很抱歉，應用遇到了一個問題。請刷新頁面重試。', '很抱歉，应用遇到了一个问题。请刷新页面重试。')}</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-3 bg-bible-600 hover:bg-bible-700 text-white rounded-lg transition-colors font-chinese"
+                >
+                    {pick('刷新頁面', '刷新页面')}
+                </button>
+            </div>
+        </div>
+    );
 }
 
 /**
@@ -40,23 +62,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 return this.props.fallback;
             }
 
-            return (
-                <div className="min-h-screen flex items-center justify-center bg-bible-50 dark:bg-gray-900 p-4">
-                    <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
-                        <div className="mb-4">
-                            <span className="text-6xl">😔</span>
-                        </div>
-                        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 font-chinese">出現錯誤</h1>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6 font-chinese">很抱歉，應用遇到了一個問題。請刷新頁面重試。</p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="px-6 py-3 bg-bible-600 hover:bg-bible-700 text-white rounded-lg transition-colors font-chinese"
-                        >
-                            刷新頁面
-                        </button>
-                    </div>
-                </div>
-            );
+            return <ErrorFallback />;
         }
 
         return this.props.children;

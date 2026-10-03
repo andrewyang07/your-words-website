@@ -6,8 +6,10 @@ import Select, { SelectOption } from '@/components/ui/Select';
 import Slider from '@/components/ui/Slider';
 import { RotateCcw, HelpCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 export default function MaskSettings() {
+    const pick = useScriptPick();
     const {
         maskMode,
         maskCharsType,
@@ -25,12 +27,12 @@ export default function MaskSettings() {
 
     const modeOptions: SelectOption[] = [
         { value: 'punctuation', label: '每句提示' },
-        { value: 'prefix', label: '開頭提示' },
+        { value: 'prefix', label: pick('開頭提示', '开头提示') },
     ];
 
     const typeOptions: SelectOption[] = [
-        { value: 'fixed', label: '固定提示字數' },
-        { value: 'range', label: '隨機提示字數' },
+        { value: 'fixed', label: pick('固定提示字數', '固定提示字数') },
+        { value: 'range', label: pick('随机提示字数'.replace('随机','隨機'), '随机提示字数') },
     ];
 
     return (
@@ -46,8 +48,8 @@ export default function MaskSettings() {
                 <button
                     onClick={() => setShowHelp(!showHelp)}
                     className="flex-shrink-0 w-7 h-7 flex items-center justify-center text-bible-500 hover:text-bible-700 dark:text-bible-400 dark:hover:text-bible-200 hover:bg-bible-100 dark:hover:bg-gray-700 rounded-full transition-colors touch-manipulation"
-                    title="查看提示模式說明"
-                    aria-label="查看提示模式說明"
+                    title={pick('查看提示模式說明', '查看提示模式说明')}
+                    aria-label={pick('查看提示模式說明', '查看提示模式说明')}
                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                 >
                     <HelpCircle className="w-4 h-4" />
@@ -106,11 +108,11 @@ export default function MaskSettings() {
             <button
                 onClick={resetToDefaults}
                 className="flex items-center gap-1 px-2.5 py-2 text-xs text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-lg transition-colors touch-manipulation border border-bible-200 dark:border-gray-700"
-                title="恢復默認設置"
-                aria-label="恢復默認設置"
+                title={pick('恢復默認設置', '恢复默认设置')}
+                aria-label={pick('恢復默認設置', '恢复默认设置')}
             >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline font-chinese">恢復默認</span>
+                <span className="hidden sm:inline font-chinese">{pick('恢復默認', '恢复默认')}</span>
             </button>
 
             {/* 帮助提示框 */}
@@ -138,14 +140,14 @@ export default function MaskSettings() {
                                 <div className="flex items-center gap-2">
                                     <span className="text-xl">📖</span>
                                     <h3 className="text-base font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                                        提示模式說明
+                                        {pick('提示模式說明', '提示模式说明')}
                                     </h3>
                                 </div>
                                 <button
                                     onClick={() => setShowHelp(false)}
                                     className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:bg-bible-100 dark:hover:bg-gray-700 rounded-full transition-colors touch-manipulation"
                                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                    aria-label="關閉"
+                                    aria-label={pick('關閉', '关闭')}
                                 >
                                     <X className="w-5 h-5 text-bible-600 dark:text-bible-400" />
                                 </button>
@@ -159,23 +161,23 @@ export default function MaskSettings() {
                                         • 每句提示
                                     </p>
                                     <p className="text-xs mb-1.5 sm:mb-2 text-bible-600 dark:text-bible-400">
-                                        在每個句子開頭最多顯示提示字，短句也會保留遮字
+                                        {pick('在每個句子開頭最多顯示提示字，短句也會保留遮字', '在每个句子开头最多显示提示字，短句也会保留遮字')}
                                     </p>
                                     <div className="p-1.5 sm:p-2 bg-white dark:bg-gray-800 rounded border border-bible-200 dark:border-gray-600 font-chinese text-xs">
-                                        <p>這律〇，總要晝夜思〇（短句也會遮字）</p>
+                                        <p>{pick('這律〇，總要晝夜思〇（短句也會遮字）', '这律〇，总要昼夜思〇（短句也会遮字）')}</p>
                                     </div>
                                 </div>
 
                                 {/* 开头提示 */}
                                 <div className="p-2.5 sm:p-3 bg-bible-50 dark:bg-gray-700 rounded-lg">
                                     <p className="font-semibold text-bible-800 dark:text-bible-200 mb-1.5 sm:mb-2 text-sm">
-                                        • 開頭提示
+                                        {pick('• 開頭提示', '• 开头提示')}
                                     </p>
                                     <p className="text-xs mb-1.5 sm:mb-2 text-bible-600 dark:text-bible-400">
-                                        只在全文開頭最多顯示提示字，其餘保留遮字
+                                        {pick('只在全文開頭最多顯示提示字，其餘保留遮字', '只在全文开头最多显示提示字，其余保留遮字')}
                                     </p>
                                     <div className="p-1.5 sm:p-2 bg-white dark:bg-gray-800 rounded border border-bible-200 dark:border-gray-600 font-chinese text-xs">
-                                        <p>這律〇〇〇〇〇〇〇〇〇〇（只有開頭有提示）</p>
+                                        <p>{pick('這律〇〇〇〇〇〇〇〇〇〇（只有開頭有提示）', '这律〇〇〇〇〇〇〇〇〇〇（只有开头有提示）')}</p>
                                     </div>
                                 </div>
 
@@ -183,9 +185,8 @@ export default function MaskSettings() {
                                 <div className="flex items-start gap-2 p-2.5 sm:p-3 bg-gold-50 dark:bg-gray-700 rounded-lg border border-gold-200 dark:border-gold-600">
                                     <span className="text-sm sm:text-base">💡</span>
                                     <p className="text-xs text-bible-700 dark:text-bible-300">
-                                        <span className="font-semibold">建議：</span>
-                                        初學者推薦「每句提示」，更容易記憶；
-                                        熟練後可使用「開頭提示」增加挑戰。
+                                        <span className="font-semibold">{pick('建議：', '建议：')}</span>
+                                        {pick('初學者推薦「每句提示」，更容易記憶； 熟練後可使用「開頭提示」增加挑戰。', '初学者推荐「每句提示」，更容易记忆； 熟练后可使用「开头提示」增加挑战。')}
                                     </p>
                                 </div>
                             </div>
