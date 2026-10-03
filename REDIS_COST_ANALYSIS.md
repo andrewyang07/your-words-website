@@ -1,152 +1,105 @@
 # Redis 成本分析和优化
 
+> 最近更新：2026-10-02（API hardening：真实缓存策略 + 写入限流）。
+> 之前的版本声称 `/api/rankings` 有 "ISR 缓存 1 小时"，这是**错误的**：该路由同时设置了
+> `export const dynamic = 'force-dynamic'` 和 `export const revalidate = 3600`，`force-dynamic` 使 `revalidate`
+> 完全不生效，每次请求都会执行 SCAN + MGET。`/api/stats` 与 `/api/stats/top-verses` 也完全没有缓存。
+
+Upstash Free：**500,000 命令/月**（以 Upstash 控制台当前显示为准）。Upstash 按**命令**计费（`EVAL` 算 1 条；`INCR`/`GET`/`SCAN`/`MGET`/`EXPIRE` 各算 1 条；`MGET` 多个 key 也只算 1 条）。
+
 ## 📊 当前 API 端点
 
-### 读取 API（GET）
+### 读取 API（GET）—— 现在由 CDN 通过 `Cache-Control` 缓存
 
-1. `/api/stats` - 全局统计（每次访问主页）
-2. `/api/stats/top-verses` - Top 7 最多收藏（每次打开侧边栏）
-3. `/api/rankings` - 排行榜（访问排行榜页面，ISR 1 小时缓存）
+| 端点                    | 缓存头（正常数据）                                           | 缓存头（空结果 / Redis 降级） | 每次回源的 Redis 命令                    |
+| ----------------------- | ------------------------------------------------------------ | ----------------------------- | ---------------------------------------- |
+| `/api/stats`            | `public, s-maxage=300, stale-while-revalidate=900`           | `s-maxage=30, swr=30`         | 2（`GET total_users`、`GET total_favorites`） |
+| `/api/stats/top-verses` | `public, s-maxage=600, stale-while-revalidate=1800`          | `s-maxage=30, swr=30`         | SCAN×N + 1 MGET（约 5，见下）            |
+| `/api/rankings`         | `public, s-maxage=600, stale-while-revalidate=1800`          | `s-maxage=30, swr=30`         | SCAN×N + 1 MGET（约 5，见下）            |
 
-### 写入 API（POST）
+要点：
 
-1. `/api/stats/increment` - 点击/收藏统计
-2. `/api/stats/track-user` - 用户追踪（首次访问）
+-   **不再使用** `export const dynamic = 'force-dynamic'` / `export const revalidate`。缓存策略统一由响应头表达（见 `lib/cachePolicy.ts`），Vercel CDN 遵守 `s-maxage` 与 `stale-while-revalidate`。
+-   TTL 的含义：全局计数可以滞后数分钟。`stats` 最多 5 分钟新鲜 + 15 分钟 SWR；排行榜类（昂贵的 SCAN+MGET）最多 10 分钟新鲜 + 30 分钟 SWR。
+-   **空结果 / 任何降级只缓存 30 秒**：`lib/redisUtils.ts` 的 `safeRedis*Result` 辅助函数返回 `{ value, degraded }`，`degraded` 在 Redis 未配置 / 出错 / SCAN 中途出错或被截断时为 true，与"key 不存在"区分开。路由只要任一步（SCAN、MGET、`/api/stats` 的两个 GET 中任意一个）降级，或结果为空，就用 30 秒策略。`safeRedis*` 辅助函数在 Redis 出错时会吞掉错误并返回 `[]` / `'0'`，如果按正常 TTL 缓存会把一次短暂故障固定在 CDN 10+ 分钟。
+-   HTTP 500、本地开发模拟数据：`Cache-Control: no-store`。
+-   **用户自己的"我的收藏"是本地状态（zustand / IndexedDB），从不经过这些接口**，不受缓存影响，点星标立即生效。
+-   `SCAN` 会遍历整个 keyspace（`COUNT 100`），所以每次回源约 `ceil(keys/100)` 次 SCAN + 1 次 MGET。下文按约 300 个不同的 `verse:*` key 估算 ≈ **5 条命令/次**；key 越多越贵，这也是排行榜 TTL 取得较长的原因。
 
-## 💰 成本估算（1000 DAU）
+### 写入 API（POST）—— 严格校验 + 按 IP 限流
 
-### API 请求估算
+| 端点                    | 输入校验                                                                                               | 限流（每 IP，固定窗口）   | 每次允许的写入命令                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------- | ----------------------------------- |
+| `/api/stats/increment`  | `action` 必须为 `"favorite"`；`verseId` 必须是三段规范正整数 `^[1-9]\d*-[1-9]\d*-[1-9]\d*$`（不允许前导零）、长度 ≤ 16、书 1–66 / 章 1–150 / 节 1–176；请求体 ≤ 1024 字符；非法 → **HTTP 400，不触碰 Redis（连限流计数也不增加），不产生任何 key** | **30 次 / 60 秒**         | 2 INCR（`total_favorites`、`verse:<id>`） |
+| `/api/stats/track-user` | 不接收任何字段：空 body 或 `{}` 通过，其余（含 `verseId`）→ 400                                       | **10 次 / 3600 秒**       | 1 INCR（`total_users`）             |
 
-| API                     | 触发时机   | 每用户/天 | 每月请求数       | Redis 操作        |
-| ----------------------- | ---------- | --------- | ---------------- | ----------------- |
-| `/api/stats`            | 访问主页   | 1 次      | 30K              | 3 GET             |
-| `/api/stats/top-verses` | 打开侧边栏 | 1 次      | 30K              | SCAN + MGET(~100) |
-| `/api/stats/increment`  | 点击/收藏  | 10 次     | 300K             | 2-3 INCR          |
-| `/api/stats/track-user` | 首次访问   | 0.03 次   | 1K               | 1 INCR            |
-| `/api/rankings`         | 访问排行榜 | 0.1 次    | 3K (实际 720/月) | SCAN + MGET(~100) |
-| **总计**                | -          | -         | **~364K/月**     | -                 |
+限流实现（`lib/rateLimit.ts`）：Redis `INCR rl:<scope>:<sha256(ip)[:16]>:<windowIndex>`，仅当返回值为 1（窗口第一次）时再 `EXPIRE`。
+**稳态每次请求 1 条命令，窗口首次 2 条**（对比 `@upstash/ratelimit` 固定窗口稳态 2 条 / 首次 3 条，且无需新增依赖）。
+Redis 未配置 / 报错 / 超过 800ms → **放行（fail-open）**，本地开发无需 KV 变量。超限返回 `429` + `Retry-After`。
 
-### Redis 命令估算
+## 💰 命令预算（1000 DAU 假设，沿用旧文档的场景）
 
-**每月 Redis 命令总数**：
+假设：`W` = 每月收藏写入 ≈ 150K；`/api/stats` 30K 请求/月；`top-verses` 30K 请求/月；`rankings` 3K 请求/月；约 300 个 `verse:*` key（SCAN+MGET ≈ 5 条命令）。
 
-| 操作类型     | 命令                   | 频率/月   | 说明                   |
-| ------------ | ---------------------- | --------- | ---------------------- |
-| 用户追踪     | `INCR total_users`     | ~1K       | 新用户首次访问         |
-| 收藏统计     | `INCR total_favorites` | ~150K     | 用户收藏经文           |
-| 收藏统计     | `INCR verse:*`         | ~150K     | 单个经文收藏数         |
-| 点击统计     | `INCR total_clicks`    | ~150K     | 用户点击卡片           |
-| 全局统计查询 | `GET total_*`          | 90K       | 每天 30K 次 × 3 个 key |
-| Top 7 查询   | `SCAN` + `MGET`        | 30K       | 侧边栏打开             |
-| 排行榜查询   | `SCAN` + `MGET`        | 720       | ISR 缓存（1 小时）     |
-| **总计**     | -                      | **~572K** | -                      |
+### 改动前（main 上的真实行为：读接口全部未缓存）
 
-⚠️ **超出 500K 限额！需要优化！**
+| 项目                       | 计算                         | 命令/月    |
+| -------------------------- | ---------------------------- | ---------- |
+| 收藏写入                   | 150K × 2 INCR                | 300K       |
+| 用户追踪                   | 1K × 1                       | 1K         |
+| `/api/stats`               | 30K × 2                      | 60K        |
+| `/api/stats/top-verses`    | 30K × 5                      | 150K       |
+| `/api/rankings`            | 3K × 5（旧文档误写成 720 × 3，因为以为有 ISR） | 15K        |
+| **合计**                   |                              | **≈ 526K** |
 
-## ✅ 优化方案（已实施）
+### 改动后
 
-### 1. 移除服务端限流 key（节省 ~300K）
+| 项目                       | 计算                                                   | 命令/月         |
+| -------------------------- | ------------------------------------------------------ | --------------- |
+| 收藏写入                   | 150K × 2 INCR                                          | 300K            |
+| 限流（收藏）               | 150K × (1 INCR + 窗口首次 EXPIRE 占比 e，0 ≤ e ≤ 1)    | +150K … +300K   |
+| 用户追踪                   | 1K × (1 + 限流 1~2)                                    | ≈ 3K            |
+| `/api/stats`               | 每区域上限：30×86400/300 = 8,640 次回源 × 2            | ≤ 17K           |
+| `/api/stats/top-verses`    | 每区域上限：30×86400/600 = 4,320 次回源 × 5            | ≤ 22K           |
+| `/api/rankings`            | 同上                                                   | ≤ 22K           |
+| 读合计                     | 每个活跃 CDN 区域的**上限**（流量稀疏时按真实请求数更少） | ≤ ~60K / 区域   |
 
-**之前**：
+-   **读节省**：225K → ≤ 60K/区域，约省 **105K–165K**（1–2 个活跃区域）。
+-   **限流额外开销**：每次允许的收藏 +1（窗口首次 +2）≈ **+150K … +300K**（e 取决于用户是否集中点收藏：一次点 20 个只付 1 次 EXPIRE）。
+-   **非法请求 0 条命令**；被限流的请求仅 1 条（`INCR`）。
+-   **诚实的结论**：在这个 150K 写入/月的假设场景下，限流的额外成本可能**抵消甚至超过**缓存的节省（净变化约 −15K … +195K），合计仍在 500K 附近。这个场景是旧文档的假设，真实流量未知；请以 Upstash 控制台实际用量为准。如果真实写入量接近假设，建议后续优化（**未包含在本 PR**）：
+    1. 用单条 Lua `EVAL`（Upstash 计 1 条命令）把"限流计数 + `total_favorites` + `verse:<id>`"合并：每次收藏 3 → 1 条命令，总写入从 300K 降到 150K（含限流）。需要在真实 Redis 上验证脚本。
+    2. 不再维护 `total_favorites` 计数器，改由（已被缓存的）排行榜 SCAN+MGET 求和：省 150K。注意这会改变首页显示的历史数字，需要产品确认。
+    3. 在 Vercel Firewall 配置 Rate Limit 规则（0 条 Redis 命令），再把应用内限流降级为兜底（需要 Vercel 权限）。
 
-```typescript
-// 每次 increment API 调用
-const rateLimitKey = `ratelimit:${ip}:${timestamp}`;
-await redis.get(rateLimitKey); // GET
-await redis.incr(rateLimitKey); // INCR
-// 每次调用 2 个命令 × 300K 请求 = 600K 命令
-```
+## ✅ 优化历史
 
-**优化后**：
+### v1.3.1
 
-```typescript
-// 依赖客户端 throttling（已实现）
-// 移除服务端限流 key
-// 节省：~600K 命令
-```
+-   移除旧的服务端限流 key（`GET` + `INCR` 每请求，且每个时间戳一个 key，过于昂贵）。
+-   移除点击追踪（`total_clicks`）。
+-   删除未使用的 API 端点 `/api/stats/verse/[verseId]`、`/api/stats/verses`。
 
-### 2. 删除未使用的 API 端点
+### API hardening（本次）
 
--   ❌ 删除 `/api/stats/verse/[verseId]` - 未使用
--   ❌ 删除 `/api/stats/verses` - 未使用
-
-### 3. ISR 缓存优化
-
--   `/api/rankings` 使用 ISR，1 小时缓存
--   实际请求：~720/月（720 小时）而不是 3K/月
-
-## 📈 优化后成本
-
-| 操作类型     | 命令数/月 | 说明                                    |
-| ------------ | --------- | --------------------------------------- |
-| 用户追踪     | 1K        | `INCR total_users`                      |
-| 收藏统计     | 300K      | `INCR total_favorites` + `INCR verse:*` |
-| ~~点击统计~~ | ~~150K~~  | ❌ 已移除（v1.3.1）                     |
-| 查询操作     | ~60K      | GET + SCAN + MGET                       |
-| **总计**     | **~361K** | ✅ 剩余 139K (28% 余量) ✅✅            |
-
-## 🎯 进一步优化建议
-
-### 方案 A：移除点击追踪（推荐）
-
--   只保留"收藏"追踪
--   移除 `total_clicks` 统计
--   **节省**：~150K 命令
--   **总计**：~420K ✅
-
-### 方案 B：降低统计精度
-
--   使用采样（10% 的请求才写入）
--   **节省**：~450K 命令
--   **总计**：~120K ✅
--   **缺点**：统计数据不精确
-
-### 方案 C：使用 Vercel Blob 存储
-
--   每天定时导出 Redis 数据到 Blob
--   查询从 Blob 读取（免费）
--   写入使用 Redis（低频）
--   **节省**：大量 GET 命令
--   **缺点**：实时性降低
-
-## 💡 当前状态
-
-✅ **已实施优化（v1.3.1）**
-
-- ✅ 移除服务端限流 key（节省 ~300K）
-- ✅ 移除点击追踪（节省 ~150K）
-
-当前估算：~361K 命令/月
-
-**余量**：139K（28%）用于：
-
--   流量波动
--   异常情况
--   未来增长空间
+-   读接口增加真实 CDN 缓存头，删除互相矛盾的 `force-dynamic` + `revalidate`（见上）。
+-   写接口严格校验输入（400，零 Redis 访问），增加按 IP 的固定窗口限流（INCR + 首次 EXPIRE，fail-open）。
+-   前端遇到 429：**不回滚**本地收藏状态，把全局计数放入有上限（50）的延迟队列并按 `Retry-After` 重试；`track-user` 遇到 429 则不写 `user-tracked`，下次访问再试。
 
 ## 🔍 监控建议
 
 1. **设置 Upstash 告警**
-
     - 达到 400K 时发送通知
     - 达到 450K 时发送紧急通知
-
 2. **定期检查**
-
-    - 每周检查 Redis 使用量
+    - 每周检查 Redis 使用量（关注 `rl:*` key 数量与命令数）
     - 每月分析流量趋势
-
 3. **扩展计划**
-    - 如果持续接近限额，考虑升级到付费版
-    - 或实施方案 A（移除点击追踪）
+    - 如果持续接近限额，优先实施上面的"后续优化"，其次考虑升级付费版
 
 ## 🚀 Upstash 免费版限额
 
--   **每天**：10,000 命令
--   **每月**：300,000 命令
--   **存储**：256 MB
-
-注意：Upstash 是按月计算，不是按天 × 30。
+以 Upstash 控制台当前显示为准：约 **500,000 命令/月**，256 MB 存储（旧文档写的 "每天 10,000 / 每月 300,000" 已过时）。
 
 ## 📝 环境变量
 
@@ -159,11 +112,10 @@ KV_REST_API_TOKEN=your_upstash_token
 
 在本地开发环境（不设置时）：
 
--   所有 API 返回模拟数据
--   不消耗 Redis 命令
+-   `next dev`：所有统计 API 返回模拟数据 / 静默成功；非法输入仍然返回 400
+-   限流自动放行（fail-open），不消耗 Redis 命令
 -   核心功能正常运行
 
 ---
 
-**更新日期**: 2025-01-21
-**优化版本**: v1.3
+**更新日期**: 2026-10-02

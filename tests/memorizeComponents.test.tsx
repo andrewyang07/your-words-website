@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, waitFor, within } from '@testing-library/react';
+import { act, cleanup, configure, fireEvent, render, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
 import MemorizePageClient, { AlphabetKeyboard, MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
@@ -7,6 +7,10 @@ import { CompletionReward } from '../components/memorize/CompletionReward';
 import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
 import AppStoreStorageSync from '../components/AppStoreStorageSync';
+
+// CI runners are slow: these tests load multi-MB data and were observed at 890-1110ms against the
+// default 1000ms findBy*/waitFor timeout (flaky on GitHub Actions). Give async queries more headroom.
+configure({ asyncUtilTimeout: 5000 });
 
 /** True when className matches the legacy detached outer blot signature. */
 function hasLegacyDetachedBlotSignature(className: string): boolean {
@@ -106,6 +110,16 @@ async function skipStage(
   skipLabel: '跳过' | '跳过本轮' = '跳过',
 ) {
   fireEvent.click(view.getByRole('button', { name: skipLabel }));
+}
+
+/**
+ * The recall keyboard is disabled while contextual initials load asynchronously (dynamic import), but the
+ * stage heading renders immediately. Clicking a disabled key is a silent no-op, so wait until it is enabled
+ * (this raced on slow CI runners).
+ */
+async function pressKey(view: ReturnType<typeof render>, name: string) {
+  await waitFor(() => expect(view.getByRole('button', { name }).hasAttribute('disabled')).toBe(false));
+  fireEvent.click(view.getByRole('button', { name }));
 }
 
 describe('deep memorization controls', () => {
@@ -357,7 +371,7 @@ describe('deep memorization controls', () => {
     await skipStage(view);
     await view.findByRole('heading', { name: '按每个字的拼音首字母' });
 
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
+    await pressKey(view, '7 PQRS');
     expect(await view.findByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
     expect(view.queryByRole('heading', { name: '本轮结束' })).toBeNull();
     fireEvent.click(view.getByRole('button', { name: '继续' }));
@@ -723,7 +737,7 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
 
-    fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
+    await pressKey(view, '9 WXYZ');
     expect(view.getByRole('status').textContent).toContain('再试一次');
     fireEvent.click(view.getByRole('button', { name: /^9 WXYZ/u }));
     expect(view.getByRole('button', { name: '7 PQRS，提示按键' })).toBeTruthy();
@@ -770,7 +784,7 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '返回上一步' }));
 
     expect(await view.findByText('本阶段已跳过，不计作完成。')).toBeTruthy();
-    fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
+    await pressKey(view, '9 WXYZ');
     expect(view.getByText('再试一次')).toBeTruthy();
   });
 
@@ -832,14 +846,14 @@ describe('deep memorization controls', () => {
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
 
     expect(await view.findByRole('group', { name: '拼音首字母键盘' })).toBeTruthy();
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
+    await pressKey(view, '7 PQRS');
     expect(await view.findByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
 
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
+    await pressKey(view, '7 PQRS');
+    await pressKey(view, '7 PQRS');
+    await pressKey(view, '7 PQRS');
     expect(await view.findByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
   });
 
