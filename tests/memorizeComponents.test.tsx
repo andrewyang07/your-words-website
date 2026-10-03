@@ -112,6 +112,16 @@ async function skipStage(
   fireEvent.click(view.getByRole('button', { name: skipLabel }));
 }
 
+/**
+ * The recall keyboard is disabled while contextual initials load asynchronously (dynamic import), but the
+ * stage heading renders immediately. Clicking a disabled key is a silent no-op, so wait until it is enabled
+ * (this raced on slow CI runners).
+ */
+async function pressKey(view: ReturnType<typeof render>, name: string) {
+  await waitFor(() => expect(view.getByRole('button', { name }).hasAttribute('disabled')).toBe(false));
+  fireEvent.click(view.getByRole('button', { name }));
+}
+
 describe('deep memorization controls', () => {
   it('keeps the global navigation out of the practice focus order only while memorizing', async () => {
     const navigation = document.createElement('nav');
@@ -361,7 +371,7 @@ describe('deep memorization controls', () => {
     await skipStage(view);
     await view.findByRole('heading', { name: '按每个字的拼音首字母' });
 
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
+    await pressKey(view, '7 PQRS');
     expect(await view.findByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
     expect(view.queryByRole('heading', { name: '本轮结束' })).toBeNull();
     fireEvent.click(view.getByRole('button', { name: '继续' }));
@@ -727,7 +737,7 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
 
-    fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
+    await pressKey(view, '9 WXYZ');
     expect(view.getByRole('status').textContent).toContain('再试一次');
     fireEvent.click(view.getByRole('button', { name: /^9 WXYZ/u }));
     expect(view.getByRole('button', { name: '7 PQRS，提示按键' })).toBeTruthy();
@@ -774,7 +784,7 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '返回上一步' }));
 
     expect(await view.findByText('本阶段已跳过，不计作完成。')).toBeTruthy();
-    fireEvent.click(view.getByRole('button', { name: '9 WXYZ' }));
+    await pressKey(view, '9 WXYZ');
     expect(view.getByText('再试一次')).toBeTruthy();
   });
 
@@ -836,14 +846,14 @@ describe('deep memorization controls', () => {
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
 
     expect(await view.findByRole('group', { name: '拼音首字母键盘' })).toBeTruthy();
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
+    await pressKey(view, '7 PQRS');
     expect(await view.findByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
 
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
-    fireEvent.click(view.getByRole('button', { name: '7 PQRS' }));
+    await pressKey(view, '7 PQRS');
+    await pressKey(view, '7 PQRS');
+    await pressKey(view, '7 PQRS');
     expect(await view.findByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
   });
 
