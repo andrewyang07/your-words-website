@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { safeRedisGet } from '@/lib/redisUtils';
+import { safeRedisGetResult } from '@/lib/redisUtils';
 import { cacheControl, STATS_CACHE, EMPTY_RESULT_CACHE, NO_STORE } from '@/lib/cachePolicy';
 
 export const runtime = 'edge';
@@ -14,7 +14,7 @@ const isRedisConfigured = !!(process.env.KV_REST_API_URL && process.env.KV_REST_
  *
  * 缓存策略：Cache-Control s-maxage=300, stale-while-revalidate=900。
  * 全局计数允许滞后几分钟；用户自己的收藏是本地状态，不经过此接口。
- * 两个计数都为 0（可能是 Redis 故障被降级为默认值）时只缓存 30 秒。
+ * 任一 GET 失败（降级）或两个计数都为 0 时只缓存 30 秒。
  */
 export async function GET() {
     // 本地开发且未配置 Redis，返回模拟数据
@@ -29,14 +29,16 @@ export async function GET() {
     }
 
     try {
-        const [totalUsers, totalFavorites] = await Promise.all([
-            safeRedisGet('total_users', '0'),
-            safeRedisGet('total_favorites', '0'),
+        const [usersResult, favoritesResult] = await Promise.all([
+            safeRedisGetResult('total_users', '0'),
+            safeRedisGetResult('total_favorites', '0'),
         ]);
 
-        const users = parseInt(totalUsers) || 0;
-        const favorites = parseInt(totalFavorites) || 0;
-        const looksEmpty = users === 0 && favorites === 0;
+        const users = parseInt(usersResult.value) || 0;
+        const favorites = parseInt(favoritesResult.value) || 0;
+        // 任何一个 GET 失败（降级为默认值）或两者都为 0 → 只缓存短时间
+        const degraded = usersResult.degraded || favoritesResult.degraded;
+        const looksEmpty = degraded || (users === 0 && favorites === 0);
 
         return NextResponse.json(
             {

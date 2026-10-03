@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { safeRedisScan, safeRedisMget } from '@/lib/redisUtils';
+import { safeRedisScanResult, safeRedisMgetResult } from '@/lib/redisUtils';
+import { isValidVerseId } from '@/lib/validation';
 import { decodeVerseRef } from '@/lib/bibleBookMapping';
 import booksData from '@/public/data/books.json';
 import bibleDataTraditional from '@/public/data/CUVT_bible.json';
@@ -63,7 +64,7 @@ export async function GET() {
 
     try {
         // 扫描所有 verse: 开头的 key（新格式）
-        const keys = await safeRedisScan('verse:*', 100);
+        const { value: keys, degraded: scanDegraded } = await safeRedisScanResult('verse:*', 100);
 
         if (keys.length === 0) {
             return NextResponse.json({ topVerses: [] }, { headers: { 'Cache-Control': cacheControl(EMPTY_RESULT_CACHE) } });
@@ -72,7 +73,7 @@ export async function GET() {
         // 过滤掉旧格式的 key（verse:*:favorites 和 verse:*:clicks）
         const validKeys = keys.filter((key) => {
             const verseId = key.replace('verse:', '');
-            return !verseId.includes(':') && /^\d+-\d+-\d+$/.test(verseId);
+            return isValidVerseId(verseId);
         });
 
         if (validKeys.length === 0) {
@@ -80,7 +81,9 @@ export async function GET() {
         }
 
         // 批量获取所有 key 的值
-        const values = await safeRedisMget(validKeys);
+        const { value: values, degraded: mgetDegraded } = await safeRedisMgetResult(validKeys);
+        // 任何一步失败/不完整 → 结果只缓存短时间，不能把 Redis 故障固定在 CDN
+        const degraded = scanDegraded || mgetDegraded;
 
         // 构建经文统计数据（使用 Map 去重）
         const versesMap = new Map<string, number>();
@@ -171,7 +174,7 @@ export async function GET() {
             }
         });
 
-        return NextResponse.json({ topVerses }, { headers: { 'Cache-Control': cacheControl(RANKINGS_CACHE) } });
+        return NextResponse.json({ topVerses }, { headers: { 'Cache-Control': cacheControl(degraded || topVerses.length === 0 ? EMPTY_RESULT_CACHE : RANKINGS_CACHE) } });
     } catch (error) {
         console.error('Failed to fetch top verses:', error);
         // 返回空数组，不影响页面渲染

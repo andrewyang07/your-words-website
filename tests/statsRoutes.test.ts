@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const redis = vi.hoisted(() => ({
   safeRedisIncr: vi.fn(async () => true),
-  safeRedisGet: vi.fn(async (_key: string, def?: string) => def ?? '0'),
-  safeRedisScan: vi.fn(async () => [] as string[]),
-  safeRedisMget: vi.fn(async () => [] as (string | null)[]),
+  safeRedisGetResult: vi.fn(async (_key: string, def?: string) => ({ value: def ?? '0', degraded: false })),
+  safeRedisScanResult: vi.fn(async () => ({ value: [] as string[], degraded: false })),
+  safeRedisMgetResult: vi.fn(async (_keys: string[]) => ({ value: [] as (string | null)[], degraded: false })),
   createRedisClient: vi.fn(),
 }));
 const limiter = vi.hoisted(() => ({ checkRateLimit: vi.fn() }));
@@ -29,7 +29,7 @@ const json = (v: unknown) => JSON.stringify(v);
 
 function expectNoRedisTouched() {
   expect(redis.safeRedisIncr).not.toHaveBeenCalled();
-  expect(redis.safeRedisGet).not.toHaveBeenCalled();
+  expect(redis.safeRedisGetResult).not.toHaveBeenCalled();
   expect(redis.createRedisClient).not.toHaveBeenCalled();
   expect(limiter.checkRateLimit).not.toHaveBeenCalled();
 }
@@ -55,6 +55,11 @@ describe('POST /api/stats/increment', () => {
     ['long string', json({ action: 'favorite', verseId: '1'.repeat(300) })],
     ['very long string (huge body)', json({ action: 'favorite', verseId: 'a'.repeat(50_000) })],
     ['1-1', json({ action: 'favorite', verseId: '1-1' })],
+    ['leading zeros 01-01-01', json({ action: 'favorite', verseId: '01-01-01' })],
+    ['leading zeros 001-0001-0001', json({ action: 'favorite', verseId: '001-0001-0001' })],
+    ['leading zero 1-01-1', json({ action: 'favorite', verseId: '1-01-1' })],
+    ['leading zero 1-1-01', json({ action: 'favorite', verseId: '1-1-01' })],
+    ['zero book 0-1-1', json({ action: 'favorite', verseId: '0-1-1' })],
     ['numeric verseId', json({ action: 'favorite', verseId: 43 })],
     ['array verseId', json({ action: 'favorite', verseId: ['43-3-16'] })],
     ['null verseId', json({ action: 'favorite', verseId: null })],
@@ -73,6 +78,13 @@ describe('POST /api/stats/increment', () => {
     expect(res.status).toBe(400);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
     expectNoRedisTouched();
+  });
+
+  it.each(['1-1-1', '66-22-21', '43-3-16'])('still accepts canonical id %s', async (verseId) => {
+    const { POST } = await import('../app/api/stats/increment/route');
+    const res = await POST(post('/api/stats/increment', json({ action: 'favorite', verseId })));
+    expect(res.status).toBe(200);
+    expect(redis.safeRedisIncr).toHaveBeenCalledWith(`verse:${verseId}`);
   });
 
   it('returns 429 with Retry-After when rate limited, without writing', async () => {
@@ -126,48 +138,94 @@ describe('POST /api/stats/track-user', () => {
   });
 });
 
-describe('GET cache policies', () => {
-  it('/api/stats: 5 min fresh + 15 min SWR with data, short TTL when everything is zero', async () => {
-    const { GET } = await import('../app/api/stats/route');
-    redis.safeRedisGet.mockImplementation(async (key: string) => (key === 'total_users' ? '12' : '99'));
-    const ok = await GET();
-    expect(ok.headers.get('Cache-Control')).toBe('public, s-maxage=300, stale-while-revalidate=900');
-    expect(await ok.json()).toEqual({ totalUsers: 12, totalFavorites: 99 });
+const SHORT = 'public, s-maxage=30, stale-while-revalidate=30';
+const LONG_LIST = 'public, s-maxage=600, stale-while-revalidate=1800';
+const LONG_STATS = 'public, s-maxage=300, stale-while-revalidate=900';
+const ok = <T,>(value: T) => ({ value, degraded: false });
 
-    redis.safeRedisGet.mockImplementation(async (_k: string, def?: string) => def ?? '0');
-    const empty = await GET();
-    expect(empty.headers.get('Cache-Control')).toBe('public, s-maxage=30, stale-while-revalidate=30');
+describe('GET cache policies', () => {
+  beforeEach(() => {
+    redis.safeRedisGetResult.mockImplementation(async (_k: string, def?: string) => ok(def ?? '0'));
+    redis.safeRedisScanResult.mockResolvedValue(ok([] as string[]));
+    redis.safeRedisMgetResult.mockResolvedValue(ok([] as (string | null)[]));
   });
 
-  it('/api/rankings: 10 min fresh + 30 min SWR with data, short TTL when empty, no force-dynamic/revalidate exports', async () => {
+  it('/api/stats: healthy data -> 300/900; both zero -> short; ONE of two GETs failing -> short', async () => {
+    const { GET } = await import('../app/api/stats/route');
+    redis.safeRedisGetResult.mockImplementation(async (key: string) => ok(key === 'total_users' ? '12' : '99'));
+    const healthy = await GET();
+    expect(healthy.headers.get('Cache-Control')).toBe(LONG_STATS);
+    expect(await healthy.json()).toEqual({ totalUsers: 12, totalFavorites: 99 });
+
+    redis.safeRedisGetResult.mockImplementation(async (_k: string, def?: string) => ok(def ?? '0'));
+    expect((await GET()).headers.get('Cache-Control')).toBe(SHORT);
+
+    // total_users fails (default 0), total_favorites is fine (non-zero): must NOT be cached long
+    redis.safeRedisGetResult.mockImplementation(async (key: string) => (key === 'total_users' ? { value: '0', degraded: true } : ok('99')));
+    expect((await GET()).headers.get('Cache-Control')).toBe(SHORT);
+
+    // and the other way around
+    redis.safeRedisGetResult.mockImplementation(async (key: string) => (key === 'total_favorites' ? { value: '0', degraded: true } : ok('12')));
+    expect((await GET()).headers.get('Cache-Control')).toBe(SHORT);
+  });
+
+  it('/api/rankings: healthy -> 600/1800; empty -> short; SCAN ok + MGET fails -> short; SCAN fails/partial -> short; no force-dynamic/revalidate', async () => {
     const mod = await import('../app/api/rankings/route');
     expect((mod as Record<string, unknown>).dynamic).toBeUndefined();
     expect((mod as Record<string, unknown>).revalidate).toBeUndefined();
 
-    redis.safeRedisScan.mockResolvedValue(['verse:43-3-16', 'verse:19-23-1']);
-    redis.safeRedisMget.mockResolvedValue(['5', '9']);
-    const ok = await mod.GET();
-    expect(ok.headers.get('Cache-Control')).toBe('public, s-maxage=600, stale-while-revalidate=1800');
-    const body = await ok.json();
-    expect(body.rankings.map((r: { verseId: string }) => r.verseId)).toEqual(['19-23-1', '43-3-16']);
+    redis.safeRedisScanResult.mockResolvedValue(ok(['verse:43-3-16', 'verse:19-23-1']));
+    redis.safeRedisMgetResult.mockResolvedValue(ok(['5', '9']));
+    const healthy = await mod.GET();
+    expect(healthy.headers.get('Cache-Control')).toBe(LONG_LIST);
+    expect((await healthy.json()).rankings.map((r: { verseId: string }) => r.verseId)).toEqual(['19-23-1', '43-3-16']);
 
-    redis.safeRedisScan.mockResolvedValue([]);
-    const empty = await mod.GET();
-    expect(empty.headers.get('Cache-Control')).toBe('public, s-maxage=30, stale-while-revalidate=30');
+    redis.safeRedisScanResult.mockResolvedValue(ok([]));
+    expect((await mod.GET()).headers.get('Cache-Control')).toBe(SHORT);
+
+    // SCAN found keys, MGET failed -> empty list must not be pinned for 10 minutes
+    redis.safeRedisScanResult.mockResolvedValue(ok(['verse:43-3-16', 'verse:19-23-1']));
+    redis.safeRedisMgetResult.mockResolvedValue({ value: [null, null], degraded: true });
+    const mgetFail = await mod.GET();
+    expect(mgetFail.headers.get('Cache-Control')).toBe(SHORT);
+    expect((await mgetFail.json()).rankings).toEqual([]);
+
+    // SCAN error / truncated scan, even if MGET returns data -> short
+    redis.safeRedisScanResult.mockResolvedValue({ value: ['verse:43-3-16'], degraded: true });
+    redis.safeRedisMgetResult.mockResolvedValue(ok(['5']));
+    expect((await mod.GET()).headers.get('Cache-Control')).toBe(SHORT);
   });
 
-  it('/api/stats/top-verses: 10 min fresh + 30 min SWR with data, short TTL when empty', async () => {
+  it('/api/rankings and top-verses ignore non-canonical (leading-zero) keys already in Redis', async () => {
+    redis.safeRedisScanResult.mockResolvedValue(ok(['verse:01-01-01', 'verse:001-0001-0001', 'verse:43-3-16']));
+    redis.safeRedisMgetResult.mockImplementation(async (keys: string[]) => ok(keys.map(() => '3')));
+    const { GET } = await import('../app/api/rankings/route');
+    const body = await (await GET()).json();
+    expect(body.rankings.map((r: { verseId: string }) => r.verseId)).toEqual(['43-3-16']);
+    expect(redis.safeRedisMgetResult).toHaveBeenCalledWith(['verse:43-3-16']);
+  });
+
+  it('/api/stats/top-verses: healthy -> 600/1800; empty -> short; SCAN ok + MGET fails -> short; SCAN degraded -> short', async () => {
     const mod = await import('../app/api/stats/top-verses/route');
     expect((mod as Record<string, unknown>).dynamic).toBeUndefined();
 
-    redis.safeRedisScan.mockResolvedValue(['verse:43-3-16']);
-    redis.safeRedisMget.mockResolvedValue(['5']);
-    const ok = await mod.GET();
-    expect(ok.headers.get('Cache-Control')).toBe('public, s-maxage=600, stale-while-revalidate=1800');
-    expect((await ok.json()).topVerses).toHaveLength(1);
+    redis.safeRedisScanResult.mockResolvedValue(ok(['verse:43-3-16']));
+    redis.safeRedisMgetResult.mockResolvedValue(ok(['5']));
+    const healthy = await mod.GET();
+    expect(healthy.headers.get('Cache-Control')).toBe(LONG_LIST);
+    expect((await healthy.json()).topVerses).toHaveLength(1);
 
-    redis.safeRedisScan.mockResolvedValue([]);
-    const empty = await mod.GET();
-    expect(empty.headers.get('Cache-Control')).toBe('public, s-maxage=30, stale-while-revalidate=30');
+    redis.safeRedisScanResult.mockResolvedValue(ok([]));
+    expect((await mod.GET()).headers.get('Cache-Control')).toBe(SHORT);
+
+    redis.safeRedisScanResult.mockResolvedValue(ok(['verse:43-3-16']));
+    redis.safeRedisMgetResult.mockResolvedValue({ value: [null], degraded: true });
+    const mgetFail = await mod.GET();
+    expect(mgetFail.headers.get('Cache-Control')).toBe(SHORT);
+    expect((await mgetFail.json()).topVerses).toEqual([]);
+
+    redis.safeRedisScanResult.mockResolvedValue({ value: ['verse:43-3-16'], degraded: true });
+    redis.safeRedisMgetResult.mockResolvedValue(ok(['5']));
+    expect((await mod.GET()).headers.get('Cache-Control')).toBe(SHORT);
   });
 });

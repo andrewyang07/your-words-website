@@ -21,7 +21,7 @@ Upstash Free：**500,000 命令/月**（以 Upstash 控制台当前显示为准�
 
 -   **不再使用** `export const dynamic = 'force-dynamic'` / `export const revalidate`。缓存策略统一由响应头表达（见 `lib/cachePolicy.ts`），Vercel CDN 遵守 `s-maxage` 与 `stale-while-revalidate`。
 -   TTL 的含义：全局计数可以滞后数分钟。`stats` 最多 5 分钟新鲜 + 15 分钟 SWR；排行榜类（昂贵的 SCAN+MGET）最多 10 分钟新鲜 + 30 分钟 SWR。
--   **空结果 / Redis 故障只缓存 30 秒**：`safeRedis*` 辅助函数在 Redis 出错时会吞掉错误并返回 `[]` / `'0'`，如果按正常 TTL 缓存会把一次短暂故障固定在 CDN 10+ 分钟。
+-   **空结果 / 任何降级只缓存 30 秒**：`lib/redisUtils.ts` 的 `safeRedis*Result` 辅助函数返回 `{ value, degraded }`，`degraded` 在 Redis 未配置 / 出错 / SCAN 中途出错或被截断时为 true，与"key 不存在"区分开。路由只要任一步（SCAN、MGET、`/api/stats` 的两个 GET 中任意一个）降级，或结果为空，就用 30 秒策略。`safeRedis*` 辅助函数在 Redis 出错时会吞掉错误并返回 `[]` / `'0'`，如果按正常 TTL 缓存会把一次短暂故障固定在 CDN 10+ 分钟。
 -   HTTP 500、本地开发模拟数据：`Cache-Control: no-store`。
 -   **用户自己的"我的收藏"是本地状态（zustand / IndexedDB），从不经过这些接口**，不受缓存影响，点星标立即生效。
 -   `SCAN` 会遍历整个 keyspace（`COUNT 100`），所以每次回源约 `ceil(keys/100)` 次 SCAN + 1 次 MGET。下文按约 300 个不同的 `verse:*` key 估算 ≈ **5 条命令/次**；key 越多越贵，这也是排行榜 TTL 取得较长的原因。
@@ -30,7 +30,7 @@ Upstash Free：**500,000 命令/月**（以 Upstash 控制台当前显示为准�
 
 | 端点                    | 输入校验                                                                                               | 限流（每 IP，固定窗口）   | 每次允许的写入命令                  |
 | ----------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------- | ----------------------------------- |
-| `/api/stats/increment`  | `action` 必须为 `"favorite"`；`verseId` 必须匹配 `^\d+-\d+-\d+$`、长度 ≤ 16、书 1–66 / 章 1–150 / 节 1–176；请求体 ≤ 1024 字符；非法 → **HTTP 400，不触碰 Redis（连限流计数也不增加），不产生任何 key** | **30 次 / 60 秒**         | 2 INCR（`total_favorites`、`verse:<id>`） |
+| `/api/stats/increment`  | `action` 必须为 `"favorite"`；`verseId` 必须是三段规范正整数 `^[1-9]\d*-[1-9]\d*-[1-9]\d*$`（不允许前导零）、长度 ≤ 16、书 1–66 / 章 1–150 / 节 1–176；请求体 ≤ 1024 字符；非法 → **HTTP 400，不触碰 Redis（连限流计数也不增加），不产生任何 key** | **30 次 / 60 秒**         | 2 INCR（`total_favorites`、`verse:<id>`） |
 | `/api/stats/track-user` | 不接收任何字段：空 body 或 `{}` 通过，其余（含 `verseId`）→ 400                                       | **10 次 / 3600 秒**       | 1 INCR（`total_users`）             |
 
 限流实现（`lib/rateLimit.ts`）：Redis `INCR rl:<scope>:<sha256(ip)[:16]>:<windowIndex>`，仅当返回值为 1（窗口第一次）时再 `EXPIRE`。

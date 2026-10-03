@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { safeRedisScan, safeRedisMget } from '@/lib/redisUtils';
+import { safeRedisScanResult, safeRedisMgetResult } from '@/lib/redisUtils';
+import { isValidVerseId } from '@/lib/validation';
 import { decodeVerseRef } from '@/lib/bibleBookMapping';
 import booksData from '@/public/data/books.json';
 import bibleDataTraditional from '@/public/data/CUVT_bible.json';
@@ -34,7 +35,7 @@ export async function GET() {
 
     try {
         // 扫描所有 verse: 开头的 key
-        const keys = await safeRedisScan('verse:*', 100);
+        const { value: keys, degraded: scanDegraded } = await safeRedisScanResult('verse:*', 100);
 
         if (keys.length === 0) {
             return NextResponse.json({ rankings: [], timestamp: Date.now() }, { headers: { 'Cache-Control': cacheControl(EMPTY_RESULT_CACHE) } });
@@ -42,9 +43,9 @@ export async function GET() {
 
         // 过滤掉旧格式的 key（verse:*:favorites 和 verse:*:clicks）
         const validKeys = keys.filter((key) => {
-            // 只保留格式为 verse:数字-数字-数字 的 key
+            // 只保留规范的 verse:<book>-<chapter>-<verse>（无前导零、范围合法；历史上写入的 01-01-01 之类的重复 key 在此被忽略）
             const verseId = key.replace('verse:', '');
-            return !verseId.includes(':') && /^\d+-\d+-\d+$/.test(verseId);
+            return isValidVerseId(verseId);
         });
 
         if (validKeys.length === 0) {
@@ -52,7 +53,9 @@ export async function GET() {
         }
 
         // 批量获取所有 key 的值
-        const values = await safeRedisMget(validKeys);
+        const { value: values, degraded: mgetDegraded } = await safeRedisMgetResult(validKeys);
+        // 任何一步失败/不完整 → 结果只缓存短时间，不能把 Redis 故障固定在 CDN
+        const degraded = scanDegraded || mgetDegraded;
 
         // 构建排行榜数据（使用 Map 去重）
         const rankingsMap = new Map<string, number>();
@@ -111,7 +114,7 @@ export async function GET() {
                 rankings: rankingsWithText,
                 timestamp: Date.now(),
             },
-            { headers: { 'Cache-Control': cacheControl(RANKINGS_CACHE) } }
+            { headers: { 'Cache-Control': cacheControl(degraded || rankingsWithText.length === 0 ? EMPTY_RESULT_CACHE : RANKINGS_CACHE) } }
         );
     } catch (error) {
         console.error('Rankings API error:', error);
