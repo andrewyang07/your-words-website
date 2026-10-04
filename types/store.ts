@@ -24,11 +24,18 @@ export interface VerseState {
     filteredVerses: Verse[];
     versesLoaded: boolean;
     booksLoaded: boolean;
+    /** True while the most recent loadVerses/loadBooks request is still pending. */
+    versesLoading: boolean;
+    booksLoading: boolean;
+    /** Set only when the most recent request failed (stale failures are ignored). */
+    versesError: string | null;
+    booksError: string | null;
 
     setVerses: (verses: Verse[]) => void;
     setBooks: (books: Book[]) => void;
     setFilteredVerses: (verses: Verse[]) => void;
-    loadVerses: (mode: 'preset' | 'chapter', language: Language) => Promise<void>;
-    loadBooks: (language?: Language) => Promise<void>;
+    /** Resolves true when this call's result was applied, false when a newer request superseded it. */
+    loadVerses: (mode: 'preset' | 'chapter', language: Language) => Promise<boolean>;
+    loadBooks: (language?: Language) => Promise<boolean>;
 }
 

@@ -47,6 +47,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
 import { trackUser, getVerseNumericId } from '@/lib/statsUtils';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 // 动态导入非关键组件以提升性能
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -57,6 +58,7 @@ type FilterType = 'all' | 'old' | 'new' | 'favorites';
 type BookFilterType = 'all' | 'old' | 'new' | string; // string 为具体书卷名
 
 export default function HomePage() {
+    const pick = useScriptPick();
     const { language, theme, setLanguage, setTheme } = useAppStore();
     const chrome = getChromeCopy(language);
     const { verses, books, loadVerses, loadBooks } = useVerseStore();
@@ -260,7 +262,10 @@ export default function HomePage() {
     // 加载初始数据
     useEffect(() => {
         Promise.all([loadVerses('preset', language), loadBooks(language)])
-            .then(() => {
+            .then(([versesApplied, booksApplied]) => {
+                // A superseded request (e.g. the default-script load that started before the saved
+                // language was applied) must not end loading while the latest one is still pending.
+                if (!versesApplied || !booksApplied) return;
                 setLoading(false);
                 // 初次加载完成后，标记为非初次加载
                 if (isInitialLoad) {
@@ -281,19 +286,27 @@ export default function HomePage() {
             return;
         }
 
+        // The persisted language is applied after hydration, so this effect can run twice in a row
+        // (default script, then the saved one). Ignore the stale response of the first run.
+        let cancelled = false;
         setLoadingChapter(true);
         import('@/lib/dataLoader').then(({ loadChapterVerses }) => {
             loadChapterVerses(selectedBook.key, selectedChapter, language)
                 .then((verses) => {
+                    if (cancelled) return;
                     setChapterVerses(verses);
                     setLoadingChapter(false);
                 })
                 .catch((err) => {
+                    if (cancelled) return;
                     logError('HomePage:loadChapterVerses', err);
                     setChapterVerses([]);
                     setLoadingChapter(false);
                 });
         });
+        return () => {
+            cancelled = true;
+        };
     }, [selectedBook, selectedChapter, language]);
 
     // 检测 URL 参数（分享和来源）
@@ -335,6 +348,7 @@ export default function HomePage() {
     useEffect(() => {
         if (typeof window === 'undefined' || books.length === 0) return;
 
+        let cancelSharedLoad = () => {};
         const urlParams = new URLSearchParams(window.location.search);
         const sharedParam = urlParams.get('s');
 
@@ -346,6 +360,10 @@ export default function HomePage() {
                 setShowAllContent(true); // 自动切换到阅读模式，显示所有内容
 
                 // 加载分享的经文数据
+                let cancelled = false;
+                cancelSharedLoad = () => {
+                    cancelled = true;
+                };
                 const loadSharedVerses = async () => {
                     try {
                         const { loadChapterVerses } = await import('@/lib/dataLoader');
@@ -374,7 +392,7 @@ export default function HomePage() {
                             allVerses.push(...filteredVerses);
                         }
 
-                        setSharedVersesData(allVerses);
+                        if (!cancelled) setSharedVersesData(allVerses);
                     } catch (error) {
                         logError('HomePage:loadSharedVerses', error);
                     }
@@ -383,6 +401,7 @@ export default function HomePage() {
                 loadSharedVerses();
             }
         }
+        return () => cancelSharedLoad();
     }, [books, language]);
 
     // 清理分享toast的timer
@@ -407,6 +426,8 @@ export default function HomePage() {
             return;
         }
 
+        // Ignore stale results when language/books change mid-flight (see chapter-loading effect above).
+        let cancelled = false;
         const loadAllFavorites = async () => {
             setLoadingFavorites(true);
             try {
@@ -456,16 +477,19 @@ export default function HomePage() {
                     }
                 }
 
-                setFavoritesVersesData(allVerses);
+                if (!cancelled) setFavoritesVersesData(allVerses);
             } catch (error) {
                 logError('HomePage:loadFavorites', error);
-                setFavoritesVersesData([]);
+                if (!cancelled) setFavoritesVersesData([]);
             } finally {
-                setLoadingFavorites(false);
+                if (!cancelled) setLoadingFavorites(false);
             }
         };
 
         loadAllFavorites();
+        return () => {
+            cancelled = true;
+        };
     }, [filterType, books, language, getFavoritesList]);
 
     // SearchResult → Verse 转换
@@ -475,7 +499,7 @@ export default function HomePage() {
             const book = books.find((b) => b.key === r.bookKey);
             return {
                 id: r.id,
-                book: r.bookTraditional || r.bookKey,
+                book: getBookDisplayName(r.bookKey, language),
                 bookKey: r.bookKey,
                 chapter: r.chapter,
                 verse: r.verse,
@@ -483,7 +507,7 @@ export default function HomePage() {
                 testament: book?.testament || 'old',
             };
         });
-    }, [searchResults, books]);
+    }, [searchResults, books, language]);
 
     // 筛选和排序经文
     const displayVerses = useMemo(() => {
@@ -967,7 +991,7 @@ export default function HomePage() {
 
     const hasActiveFilters = filterType !== 'all' || selectedBook !== null;
 
-    if (loading) return <LoadingSpinner />;
+    if (loading) return <LoadingSpinner language={language} />;
     if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
     return (
@@ -1442,10 +1466,10 @@ export default function HomePage() {
                                         href="/bible-note"
                                         className="flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors shadow-sm touch-manipulation min-h-[44px]"
                                         style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                                        title="返回聖經筆記本"
+                                        title={pick('返回聖經筆記本', '返回圣经笔记本')}
                                     >
                                         <ArrowLeft className="w-4 h-4" />
-                                        <span className="font-chinese text-sm">返回筆記</span>
+                                        <span className="font-chinese text-sm">{pick('返回筆記', '返回笔记')}</span>
                                     </a>
                                 )}
 
@@ -1619,7 +1643,7 @@ export default function HomePage() {
                                 onClick={() => setShowStatsModal(false)}
                                 className="mt-4 w-full px-4 py-2 bg-bible-500 text-white rounded-lg hover:bg-bible-600 transition-colors font-chinese"
                             >
-                                關閉
+                                {pick('關閉', '关闭')}
                             </button>
                         </div>
                     </div>
@@ -1661,7 +1685,7 @@ export default function HomePage() {
                                 <div className="flex-1">
                                     <div className="flex items-start justify-between mb-2">
                                         <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 font-chinese">
-                                            歡迎使用「你的話語」聖經背誦助手 ✨
+                                            {pick('歡迎使用「你的話語」聖經背誦助手 ✨', '欢迎使用「你的话语」圣经背诵助手 ✨')}
                                         </h3>
                                         <button
                                             onClick={handleCloseGuide}
@@ -1678,10 +1702,10 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">📖</span>
                                             <div>
-                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">經文選擇</p>
+                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">{pick('經文選擇', '经文选择')}</p>
                                                 <p className="text-stone-500 dark:text-stone-400">
-                                                    <span className="font-semibold">精選 114 節</span>核心經文，或選擇
-                                                    <span className="font-semibold">聖經 66 卷</span>任意章節瀏覽。
+                                                    <span className="font-semibold">{pick('精選 114 節', '精选 114 节')}</span>{pick('核心經文，或選擇', '核心经文，或选择')}
+                                                    <span className="font-semibold">{pick('聖經 66 卷', '圣经 66 卷')}</span>{pick('任意章節瀏覽。', '任意章节浏览。')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1690,11 +1714,11 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🎯</span>
                                             <div>
-                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">背誦模式</p>
+                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">{pick('背誦模式', '背诵模式')}</p>
                                                 <p className="text-stone-500 dark:text-stone-400">
-                                                    <span className="font-semibold">點擊卡片</span>顯示/隱藏經文內容。 點擊
-                                                    <span className="font-semibold">眼睛圖標</span>切換閱讀/背誦模式，
-                                                    <span className="font-semibold">洗牌按鈕</span>隨機排序。
+                                                    <span className="font-semibold">{pick('點擊卡片', '点击卡片')}</span>{pick('顯示/隱藏經文內容。 點擊', '显示/隐藏经文内容。 点击')}
+                                                    <span className="font-semibold">{pick('眼睛圖標', '眼睛图标')}</span>{pick('切換閱讀/背誦模式，', '切换阅读/背诵模式，')}
+                                                    <span className="font-semibold">{pick('洗牌按鈕', '洗牌按钮')}</span>{pick('隨機排序。', '随机排序。')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1705,9 +1729,9 @@ export default function HomePage() {
                                             <div>
                                                 <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">遮罩提示</p>
                                                 <p className="text-stone-500 dark:text-stone-400">
-                                                    點擊卡片顯示/隱藏經文內容。支持
-                                                    <span className="font-semibold">每句提示</span>/<span className="font-semibold">開頭提示</span>
-                                                    兩種模式，可設置固定或隨機提示字數；短句也會保留至少一個空心圓遮字。
+                                                    {pick('點擊卡片顯示/隱藏經文內容。支持', '点击卡片显示/隐藏经文内容。支持')}
+                                                    <span className="font-semibold">每句提示</span>/<span className="font-semibold">{pick('開頭提示', '开头提示')}</span>
+                                                    {pick('兩種模式，可設置固定或隨機提示字數；短句也會保留至少一個空心圓遮字。', '两种模式，可设置固定或随机提示字数；短句也会保留至少一个空心圆遮字。')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1718,8 +1742,8 @@ export default function HomePage() {
                                             <div>
                                                 <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">收藏分享</p>
                                                 <p className="text-stone-500 dark:text-stone-400">
-                                                    點擊<span className="font-semibold">星標</span>收藏經文， 點擊
-                                                    <span className="font-semibold">分享按鈕</span>生成鏈接。
+                                                    {pick('點擊', '点击')}<span className="font-semibold">{pick('星標', '星标')}</span>{pick('收藏經文， 點擊', '收藏经文， 点击')}
+                                                    <span className="font-semibold">{pick('分享按鈕', '分享按钮')}</span>{pick('生成鏈接。', '生成链接。')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1729,13 +1753,13 @@ export default function HomePage() {
                                             <span className="text-base">📝</span>
                                             <div>
                                                 <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">
-                                                    筆記本 <span className="px-1.5 py-0.5 text-xs bg-gold-500 text-white rounded-full">BETA</span>
+                                                    {pick('筆記本', '笔记本')}{' '}<span className="px-1.5 py-0.5 text-xs bg-gold-500 text-white rounded-full">BETA</span>
                                                 </p>
                                                 <p className="text-stone-500 dark:text-stone-400">
-                                                    右上角菜單 → 筆記本，
-                                                    <span className="font-semibold">自動補全</span>經文引用，
-                                                    <span className="font-semibold">一鍵展開</span>內容，
-                                                    <span className="font-semibold">Markdown</span>編輯。
+                                                    {pick('右上角菜單 → 筆記本，', '右上角菜单 → 笔记本，')}
+                                                    <span className="font-semibold">{pick('自動補全', '自动补全')}</span>{pick('經文引用，', '经文引用，')}
+                                                    <span className="font-semibold">{pick('一鍵展開', '一键展开')}</span>{pick('內容，', '内容，')}
+                                                    <span className="font-semibold">Markdown</span>{pick('編輯。', '编辑。')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1744,10 +1768,10 @@ export default function HomePage() {
                                         <div className="flex items-start gap-2">
                                             <span className="text-base">🌓</span>
                                             <div>
-                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">主題語言</p>
+                                                <p className="font-semibold text-stone-800 dark:text-stone-200 mb-0.5">{pick('主題語言', '主题语言')}</p>
                                                 <p className="text-stone-500 dark:text-stone-400">
-                                                    支持<span className="font-semibold">繁簡切換</span>、
-                                                    <span className="font-semibold">深色模式</span>（淺色/深色/自動）。
+                                                    支持<span className="font-semibold">{pick('繁簡切換', '繁简切换')}</span>、
+                                                    <span className="font-semibold">深色模式</span>{pick('（淺色/深色/自動）。', '（浅色/深色/自动）。')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1844,7 +1868,7 @@ export default function HomePage() {
                                         我的收藏 {favoritesCount}
                                     </span>
                                     {favoritesCount > 0 && (
-                                        <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">可生成鏈接分享</span>
+                                        <span className="text-xs text-blue-600 dark:text-blue-400 font-chinese">{pick('可生成鏈接分享', '可生成链接分享')}</span>
                                     )}
                                 </>
                             )}
@@ -2140,7 +2164,7 @@ export default function HomePage() {
                             <div className="text-center mb-8">
                                 <Image
                                     src="/logo-light.png"
-                                    alt="你的話語"
+                                    alt={pick('你的話語', '你的话语')}
                                     width={64}
                                     height={64}
                                     loading="lazy"
@@ -2181,8 +2205,8 @@ export default function HomePage() {
                         <div className="px-4 py-16">
                             <div className="mx-auto max-w-lg rounded-[1.5rem] border border-bible-200/70 bg-white/70 p-6 text-center shadow-[0_18px_45px_rgba(120,53,15,0.08)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/62 dark:shadow-none">
                                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-bible-100 text-xl text-bible-700 dark:bg-gray-800 dark:text-bible-300">⌕</div>
-                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">沒有找到「{searchQuery}」</p>
-                                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-chinese">可以試試引用、繁簡另一種寫法，或拼音，例如 約3:16 / 神愛世人 / yuehan。</p>
+                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">{pick('沒有找到「', '没有找到「')}{searchQuery}」</p>
+                                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-chinese">{pick('可以試試引用、繁簡另一種寫法，或拼音，例如 約3:16 / 神愛世人 / yuehan。', '可以试试引用、繁简另一种写法，或拼音，例如 约3:16 / 神爱世人 / yuehan。')}</p>
                                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                                     {(language === 'traditional' ? ['約3:16', '神愛世人', 'yuehan'] : ['约3:16', '神爱世人', 'yuehan']).map((example) => (
                                         <button
@@ -2322,7 +2346,7 @@ export default function HomePage() {
 
                     <div className="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
                         <p>{chrome.blessing}</p>
-                        <p className="mt-2 text-xs">© 2025 你的話語 · Made for Christ</p>
+                        <p className="mt-2 text-xs">{pick('© 2025 你的話語 · Made for Christ', '© 2025 你的话语 · Made for Christ')}</p>
                     </div>
                 </footer>
             </main>

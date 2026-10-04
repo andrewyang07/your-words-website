@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import HelpPageClient from './HelpPageClient';
+import ScriptText from '@/components/ui/ScriptText';
+import DocumentTitle from '@/components/layout/DocumentTitle';
 
 export const metadata: Metadata = {
     title: '使用幫助',
@@ -46,9 +48,10 @@ export const metadata: Metadata = {
 export default function HelpPage() {
     return (
         <>
+            <DocumentTitle traditional="使用幫助" simplified="使用帮助" />
             <section className="sr-only" aria-label="使用幫助簡介">
-                <h1>使用幫助</h1>
-                <p>了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。</p>
+                <h1><ScriptText traditional="使用幫助" simplified="使用帮助" /></h1>
+                <p><ScriptText traditional="了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。" simplified="了解如何使用圣经背诵、搜索、Flash Card、收藏、分享与圣经笔记本功能。" /></p>
             </section>
             <HelpPageClient />
         </>

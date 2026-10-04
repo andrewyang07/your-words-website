@@ -8,6 +8,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import { sendStats } from '@/lib/statsUtils';
 import { getBookDisplayName, getTestamentLabel } from '@/lib/uiScript';
 import booksData from '@/public/data/books.json';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 interface RankingItem {
     verseId: string;
@@ -20,6 +21,7 @@ interface RankingsListProps {
 }
 
 export default function RankingsList({ rankings }: RankingsListProps) {
+    const pick = useScriptPick();
     const router = useRouter();
     const { isFavorite, toggleFavorite } = useFavoritesStore();
     const language = useAppStore((s) => s.language);
@@ -162,7 +164,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
                                 aria-label={`查看 ${item.bookName} ${item.chapter}章`}
                                 style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
-                                <span className="text-sm font-chinese text-stone-700 dark:text-stone-300 hidden sm:inline">查看章節</span>
+                                <span className="text-sm font-chinese text-stone-700 dark:text-stone-300 hidden sm:inline">{pick('查看章節', '查看章节')}</span>
                                 <ChevronRight className="w-4 h-4 text-stone-600 dark:text-stone-400" />
                             </button>
                         </div>

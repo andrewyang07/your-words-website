@@ -1,4 +1,5 @@
 import type { VerseReference } from './verseParser';
+import type { UiScript } from './uiScript';
 
 export interface InsertableVerse {
     book: string;
@@ -13,16 +14,32 @@ export function buildInsertedVerseMarkdown(verses: InsertableVerse[]): string {
         .join('');
 }
 
-export function getInsertionToast(kind: 'chapter' | 'ocr', count: number, insertedInEditor: boolean): string {
-    if (kind === 'ocr') {
-        return insertedInEditor
-            ? `已插入 ${count} 条 OCR 引用`
-            : `已添加 ${count} 条 OCR 引用到笔记末尾`;
-    }
+const INSERTION_TOAST = {
+    simplified: {
+        chapterInserted: (count: number) => `已插入 ${count} 节经文`,
+        chapterAppended: (count: number) => `已添加 ${count} 节到笔记末尾`,
+        ocrInserted: (count: number) => `已插入 ${count} 条 OCR 引用`,
+        ocrAppended: (count: number) => `已添加 ${count} 条 OCR 引用到笔记末尾`,
+    },
+    traditional: {
+        chapterInserted: (count: number) => `已插入 ${count} 節經文`,
+        chapterAppended: (count: number) => `已添加 ${count} 節到筆記末尾`,
+        ocrInserted: (count: number) => `已插入 ${count} 條 OCR 引用`,
+        ocrAppended: (count: number) => `已添加 ${count} 條 OCR 引用到筆記末尾`,
+    },
+} as const;
 
-    return insertedInEditor
-        ? `已插入 ${count} 節經文`
-        : `已添加 ${count} 節到筆記末尾`;
+export function getInsertionToast(
+    kind: 'chapter' | 'ocr',
+    count: number,
+    insertedInEditor: boolean,
+    language: UiScript = 'traditional'
+): string {
+    const copy = INSERTION_TOAST[language];
+    if (kind === 'ocr') {
+        return insertedInEditor ? copy.ocrInserted(count) : copy.ocrAppended(count);
+    }
+    return insertedInEditor ? copy.chapterInserted(count) : copy.chapterAppended(count);
 }
 
 export function uniqueVerseReferences(references: VerseReference[]): VerseReference[] {

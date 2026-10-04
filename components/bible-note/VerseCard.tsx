@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { BookOpen } from 'lucide-react';
 import { getReaderTextStyle } from '@/lib/readerPreferences';
 import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 interface VerseCardProps {
     reference: string; // 如 "约3:16"
@@ -22,6 +23,7 @@ export default function VerseCard({
     text,
     onViewChapter,
 }: VerseCardProps) {
+    const pick = useScriptPick();
     const textSize = useReaderPreferencesStore((state) => state.textSize);
 
     return (
@@ -60,7 +62,7 @@ export default function VerseCard({
                 </p>
             ) : (
                 <p className="text-sm text-gray-400 dark:text-gray-500 italic font-chinese">
-                    未找到此經文
+                    {pick('未找到此經文', '未找到此经文')}
                 </p>
             )}
         </motion.div>

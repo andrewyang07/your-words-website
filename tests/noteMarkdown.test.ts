@@ -24,8 +24,10 @@ describe('noteMarkdown helpers', () => {
   it('uses honest insertion toast copy for cursor and append fallbacks', () => {
     expect(getInsertionToast('chapter', 2, true)).toBe('已插入 2 節經文');
     expect(getInsertionToast('chapter', 2, false)).toBe('已添加 2 節到筆記末尾');
-    expect(getInsertionToast('ocr', 1, true)).toBe('已插入 1 条 OCR 引用');
-    expect(getInsertionToast('ocr', 1, false)).toBe('已添加 1 条 OCR 引用到笔记末尾');
+    expect(getInsertionToast('chapter', 2, true, 'simplified')).toBe('已插入 2 节经文');
+    expect(getInsertionToast('ocr', 1, true)).toBe('已插入 1 條 OCR 引用');
+    expect(getInsertionToast('ocr', 1, true, 'simplified')).toBe('已插入 1 条 OCR 引用');
+    expect(getInsertionToast('ocr', 1, false, 'simplified')).toBe('已添加 1 条 OCR 引用到笔记末尾');
   });
 
   it('dedupes references by scripture identity instead of original text', () => {
