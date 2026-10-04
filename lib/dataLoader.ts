@@ -11,6 +11,9 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
 
     try {
         const response = await fetch(`/data/${fileName}`);
+        if (!response.ok) {
+            throw new Error(`加载圣经数据失败: ${response.statusText}`);
+        }
         const bibleData = await response.json();
 
         const verses: Verse[] = [];
@@ -50,8 +53,9 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
 
         return verses;
     } catch (error) {
+        // Re-throw so callers (home store, Discover) can show an error state instead of an empty list.
         logError('loadPresetVerses', error);
-        return [];
+        throw error;
     }
 }
 
@@ -109,6 +113,9 @@ export async function loadChapterVerses(bookKey: string, chapter: number, langua
 export async function loadBooks(language: Language = 'traditional'): Promise<Book[]> {
     try {
         const response = await fetch('/data/books.json');
+        if (!response.ok) {
+            throw new Error(`加载书卷数据失败: ${response.statusText}`);
+        }
         const data = await response.json();
 
         // 根据语言设置 name 属性
@@ -119,7 +126,7 @@ export async function loadBooks(language: Language = 'traditional'): Promise<Boo
         }));
     } catch (error) {
         logError('loadBooks', error);
-        return [];
+        throw error;
     }
 }
 

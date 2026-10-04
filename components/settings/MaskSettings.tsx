@@ -32,7 +32,7 @@ export default function MaskSettings() {
 
     const typeOptions: SelectOption[] = [
         { value: 'fixed', label: pick('固定提示字數', '固定提示字数') },
-        { value: 'range', label: pick('随机提示字数'.replace('随机','隨機'), '随机提示字数') },
+        { value: 'range', label: pick('隨機提示字數', '随机提示字数') },
     ];
 
     return (

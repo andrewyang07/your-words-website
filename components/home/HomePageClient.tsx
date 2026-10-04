@@ -262,7 +262,10 @@ export default function HomePage() {
     // 加载初始数据
     useEffect(() => {
         Promise.all([loadVerses('preset', language), loadBooks(language)])
-            .then(() => {
+            .then(([versesApplied, booksApplied]) => {
+                // A superseded request (e.g. the default-script load that started before the saved
+                // language was applied) must not end loading while the latest one is still pending.
+                if (!versesApplied || !booksApplied) return;
                 setLoading(false);
                 // 初次加载完成后，标记为非初次加载
                 if (isInitialLoad) {
@@ -988,7 +991,7 @@ export default function HomePage() {
 
     const hasActiveFilters = filterType !== 'all' || selectedBook !== null;
 
-    if (loading) return <LoadingSpinner />;
+    if (loading) return <LoadingSpinner language={language} />;
     if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
     return (

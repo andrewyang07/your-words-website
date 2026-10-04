@@ -59,7 +59,8 @@ describe('searching 神愛世人 (Traditional query against the Simplified corpu
 
     const view = render(<SearchPage />);
 
-    await waitFor(() => expect(view.container.textContent).toContain('約翰福音'));
-    await waitFor(() => expect(view.container.textContent).toMatch(/約翰福音\s*3:16/));
+    await waitFor(() => expect(view.container.textContent).toMatch(/約翰福音\s*\d+:\d+/));
+    // The first rendered reference is the top-ranked result, and it must be 約翰福音 3:16.
+    expect(view.container.textContent?.match(/約翰福音\s*\d+:\d+/)?.[0].replace(/\s+/g, '')).toBe('約翰福音3:16');
   });
 });
