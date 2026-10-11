@@ -18,7 +18,7 @@ type PagefindSearchResponse = {
   results: PagefindSearchResult[];
 };
 
-type PagefindModule = {
+export type PagefindModule = {
   search: (query: string, options?: { excerptLength?: number }) => Promise<PagefindSearchResponse>;
 };
 
@@ -32,7 +32,50 @@ let openCCPromise: Promise<{
   toSimplified: (value: string) => string;
 }> | null = null;
 
+/** Thrown when Pagefind could not load part of its bundle; callers fall back to MiniSearch. */
+export class PagefindLoadError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PagefindLoadError';
+  }
+}
+
+// Pagefind swallows failed index/fragment loads (it logs "invalid gzip data" and returns empty results), which
+// happens when an open tab or a stale cached pagefind.js/pagefind-entry.json points at hashes a newer deploy
+// removed. Count failed /pagefind/ fetches so a search that hit one is treated as a failure, not "no results".
+let pagefindFetchFailures = 0;
+let fetchTrackerInstalled = false;
+
+function isPagefindRequest(input: RequestInfo | URL): boolean {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+  return url.includes('/pagefind/');
+}
+
+export function installPagefindFetchTracker(target: typeof globalThis = globalThis): void {
+  if (fetchTrackerInstalled || typeof target.fetch !== 'function') return;
+  fetchTrackerInstalled = true;
+  const originalFetch = target.fetch.bind(target);
+  target.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const tracked = isPagefindRequest(input);
+    try {
+      const response = await originalFetch(input, init);
+      if (tracked && !response.ok) pagefindFetchFailures += 1;
+      return response;
+    } catch (error) {
+      if (tracked) pagefindFetchFailures += 1;
+      throw error;
+    }
+  };
+}
+
+/** Test hook. */
+export function resetPagefindClientForTests(module?: PagefindModule): void {
+  pagefindPromise = module ? Promise.resolve(module) : null;
+  pagefindFetchFailures = 0;
+}
+
 async function loadPagefind(): Promise<PagefindModule> {
+  installPagefindFetchTracker();
   if (!pagefindPromise) {
     // Keep Pagefind out of the Next bundle; it is generated into /public/pagefind at build time.
     pagefindPromise = new Function('return import("/pagefind/pagefind.js")')() as Promise<PagefindModule>;
@@ -188,6 +231,7 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
   const trimmed = query.trim();
   if (!trimmed) return { results: [], truncated: false };
 
+  const failuresBefore = pagefindFetchFailures;
   const pagefind = await loadPagefind();
   const variants = await getQueryVariants(trimmed);
   const responses = await Promise.all(variants.map((variant) => pagefind.search(variant, { excerptLength: 12 })));
@@ -199,7 +243,13 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
     const variant = variants[variantIndex]!;
     const data = await Promise.all(
       response.results.slice(0, Math.max(limit * 3, 100)).map(async (result, index) => {
-        const resultData = await result.data();
+        let resultData: PagefindResultData | undefined;
+        try {
+          resultData = await result.data();
+        } catch (error) {
+          throw new PagefindLoadError(`fragment load failed: ${String(error)}`);
+        }
+        if (!resultData) throw new PagefindLoadError('fragment load returned no data');
         return mapPagefindData(resultData, result.score ?? limit - index, variant);
       }),
     );
@@ -209,6 +259,10 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
       seen.add(result.id);
       merged.push(result);
     }
+  }
+
+  if (pagefindFetchFailures > failuresBefore) {
+    throw new PagefindLoadError('a /pagefind/ index or fragment request failed during this search');
   }
 
   const sorted = merged.sort((a, b) => b.score - a.score);
