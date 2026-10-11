@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { HelpCircle, Menu } from 'lucide-react';
 import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
-import { getSearchEngine } from '@/lib/search/searchEngine';
 import { runClientSearch } from '@/lib/search/runClientSearch';
 import { detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
 import SideMenu from '@/components/navigation/SideMenu';
@@ -39,15 +38,13 @@ function SearchPageInner() {
   // Initialize search engine and hydrate from ?q=
   useEffect(() => {
     let cancelled = false;
-    const engine = getSearchEngine();
     const q = (searchParams.get('q') || '').trim();
 
     async function init() {
       try {
-        if (!engineReady) {
-          await engine.initialize();
-          if (!cancelled) setEngineReady(true);
-        }
+        // Pagefind answers queries; MiniSearch (≈2.6 MB of Bible JSON + main-thread indexing) is only
+        // loaded lazily by runClientSearch when Pagefind fails, or by ContextViewer on demand.
+        if (!engineReady) setEngineReady(true);
 
         if (!cancelled && q) {
           setQuery(q);

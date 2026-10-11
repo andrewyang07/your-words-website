@@ -3,7 +3,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 import { useSearchStore } from '@/stores/useSearchStore';
-import { getSearchEngine } from '@/lib/search/searchEngine';
 import { runClientSearch } from '@/lib/search/runClientSearch';
 import { detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
 
@@ -70,17 +69,10 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
 
       setLoading(true);
       try {
-        // Warm MiniSearch in parallel so fallback / ContextViewer stay available.
-        const engine = getSearchEngine();
-        const warm = engine.initialized
-          ? Promise.resolve()
-          : engine.initialize().then(() => setEngineReady(true));
-        if (engine.initialized) setEngineReady(true);
-
+        // Pagefind first; runClientSearch lazy-loads MiniSearch only if Pagefind fails.
         const { results: searched, truncated } = await runClientSearch(searchQuery);
         setResults(searched, truncated);
-        await warm.catch(() => {});
-        if (getSearchEngine().initialized) setEngineReady(true);
+        setEngineReady(true);
       } catch (error) {
         console.error('Search error:', error);
         setResults([]);

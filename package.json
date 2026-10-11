@@ -15,7 +15,8 @@
   },
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run search:build-index",
+    "prebuild": "npm run data:presets && npm run search:build-index",
+    "data:presets": "node scripts/build-preset-data.mjs",
     "build": "next build --webpack",
     "search:build-index": "node scripts/build-pagefind-index.mjs",
     "start": "next start",

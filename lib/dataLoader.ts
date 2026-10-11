@@ -7,31 +7,19 @@ import { getBookDisplayName } from './uiScript';
 
 // 从完整圣经 JSON 中提取指定的经文
 export async function loadPresetVerses(language: Language): Promise<Verse[]> {
-    const fileName = language === 'simplified' ? 'CUV_bible.json' : 'CUVT_bible.json';
-
     try {
-        const response = await fetch(`/data/${fileName}`);
+        // Small generated file (scripts/build-preset-data.mjs) instead of a whole Bible (~1.2 MB br).
+        const response = await fetch('/data/presets.json');
         if (!response.ok) {
-            throw new Error(`加载圣经数据失败: ${response.statusText}`);
+            throw new Error(`加载经文数据失败: ${response.statusText}`);
         }
-        const bibleData = await response.json();
+        const presets = (await response.json()) as Record<Language, Record<string, string>>;
+        const texts = presets[language] ?? {};
 
         const verses: Verse[] = [];
 
         PRESET_VERSE_REFERENCES.forEach((ref, index) => {
-            const bookData = bibleData[ref.book];
-            if (!bookData) {
-                logWarning('loadPresetVerses', `书卷不存在: ${ref.book}`);
-                return;
-            }
-
-            const chapterData = bookData[ref.chapter];
-            if (!chapterData) {
-                logWarning('loadPresetVerses', `章节不存在: ${ref.book} ${ref.chapter}`);
-                return;
-            }
-
-            const verseText = chapterData[ref.verse];
+            const verseText = texts[`${ref.book}-${ref.chapter}-${ref.verse}`];
             if (!verseText) {
                 logWarning('loadPresetVerses', `经节不存在: ${ref.book} ${ref.chapter}:${ref.verse}`);
                 return;

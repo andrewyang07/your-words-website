@@ -34,7 +34,13 @@ function deferFetch(url: string): Promise<unknown> {
 
 const json = (data: unknown) => ({ ok: true, statusText: 'OK', json: async () => data });
 const booksJson = json({ books: [{ key: '创世记', nameSimplified: '创世记', nameTraditional: '創世記', nameEnglish: 'Genesis', chapters: 50, testament: 'old' }] });
-const bible = (book: string, text: string) => json({ [book]: { 1: { 1: text } } });
+// Both scripts load the same small presets file; request 0 is the stale default-script (繁) load, 1 the saved 简体.
+const presets = (text: string) => json({ simplified: { '创世记-1-1': text }, traditional: { '创世记-1-1': text } });
+const STALE = 0;
+const LATEST = 1;
+function resolvePreset(index: number, response: unknown) {
+  pending.get('/data/presets.json')![index].resolve(response);
+}
 
 function resolveAll(url: string, response: unknown) {
   (pending.get(url) ?? []).forEach((d) => d.resolve(response));
@@ -76,9 +82,9 @@ afterEach(() => {
 /** Mimics the real page: first render uses the default script, then the persisted 简体 is applied. */
 async function renderThenApplySavedSimplified() {
   const view = render(<HomePageClient />);
-  await waitFor(() => expect(pending.get('/data/CUVT_bible.json')).toHaveLength(1));
+  await waitFor(() => expect(pending.get('/data/presets.json')).toHaveLength(1));
   act(() => useAppStore.setState({ language: 'simplified' }));
-  await waitFor(() => expect(pending.get('/data/CUV_bible.json')).toHaveLength(1));
+  await waitFor(() => expect(pending.get('/data/presets.json')).toHaveLength(2));
   return view;
 }
 
@@ -88,14 +94,14 @@ describe('home initial load with a superseded (default-script) request', () => {
 
     await act(async () => {
       resolveAll('/data/books.json', booksJson);
-      resolveAll('/data/CUVT_bible.json', bible('创世记', '起初，神創造天地。'));
+      resolvePreset(STALE, presets('起初，神創造天地。'));
     });
 
     expect(view.container.textContent).toContain('加载中');
     expect(view.container.textContent).not.toContain('暂无经文');
 
     await act(async () => {
-      resolveAll('/data/CUV_bible.json', bible('创世记', '起初，神创造天地。'));
+      resolvePreset(LATEST, presets('起初，神创造天地。'));
     });
 
     await waitFor(() => expect(view.container.textContent).toContain('创世记'));
@@ -112,12 +118,12 @@ describe('home initial load with a superseded (default-script) request', () => {
     expect(view.container.textContent).toContain('加载中');
 
     await act(async () => {
-      resolveAll('/data/CUV_bible.json', bible('创世记', '起初，神创造天地。'));
+      resolvePreset(LATEST, presets('起初，神创造天地。'));
     });
     await waitFor(() => expect(view.container.textContent).toContain('创世记'));
 
     await act(async () => {
-      resolveAll('/data/CUVT_bible.json', bible('創世記', '起初，神創造天地。'));
+      resolvePreset(STALE, presets('起初，神創造天地。'));
     });
     expect(view.container.textContent).toContain('创世记');
     expect(view.container.textContent).not.toContain('創世記');
@@ -128,15 +134,15 @@ describe('home initial load with a superseded (default-script) request', () => {
 
     await act(async () => {
       resolveAll('/data/books.json', booksJson);
-      pending.get('/data/CUVT_bible.json')!.forEach((d) => d.reject(new Error('stale network error')));
+      pending.get('/data/presets.json')![STALE].reject(new Error('stale network error'));
     });
     expect(view.container.textContent).toContain('加载中');
     expect(view.container.textContent).not.toContain('stale network error');
 
     await act(async () => {
-      resolveAll('/data/CUV_bible.json', { ok: false, statusText: 'Server Error', json: async () => ({}) });
+      resolvePreset(LATEST, { ok: false, statusText: 'Server Error', json: async () => ({}) });
     });
-    await waitFor(() => expect(view.container.textContent).toContain('加载圣经数据失败'));
+    await waitFor(() => expect(view.container.textContent).toContain('加载经文数据失败'));
     expect(view.container.textContent).not.toContain('暂无经文');
   });
 });

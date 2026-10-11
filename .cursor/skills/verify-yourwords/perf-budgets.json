@@ -3,65 +3,66 @@
   "runs": 1,
   "routes": {
     "/": {
-      "minScore": 50,
-      "maxLcpMs": 19500,
-      "maxTbtMs": 300,
+      "minScore": 63,
+      "maxLcpMs": 5100,
+      "maxTbtMs": 950,
       "maxCls": 0.05,
-      "firstLoadJsKb": 320
+      "firstLoadJsKb": 312
     },
     "/search": {
-      "minScore": 8,
-      "maxLcpMs": 8500,
-      "maxTbtMs": 46000,
+      "minScore": 55,
+      "maxLcpMs": 2800,
+      "maxTbtMs": 900,
       "maxCls": 0.53,
-      "firstLoadJsKb": 460
+      "firstLoadJsKb": 445
     },
     "/memorize": {
-      "minScore": 48,
-      "maxLcpMs": 18200,
-      "maxTbtMs": 300,
+      "minScore": 62,
+      "maxLcpMs": 5300,
+      "maxTbtMs": 950,
       "maxCls": 0.05,
-      "firstLoadJsKb": 300
+      "firstLoadJsKb": 295
     },
     "/note": {
-      "minScore": 45,
-      "maxLcpMs": 15400,
-      "maxTbtMs": 500,
+      "minScore": 52,
+      "maxLcpMs": 6900,
+      "maxTbtMs": 1250,
       "maxCls": 0.05,
-      "firstLoadJsKb": 335
+      "firstLoadJsKb": 328
     }
   },
   "measured": {
     "date": "2026-10-11",
-    "commit": "7fab4f7",
+    "commit": "perf/bundle-cache (2 runs, worst shown)",
     "/": [
       303,
-      57,
-      17716,
-      0,
+      68,
+      4211,
+      728,
       0
     ],
     "/search": [
-      437,
-      12,
-      6916,
-      38563,
-      0.481
+      436,
+      60,
+      2308,
+      708,
+      0.484
     ],
     "/memorize": [
       285,
-      55,
-      16529,
-      0,
+      68,
+      4356,
+      833,
       0
     ],
     "/note": [
       318,
-      52,
-      13989,
-      237,
+      58,
+      5698,
+      969,
       0
     ],
     "_cols": "firstLoadJsKb, score, lcpMs, tbtMs, cls (local next start, LH mobile)"
-  }
+  },
+  "_tbtNote": "TBT only counts long tasks after FCP. PR perf/bundle-cache moved FCP from ~5.9s to ~1.1s (no CJK webfont), so the same pre-existing hydration long tasks (~450ms each, also present before) now fall inside the TBT window; total main-thread work went down. Budgets were re-based on the new numbers, not loosened by any regression."
 }
