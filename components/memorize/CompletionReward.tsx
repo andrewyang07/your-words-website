@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, MinusCircle } from 'lucide-react';
+import { CheckCircle2, ImageDown, MinusCircle } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import type { Language } from '@/types/verse';
 import {
@@ -50,6 +50,9 @@ interface CompletionRewardProps {
   assistanceCount: number;
   skippedStageCount: number;
   reducedMotion?: boolean;
+  /** 仅 kind="round"：完成页“生成卡片”按钮 */
+  onCreateCard?: () => void;
+  cardLabel?: string;
 }
 
 export function CompletionReward({
@@ -58,6 +61,8 @@ export function CompletionReward({
   assistanceCount,
   skippedStageCount,
   reducedMotion,
+  onCreateCard,
+  cardLabel,
 }: CompletionRewardProps) {
   const prefersReducedMotion = useReducedMotion();
   const shouldReduceMotion = reducedMotion ?? Boolean(prefersReducedMotion);
@@ -101,6 +106,11 @@ export function CompletionReward({
           {seal}
         </p>
         <p className="mt-1 text-sm leading-6 text-stone-600 dark:text-stone-300">{message}</p>
+        {kind === 'round' && onCreateCard && cardLabel && (
+          <button type="button" onClick={onCreateCard} className="memorize-secondary mx-auto mt-4 !w-auto px-4">
+            <ImageDown className="h-4 w-4" aria-hidden="true" />{cardLabel}
+          </button>
+        )}
       </div>
     </motion.div>
   );

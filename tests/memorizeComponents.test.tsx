@@ -937,3 +937,121 @@ describe('deep memorization controls', () => {
     expect(await view.findByText('耶和华是我的牧者。')).toBeTruthy();
   });
 });
+
+describe('memorize share link (背诵链接)', () => {
+  const psalm23 = { 1: '耶和华是我的牧者，我必不致缺乏。', 2: '他使我躺卧在青草地上。', 3: '他使我的灵魂苏醒。' };
+
+  function stubBible() {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ 诗篇: { 23: psalm23 }, 约翰福音: { 3: { 16: '神爱世人。' } } }),
+    })));
+  }
+
+  async function skipWholeRound(view: ReturnType<typeof render>) {
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    await skipStage(view);
+    await view.findByRole('heading', { name: '凭留下的字，补全句子' });
+    await skipStage(view);
+    await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
+    await skipStage(view);
+    await view.findByRole('heading', { name: '按每个字的拼音首字母' });
+    await skipStage(view, '跳过本轮');
+    await view.findByRole('heading', { name: '本轮结束' });
+  }
+
+  it('lists link verses in order without favorites, then offers next verse and marks completion in memory', async () => {
+    window.history.replaceState({}, '', `/memorize?p=19-23-1~3&t=${encodeURIComponent('诗篇23')}&sv=1`);
+    useFavoritesStore.setState({ favorites: new Set(['约翰福音-3-16']) });
+    stubBible();
+    const setItem = vi.spyOn(window.localStorage, 'setItem');
+
+    const view = render(<MemorizePageClient />);
+    expect(await view.findByRole('heading', { name: '诗篇23' })).toBeTruthy();
+    expect(view.getByText('共 3 节')).toBeTruthy();
+    expect(view.queryByText('神爱世人。')).toBeNull();
+    const items = view.getAllByRole('listitem').map((item) => item.textContent);
+    expect(items[0]).toContain('诗篇 23:1');
+    expect(items[2]).toContain('诗篇 23:3');
+
+    fireEvent.click(view.getByText('他使我躺卧在青草地上。'));
+    await skipWholeRound(view);
+    expect(view.getByRole('button', { name: '生成卡片' })).toBeTruthy();
+    expect(view.getByRole('button', { name: '下一节' })).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: '返回列表' }));
+
+    await view.findByRole('heading', { name: '诗篇23' });
+    const second = view.getAllByRole('listitem')[1];
+    expect(within(second).getByText('已背完')).toBeTruthy();
+    expect(within(view.getAllByRole('listitem')[0]).queryByText('已背完')).toBeNull();
+    expect(window.location.search).toBe(`?p=19-23-1~3&t=${encodeURIComponent('诗篇23')}&sv=1`);
+    expect(setItem.mock.calls.filter(([key]) => !String(key).startsWith('your-words:memorize-keyboard-layout'))).toEqual([]);
+  });
+
+  it('hides "next verse" on the last item and advances from earlier items', async () => {
+    window.history.replaceState({}, '', '/memorize?p=19-23-2~3&sv=1');
+    useFavoritesStore.setState({ favorites: new Set() });
+    stubBible();
+
+    const view = render(<MemorizePageClient />);
+    expect(await view.findByRole('heading', { name: '背诵链接' })).toBeTruthy();
+    fireEvent.click(view.getByText('他使我躺卧在青草地上。'));
+    await skipWholeRound(view);
+    fireEvent.click(view.getByRole('button', { name: '下一节' }));
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    expect(view.getByText('诗篇 23:3')).toBeTruthy();
+    await skipWholeRound(view);
+    expect(view.queryByRole('button', { name: '下一节' })).toBeNull();
+  });
+
+  it('reports unrecognized and missing references', async () => {
+    window.history.replaceState({}, '', '/memorize?p=43-3-16,99-1-1,abc,43-3-99&sv=1');
+    useFavoritesStore.setState({ favorites: new Set() });
+    stubBible();
+
+    const view = render(<MemorizePageClient />);
+    expect(await view.findByText('有 3 处引用无法识别，已略过')).toBeTruthy();
+    expect(view.getByText('共 1 节')).toBeTruthy();
+  });
+
+  it('shows an empty state when every reference is invalid', async () => {
+    window.history.replaceState({}, '', '/memorize?p=abc,99-1-1&sv=2');
+    useFavoritesStore.setState({ favorites: new Set(['约翰福音-3-16']) });
+    stubBible();
+
+    const view = render(<MemorizePageClient />);
+    expect(await view.findByText('链接中没有可背诵的经文')).toBeTruthy();
+    expect(view.getByText('此链接来自较新版本，部分内容可能无法显示')).toBeTruthy();
+    expect(view.getByRole('link', { name: '去我的收藏' }).getAttribute('href')).toBe('/memorize');
+  });
+
+  it('treats legacy ?s= as a whole link list instead of only the first verse', async () => {
+    expect(resolveMemorizeSourceIds('?s=19-23-1,43-3-16', [])).toEqual({ ids: [], directId: null });
+    window.history.replaceState({}, '', '/memorize?s=19-23-1,43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    stubBible();
+
+    const view = render(<MemorizePageClient />);
+    expect(await view.findByText('共 2 节')).toBeTruthy();
+    expect(view.getByText('神爱世人。')).toBeTruthy();
+  });
+
+  it('creates a link from selected favorites and opens the share dialog', async () => {
+    window.history.replaceState({}, '', '/memorize');
+    useFavoritesStore.setState({ favorites: new Set(['诗篇-23-1', '诗篇-23-2', '约翰福音-3-16']) });
+    stubBible();
+
+    const view = render(<MemorizePageClient />);
+    fireEvent.click(await view.findByRole('button', { name: '生成背诵链接' }));
+    const boxes = view.getAllByRole('checkbox') as HTMLInputElement[];
+    expect(boxes.every((box) => box.checked)).toBe(true);
+    fireEvent.click(boxes[2]);
+    fireEvent.change(view.getByRole('textbox', { name: '链接标题' }), { target: { value: '小组' } });
+    fireEvent.click(view.getByRole('button', { name: '生成' }));
+
+    const dialog = await view.findByRole('dialog');
+    const input = within(dialog).getByRole('textbox', { name: '背诵链接网址' }) as HTMLInputElement;
+    expect(input.value).toBe(`${window.location.origin}/memorize?p=19-23-1~2&t=${encodeURIComponent('小组')}&sv=1`);
+    expect(within(dialog).getByRole('button', { name: '复制链接' })).toBeTruthy();
+  });
+});
