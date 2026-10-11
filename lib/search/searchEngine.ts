@@ -10,6 +10,7 @@ import type { SearchResult, ContextVerse, BibleData, BookMapping } from '@/types
 import { parseReference } from './referenceParser';
 import { buildPinyinIndexAsync, searchPinyin, type PinyinIndex } from './fuzzyPinyin';
 import { DEFAULT_SEARCH_LIMIT, hasCjk, type SearchResponse } from './searchHelpers';
+import { webBookName } from './webBookName';
 
 type BibleJSON = Record<string, Record<string, Record<string, string>>>;
 
@@ -117,7 +118,7 @@ class SearchEngine {
       const docs: DocRecord[] = [];
       for (const [bookChinese, chapters] of Object.entries(chineseData)) {
         const bookEnglish = englishMap.get(bookChinese) || '';
-        const englishBook = englishData[bookEnglish] || {};
+        const englishBook = englishData[webBookName(bookEnglish)] || {};
         for (const [chapter, verses] of Object.entries(chapters)) {
           const englishChapter = englishBook[chapter] || {};
           for (const [verse, textChinese] of Object.entries(verses)) {
@@ -201,7 +202,7 @@ class SearchEngine {
     if (!bookChinese) return [];
 
     const chineseBook = chinese[bookChinese];
-    const englishBook = bookEnglish ? english[bookEnglish] : null;
+    const englishBook = bookEnglish ? english[webBookName(bookEnglish)] : null;
 
     if (!chineseBook) return [];
 
@@ -344,7 +345,7 @@ class SearchEngine {
       if (!textChinese) continue;
 
       const bookEnglish = englishMap.get(bookKey) || '';
-      const textEnglish = english[bookEnglish]?.[String(chapter)]?.[String(verse)] || '';
+      const textEnglish = english[webBookName(bookEnglish)]?.[String(chapter)]?.[String(verse)] || '';
 
       // Boost score if query appears as exact substring
       let finalScore = score;
@@ -380,7 +381,7 @@ class SearchEngine {
     const bookEnglish = this.bookMappings.find((m) => m.key === bookKey)?.nameEnglish || '';
 
     const chapterData = chinese[bookKey]?.[String(chapter)];
-    const englishChapterData = english[bookEnglish]?.[String(chapter)];
+    const englishChapterData = english[webBookName(bookEnglish)]?.[String(chapter)];
     if (!chapterData) return [];
 
     const allVerses = Object.keys(chapterData)

@@ -1,5 +1,6 @@
 import type { BookMapping, SearchResult } from '@/types/search';
 import { parseReference } from './referenceParser';
+import { webBookName } from './webBookName';
 
 export type VerseReference = {
   bookKey: string;
@@ -96,16 +97,28 @@ export function loadBooks(): Promise<BookRecord[]> {
   return booksPromise;
 }
 
-/** Fallback for a referenced verse Pagefind did not return: read it from the (cached) corpus. */
-export async function loadVersesFromCorpus(ref: VerseReference, missing: number[]): Promise<SearchResult[]> {
+type BibleJson = Record<string, Record<string, Record<string, string>> | undefined>;
+
+/**
+ * Fallback for a referenced verse Pagefind did not return: read it from the (cached) corpus.
+ * Chinese text follows the UI script (CUVT for 繁體, CUV for 简体) and English comes from WEB,
+ * the same sources the Pagefind index and MiniSearch results are built from.
+ */
+export async function loadVersesFromCorpus(
+  ref: VerseReference,
+  missing: number[],
+  language?: 'simplified' | 'traditional',
+): Promise<SearchResult[]> {
+  const script = language ?? (await import('@/stores/useAppStore')).useAppStore.getState().language;
   const [{ fetchWithCache }, books] = await Promise.all([import('@/lib/bibleDataCache'), loadBooks()]);
-  const bible = (await fetchWithCache('/data/CUV_bible.json')) as Record<
-    string,
-    Record<string, Record<string, string>> | undefined
-  >;
-  const chapter = bible[ref.bookKey]?.[String(ref.chapter)];
-  if (!chapter) return [];
   const book = books.find((b) => b.key === ref.bookKey);
+  const [chinese, english] = (await Promise.all([
+    fetchWithCache(script === 'traditional' ? '/data/CUVT_bible.json' : '/data/CUV_bible.json'),
+    book?.nameEnglish ? fetchWithCache('/data/WEB_bible.json') : Promise.resolve({}),
+  ])) as [BibleJson, BibleJson];
+  const chapter = chinese[ref.bookKey]?.[String(ref.chapter)];
+  if (!chapter) return [];
+  const englishChapter = book?.nameEnglish ? english[webBookName(book.nameEnglish)]?.[String(ref.chapter)] : undefined;
   return missing.flatMap((verse) => {
     const textChinese = chapter[String(verse)];
     if (!textChinese) return [];
@@ -118,7 +131,7 @@ export async function loadVersesFromCorpus(ref: VerseReference, missing: number[
         chapter: ref.chapter,
         verse,
         textChinese,
-        textEnglish: '',
+        textEnglish: englishChapter?.[String(verse)] ?? '',
         score: 100,
         matchType: 'reference' as const,
       },

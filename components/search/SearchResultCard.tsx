@@ -6,7 +6,6 @@ import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { highlightText, type HighlightSegment } from '@/lib/search/highlighter';
-import { getSearchEngine } from '@/lib/search/searchEngine';
 import { encodeVerseRef } from '@/lib/bibleBookMapping';
 import { sendStats } from '@/lib/statsUtils';
 import type { SearchResult } from '@/types/search';
@@ -67,8 +66,11 @@ export default function SearchResultCard({ result, index, isSelected }: SearchRe
     }
   };
 
-  const handleContext = () => {
+  const handleContext = async () => {
+    // MiniSearch's Bible data is no longer preloaded on /search; load it only when context is requested.
+    const { getSearchEngine } = await import('@/lib/search/searchEngine');
     const engine = getSearchEngine();
+    if (!engine.initialized) await engine.initialize();
     const verses = engine.getContext(result.bookKey, result.chapter, result.verse);
     setContextVerse({
       bookKey: result.bookKey,
@@ -179,7 +181,7 @@ export default function SearchResultCard({ result, index, isSelected }: SearchRe
         <button
           onClick={(e) => {
             e.stopPropagation();
-            handleContext();
+            void handleContext();
           }}
           className="inline-flex items-center gap-1 text-bible-500 dark:text-bible-400 hover:text-bible-700 dark:hover:text-bible-300 transition-colors"
         >

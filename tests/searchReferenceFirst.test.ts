@@ -113,3 +113,35 @@ describe('runClientSearch reference-first', () => {
     expect(ids(results)).toEqual(['约翰福音 3:16', '约翰福音 16:3']);
   });
 });
+
+describe('loadVersesFromCorpus (reference fallback)', () => {
+  it('follows the 繁體 UI script and fills English from WEB (Gen 1:1)', async () => {
+    const { loadVersesFromCorpus } = await import('../lib/search/referenceFirst');
+    const [r] = await loadVersesFromCorpus(
+      { bookKey: '创世记', chapter: 1, verseStart: 1, verseEnd: 1 },
+      [1],
+      'traditional',
+    );
+    expect(r!.textChinese).toBe('起初，神創造天地。');
+    expect(r!.textEnglish).toBe('In the beginning, God created the heavens and the earth.');
+  });
+
+  it('uses Simplified text in 简体 UI and English for Ps 119:105', async () => {
+    const { loadVersesFromCorpus } = await import('../lib/search/referenceFirst');
+    const [r] = await loadVersesFromCorpus(
+      { bookKey: '诗篇', chapter: 119, verseStart: 105, verseEnd: 105 },
+      [105],
+      'simplified',
+    );
+    expect(r!.textChinese).toContain('你的话是我脚前的灯');
+    expect(r!.textEnglish).toMatch(/lamp to my feet/i);
+  });
+
+  it('defaults to the persisted app script', async () => {
+    const { useAppStore } = await import('../stores/useAppStore');
+    useAppStore.setState({ language: 'traditional' });
+    const { loadVersesFromCorpus } = await import('../lib/search/referenceFirst');
+    const [r] = await loadVersesFromCorpus({ bookKey: '创世记', chapter: 1, verseStart: 1, verseEnd: 1 }, [1]);
+    expect(r!.textChinese).toBe('起初，神創造天地。');
+  });
+});

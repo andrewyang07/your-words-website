@@ -1,6 +1,5 @@
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Noto_Sans_SC } from 'next/font/google';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import AppStoreStorageSync from '@/components/AppStoreStorageSync';
@@ -8,12 +7,8 @@ import ScriptText from '@/components/ui/ScriptText';
 import type { Metadata } from 'next';
 import './globals.css';
 
-const notoSans = Noto_Sans_SC({
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['400', '500', '700'],
-  preload: true,
-});
+// No webfont: `font-chinese` (tailwind.config) uses system CJK fonts (PingFang/YaHei/Noto CJK…). The old
+// Google-font Noto Sans SC shipped ~1.1 MB of CJK woff2 slices on every page.
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.yourwords.me'),
@@ -159,7 +154,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${notoSans.className} antialiased`} suppressHydrationWarning>
+      <body className="antialiased" suppressHydrationWarning>
         <AppStoreStorageSync />
         <nav className="sr-only" aria-label="主要頁面">
           <a href="/memorize">
