@@ -100,7 +100,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         liquid-glass rounded-[1.4rem]
         cursor-pointer
         [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-stone-900/20 [@media(hover:hover)]:dark:hover:border-white/20
-        [@media(hover:hover)]:hover:bg-white/72 [@media(hover:hover)]:dark:hover:bg-white/[0.065]
+        [@media(hover:hover)]:hover:bg-white/[.72] [@media(hover:hover)]:dark:hover:bg-white/[0.065]
         flex flex-col justify-between
         relative overflow-hidden
         touch-manipulation

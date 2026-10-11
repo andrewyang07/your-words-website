@@ -225,7 +225,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed top-[45vh] bottom-0 left-0 right-0 z-[300] overflow-visible rounded-t-[1.75rem] border-t border-stone-900/10 bg-[#fbfaf7]/96 shadow-[0_-18px_54px_rgba(68,64,60,0.13)] backdrop-blur-2xl dark:border-amber-200/10 dark:bg-[#17130f]/96 flex flex-col"
+                        className="fixed top-[45vh] bottom-0 left-0 right-0 z-[300] overflow-visible rounded-t-[1.75rem] border-t border-stone-900/10 bg-[#fbfaf7]/[.96] shadow-[0_-18px_54px_rgba(68,64,60,0.13)] backdrop-blur-2xl dark:border-amber-200/10 dark:bg-[#17130f]/[.96] flex flex-col"
                     >
                         {/* 头部 - 导航控制 */}
                         <div className="flex flex-col gap-2 border-b border-stone-900/10 bg-white/45 p-3 dark:border-amber-200/10 dark:bg-[#211b13]/70 md:p-4">

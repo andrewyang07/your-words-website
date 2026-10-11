@@ -998,7 +998,7 @@ export default function HomePage() {
         <div className="relative min-h-screen overflow-hidden bg-[#f8f5ee] text-stone-950 dark:bg-[#0e1116] dark:text-stone-50 before:pointer-events-none before:fixed before:inset-x-0 before:top-0 before:z-0 before:h-64 before:bg-[radial-gradient(circle_at_50%_0%,rgba(120,113,108,0.13),transparent_34rem)] dark:before:bg-[radial-gradient(circle_at_50%_0%,rgba(214,211,209,0.08),transparent_32rem)]">
             {/* 顶部导航栏 */}
             <header
-                className="sticky top-0 z-50 border-b border-stone-900/10 bg-[#f8f5ee]/72 backdrop-blur-2xl dark:border-white/10 dark:bg-[#0e1116]/72"
+                className="sticky top-0 z-50 border-b border-stone-900/10 bg-[#f8f5ee]/[.72] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0e1116]/[.72]"
                 role="banner"
             >
                 <div className="relative z-[1] mx-auto max-w-6xl px-4 py-3 md:py-4">
@@ -1245,7 +1245,7 @@ export default function HomePage() {
                             className={`flex shrink-0 items-center gap-2 px-4 py-2.5 rounded-xl transition-all touch-manipulation min-h-[44px] ${
                                 filterType === 'favorites'
                                     ? 'bg-gold-500 dark:bg-gold-600 text-white shadow-[0_10px_24px_rgba(217,119,6,0.24)] hover:bg-gold-600 dark:hover:bg-gold-700'
-                                    : 'bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 text-stone-600 dark:text-stone-300 border border-bible-200/80 dark:border-gray-700 shadow-sm'
+                                    : 'bg-white/[.86] dark:bg-gray-800/[.86] hover:bg-bible-50 dark:hover:bg-gray-700 text-stone-600 dark:text-stone-300 border border-bible-200/80 dark:border-gray-700 shadow-sm'
                             }`}
                             title={
                                 filterType === 'favorites'
@@ -1292,7 +1292,7 @@ export default function HomePage() {
                         <Listbox value={selectedBook} onChange={handleBookSelect}>
                             {({ open }) => (
                                 <div className="relative z-[220] overflow-visible">
-                                    <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
+                                    <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/[.86] dark:bg-gray-800/[.86] hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
                                         <span className="block">{selectedBook?.name || (language === 'traditional' ? '選擇書卷' : '选择书卷')}</span>
                                         <ChevronDown
                                             className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-600 dark:text-stone-300 transition-transform ${
@@ -1402,7 +1402,7 @@ export default function HomePage() {
                                 <Listbox value={selectedChapter} onChange={handleChapterSelect}>
                                     {({ open }) => (
                                         <div className="relative z-[220] overflow-visible">
-                                            <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/86 dark:bg-gray-800/86 hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
+                                            <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/[.86] dark:bg-gray-800/[.86] hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
                                                 <span className="block">{selectedChapter ? `第 ${selectedChapter} 章` : (language === 'traditional' ? '所有章節' : '所有章节')}</span>
                                                 <ChevronDown
                                                     className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-stone-400 transition-transform ${
@@ -1544,7 +1544,7 @@ export default function HomePage() {
                 {/* 分享横幅 */}
                 {showShareBanner && sharedVerses.length > 0 && (
                     <div
-                        className="border-b border-stone-900/10 bg-white/70 py-4 shadow-[0_18px_45px_rgba(68,64,60,0.08)] backdrop-blur-xl transition-all duration-300 dark:border-white/10 dark:bg-gray-950/82"
+                        className="border-b border-stone-900/10 bg-white/70 py-4 shadow-[0_18px_45px_rgba(68,64,60,0.08)] backdrop-blur-xl transition-all duration-300 dark:border-white/10 dark:bg-gray-950/[.82]"
                         role="alert"
                         aria-live="polite"
                         aria-atomic="true"
@@ -2203,7 +2203,7 @@ export default function HomePage() {
                         </div>
                     ) : isSearching ? (
                         <div className="px-4 py-16">
-                            <div className="mx-auto max-w-md rounded-[1.5rem] border border-bible-200/70 bg-white/70 p-6 text-center shadow-[0_18px_45px_rgba(120,53,15,0.08)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/62 dark:shadow-none">
+                            <div className="mx-auto max-w-md rounded-[1.5rem] border border-bible-200/70 bg-white/70 p-6 text-center shadow-[0_18px_45px_rgba(120,53,15,0.08)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/[.62] dark:shadow-none">
                                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-bible-100 text-bible-700 dark:bg-gray-800 dark:text-bible-300">
                                     <div className="h-5 w-5 rounded-full border-2 border-bible-400 border-t-transparent animate-spin dark:border-bible-300 dark:border-t-transparent" />
                                 </div>
@@ -2213,7 +2213,7 @@ export default function HomePage() {
                         </div>
                     ) : searchQuery && searchResults.length === 0 && !isSearching ? (
                         <div className="px-4 py-16">
-                            <div className="mx-auto max-w-lg rounded-[1.5rem] border border-bible-200/70 bg-white/70 p-6 text-center shadow-[0_18px_45px_rgba(120,53,15,0.08)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/62 dark:shadow-none">
+                            <div className="mx-auto max-w-lg rounded-[1.5rem] border border-bible-200/70 bg-white/70 p-6 text-center shadow-[0_18px_45px_rgba(120,53,15,0.08)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/[.62] dark:shadow-none">
                                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-bible-100 text-xl text-bible-700 dark:bg-gray-800 dark:text-bible-300">⌕</div>
                                 <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">{pick('沒有找到「', '没有找到「')}{searchQuery}」</p>
                                 <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-chinese">{pick('可以試試引用、繁簡另一種寫法，或拼音，例如 約3:16 / 神愛世人 / yuehan。', '可以试试引用、繁简另一种写法，或拼音，例如 约3:16 / 神爱世人 / yuehan。')}</p>
@@ -2260,7 +2260,7 @@ export default function HomePage() {
                 {/* iOS App 推广区块 - quiet card */}
                 {showAppPromo && (
                     <div className="relative z-[1] mx-auto mt-3 max-w-7xl px-4 py-4 animate-fade-in">
-                        <div className="relative overflow-hidden rounded-[1.35rem] border border-bible-200/70 bg-white/48 shadow-[0_12px_34px_rgba(120,53,15,0.06)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/42 dark:shadow-none">
+                        <div className="relative overflow-hidden rounded-[1.35rem] border border-bible-200/70 bg-white/[.48] shadow-[0_12px_34px_rgba(120,53,15,0.06)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/[.42] dark:shadow-none">
                             {/* 关闭按钮 */}
                             <button
                                 onClick={handleDismissAppPromo}
@@ -2275,7 +2275,7 @@ export default function HomePage() {
                                 href="https://apps.apple.com/app/6744570052"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group block p-3.5 pr-10 transition hover:bg-white/42 dark:hover:bg-gray-800/40 md:p-4"
+                                className="group block p-3.5 pr-10 transition hover:bg-white/[.42] dark:hover:bg-gray-800/40 md:p-4"
                             >
                                 <div className="flex items-center gap-3 md:gap-4">
                                     {/* Logo */}
