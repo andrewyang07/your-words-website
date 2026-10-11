@@ -15,15 +15,15 @@ import LanguageToggle from '@/components/search/LanguageToggle';
 import ContextViewer from '@/components/search/ContextViewer';
 import SearchHelp from '@/components/search/SearchHelp';
 
-function SearchPageInner() {
+/**
+ * Reads ?q= and keeps it in sync with the store. It is the only part of /search that needs useSearchParams,
+ * so it sits in its own Suspense boundary: the rest of the page is server-rendered instead of bailing out to
+ * an empty shell, which used to drop the page in after hydration and shift the layout's footer (CLS ≈ 0.48).
+ */
+function SearchQuerySync() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setQuery, setEngineReady, engineReady, setResults, setLoading, setSearchLang, results, query, loading } =
-    useSearchStore();
-  const { theme, setTheme, language, setLanguage } = useAppStore();
-
-  const [showSideMenu, setShowSideMenu] = useState(false);
-  const [showHelpPanel, setShowHelpPanel] = useState(false);
+  const { setQuery, setEngineReady, engineReady, setResults, setLoading, setSearchLang, query } = useSearchStore();
   const [queryHydrated, setQueryHydrated] = useState(false);
 
   // Initialize search engine and hydrate from ?q=
@@ -78,6 +78,16 @@ function SearchPageInner() {
     const nextUrl = trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : '/search';
     router.replace(nextUrl, { scroll: false });
   }, [query, queryHydrated, router, searchParams]);
+
+  return null;
+}
+
+function SearchPageInner() {
+  const { results, query, loading } = useSearchStore();
+  const { theme, setTheme, language, setLanguage } = useAppStore();
+
+  const [showSideMenu, setShowSideMenu] = useState(false);
+  const [showHelpPanel, setShowHelpPanel] = useState(false);
 
   const isHomeMode = useMemo(() => !query.trim() && results.length === 0 && !loading, [loading, query, results.length]);
 
@@ -179,15 +189,14 @@ function SearchPageInner() {
         </div>
       </main>
 
+      <Suspense fallback={null}>
+        <SearchQuerySync />
+      </Suspense>
       <ContextViewer />
     </div>
   );
 }
 
 export default function SearchPage() {
-  return (
-    <Suspense>
-      <SearchPageInner />
-    </Suspense>
-  );
+  return <SearchPageInner />;
 }

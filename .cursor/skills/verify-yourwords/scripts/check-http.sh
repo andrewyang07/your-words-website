@@ -20,6 +20,9 @@ for route in / /search /discover /rankings /note /help /about /memorize /sitemap
   slug=$(echo "route$route" | tr '/.' '__')
   code=$(get "$slug" "$route"); check "GET $route -> 200" "[[ $code == 200 ]]"
 done
+# /search must server-render its shell (search box), not bail out to an empty Suspense fallback that pops in
+# after hydration and shifts the layout (was CLS ≈ 0.48).
+check "/search SSR renders the search box" "grep -q '<input[^>]*type=\"text\"' $OUT/route_search.body"
 code=$(get not_found /definitely-not-a-page); check "GET unknown route -> 404" "[[ $code == 404 ]]"
 
 code=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "$VERIFY_BASE/review?p=43-3-16&sv=1")
