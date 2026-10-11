@@ -43,7 +43,12 @@ describe('deep memorization session', () => {
     expect([...first.masks.partial30].every((index) => first.masks.partial65.has(index))).toBe(true);
     expect(first.masks.partial30.size).toBe(Math.round(first.recallableCount * 0.3));
     expect(first.masks.partial65.size).toBe(Math.round(first.recallableCount * 0.65));
-    expect(first.units.filter((unit) => !unit.recallable).map((unit) => unit.text).join('')).toBe('，；。');
+    expect(
+      first.units
+        .filter((unit) => !unit.recallable)
+        .map((unit) => unit.text)
+        .join(''),
+    ).toBe('，；。');
 
     const hiddenRuns = first.units.reduce<number[]>((runs, unit, index) => {
       if (!unit.recallable || !first.masks.partial65.has(index)) return runs;
@@ -54,14 +59,19 @@ describe('deep memorization session', () => {
     }, []);
     expect(Math.max(...hiddenRuns)).toBeLessThanOrEqual(4);
 
-    const clauseRanges: Array<[number, number]> = [[0, 7], [8, 14], [15, first.units.length - 1]];
+    const clauseRanges: Array<[number, number]> = [
+      [0, 7],
+      [8, 14],
+      [15, first.units.length - 1],
+    ];
     for (const [start, end] of clauseRanges) {
       expect([...first.masks.partial65].some((index) => index >= start && index <= end)).toBe(true);
     }
   });
 
   it('keeps a long CUV verse readable without pathological hidden runs', () => {
-    const text = '爱是恒久忍耐，又有恩慈；爱是不嫉妒；爱是不自夸，不张狂，不做害羞的事，不求自己的益处，不轻易发怒，不计算人的恶。';
+    const text =
+      '爱是恒久忍耐，又有恩慈；爱是不嫉妒；爱是不自夸，不张狂，不做害羞的事，不求自己的益处，不轻易发怒，不计算人的恶。';
     const session = buildMemorizationSession(text, 'long-cuv');
     let run = 0;
     let longest = 0;
@@ -78,9 +88,7 @@ describe('deep memorization session', () => {
   });
 
   it('advances exactly one character, preserves cursor on errors, and supports reveal and skip', () => {
-    const session = buildMemorizationSession('因为神爱世人', 'recall', [
-      ['y'], ['w'], ['s'], ['a'], ['s'], ['r'],
-    ]);
+    const session = buildMemorizationSession('因为神爱世人', 'recall', [['y'], ['w'], ['s'], ['a'], ['s'], ['r']]);
 
     const wrong = pressInitial(session.recall, session.units, singleInitialInput('x'));
     expect(wrong).toMatchObject({ cursor: 0, lastAttempt: 'wrong', lastAttemptedInputs: ['x'], complete: false });
@@ -100,13 +108,25 @@ describe('deep memorization session', () => {
     expect(firstWrong).toMatchObject({ cursor: 0, consecutiveWrongAttempts: 1, hintVisible: false, wrongAttempts: 1 });
 
     const secondWrong = pressInitial(firstWrong, session.units, singleInitialInput('y'));
-    expect(secondWrong).toMatchObject({ cursor: 0, consecutiveWrongAttempts: 2, hintVisible: true, wrongAttempts: 2, assistanceCount: 1 });
+    expect(secondWrong).toMatchObject({
+      cursor: 0,
+      consecutiveWrongAttempts: 2,
+      hintVisible: true,
+      wrongAttempts: 2,
+      assistanceCount: 1,
+    });
 
     const repeatedWrong = pressInitial(secondWrong, session.units, singleInitialInput('z'));
     expect(repeatedWrong).toMatchObject({ consecutiveWrongAttempts: 3, assistanceCount: 1 });
 
     const correct = pressInitial(repeatedWrong, session.units, singleInitialInput('s'));
-    expect(correct).toMatchObject({ cursor: 1, consecutiveWrongAttempts: 0, hintVisible: false, wrongAttempts: 3, assistanceCount: 1 });
+    expect(correct).toMatchObject({
+      cursor: 1,
+      consecutiveWrongAttempts: 0,
+      hintVisible: false,
+      wrongAttempts: 3,
+      assistanceCount: 1,
+    });
   });
 
   it('reveals exactly one masked Recall Unit and records assistance', () => {
@@ -133,7 +153,10 @@ describe('deep memorization session', () => {
     const hydrated = withAcceptedInitials(session, [['s'], ['a']]);
 
     expect([...hydrated.skippedStages]).toEqual([0]);
-    expect(hydrated.units.filter((unit) => unit.recallable).map((unit) => unit.acceptedInitials)).toEqual([['s'], ['a']]);
+    expect(hydrated.units.filter((unit) => unit.recallable).map((unit) => unit.acceptedInitials)).toEqual([
+      ['s'],
+      ['a'],
+    ]);
   });
 
   it('keeps unresolved readings escapable without claiming a key hint', () => {
@@ -165,19 +188,25 @@ describe('deep memorization session', () => {
       },
     };
     expect(completionFactsForStage(assisted, 1)).toEqual({ outcome: 'assisted', assistanceCount: 2 });
-    expect(completionFactsForStage(skipMemorizationStage(assisted, 1), 1)).toEqual({ outcome: 'skipped', assistanceCount: 2 });
+    expect(completionFactsForStage(skipMemorizationStage(assisted, 1), 1)).toEqual({
+      outcome: 'skipped',
+      assistanceCount: 2,
+    });
   });
 
   it('summarizes only current-round assistance and skipped stages', () => {
     const initial = buildMemorizationSession('神爱', 'round-facts', [['s'], ['a']]);
-    const session = skipMemorizationStage({
-      ...initial,
-      maskRecall: {
-        partial30: { ...initial.maskRecall.partial30, assistanceCount: 1 },
-        partial65: { ...initial.maskRecall.partial65, assistanceCount: 2 },
+    const session = skipMemorizationStage(
+      {
+        ...initial,
+        maskRecall: {
+          partial30: { ...initial.maskRecall.partial30, assistanceCount: 1 },
+          partial65: { ...initial.maskRecall.partial65, assistanceCount: 2 },
+        },
+        recall: { ...initial.recall, assistanceCount: 1 },
       },
-      recall: { ...initial.recall, assistanceCount: 1 },
-    }, 0);
+      0,
+    );
 
     expect(completionFactsForRound(session)).toEqual({ assistanceCount: 4, skippedStageCount: 1 });
     expect(completionFactsForRound(initial)).toEqual({ assistanceCount: 0, skippedStageCount: 0 });
@@ -185,12 +214,18 @@ describe('deep memorization session', () => {
 
   it('completes when the final recallable character is entered', () => {
     const session = buildMemorizationSession('神。', 'done', [['s']]);
-    expect(pressInitial(session.recall, session.units, singleInitialInput('s'))).toMatchObject({ cursor: 1, complete: true });
+    expect(pressInitial(session.recall, session.units, singleInitialInput('s'))).toMatchObject({
+      cursor: 1,
+      complete: true,
+    });
   });
 
   it('accepts a T9 letter group when it contains the expected initial', () => {
     const session = buildMemorizationSession('神', 't9', [['s']]);
-    expect(pressInitial(session.recall, session.units, groupedInitialsInput('PQRS'))).toMatchObject({ cursor: 1, complete: true });
+    expect(pressInitial(session.recall, session.units, groupedInitialsInput('PQRS'))).toMatchObject({
+      cursor: 1,
+      complete: true,
+    });
   });
 
   it('accepts one Zhuyin first symbol without changing pinyin behavior', () => {

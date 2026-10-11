@@ -24,28 +24,20 @@ function HighlightedText({ segments }: { segments: HighlightSegment[] }) {
     <>
       {segments.map((seg, i) =>
         seg.highlighted ? (
-          <mark
-            key={i}
-            className="bg-yellow-200 dark:bg-yellow-800/60 text-inherit rounded-sm px-0.5"
-          >
+          <mark key={i} className="bg-yellow-200 dark:bg-yellow-800/60 text-inherit rounded-sm px-0.5">
             {seg.text}
           </mark>
         ) : (
           <span key={i}>{seg.text}</span>
-        )
+        ),
       )}
     </>
   );
 }
 
-export default function SearchResultCard({
-  result,
-  index,
-  isSelected,
-}: SearchResultCardProps) {
+export default function SearchResultCard({ result, index, isSelected }: SearchResultCardProps) {
   const [copied, setCopied] = useState(false);
-  const { query, searchLang, setContextVerse, setSelectedIndex } =
-    useSearchStore();
+  const { query, searchLang, setContextVerse, setSelectedIndex } = useSearchStore();
   const language = useAppStore((s) => s.language);
   const textSize = useReaderPreferencesStore((state) => state.textSize);
   const { toggleFavorite, isFavorite } = useFavoritesStore();
@@ -53,8 +45,7 @@ export default function SearchResultCard({
   const favorited = isFavorite(result.id);
 
   // Determine book name based on app language setting
-  const bookNameChinese =
-    language === 'traditional' ? result.bookTraditional : result.bookKey;
+  const bookNameChinese = language === 'traditional' ? result.bookTraditional : result.bookKey;
 
   const showChinese = searchLang === 'zh';
   const showEnglish = searchLang === 'en';
@@ -78,11 +69,7 @@ export default function SearchResultCard({
 
   const handleContext = () => {
     const engine = getSearchEngine();
-    const verses = engine.getContext(
-      result.bookKey,
-      result.chapter,
-      result.verse
-    );
+    const verses = engine.getContext(result.bookKey, result.chapter, result.verse);
     setContextVerse({
       bookKey: result.bookKey,
       chapter: result.chapter,
@@ -146,9 +133,7 @@ export default function SearchResultCard({
           >
             <Star
               className={`w-4 h-4 ${
-                favorited
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-bible-500 dark:text-bible-400'
+                favorited ? 'fill-yellow-400 text-yellow-400' : 'text-bible-500 dark:text-bible-400'
               }`}
             />
           </button>

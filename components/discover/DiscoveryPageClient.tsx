@@ -11,12 +11,7 @@ import type { Book, Verse } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import DiscoveryVerseCard from './DiscoveryVerseCard';
-import {
-  getChapterOptions,
-  getVerseReference,
-  searchResultToVerse,
-  type DiscoveryMode,
-} from './discoveryHelpers';
+import { getChapterOptions, getVerseReference, searchResultToVerse, type DiscoveryMode } from './discoveryHelpers';
 
 const SEARCH_HINTS = ['约3:16', 'Romans 8:28', '平安', 'love'];
 
@@ -61,7 +56,10 @@ export default function DiscoveryPageClient() {
     };
   }, [language]);
 
-  const selectedBook = useMemo(() => books.find((book) => book.key === selectedBookKey) ?? null, [books, selectedBookKey]);
+  const selectedBook = useMemo(
+    () => books.find((book) => book.key === selectedBookKey) ?? null,
+    [books, selectedBookKey],
+  );
   const chapterOptions = useMemo(() => getChapterOptions(selectedBook), [selectedBook]);
   const visibleVerses = mode === 'search' ? results : mode === 'browse' ? chapterVerses : curated;
 
@@ -116,17 +114,24 @@ export default function DiscoveryPageClient() {
   }
 
   if (loading) return <LoadingSpinner />;
-  if (error && !busy && visibleVerses.length === 0) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
+  if (error && !busy && visibleVerses.length === 0)
+    return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
   return (
     <main className="min-h-screen bg-[#f8f5ee] text-stone-950 dark:bg-[#0e1116] dark:text-stone-50">
       <div className="mx-auto max-w-6xl px-4 py-5 sm:py-8">
         <header className="mb-6 flex items-center justify-between gap-3">
-          <Link href="/" className="inline-flex min-h-[44px] items-center gap-2 rounded border border-stone-900/10 bg-white/70 px-3 text-sm text-stone-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200">
+          <Link
+            href="/"
+            className="inline-flex min-h-[44px] items-center gap-2 rounded border border-stone-900/10 bg-white/70 px-3 text-sm text-stone-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200"
+          >
             <ArrowLeft className="h-4 w-4" />
             返回首页
           </Link>
-          <Link href="/memorize" className="min-h-[44px] rounded bg-stone-950 px-4 py-3 text-sm text-white dark:bg-stone-50 dark:text-stone-950">
+          <Link
+            href="/memorize"
+            className="min-h-[44px] rounded bg-stone-950 px-4 py-3 text-sm text-white dark:bg-stone-50 dark:text-stone-950"
+          >
             深度背诵
           </Link>
         </header>
@@ -137,7 +142,10 @@ export default function DiscoveryPageClient() {
         </section>
 
         <section className="mb-6 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
-          <form onSubmit={handleSearch} className="rounded-lg border border-stone-900/10 bg-white/75 p-3 dark:border-white/10 dark:bg-white/[0.045]">
+          <form
+            onSubmit={handleSearch}
+            className="rounded-lg border border-stone-900/10 bg-white/75 p-3 dark:border-white/10 dark:bg-white/[0.045]"
+          >
             <label className="mb-2 block text-sm font-medium text-stone-700 dark:text-stone-200">搜索经文或引用</label>
             <div className="flex gap-2">
               <input
@@ -170,14 +178,21 @@ export default function DiscoveryPageClient() {
                   </option>
                 ))}
               </select>
-              <select value={selectedChapter} onChange={(event) => setSelectedChapter(Number(event.target.value))} className="h-11 rounded border border-stone-900/10 bg-white px-2 text-sm dark:border-white/10 dark:bg-[#15191f]">
+              <select
+                value={selectedChapter}
+                onChange={(event) => setSelectedChapter(Number(event.target.value))}
+                className="h-11 rounded border border-stone-900/10 bg-white px-2 text-sm dark:border-white/10 dark:bg-[#15191f]"
+              >
                 {chapterOptions.map((chapter) => (
                   <option key={chapter} value={chapter}>
                     {chapter}
                   </option>
                 ))}
               </select>
-              <button onClick={() => setMode('browse')} className="inline-flex h-11 items-center gap-2 rounded border border-stone-900/10 px-3 text-sm dark:border-white/10">
+              <button
+                onClick={() => setMode('browse')}
+                className="inline-flex h-11 items-center gap-2 rounded border border-stone-900/10 px-3 text-sm dark:border-white/10"
+              >
                 <BookOpen className="h-4 w-4" />
                 浏览
               </button>
@@ -201,11 +216,21 @@ export default function DiscoveryPageClient() {
               </button>
             ))}
           </div>
-          <p className="text-sm text-stone-500 dark:text-stone-400">{busy ? '加载中...' : `${visibleVerses.length} 节`}</p>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            {busy ? '加载中...' : `${visibleVerses.length} 节`}
+          </p>
         </div>
 
-        {error && <p className="mb-4 rounded border border-amber-700/20 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-300/20 dark:bg-amber-300/10 dark:text-amber-100">{error}</p>}
-        {toast && <p className="mb-4 rounded border border-emerald-700/20 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-300/20 dark:bg-emerald-300/10 dark:text-emerald-100">{toast}</p>}
+        {error && (
+          <p className="mb-4 rounded border border-amber-700/20 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-300/20 dark:bg-amber-300/10 dark:text-amber-100">
+            {error}
+          </p>
+        )}
+        {toast && (
+          <p className="mb-4 rounded border border-emerald-700/20 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-300/20 dark:bg-emerald-300/10 dark:text-emerald-100">
+            {toast}
+          </p>
+        )}
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visibleVerses.map((verse) => (

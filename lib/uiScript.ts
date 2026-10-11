@@ -16,18 +16,12 @@ type BookNameSource = {
   nameTraditional?: string;
 };
 
-export function getBookDisplayName(
-  book: BookNameSource | string | null | undefined,
-  language: UiScript
-): string {
+export function getBookDisplayName(book: BookNameSource | string | null | undefined, language: UiScript): string {
   if (!book) return '未知';
 
   if (typeof book === 'string') {
     const match = booksData.books.find(
-      (b) =>
-        b.key === book ||
-        b.nameSimplified === book ||
-        b.nameTraditional === book
+      (b) => b.key === book || b.nameSimplified === book || b.nameTraditional === book,
     );
     if (!match) return book;
     return language === 'simplified' ? match.nameSimplified : match.nameTraditional;
@@ -42,15 +36,10 @@ export function getBookDisplayName(
 export function bookMatchesFilter(
   verseBook: string | undefined,
   verseBookKey: string | undefined,
-  book: { key: string; name?: string; nameSimplified?: string; nameTraditional?: string }
+  book: { key: string; name?: string; nameSimplified?: string; nameTraditional?: string },
 ): boolean {
-  const candidates = [
-    verseBookKey,
-    verseBook,
-  ].filter(Boolean) as string[];
-  const names = [book.key, book.name, book.nameSimplified, book.nameTraditional].filter(
-    Boolean
-  ) as string[];
+  const candidates = [verseBookKey, verseBook].filter(Boolean) as string[];
+  const names = [book.key, book.name, book.nameSimplified, book.nameTraditional].filter(Boolean) as string[];
   return candidates.some((c) => names.includes(c));
 }
 
@@ -113,10 +102,7 @@ export function getMenuCopy(language: UiScript) {
   return MENU_COPY[language];
 }
 
-export function getTestamentLabel(
-  testament: 'old' | 'new' | string | null | undefined,
-  language: UiScript
-): string {
+export function getTestamentLabel(testament: 'old' | 'new' | string | null | undefined, language: UiScript): string {
   if (testament === 'old') {
     return language === 'traditional' ? '舊約' : '旧约';
   }
@@ -161,7 +147,7 @@ const BRAND_SUFFIX = { traditional: ' | 你的話語', simplified: ' | 你的话
 export function getDocumentTitle(
   language: UiScript,
   title: { traditional: string; simplified: string },
-  absolute = false
+  absolute = false,
 ): string {
   return `${title[language]}${absolute ? '' : BRAND_SUFFIX[language]}`;
 }

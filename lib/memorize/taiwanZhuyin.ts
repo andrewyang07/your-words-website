@@ -1,4 +1,8 @@
-import { buildContextualPhonetics, type ContextualPhoneticInput, type ContextualReadingResolver } from './contextualInitials';
+import {
+  buildContextualPhonetics,
+  type ContextualPhoneticInput,
+  type ContextualReadingResolver,
+} from './contextualInitials';
 import taiwanReadings from './data/taiwan-zhuyin-cuv.json';
 
 interface TrieNode {
@@ -20,8 +24,9 @@ export function buildTaiwanContextualPhonetics(
   const taiwanPrimary = resolveTaiwanFirstSymbols(text);
   return supplemental.map((reading, index) => ({
     pinyin: reading.pinyin,
-    zhuyin: [...new Set([taiwanPrimary[index], ...reading.zhuyin]
-      .filter((symbol): symbol is string => Boolean(symbol)))],
+    zhuyin: [
+      ...new Set([taiwanPrimary[index], ...reading.zhuyin].filter((symbol): symbol is string => Boolean(symbol))),
+    ],
   }));
 }
 
@@ -57,9 +62,11 @@ function resolveTaiwanFirstSymbols(text: string): Array<string | undefined> {
       if (typeof node.$ === 'string') best = { end: index, reading: node.$ };
     }
     if (!best) continue;
-    Array.from(best.reading).forEach((symbol, offset) => { aligned[start + offset] = symbol; });
+    Array.from(best.reading).forEach((symbol, offset) => {
+      aligned[start + offset] = symbol;
+    });
     start = best.end;
   }
 
-  return characters.flatMap((character, index) => /\p{Script=Han}/u.test(character) ? [aligned[index]] : []);
+  return characters.flatMap((character, index) => (/\p{Script=Han}/u.test(character) ? [aligned[index]] : []));
 }

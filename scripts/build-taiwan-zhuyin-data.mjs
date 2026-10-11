@@ -34,7 +34,11 @@ for (const line of source.split('\n')) {
   if (firstSymbols.some((symbol) => !symbol)) continue;
   const candidate = { reading: firstSymbols.join(''), score: Number(rawScore) };
   const current = bestReadings.get(term);
-  if (!current || candidate.score > current.score || (candidate.score === current.score && candidate.reading < current.reading)) {
+  if (
+    !current ||
+    candidate.score > current.score ||
+    (candidate.score === current.score && candidate.reading < current.reading)
+  ) {
     bestReadings.set(term, candidate);
   }
 }
@@ -65,30 +69,42 @@ for (const verse of [...verseTexts(traditionalBible), ...verseTexts(simplifiedBi
   }
 }
 
-const output = Object.fromEntries([...usedTerms]
-  .sort((left, right) => left < right ? -1 : left > right ? 1 : 0)
-  .map((term) => [term, candidateForms.get(term).reading]));
+const output = Object.fromEntries(
+  [...usedTerms]
+    .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0))
+    .map((term) => [term, candidateForms.get(term).reading]),
+);
 const serialized = `${JSON.stringify(output)}\n`;
 await writeFile(outputPath, serialized);
 
 const bytes = Buffer.from(serialized);
 const outputSha256 = createHash('sha256').update(bytes).digest('hex');
-process.stdout.write(`${JSON.stringify({
-  sourceSha256,
-  outputSha256,
-  entries: usedTerms.size,
-  rawBytes: bytes.length,
-  gzipBytes: gzipSync(bytes).length,
-  brotliBytes: brotliCompressSync(bytes).length,
-  coverage: {
-    CUVT: coverageStats(output, traditionalBible),
-    CUV: coverageStats(output, simplifiedBible),
-  },
-}, null, 2)}\n`);
+process.stdout.write(
+  `${JSON.stringify(
+    {
+      sourceSha256,
+      outputSha256,
+      entries: usedTerms.size,
+      rawBytes: bytes.length,
+      gzipBytes: gzipSync(bytes).length,
+      brotliBytes: brotliCompressSync(bytes).length,
+      coverage: {
+        CUVT: coverageStats(output, traditionalBible),
+        CUV: coverageStats(output, simplifiedBible),
+      },
+    },
+    null,
+    2,
+  )}\n`,
+);
 
 function addBestCandidate(collection, term, candidate) {
   const current = collection.get(term);
-  if (!current || candidate.score > current.score || (candidate.score === current.score && candidate.reading < current.reading)) {
+  if (
+    !current ||
+    candidate.score > current.score ||
+    (candidate.score === current.score && candidate.reading < current.reading)
+  ) {
     collection.set(term, candidate);
   }
 }
@@ -128,6 +144,6 @@ function coverageStats(readings, bible) {
   return {
     hanCharacters,
     coveredHanCharacters,
-    percent: Number((100 * coveredHanCharacters / hanCharacters).toFixed(3)),
+    percent: Number(((100 * coveredHanCharacters) / hanCharacters).toFixed(3)),
   };
 }

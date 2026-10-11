@@ -13,7 +13,8 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
   const preview = await getRecitePreview(searchParamsToString(await searchParams));
   if (!preview) return staticMetadata;
-  const title = preview.title ?? (preview.count > 1 ? `${preview.firstReference}等 ${preview.count} 节` : preview.firstReference);
+  const title =
+    preview.title ?? (preview.count > 1 ? `${preview.firstReference}等 ${preview.count} 节` : preview.firstReference);
   const description = excerpt(preview.firstText);
   // canonicalP 只含 0-9 - ~ ,，无需编码
   const imageQuery = `p=${preview.canonicalP}${preview.title ? `&t=${encodeURIComponent(preview.title)}` : ''}`;

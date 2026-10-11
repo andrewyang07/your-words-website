@@ -57,7 +57,6 @@ export const useFavoritesStore = create<FavoritesState>()(
           state.favorites = new Set(state.favorites);
         }
       },
-    }
-  )
+    },
+  ),
 );
-

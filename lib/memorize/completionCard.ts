@@ -68,8 +68,19 @@ export function localDateString(date: Date = new Date()): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-type CardContext = Pick<CanvasRenderingContext2D,
-  'fillStyle' | 'font' | 'textAlign' | 'textBaseline' | 'fillRect' | 'fillText' | 'measureText' | 'strokeStyle' | 'lineWidth' | 'strokeRect'>;
+type CardContext = Pick<
+  CanvasRenderingContext2D,
+  | 'fillStyle'
+  | 'font'
+  | 'textAlign'
+  | 'textBaseline'
+  | 'fillRect'
+  | 'fillText'
+  | 'measureText'
+  | 'strokeStyle'
+  | 'lineWidth'
+  | 'strokeRect'
+>;
 
 export function renderCompletionCard(ctx: CardContext, data: CompletionCardData): void {
   const padding = 96;
@@ -116,7 +127,10 @@ export function renderCompletionCard(ctx: CardContext, data: CompletionCardData)
 }
 
 /** 生成 PNG 并分享（支持文件分享时）或下载。用户取消分享时静默返回。 */
-export async function shareCompletionCard(data: CompletionCardData, fileName: string): Promise<'shared' | 'downloaded' | 'cancelled'> {
+export async function shareCompletionCard(
+  data: CompletionCardData,
+  fileName: string,
+): Promise<'shared' | 'downloaded' | 'cancelled'> {
   if ('fonts' in document) await document.fonts.ready;
   const canvas = document.createElement('canvas');
   canvas.width = CARD_WIDTH;

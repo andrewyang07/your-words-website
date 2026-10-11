@@ -34,11 +34,15 @@ describe('sendStats', () => {
   it('posts a valid favorite', async () => {
     fetchMock.mockResolvedValue(ok());
     expect(await sendStats('favorite', '43-3-16')).toBe('sent');
-    expect(fetchMock).toHaveBeenCalledWith('/api/stats/increment', expect.objectContaining({ method: 'POST', body: JSON.stringify({ action: 'favorite', verseId: '43-3-16' }) }));
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/stats/increment',
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ action: 'favorite', verseId: '43-3-16' }) }),
+    );
   });
 
   it('skips ids the server would reject (no request)', async () => {
-    for (const id of ['', '../', '1-1', '01-01-01', '001-0001-0001', '1-01-1', '1-1-01', '0-1-1', 'x'.repeat(100)]) expect(await sendStats('favorite', id)).toBe('skipped');
+    for (const id of ['', '../', '1-1', '01-01-01', '001-0001-0001', '1-01-1', '1-1-01', '0-1-1', 'x'.repeat(100)])
+      expect(await sendStats('favorite', id)).toBe('skipped');
     expect(await sendStats('click', '43-3-16')).toBe('skipped');
     expect(fetchMock).not.toHaveBeenCalled();
   });

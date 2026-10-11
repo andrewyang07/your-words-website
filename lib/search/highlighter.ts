@@ -25,9 +25,7 @@ export function highlightText(text: string, query: string): HighlightSegment[] {
 
     // Sort by length descending for longest match first
     const patterns = chars.sort((a, b) => b.length - a.length);
-    const escapedPatterns = patterns.map((p) =>
-      p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    );
+    const escapedPatterns = patterns.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     const regex = new RegExp(`(${escapedPatterns.join('|')})`, 'g');
 
     let lastIndex = 0;
@@ -47,9 +45,7 @@ export function highlightText(text: string, query: string): HighlightSegment[] {
     const words = query.toLowerCase().match(/[a-z']+/g);
     if (!words) return [{ text, highlighted: false }];
 
-    const escapedWords = words.map((w) =>
-      w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    );
+    const escapedWords = words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     const regex = new RegExp(`\\b(${escapedWords.join('|')})`, 'gi');
 
     let lastIndex = 0;

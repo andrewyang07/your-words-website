@@ -11,8 +11,8 @@ const bookIdToKey: Record<number, string> = {};
 
 // 初始化映射表
 booksData.books.forEach((book) => {
-    bookKeyToId[book.key] = book.order;
-    bookIdToKey[book.order] = book.key;
+  bookKeyToId[book.key] = book.order;
+  bookIdToKey[book.order] = book.key;
 });
 
 /**
@@ -23,11 +23,11 @@ booksData.books.forEach((book) => {
  * @returns 编码后的字符串（如"1-3-16"）
  */
 export function encodeVerseRef(bookKey: string, chapter: number, verse: number): string {
-    const bookId = bookKeyToId[bookKey];
-    if (!bookId) {
-        throw new Error(`未知的书卷: ${bookKey}`);
-    }
-    return `${bookId}-${chapter}-${verse}`;
+  const bookId = bookKeyToId[bookKey];
+  if (!bookId) {
+    throw new Error(`未知的书卷: ${bookKey}`);
+  }
+  return `${bookId}-${chapter}-${verse}`;
 }
 
 /**
@@ -36,29 +36,29 @@ export function encodeVerseRef(bookKey: string, chapter: number, verse: number):
  * @returns 解码后的对象 {bookKey, chapter, verse}
  */
 export function decodeVerseRef(encoded: string): {
-    bookKey: string;
-    chapter: number;
-    verse: number;
+  bookKey: string;
+  chapter: number;
+  verse: number;
 } | null {
-    const parts = encoded.split('-');
-    if (parts.length !== 3) {
-        return null;
-    }
+  const parts = encoded.split('-');
+  if (parts.length !== 3) {
+    return null;
+  }
 
-    const bookId = parseInt(parts[0] ?? '', 10);
-    const chapter = parseInt(parts[1] ?? '', 10);
-    const verse = parseInt(parts[2] ?? '', 10);
+  const bookId = parseInt(parts[0] ?? '', 10);
+  const chapter = parseInt(parts[1] ?? '', 10);
+  const verse = parseInt(parts[2] ?? '', 10);
 
-    if (isNaN(bookId) || isNaN(chapter) || isNaN(verse)) {
-        return null;
-    }
+  if (isNaN(bookId) || isNaN(chapter) || isNaN(verse)) {
+    return null;
+  }
 
-    const bookKey = bookIdToKey[bookId];
-    if (!bookKey) {
-        return null;
-    }
+  const bookKey = bookIdToKey[bookId];
+  if (!bookKey) {
+    return null;
+  }
 
-    return { bookKey, chapter, verse };
+  return { bookKey, chapter, verse };
 }
 
 /**
@@ -67,7 +67,7 @@ export function decodeVerseRef(encoded: string): {
  * @returns URL参数字符串（如"1-3-16,50-4-6"）
  */
 export function encodeVerseList(verses: Array<{ bookKey: string; chapter: number; verse: number }>): string {
-    return verses.map(v => encodeVerseRef(v.bookKey, v.chapter, v.verse)).join(',');
+  return verses.map((v) => encodeVerseRef(v.bookKey, v.chapter, v.verse)).join(',');
 }
 
 /**
@@ -76,27 +76,27 @@ export function encodeVerseList(verses: Array<{ bookKey: string; chapter: number
  * @returns 经文引用数组，无效的引用会被过滤掉
  */
 export function decodeVerseList(encoded: string): Array<{ bookKey: string; chapter: number; verse: number }> {
-    if (!encoded) {
-        return [];
-    }
+  if (!encoded) {
+    return [];
+  }
 
-    return encoded
-        .split(',')
-        .map(item => decodeVerseRef(item.trim()))
-        .filter((item): item is { bookKey: string; chapter: number; verse: number } => item !== null);
+  return encoded
+    .split(',')
+    .map((item) => decodeVerseRef(item.trim()))
+    .filter((item): item is { bookKey: string; chapter: number; verse: number } => item !== null);
 }
 
 export function parseVerseId(id: string): { bookKey: string; chapter: number; verse: number } | null {
-    const parts = id.split('-');
-    const verse = Number(parts.pop());
-    const chapter = Number(parts.pop());
-    const bookKey = parts.join('-');
+  const parts = id.split('-');
+  const verse = Number(parts.pop());
+  const chapter = Number(parts.pop());
+  const bookKey = parts.join('-');
 
-    if (!bookKey || !Number.isInteger(chapter) || !Number.isInteger(verse)) {
-        return null;
-    }
+  if (!bookKey || !Number.isInteger(chapter) || !Number.isInteger(verse)) {
+    return null;
+  }
 
-    return { bookKey, chapter, verse };
+  return { bookKey, chapter, verse };
 }
 
 /**

@@ -1,9 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import {
-  DEFAULT_READER_TEXT_SIZE,
-  type ReaderTextSize,
-} from '../lib/readerPreferences';
+import { DEFAULT_READER_TEXT_SIZE, type ReaderTextSize } from '../lib/readerPreferences';
 
 interface ReaderPreferencesState {
   textSize: ReaderTextSize;
@@ -22,6 +19,6 @@ export const useReaderPreferencesStore = create<ReaderPreferencesState>()(
       name: 'your-words-reader-preferences',
       storage: createJSONStorage(() => localStorage),
       partialize: ({ textSize }) => ({ textSize }),
-    }
-  )
+    },
+  ),
 );

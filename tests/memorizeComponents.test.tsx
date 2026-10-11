@@ -2,7 +2,11 @@
 import { act, cleanup, configure, fireEvent, render, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
-import MemorizePageClient, { AlphabetKeyboard, MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY, resolveMemorizeSourceIds } from '../components/memorize/MemorizePageClient';
+import MemorizePageClient, {
+  AlphabetKeyboard,
+  MEMORIZE_KEYBOARD_LAYOUT_STORAGE_KEY,
+  resolveMemorizeSourceIds,
+} from '../components/memorize/MemorizePageClient';
 import { CompletionReward } from '../components/memorize/CompletionReward';
 import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
@@ -24,19 +28,16 @@ vi.setConfig({ testTimeout: 30_000, hookTimeout: 60_000 });
  * the same (cached) timing regardless of execution order or runner speed.
  */
 beforeAll(async () => {
-  await Promise.all([
-    import('../lib/memorize/contextualInitials'),
-    import('../lib/memorize/taiwanZhuyin'),
-  ]);
+  await Promise.all([import('../lib/memorize/contextualInitials'), import('../lib/memorize/taiwanZhuyin')]);
 });
 
 /** True when className matches the legacy detached outer blot signature. */
 function hasLegacyDetachedBlotSignature(className: string): boolean {
   return (
-    className.includes('absolute')
-    && className.includes('-bottom-1')
-    && className.includes('right-0')
-    && (className.includes('h-1.5') || className.includes('w-1.5'))
+    className.includes('absolute') &&
+    className.includes('-bottom-1') &&
+    className.includes('right-0') &&
+    (className.includes('h-1.5') || className.includes('w-1.5'))
   );
 }
 
@@ -63,9 +64,8 @@ function assertNoOuterBlot(container: HTMLElement) {
     const className = elementClassName(child);
     if (!className.includes('absolute')) continue;
     expect(className.includes('inset-[')).toBe(true);
-    const hasCornerOffset = className.includes('-bottom-1')
-      || className.includes('-top-1')
-      || className.includes('right-0');
+    const hasCornerOffset =
+      className.includes('-bottom-1') || className.includes('-top-1') || className.includes('right-0');
     const hasTinySize = className.includes('h-1.5') || className.includes('w-1.5');
     expect(hasCornerOffset && hasTinySize).toBe(false);
   }
@@ -86,7 +86,9 @@ beforeEach(() => {
     removeItem: (key: string) => values.delete(key),
     clear: () => values.clear(),
     key: (index: number) => Array.from(values.keys())[index] ?? null,
-    get length() { return values.size; },
+    get length() {
+      return values.size;
+    },
   });
   useFavoritesStore.persist.setOptions({
     storage: {
@@ -123,10 +125,7 @@ async function returnToPreviousStage(
   await view.findByRole('heading', { name: previousInstruction });
 }
 
-async function skipStage(
-  view: ReturnType<typeof render>,
-  skipLabel: '跳过' | '跳过本轮' = '跳过',
-) {
+async function skipStage(view: ReturnType<typeof render>, skipLabel: '跳过' | '跳过本轮' = '跳过') {
   fireEvent.click(view.getByRole('button', { name: skipLabel }));
 }
 
@@ -152,7 +151,10 @@ describe('deep memorization controls', () => {
     navigation.innerHTML = '<a href="/search">聖經搜索</a>';
     document.body.append(navigation);
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({}) })),
+    );
 
     try {
       const view = render(<MemorizePageClient />);
@@ -169,7 +171,10 @@ describe('deep memorization controls', () => {
 
   it('introduces one-verse, four-stage practice once and remembers a skipped guide', async () => {
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({}) })),
+    );
 
     const firstVisit = render(<MemorizePageClient />);
     expect(await firstVisit.findByRole('dialog', { name: '这样开始深度背诵' })).toBeTruthy();
@@ -189,7 +194,10 @@ describe('deep memorization controls', () => {
 
   it('keeps Help reachable and replays the complete guide in simplified Chinese', async () => {
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({}) })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('dialog', { name: '这样开始深度背诵' });
@@ -206,10 +214,13 @@ describe('deep memorization controls', () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
     useAppStore.setState({ language: 'traditional' });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 約翰福音: { 3: { 16: '神愛世人。' } }, 约翰福音: { 3: { 16: '神愛世人。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 約翰福音: { 3: { 16: '神愛世人。' } }, 约翰福音: { 3: { 16: '神愛世人。' } } }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先讀一遍，不急著記' });
@@ -224,7 +235,9 @@ describe('deep memorization controls', () => {
   });
 
   it('announces an independently completed stage with a factual simplified seal', () => {
-    const view = render(<CompletionReward kind="stage" language="simplified" assistanceCount={0} skippedStageCount={0} />);
+    const view = render(
+      <CompletionReward kind="stage" language="simplified" assistanceCount={0} skippedStageCount={0} />,
+    );
 
     expect(view.getByRole('status').textContent).toContain('熟记');
     expect(view.getByRole('status').textContent).toContain('本阶段未使用提示，已独立完成');
@@ -232,7 +245,9 @@ describe('deep memorization controls', () => {
   });
 
   it('uses a lighter traditional seal after assisted stage completion', () => {
-    const view = render(<CompletionReward kind="stage" language="traditional" assistanceCount={2} skippedStageCount={0} />);
+    const view = render(
+      <CompletionReward kind="stage" language="traditional" assistanceCount={2} skippedStageCount={0} />,
+    );
 
     expect(view.getByRole('status').textContent).toContain('漸熟');
     expect(view.getByRole('status').textContent).toContain('本階段借助了 2 次提示，繼續慢慢熟悉');
@@ -240,14 +255,18 @@ describe('deep memorization controls', () => {
   });
 
   it('reports a skipped stage statically without a mastery seal', () => {
-    const view = render(<CompletionReward kind="stage" language="simplified" assistanceCount={0} skippedStageCount={1} />);
+    const view = render(
+      <CompletionReward kind="stage" language="simplified" assistanceCount={0} skippedStageCount={1} />,
+    );
 
     expect(view.getByRole('status').textContent).toBe('本阶段已跳过，不计作完成。');
     expect(view.queryByRole('img')).toBeNull();
   });
 
   it('announces current-round assistance and skips with the full-round seal', () => {
-    const view = render(<CompletionReward kind="round" language="simplified" assistanceCount={3} skippedStageCount={1} />);
+    const view = render(
+      <CompletionReward kind="round" language="simplified" assistanceCount={3} skippedStageCount={1} />,
+    );
 
     expect(view.getByRole('status').textContent).toContain('藏于心');
     expect(view.getByRole('status').textContent).toContain('本轮使用了 3 次提示，跳过了 1 个阶段');
@@ -255,7 +274,9 @@ describe('deep memorization controls', () => {
   });
 
   it('keeps traditional completion semantics in reduced-motion mode', () => {
-    const view = render(<CompletionReward kind="round" language="traditional" assistanceCount={0} skippedStageCount={0} reducedMotion />);
+    const view = render(
+      <CompletionReward kind="round" language="traditional" assistanceCount={0} skippedStageCount={0} reducedMotion />,
+    );
 
     expect(view.getByRole('status').textContent).toContain('藏於心');
     expect(view.getByRole('status').textContent).toContain('本輪未使用提示，也沒有跳過階段');
@@ -274,12 +295,7 @@ describe('deep memorization controls', () => {
 
     for (const { kind, language, assistanceCount, label } of cases) {
       const view = render(
-        <CompletionReward
-          kind={kind}
-          language={language}
-          assistanceCount={assistanceCount}
-          skippedStageCount={0}
-        />,
+        <CompletionReward kind={kind} language={language} assistanceCount={assistanceCount} skippedStageCount={0} />,
       );
       expect(view.getByLabelText(label)).toBeTruthy();
       expect(view.getByTestId('completion-seal').getAttribute('aria-label')).toBe(label);
@@ -289,7 +305,13 @@ describe('deep memorization controls', () => {
 
   it('does not render the removed outer blot on animated or reduced-motion seals', () => {
     const animated = render(
-      <CompletionReward kind="round" language="traditional" assistanceCount={0} skippedStageCount={0} reducedMotion={false} />,
+      <CompletionReward
+        kind="round"
+        language="traditional"
+        assistanceCount={0}
+        skippedStageCount={0}
+        reducedMotion={false}
+      />,
     );
     assertNoOuterBlot(animated.container);
     expect(animated.queryByTestId('seal-outer-blot')).toBeNull();
@@ -313,10 +335,13 @@ describe('deep memorization controls', () => {
   it('shows stage feedback and a factual round summary without delaying controls', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 约翰福音: { 3: { 16: '神。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '神。' } } }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -340,10 +365,13 @@ describe('deep memorization controls', () => {
   it('advances on skip for every stage, including the final stage, without counting skips as completed', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -364,10 +392,13 @@ describe('deep memorization controls', () => {
   it('does not offer Continue for an incomplete masked stage', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -384,10 +415,13 @@ describe('deep memorization controls', () => {
   it('acknowledges independent final-stage completion before the round summary', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 约翰福音: { 3: { 16: '神。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '神。' } } }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -430,12 +464,15 @@ describe('deep memorization controls', () => {
 
   it('uses the latest language after leaving the current session', async () => {
     useFavoritesStore.setState({ favorites: new Set(['约翰福音-3-16']) });
-    vi.stubGlobal('fetch', vi.fn(async (url: string) => ({
-      ok: true,
-      json: async () => ({
-        约翰福音: { 3: { 16: url.includes('CUVT') ? '神愛世人。' : '神爱世人。' } },
-      }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => ({
+        ok: true,
+        json: async () => ({
+          约翰福音: { 3: { 16: url.includes('CUVT') ? '神愛世人。' : '神爱世人。' } },
+        }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     const simplifiedVerse = await view.findByRole('button', { name: /神爱世人/ });
@@ -463,14 +500,23 @@ describe('deep memorization controls', () => {
     }));
     vi.stubGlobal('fetch', fetchBible);
 
-    const view = render(<><AppStoreStorageSync /><MemorizePageClient /></>);
+    const view = render(
+      <>
+        <AppStoreStorageSync />
+        <MemorizePageClient />
+      </>,
+    );
     fireEvent.click(await view.findByRole('button', { name: /神爱世人/ }));
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
 
-    void act(() => window.dispatchEvent(new StorageEvent('storage', {
-      key: 'your-words-app',
-      newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
-    })));
+    void act(() =>
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'your-words-app',
+          newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
+        }),
+      ),
+    );
 
     expect(useAppStore.getState().language).toBe('traditional');
     expect(view.getByRole('heading', { name: '先读一遍，不急着记' })).toBeTruthy();
@@ -496,16 +542,25 @@ describe('deep memorization controls', () => {
     });
     vi.stubGlobal('fetch', fetchBible);
 
-    const view = render(<><AppStoreStorageSync /><MemorizePageClient /></>);
+    const view = render(
+      <>
+        <AppStoreStorageSync />
+        <MemorizePageClient />
+      </>,
+    );
     fireEvent.click(await view.findByRole('button', { name: /神爱世人/ }));
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
 
-    void act(() => window.dispatchEvent(new StorageEvent('storage', {
-      key: 'your-words-app',
-      newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
-    })));
+    void act(() =>
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'your-words-app',
+          newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
+        }),
+      ),
+    );
     await waitFor(() => expect(fetchBible).toHaveBeenCalledWith('/data/CUVT_bible.json'));
     // The rejected reload must be fully handled before asserting that nothing broke; otherwise the
     // "no error heading" check could pass vacuously before the failure is even processed.
@@ -525,21 +580,33 @@ describe('deep memorization controls', () => {
 
   it('clears a stale picker error after a cross-tab language change loads successfully', async () => {
     useFavoritesStore.setState({ favorites: new Set(['约翰福音-3-16']) });
-    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
-      if (url.includes('CUV_bible')) throw new Error('CUV unavailable');
-      return {
-        ok: true,
-        json: async () => ({ 约翰福音: { 3: { 16: '神愛世人。' } } }),
-      };
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.includes('CUV_bible')) throw new Error('CUV unavailable');
+        return {
+          ok: true,
+          json: async () => ({ 约翰福音: { 3: { 16: '神愛世人。' } } }),
+        };
+      }),
+    );
 
-    const view = render(<><AppStoreStorageSync /><MemorizePageClient /></>);
+    const view = render(
+      <>
+        <AppStoreStorageSync />
+        <MemorizePageClient />
+      </>,
+    );
     await view.findByRole('heading', { name: '出错了' });
 
-    void act(() => window.dispatchEvent(new StorageEvent('storage', {
-      key: 'your-words-app',
-      newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
-    })));
+    void act(() =>
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'your-words-app',
+          newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
+        }),
+      ),
+    );
 
     expect(await view.findByRole('button', { name: /神愛世人/ })).toBeTruthy();
     expect(view.queryByRole('heading', { name: '出錯了' })).toBeNull();
@@ -580,18 +647,26 @@ describe('deep memorization controls', () => {
   it('follows light, dark, and live system theme changes', async () => {
     let systemDark = false;
     const listeners = new Set<() => void>();
-    vi.stubGlobal('matchMedia', vi.fn(() => ({
-      get matches() { return systemDark; },
-      media: '(prefers-color-scheme: dark)',
-      onchange: null,
-      addEventListener: (_event: string, listener: () => void) => listeners.add(listener),
-      removeEventListener: (_event: string, listener: () => void) => listeners.delete(listener),
-      addListener: () => undefined,
-      removeListener: () => undefined,
-      dispatchEvent: () => true,
-    })));
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        get matches() {
+          return systemDark;
+        },
+        media: '(prefers-color-scheme: dark)',
+        onchange: null,
+        addEventListener: (_event: string, listener: () => void) => listeners.add(listener),
+        removeEventListener: (_event: string, listener: () => void) => listeners.delete(listener),
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        dispatchEvent: () => true,
+      })),
+    );
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({}) })),
+    );
 
     render(<MemorizePageClient />);
     await act(async () => undefined);
@@ -649,9 +724,9 @@ describe('deep memorization controls', () => {
 
     fireEvent.click(view.getByRole('button', { name: '注音' }));
     expect(view.getAllByRole('button', { name: /^[ㄅ-ㄩ]/u })).toHaveLength(37);
-    expect(view.getAllByRole('group', { name: /^注音键盘 [1-4]$/u }).map((row) =>
-      within(row).getAllByRole('button').length,
-    )).toEqual([7, 10, 10, 10]);
+    expect(
+      view.getAllByRole('group', { name: /^注音键盘 [1-4]$/u }).map((row) => within(row).getAllByRole('button').length),
+    ).toEqual([7, 10, 10, 10]);
     const key = view.getByRole('button', { name: 'ㄕ G' });
     fireEvent.click(key);
     expect(onPress).toHaveBeenCalledWith({ kind: 'single', initial: 'ㄕ' });
@@ -677,7 +752,9 @@ describe('deep memorization controls', () => {
     first.unmount();
 
     const returning = render(<AlphabetKeyboard onPress={vi.fn()} />);
-    await waitFor(() => expect(returning.getByRole('button', { name: '注音' }).getAttribute('aria-pressed')).toBe('true'));
+    await waitFor(() =>
+      expect(returning.getByRole('button', { name: '注音' }).getAttribute('aria-pressed')).toBe('true'),
+    );
   });
 
   it('can show and hide standard physical key positions without changing symbols', () => {
@@ -691,19 +768,25 @@ describe('deep memorization controls', () => {
   });
 
   it('coaches the first Zhuyin switch with a concrete first-symbol example and replays it from Help', async () => {
-    window.localStorage.setItem('your-words:memorize-guide:v3', JSON.stringify({
-      version: 3,
-      pickerSeen: true,
-      inputSeen: true,
-      zhuyinSeen: false,
-      dismissed: false,
-    }));
+    window.localStorage.setItem(
+      'your-words:memorize-guide:v3',
+      JSON.stringify({
+        version: 3,
+        pickerSeen: true,
+        inputSeen: true,
+        zhuyinSeen: false,
+        dismissed: false,
+      }),
+    );
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -720,19 +803,25 @@ describe('deep memorization controls', () => {
   });
 
   it('loads Taiwan-primary readings when Zhuyin is selected', async () => {
-    window.localStorage.setItem('your-words:memorize-guide:v3', JSON.stringify({
-      version: 3,
-      pickerSeen: true,
-      inputSeen: true,
-      zhuyinSeen: true,
-      dismissed: true,
-    }));
+    window.localStorage.setItem(
+      'your-words:memorize-guide:v3',
+      JSON.stringify({
+        version: 3,
+        pickerSeen: true,
+        inputSeen: true,
+        zhuyinSeen: true,
+        dismissed: true,
+      }),
+    );
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 约翰福音: { 3: { 16: '蜗。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '蜗。' } } }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -757,10 +846,13 @@ describe('deep memorization controls', () => {
   it('announces an error and highlights the correct key after two wrong attempts', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 约翰福音: { 3: { 16: '神是世上。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '神是世上。' } } }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -777,10 +869,13 @@ describe('deep memorization controls', () => {
   it('offers one-unit reveal in every input stage', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -800,10 +895,13 @@ describe('deep memorization controls', () => {
   it('keeps a skipped input stage usable when navigating back', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 约翰福音: { 3: { 16: '神爱世人。' } } }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -835,12 +933,15 @@ describe('deep memorization controls', () => {
   it('lets the user return from every later stage without leaving the session', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({
-        约翰福音: { 3: { 16: '神爱世人。' } },
-      }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          约翰福音: { 3: { 16: '神爱世人。' } },
+        }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -863,12 +964,15 @@ describe('deep memorization controls', () => {
   it('lets the user spell and reveal masked characters from the first masked stage', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({
-        约翰福音: { 3: { 16: '神是世上。' } },
-      }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          约翰福音: { 3: { 16: '神是世上。' } },
+        }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -890,12 +994,15 @@ describe('deep memorization controls', () => {
   it('keeps exit and previous-stage navigation usable during practice', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set() });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({
-        约翰福音: { 3: { 16: '神爱世人。' } },
-      }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          约翰福音: { 3: { 16: '神爱世人。' } },
+        }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -914,13 +1021,16 @@ describe('deep memorization controls', () => {
   it('opens a non-favorite share, skips every stage, then returns to favorites', async () => {
     window.history.replaceState({}, '', '/memorize?v=43-3-16');
     useFavoritesStore.setState({ favorites: new Set(['诗篇-23-1']) });
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({
-        约翰福音: { 3: { 16: '神爱世人。' } },
-        诗篇: { 23: { 1: '耶和华是我的牧者。' } },
-      }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          约翰福音: { 3: { 16: '神爱世人。' } },
+          诗篇: { 23: { 1: '耶和华是我的牧者。' } },
+        }),
+      })),
+    );
 
     const view = render(<MemorizePageClient />);
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
@@ -942,10 +1052,13 @@ describe('memorize share link (背诵链接)', () => {
   const psalm23 = { 1: '耶和华是我的牧者，我必不致缺乏。', 2: '他使我躺卧在青草地上。', 3: '他使我的灵魂苏醒。' };
 
   function stubBible() {
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 诗篇: { 23: psalm23 }, 约翰福音: { 3: { 16: '神爱世人。' } } }),
-    })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ 诗篇: { 23: psalm23 }, 约翰福音: { 3: { 16: '神爱世人。' } } }),
+      })),
+    );
   }
 
   async function skipWholeRound(view: ReturnType<typeof render>) {
@@ -985,7 +1098,9 @@ describe('memorize share link (背诵链接)', () => {
     expect(within(second!).getByText('已背完')).toBeTruthy();
     expect(within(view.getAllByRole('listitem')[0]!).queryByText('已背完')).toBeNull();
     expect(window.location.search).toBe(`?p=19-23-1~3&t=${encodeURIComponent('诗篇23')}&sv=1`);
-    expect(setItem.mock.calls.filter(([key]) => !String(key).startsWith('your-words:memorize-keyboard-layout'))).toEqual([]);
+    expect(
+      setItem.mock.calls.filter(([key]) => !String(key).startsWith('your-words:memorize-keyboard-layout')),
+    ).toEqual([]);
   });
 
   it('hides "next verse" on the last item and advances from earlier items', async () => {

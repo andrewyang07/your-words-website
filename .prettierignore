@@ -1,0 +1,12 @@
+.next/
+node_modules/
+.verify/
+public/
+package-lock.json
+next-env.d.ts
+tsconfig.tsbuildinfo
+*.md
+*.mdx
+.codex/
+lib/**/data/
+.github/

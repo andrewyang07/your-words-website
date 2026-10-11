@@ -5,7 +5,12 @@ import { buildTaiwanContextualPhonetics } from '../lib/memorize/taiwanZhuyin';
 describe('contextual pinyin initials', () => {
   it('computes primary readings from the complete phrase', () => {
     expect(buildContextualInitials('银行长老重复').map((initials) => initials[0])).toEqual([
-      'y', 'h', 'z', 'l', 'c', 'f',
+      'y',
+      'h',
+      'z',
+      'l',
+      'c',
+      'f',
     ]);
   });
 
@@ -19,9 +24,11 @@ describe('contextual pinyin initials', () => {
   });
 
   it('fails safely with one empty accepted set per Han Recall Unit', () => {
-    expect(buildContextualInitials('神，2026 A爱', () => {
-      throw new Error('reading data unavailable');
-    })).toEqual([[], []]);
+    expect(
+      buildContextualInitials('神，2026 A爱', () => {
+        throw new Error('reading data unavailable');
+      }),
+    ).toEqual([[], []]);
   });
 });
 
@@ -36,13 +43,16 @@ describe('contextual Zhuyin first symbols', () => {
     expect(readings.map((reading) => reading.zhuyin[0]).join('')).toBe(expected);
   });
 
-  it.each(['願他們像蝸牛消化過去', '愿他们像蜗牛消化过去'])('makes the known Taiwan 蝸牛 reading primary and keeps pinyin-pro supplemental: %s', async (phrase) => {
-    const readings = buildTaiwanContextualPhonetics(phrase);
-    const snail = readings[4]!;
-    expect(snail.zhuyin[0]).toBe('ㄍ');
-    expect(snail.zhuyin.slice(1)).toContain('ㄨ');
-    expect(snail.pinyin[0]).toBe('w');
-  });
+  it.each(['願他們像蝸牛消化過去', '愿他们像蜗牛消化过去'])(
+    'makes the known Taiwan 蝸牛 reading primary and keeps pinyin-pro supplemental: %s',
+    async (phrase) => {
+      const readings = buildTaiwanContextualPhonetics(phrase);
+      const snail = readings[4]!;
+      expect(snail.zhuyin[0]).toBe('ㄍ');
+      expect(snail.zhuyin.slice(1)).toContain('ㄨ');
+      expect(snail.pinyin[0]).toBe('w');
+    },
+  );
 
   it('keeps reasonable polyphonic first symbols as supplemental readings', () => {
     const readings = buildContextualPhonetics('長');
@@ -51,9 +61,11 @@ describe('contextual Zhuyin first symbols', () => {
 
   it('aligns phonetics only with Han Recall Units and fails safely', () => {
     expect(buildContextualPhonetics('神，2026 A愛').map((reading) => reading.zhuyin[0])).toEqual(['ㄕ', 'ㄞ']);
-    expect(buildContextualPhonetics('神愛', () => {
-      throw new Error('reading data unavailable');
-    })).toEqual([
+    expect(
+      buildContextualPhonetics('神愛', () => {
+        throw new Error('reading data unavailable');
+      }),
+    ).toEqual([
       { pinyin: [], zhuyin: [] },
       { pinyin: [], zhuyin: [] },
     ]);

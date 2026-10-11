@@ -22,9 +22,7 @@ export interface RecallState {
   lastAttemptedInputs: string[];
 }
 
-export type RecallKeyboardInput =
-  | { kind: 'single'; initial: string }
-  | { kind: 'group'; initials: readonly string[] };
+export type RecallKeyboardInput = { kind: 'single'; initial: string } | { kind: 'group'; initials: readonly string[] };
 
 export interface MemorizationSession {
   seed: string;
@@ -73,17 +71,22 @@ export function splitEditorialNotes(text: string): { body: string; notes: string
 export function buildMemorizationSession(
   text: string,
   seed: string,
-  acceptedInitials: string[][] = []
+  acceptedInitials: string[][] = [],
 ): MemorizationSession {
   const { body, notes } = splitEditorialNotes(text);
   let recallIndex = 0;
   const units = Array.from(body).map((char): VerseCharacter => {
     const recallable = hanPattern.test(char);
-    const initials = recallable ? acceptedInitials[recallIndex++] ?? [] : [];
+    const initials = recallable ? (acceptedInitials[recallIndex++] ?? []) : [];
     return { text: char, recallable, acceptedInitials: initials, acceptedZhuyin: [] };
   });
-  const recallableIndices = units.flatMap((unit, index) => unit.recallable ? [index] : []);
-  const partial65 = chooseSpreadMask(units, recallableIndices, Math.round(recallableIndices.length * 0.65), `${seed}:65`);
+  const recallableIndices = units.flatMap((unit, index) => (unit.recallable ? [index] : []));
+  const partial65 = chooseSpreadMask(
+    units,
+    recallableIndices,
+    Math.round(recallableIndices.length * 0.65),
+    `${seed}:65`,
+  );
   const partial30 = chooseSpreadMask(units, [...partial65], Math.round(recallableIndices.length * 0.3), `${seed}:30`);
 
   return {
@@ -102,16 +105,13 @@ export function buildMemorizationSession(
   };
 }
 
-export function withAcceptedInitials(
-  session: MemorizationSession,
-  acceptedInitials: string[][],
-): MemorizationSession {
+export function withAcceptedInitials(session: MemorizationSession, acceptedInitials: string[][]): MemorizationSession {
   let recallIndex = 0;
   return {
     ...session,
-    units: session.units.map((unit) => unit.recallable
-      ? { ...unit, acceptedInitials: acceptedInitials[recallIndex++] ?? [] }
-      : unit),
+    units: session.units.map((unit) =>
+      unit.recallable ? { ...unit, acceptedInitials: acceptedInitials[recallIndex++] ?? [] } : unit,
+    ),
   };
 }
 
@@ -175,7 +175,9 @@ export function currentAcceptedInitials(
   maskedIndices?: Set<number>,
 ): string[] {
   const candidates = maskedIndices
-    ? orderedMaskIndices(maskedIndices).map((index) => units[index]).filter((unit): unit is VerseCharacter => Boolean(unit?.recallable))
+    ? orderedMaskIndices(maskedIndices)
+        .map((index) => units[index])
+        .filter((unit): unit is VerseCharacter => Boolean(unit?.recallable))
     : recallableUnits(units);
   return candidates[state.cursor]?.acceptedInitials ?? [];
 }
@@ -186,16 +188,27 @@ export function currentAcceptedZhuyin(
   maskedIndices?: Set<number>,
 ): string[] {
   const candidates = maskedIndices
-    ? orderedMaskIndices(maskedIndices).map((index) => units[index]).filter((unit): unit is VerseCharacter => Boolean(unit?.recallable))
+    ? orderedMaskIndices(maskedIndices)
+        .map((index) => units[index])
+        .filter((unit): unit is VerseCharacter => Boolean(unit?.recallable))
     : recallableUnits(units);
   return candidates[state.cursor]?.acceptedZhuyin ?? [];
 }
 
-function pressInitialAgainstUnits(state: RecallState, units: VerseCharacter[], input: RecallKeyboardInput): RecallState {
+function pressInitialAgainstUnits(
+  state: RecallState,
+  units: VerseCharacter[],
+  input: RecallKeyboardInput,
+): RecallState {
   if (state.complete) return state;
   const current = units[state.cursor];
   const offeredInitials = input.kind === 'single' ? [input.initial] : input.initials;
-  if (!current || !offeredInitials.some((initial) => current.acceptedInitials.includes(initial) || current.acceptedZhuyin.includes(initial))) {
+  if (
+    !current ||
+    !offeredInitials.some(
+      (initial) => current.acceptedInitials.includes(initial) || current.acceptedZhuyin.includes(initial),
+    )
+  ) {
     const consecutiveWrongAttempts = state.consecutiveWrongAttempts + 1;
     const canOfferHint = Boolean(current && (current.acceptedInitials.length > 0 || current.acceptedZhuyin.length > 0));
     return {
@@ -249,9 +262,7 @@ export function revealMaskedCurrentUnit(
   units: VerseCharacter[],
   maskedIndices: Set<number>,
 ): RecallState {
-  const unitCount = orderedMaskIndices(maskedIndices)
-    .filter((index) => units[index]?.recallable)
-    .length;
+  const unitCount = orderedMaskIndices(maskedIndices).filter((index) => units[index]?.recallable).length;
   return revealAgainstUnitCount(state, unitCount);
 }
 
@@ -301,9 +312,9 @@ export function completionFactsForStage(
 export function completionFactsForRound(session: MemorizationSession): RoundCompletionFacts {
   return {
     assistanceCount:
-      session.maskRecall.partial30.assistanceCount
-      + session.maskRecall.partial65.assistanceCount
-      + session.recall.assistanceCount,
+      session.maskRecall.partial30.assistanceCount +
+      session.maskRecall.partial65.assistanceCount +
+      session.recall.assistanceCount,
     skippedStageCount: session.skippedStages.size,
   };
 }
@@ -325,8 +336,7 @@ function chooseSpreadMask(units: VerseCharacter[], candidates: number[], count: 
   const shuffled = shuffle(candidates, random);
   const selected = new Set<number>();
 
-  const clauses = candidateClauses(units, new Set(candidates))
-    .sort((left, right) => right.length - left.length);
+  const clauses = candidateClauses(units, new Set(candidates)).sort((left, right) => right.length - left.length);
   for (const clause of clauses) {
     if (selected.size >= count) break;
     const available = shuffle(clause, random);

@@ -2,11 +2,11 @@
 import type booksJson from '@/public/data/books.json';
 
 interface BibleData {
-    [bookName: string]: {
-        [chapter: string]: {
-            [verse: string]: string;
-        };
+  [bookName: string]: {
+    [chapter: string]: {
+      [verse: string]: string;
     };
+  };
 }
 
 let fullBibleData: BibleData | null = null;
@@ -15,67 +15,60 @@ let fullBibleData: BibleData | null = null;
  * 加载完整圣经数据
  */
 export async function loadFullBible(): Promise<BibleData> {
-    if (fullBibleData) {
-        return fullBibleData;
-    }
+  if (fullBibleData) {
+    return fullBibleData;
+  }
 
-    try {
-        const response = await fetch('/data/CUVT_bible.json');
-        if (!response.ok) {
-            throw new Error('Failed to load Bible data');
-        }
-        const data = await response.json();
-        fullBibleData = data;
-        return data;
-    } catch (error) {
-        console.error('Error loading Bible data:', error);
-        throw error;
+  try {
+    const response = await fetch('/data/CUVT_bible.json');
+    if (!response.ok) {
+      throw new Error('Failed to load Bible data');
     }
+    const data = await response.json();
+    fullBibleData = data;
+    return data;
+  } catch (error) {
+    console.error('Error loading Bible data:', error);
+    throw error;
+  }
 }
 
 /**
  * 获取单节经文内容
  */
-export async function getVerseText(
-    book: string,
-    chapter: number,
-    verse: number
-): Promise<string | null> {
-    try {
-        const data = await loadFullBible();
-        return data[book]?.[chapter]?.[verse] || null;
-    } catch (error) {
-        console.error(`Error getting verse ${book} ${chapter}:${verse}:`, error);
-        return null;
-    }
+export async function getVerseText(book: string, chapter: number, verse: number): Promise<string | null> {
+  try {
+    const data = await loadFullBible();
+    return data[book]?.[chapter]?.[verse] || null;
+  } catch (error) {
+    console.error(`Error getting verse ${book} ${chapter}:${verse}:`, error);
+    return null;
+  }
 }
 
 /**
  * 获取整章经文
  */
-export async function getChapter(
-    book: string,
-    chapter: number
-): Promise<Record<number, string>> {
-    try {
-        const data = await loadFullBible();
-        const chapterData = data[book]?.[chapter];
+export async function getChapter(book: string, chapter: number): Promise<Record<number, string>> {
+  try {
+    const data = await loadFullBible();
+    const chapterData = data[book]?.[chapter];
 
-        if (!chapterData) {
-            return {};
-        }
-
-        // 转换为 Record<number, string> 格式
-        const result: Record<number, string> = {};
-        for (const [verseStr, text] of Object.entries(chapterData)) {
-            result[parseInt(verseStr, 10)] = text;
-        }
-
-        return result;
-    } catch (error) {
-        console.error(`Error getting chapter ${book} ${chapter}:`, error);
-        return {};
+    if (!chapterData) {
+      return {};
     }
+
+    // 转换为 Record<number, string> 格式
+    const result: Record<number, string> = {};
+    for (const [verseStr, text] of Object.entries(chapterData)) {
+      result[parseInt(verseStr, 10)] = text;
+    }
+
+    return result;
+  } catch (error) {
+    console.error(`Error getting chapter ${book} ${chapter}:`, error);
+    return {};
+  }
 }
 
 /**
@@ -88,24 +81,23 @@ let booksMetadata: BookMetadata[] | null = null;
 export async function getBookMetadata(): Promise<BookMetadata[]>;
 export async function getBookMetadata(bookKey: string): Promise<BookMetadata | null>;
 export async function getBookMetadata(bookKey?: string): Promise<BookMetadata[] | BookMetadata | null> {
-    if (!booksMetadata) {
-        try {
-            const response = await fetch('/data/books.json');
-            if (!response.ok) {
-                throw new Error('Failed to load books data');
-            }
-            const data = await response.json();
-            booksMetadata = data.books || data;
-        } catch (error) {
-            console.error('Error loading books metadata:', error);
-            throw error;
-        }
+  if (!booksMetadata) {
+    try {
+      const response = await fetch('/data/books.json');
+      if (!response.ok) {
+        throw new Error('Failed to load books data');
+      }
+      const data = await response.json();
+      booksMetadata = data.books || data;
+    } catch (error) {
+      console.error('Error loading books metadata:', error);
+      throw error;
     }
+  }
 
-    if (bookKey) {
-        return booksMetadata?.find((book) => book.key === bookKey) || null;
-    }
+  if (bookKey) {
+    return booksMetadata?.find((book) => book.key === bookKey) || null;
+  }
 
-    return booksMetadata || [];
+  return booksMetadata || [];
 }
-

@@ -15,8 +15,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function applyThemeToDocument(theme: AppState['theme']) {
   const prefersDark =
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches;
+    typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const isDark = theme === 'dark' || (theme === 'system' && prefersDark);
   document.documentElement.classList.toggle('dark', isDark);
 }
@@ -49,7 +48,7 @@ export default function AppStoreStorageSync() {
         const current = useAppStore.getState();
         const preferences: Pick<AppState, 'language' | 'theme'> = {
           language: nextLanguage as Language,
-          theme: themes.has(nextTheme as AppState['theme']) ? nextTheme as AppState['theme'] : current.theme,
+          theme: themes.has(nextTheme as AppState['theme']) ? (nextTheme as AppState['theme']) : current.theme,
         };
         if (preferences.language === current.language && preferences.theme === current.theme) return;
         useAppStore.setState(preferences);

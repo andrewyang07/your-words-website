@@ -27,11 +27,21 @@ const initialProgress: GuideProgress = {
 
 const guideCopy = {
   simplified: {
-    help: '帮助', close: '关闭帮助', skip: '跳过引导', done: '知道了', next: '下一步：输入提示', nextZhuyin: '下一步：注音说明', onlyZhuyin: '只看注音说明',
-    overviewTitle: '这样开始深度背诵', overviewLead: '一轮只练一节经文',
+    help: '帮助',
+    close: '关闭帮助',
+    skip: '跳过引导',
+    done: '知道了',
+    next: '下一步：输入提示',
+    nextZhuyin: '下一步：注音说明',
+    onlyZhuyin: '只看注音说明',
+    overviewTitle: '这样开始深度背诵',
+    overviewLead: '一轮只练一节经文',
     overviewBody: '从完整阅读开始，逐步减少文字线索。每个阶段都可以跳过，不会记录分数或进度。',
     stages: [
-      ['通读', '先安静读一遍'], ['轻遮', '凭多数文字补全'], ['深遮', '只留少量线索'], ['首字母', '逐字按下读音首字母'],
+      ['通读', '先安静读一遍'],
+      ['轻遮', '凭多数文字补全'],
+      ['深遮', '只留少量线索'],
+      ['首字母', '逐字按下读音首字母'],
     ],
     inputTitle: '逐字回想时',
     inputError: '按键错误不会前进；连续两次后会提示正确按键。',
@@ -42,11 +52,21 @@ const guideCopy = {
     zhuyinPhysical: '电脑端可直接按台湾大千键位；键盘上的字母角标可随时隐藏。',
   },
   traditional: {
-    help: '幫助', close: '關閉幫助', skip: '跳過引導', done: '知道了', next: '下一步：輸入提示', nextZhuyin: '下一步：注音說明', onlyZhuyin: '只看注音說明',
-    overviewTitle: '這樣開始深度背誦', overviewLead: '一輪只練一節經文',
+    help: '幫助',
+    close: '關閉幫助',
+    skip: '跳過引導',
+    done: '知道了',
+    next: '下一步：輸入提示',
+    nextZhuyin: '下一步：注音說明',
+    onlyZhuyin: '只看注音說明',
+    overviewTitle: '這樣開始深度背誦',
+    overviewLead: '一輪只練一節經文',
     overviewBody: '從完整閱讀開始，逐步減少文字線索。每個階段都可以跳過，不會記錄分數或進度。',
     stages: [
-      ['通讀', '先安靜讀一遍'], ['輕遮', '憑多數文字補全'], ['深遮', '只留少量線索'], ['首字母', '逐字按下讀音首字母'],
+      ['通讀', '先安靜讀一遍'],
+      ['輕遮', '憑多數文字補全'],
+      ['深遮', '只留少量線索'],
+      ['首字母', '逐字按下讀音首字母'],
     ],
     inputTitle: '逐字回想時',
     inputError: '按鍵錯誤不會前進；連續兩次後會提示正確按鍵。',
@@ -95,13 +115,14 @@ export function useMemorizeGuide(surface: GuideSurface, language: Language) {
     setHydrated(true);
   }, []);
 
-  const automaticPage: GuidePage | null = !hydrated || progress.dismissed
-    ? null
-    : surface === 'picker' && !progress.pickerSeen
-      ? 'overview'
-      : surface === 'input' && !progress.inputSeen
-        ? 'input'
-        : null;
+  const automaticPage: GuidePage | null =
+    !hydrated || progress.dismissed
+      ? null
+      : surface === 'picker' && !progress.pickerSeen
+        ? 'overview'
+        : surface === 'input' && !progress.inputSeen
+          ? 'input'
+          : null;
   const visiblePage = page ?? automaticPage;
 
   const save = useCallback((next: GuideProgress) => {
@@ -132,27 +153,30 @@ export function useMemorizeGuide(surface: GuideSurface, language: Language) {
     setPage(null);
   }, [save]);
 
-  const finishPage = useCallback((currentPage: GuidePage) => {
-    if (currentPage === 'overview' && replayingAll) {
-      save({ ...progress, pickerSeen: true });
-      setPage('input');
-      return;
-    }
-    if (currentPage === 'input' && replayingAll) {
-      save({ ...progress, inputSeen: true });
-      setPage('zhuyin');
-      return;
-    }
-    const next = {
-      ...progress,
-      pickerSeen: progress.pickerSeen || currentPage === 'overview',
-      inputSeen: progress.inputSeen || currentPage === 'input',
-      zhuyinSeen: progress.zhuyinSeen || currentPage === 'zhuyin',
-    };
-    save(next);
-    setReplayingAll(false);
-    setPage(null);
-  }, [progress, replayingAll, save]);
+  const finishPage = useCallback(
+    (currentPage: GuidePage) => {
+      if (currentPage === 'overview' && replayingAll) {
+        save({ ...progress, pickerSeen: true });
+        setPage('input');
+        return;
+      }
+      if (currentPage === 'input' && replayingAll) {
+        save({ ...progress, inputSeen: true });
+        setPage('zhuyin');
+        return;
+      }
+      const next = {
+        ...progress,
+        pickerSeen: progress.pickerSeen || currentPage === 'overview',
+        inputSeen: progress.inputSeen || currentPage === 'input',
+        zhuyinSeen: progress.zhuyinSeen || currentPage === 'zhuyin',
+      };
+      save(next);
+      setReplayingAll(false);
+      setPage(null);
+    },
+    [progress, replayingAll, save],
+  );
 
   return {
     helpLabel: guideCopy[language].help,
@@ -163,7 +187,13 @@ export function useMemorizeGuide(surface: GuideSurface, language: Language) {
       <MemorizeGuideDialog
         language={language}
         page={visiblePage}
-        nextLabel={replayingAll && visiblePage === 'overview' ? guideCopy[language].next : replayingAll && visiblePage === 'input' ? guideCopy[language].nextZhuyin : null}
+        nextLabel={
+          replayingAll && visiblePage === 'overview'
+            ? guideCopy[language].next
+            : replayingAll && visiblePage === 'input'
+              ? guideCopy[language].nextZhuyin
+              : null
+        }
         onContinue={() => finishPage(visiblePage)}
         onSkip={skipGuide}
         onZhuyin={openZhuyinGuide}
@@ -208,7 +238,9 @@ function MemorizeGuideDialog({
         event.stopPropagation();
         return;
       }
-      const controls = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button, [href], [tabindex]:not([tabindex="-1"])') ?? []);
+      const controls = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>('button, [href], [tabindex]:not([tabindex="-1"])') ?? [],
+      );
       if (controls.length === 0) return;
       const first = controls[0];
       const last = controls[controls.length - 1];
@@ -239,9 +271,16 @@ function MemorizeGuideDialog({
             <span className="yw-icon-tile h-11 w-11 rounded-2xl text-bible-700 dark:text-bible-200">
               {page === 'overview' ? <BookOpenCheck className="h-5 w-5" /> : <Keyboard className="h-5 w-5" />}
             </span>
-            <h2 id="memorize-guide-title" className="text-xl font-semibold tracking-tight text-stone-950 dark:text-stone-50">{title}</h2>
+            <h2
+              id="memorize-guide-title"
+              className="text-xl font-semibold tracking-tight text-stone-950 dark:text-stone-50"
+            >
+              {title}
+            </h2>
           </div>
-          <button type="button" onClick={onSkip} className="memorize-icon -mr-1 -mt-1" aria-label={text.close}><X className="h-4 w-4" /></button>
+          <button type="button" onClick={onSkip} className="memorize-icon -mr-1 -mt-1" aria-label={text.close}>
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
         {page === 'overview' ? (
@@ -250,7 +289,10 @@ function MemorizeGuideDialog({
             <p className="mt-2 text-sm leading-6 text-stone-600 dark:text-stone-300">{text.overviewBody}</p>
             <ol className="mt-5 grid grid-cols-2 gap-2" aria-label={text.overviewLead}>
               {text.stages.map(([name, description], index) => (
-                <li key={name} className="rounded-2xl border border-stone-900/10 bg-white/55 p-3 dark:border-white/10 dark:bg-white/[0.045]">
+                <li
+                  key={name}
+                  className="rounded-2xl border border-stone-900/10 bg-white/55 p-3 dark:border-white/10 dark:bg-white/[0.045]"
+                >
                   <span className="text-[11px] tabular-nums text-bible-700 dark:text-bible-200">{index + 1}/4</span>
                   <span className="mt-1 block text-sm font-semibold">{name}</span>
                   <span className="mt-1 block text-xs leading-5 text-stone-500 dark:text-stone-400">{description}</span>
@@ -273,7 +315,9 @@ function MemorizeGuideDialog({
           <div className="mt-6 space-y-3">
             <p className="text-sm leading-6 text-stone-700 dark:text-stone-300">{text.zhuyinBody}</p>
             <div className="rounded-2xl border border-stone-900/10 bg-white/55 p-4 text-center dark:border-white/10 dark:bg-white/[0.045]">
-              <p className="text-xl font-semibold tracking-[0.08em] text-bible-800 dark:text-bible-100">{text.zhuyinExample}</p>
+              <p className="text-xl font-semibold tracking-[0.08em] text-bible-800 dark:text-bible-100">
+                {text.zhuyinExample}
+              </p>
             </div>
             <p className="text-xs leading-5 text-stone-500 dark:text-stone-400">{text.zhuyinPhysical}</p>
           </div>
@@ -281,10 +325,21 @@ function MemorizeGuideDialog({
 
         <div className="mt-6 grid gap-2 sm:grid-cols-[1fr_auto]">
           <button ref={primaryRef} type="button" onClick={onContinue} className="memorize-primary">
-            {nextLabel ?? text.done}{nextLabel && <ChevronRight className="h-4 w-4" />}
+            {nextLabel ?? text.done}
+            {nextLabel && <ChevronRight className="h-4 w-4" />}
           </button>
-          <button type="button" onClick={onSkip} className="memorize-secondary px-5 sm:w-auto">{text.skip}</button>
-          {page !== 'zhuyin' && <button type="button" onClick={onZhuyin} className="min-h-11 text-sm text-stone-500 underline-offset-4 hover:underline sm:col-span-2">{text.onlyZhuyin}</button>}
+          <button type="button" onClick={onSkip} className="memorize-secondary px-5 sm:w-auto">
+            {text.skip}
+          </button>
+          {page !== 'zhuyin' && (
+            <button
+              type="button"
+              onClick={onZhuyin}
+              className="min-h-11 text-sm text-stone-500 underline-offset-4 hover:underline sm:col-span-2"
+            >
+              {text.onlyZhuyin}
+            </button>
+          )}
         </div>
       </section>
     </div>

@@ -8,9 +8,7 @@ import {
 } from '../lib/search/searchHelpers';
 import type { SearchResult } from '../types/search';
 
-function verse(
-  partial: Partial<SearchResult> & Pick<SearchResult, 'id' | 'textChinese' | 'score'>
-): SearchResult {
+function verse(partial: Partial<SearchResult> & Pick<SearchResult, 'id' | 'textChinese' | 'score'>): SearchResult {
   return {
     bookKey: '约翰福音',
     bookTraditional: '約翰福音',
@@ -50,12 +48,8 @@ describe('formatResultCount', () => {
   });
 
   it('shows 50+ when truncated at the cap', () => {
-    expect(formatResultCount(50, { truncated: true, traditional: false })).toBe(
-      '找到 50+ 条结果'
-    );
-    expect(formatResultCount(50, { truncated: true, traditional: true })).toBe(
-      '找到 50+ 條結果'
-    );
+    expect(formatResultCount(50, { truncated: true, traditional: false })).toBe('找到 50+ 条结果');
+    expect(formatResultCount(50, { truncated: true, traditional: true })).toBe('找到 50+ 條結果');
   });
 
   it('does not add plus when truncated is false even at 50', () => {
@@ -77,8 +71,7 @@ describe('phraseScore / rankByPhraseVariants (John 3:16 fixture)', () => {
     id: '约翰福音-3-17',
     chapter: 3,
     verse: 17,
-    textChinese:
-      '因為神差他的兒子降世，不是要定世人的罪，乃是要叫世人因他得救。',
+    textChinese: '因為神差他的兒子降世，不是要定世人的罪，乃是要叫世人因他得救。',
     textEnglish: 'For God did not send his Son...',
     // Higher BM25-like base score (the MiniSearch bug for traditional queries)
     score: 176,
@@ -93,14 +86,9 @@ describe('phraseScore / rankByPhraseVariants (John 3:16 fixture)', () => {
   });
 
   it('boosts exact traditional phrase so 3:16 outranks higher BM25 3:17', () => {
-    const ranked = rankByPhraseVariants(
-      [john317Trad, john316Trad],
-      ['神愛世人']
-    );
+    const ranked = rankByPhraseVariants([john317Trad, john316Trad], ['神愛世人']);
     expect(ranked[0]!.id).toBe('约翰福音-3-16');
-    expect(phraseScore('神愛世人', john316Trad)).toBeGreaterThan(
-      phraseScore('神愛世人', john317Trad)
-    );
+    expect(phraseScore('神愛世人', john316Trad)).toBeGreaterThan(phraseScore('神愛世人', john317Trad));
   });
 
   it('boosts simplified phrase against simplified text', () => {
@@ -111,10 +99,7 @@ describe('phraseScore / rankByPhraseVariants (John 3:16 fixture)', () => {
       textChinese: '因为神差他的儿子降世，不是要定世人的罪，乃是要叫世人因他得救。',
       score: 176,
     });
-    const ranked = rankByPhraseVariants(
-      [john317Simp, john316Simp],
-      ['神爱世人']
-    );
+    const ranked = rankByPhraseVariants([john317Simp, john316Simp], ['神爱世人']);
     expect(ranked[0]!.id).toBe('约翰福音-3-16');
   });
 

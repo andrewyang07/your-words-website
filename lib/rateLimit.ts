@@ -20,27 +20,27 @@ import { createRedisClient } from './redisUtils';
 
 /** The subset of the Redis client the limiter needs (easy to mock). */
 export interface RateLimitRedis {
-    incr(key: string): Promise<number>;
-    expire(key: string, seconds: number): Promise<unknown>;
+  incr(key: string): Promise<number>;
+  expire(key: string, seconds: number): Promise<unknown>;
 }
 
 export interface RateLimitConfig {
-    /** Short scope name, part of the Redis key (e.g. "increment"). */
-    name: string;
-    /** Max allowed requests per window per identifier. */
-    limit: number;
-    /** Window length in seconds. */
-    windowSeconds: number;
+  /** Short scope name, part of the Redis key (e.g. "increment"). */
+  name: string;
+  /** Max allowed requests per window per identifier. */
+  limit: number;
+  /** Window length in seconds. */
+  windowSeconds: number;
 }
 
 export interface RateLimitResult {
-    allowed: boolean;
-    limit: number;
-    remaining: number;
-    /** Seconds until the current window ends (use for `Retry-After`). */
-    retryAfterSeconds: number;
-    /** True when Redis was unavailable and the request was allowed anyway. */
-    degraded: boolean;
+  allowed: boolean;
+  limit: number;
+  remaining: number;
+  /** Seconds until the current window ends (use for `Retry-After`). */
+  retryAfterSeconds: number;
+  /** True when Redis was unavailable and the request was allowed anyway. */
+  degraded: boolean;
 }
 
 /** Per-IP limits. Sized so that a person starring 20 verses in a row never trips them. */
@@ -51,72 +51,76 @@ export const TRACK_USER_RATE_LIMIT: RateLimitConfig = { name: 'track-user', limi
 export const RATE_LIMIT_TIMEOUT_MS = 800;
 
 export interface CheckRateLimitDeps {
-    /** Pass `null` to simulate "Redis not configured". Defaults to the env-configured client. */
-    redis?: RateLimitRedis | null;
-    /** Epoch ms; injectable for deterministic tests. */
-    now?: number;
-    timeoutMs?: number;
+  /** Pass `null` to simulate "Redis not configured". Defaults to the env-configured client. */
+  redis?: RateLimitRedis | null;
+  /** Epoch ms; injectable for deterministic tests. */
+  now?: number;
+  timeoutMs?: number;
 }
 
 function defaultRedis(): RateLimitRedis | null {
-    if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
-    try {
-        return createRedisClient();
-    } catch {
-        return null;
-    }
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
+  try {
+    return createRedisClient();
+  } catch {
+    return null;
+  }
 }
 
 function failOpen(config: RateLimitConfig): RateLimitResult {
-    return { allowed: true, limit: config.limit, remaining: config.limit, retryAfterSeconds: 0, degraded: true };
+  return { allowed: true, limit: config.limit, remaining: config.limit, retryAfterSeconds: 0, degraded: true };
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const timeout = new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error('rate limit redis timeout')), ms);
-    });
-    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('rate limit redis timeout')), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
 /**
  * Count one request for `identifier` (already hashed / non-sensitive) in the
  * given scope and report whether it is within the limit.
  */
-export async function checkRateLimit(identifier: string, config: RateLimitConfig, deps: CheckRateLimitDeps = {}): Promise<RateLimitResult> {
-    const redis = deps.redis === undefined ? defaultRedis() : deps.redis;
-    if (!redis) return failOpen(config);
+export async function checkRateLimit(
+  identifier: string,
+  config: RateLimitConfig,
+  deps: CheckRateLimitDeps = {},
+): Promise<RateLimitResult> {
+  const redis = deps.redis === undefined ? defaultRedis() : deps.redis;
+  if (!redis) return failOpen(config);
 
-    const nowMs = deps.now ?? Date.now();
-    const windowMs = config.windowSeconds * 1000;
-    const windowIndex = Math.floor(nowMs / windowMs);
-    const key = `rl:${config.name}:${identifier}:${windowIndex}`;
-    const retryAfterSeconds = Math.max(1, Math.ceil(((windowIndex + 1) * windowMs - nowMs) / 1000));
+  const nowMs = deps.now ?? Date.now();
+  const windowMs = config.windowSeconds * 1000;
+  const windowIndex = Math.floor(nowMs / windowMs);
+  const key = `rl:${config.name}:${identifier}:${windowIndex}`;
+  const retryAfterSeconds = Math.max(1, Math.ceil(((windowIndex + 1) * windowMs - nowMs) / 1000));
 
-    try {
-        const count = await withTimeout(
-            (async () => {
-                const c = await redis.incr(key);
-                if (c === 1) {
-                    // Only the first hit of a window sets the TTL (cleanup only, see header).
-                    await redis.expire(key, config.windowSeconds + 5);
-                }
-                return c;
-            })(),
-            deps.timeoutMs ?? RATE_LIMIT_TIMEOUT_MS
-        );
+  try {
+    const count = await withTimeout(
+      (async () => {
+        const c = await redis.incr(key);
+        if (c === 1) {
+          // Only the first hit of a window sets the TTL (cleanup only, see header).
+          await redis.expire(key, config.windowSeconds + 5);
+        }
+        return c;
+      })(),
+      deps.timeoutMs ?? RATE_LIMIT_TIMEOUT_MS,
+    );
 
-        return {
-            allowed: count <= config.limit,
-            limit: config.limit,
-            remaining: Math.max(0, config.limit - count),
-            retryAfterSeconds,
-            degraded: false,
-        };
-    } catch (error) {
-        console.error('Rate limit check failed, allowing request:', error);
-        return failOpen(config);
-    }
+    return {
+      allowed: count <= config.limit,
+      limit: config.limit,
+      remaining: Math.max(0, config.limit - count),
+      retryAfterSeconds,
+      degraded: false,
+    };
+  } catch (error) {
+    console.error('Rate limit check failed, allowing request:', error);
+    return failOpen(config);
+  }
 }
 
 /**
@@ -125,23 +129,23 @@ export async function checkRateLimit(identifier: string, config: RateLimitConfig
  * spoofed by clients. The IP is hashed so raw IPs are never stored in Redis.
  */
 export async function getClientIdentifier(request: Request): Promise<string> {
-    const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-    const ip = request.headers.get('x-real-ip')?.trim() || forwarded || 'unknown';
-    const data = new TextEncoder().encode(ip.slice(0, 64));
-    const digest = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(digest).slice(0, 8))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
+  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  const ip = request.headers.get('x-real-ip')?.trim() || forwarded || 'unknown';
+  const data = new TextEncoder().encode(ip.slice(0, 64));
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(digest).slice(0, 8))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 /** Standard 429 response for a blocked request. */
 export function rateLimitedResponse(result: RateLimitResult): Response {
-    return new Response(JSON.stringify({ error: 'Too many requests', retryAfter: result.retryAfterSeconds }), {
-        status: 429,
-        headers: {
-            'Content-Type': 'application/json',
-            'Retry-After': String(result.retryAfterSeconds),
-            'Cache-Control': 'no-store',
-        },
-    });
+  return new Response(JSON.stringify({ error: 'Too many requests', retryAfter: result.retryAfterSeconds }), {
+    status: 429,
+    headers: {
+      'Content-Type': 'application/json',
+      'Retry-After': String(result.retryAfterSeconds),
+      'Cache-Control': 'no-store',
+    },
+  });
 }

@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useVerseStore } from '../stores/useVerseStore';
 import type { Verse } from '../types/verse';
 
-
 const loader = vi.hoisted(() => ({
   pending: new Map<string, { resolve: (verses: Verse[]) => void; reject: (error: Error) => void }>(),
 }));
@@ -26,7 +25,13 @@ const verse = (book: string, text: string): Verse => ({
 
 beforeEach(() => {
   loader.pending.clear();
-  useVerseStore.setState({ verses: [], filteredVerses: [], versesLoaded: false, versesLoading: false, versesError: null });
+  useVerseStore.setState({
+    verses: [],
+    filteredVerses: [],
+    versesLoaded: false,
+    versesLoading: false,
+    versesError: null,
+  });
 });
 
 describe('useVerseStore.loadVerses language race', () => {
@@ -78,7 +83,11 @@ describe('useVerseStore.loadVerses language race', () => {
 
     loader.pending.get('simplified')!.reject(new Error('latest boom'));
     await expect(latest).rejects.toThrow('latest boom');
-    expect(useVerseStore.getState()).toMatchObject({ versesLoading: false, versesLoaded: false, versesError: 'latest boom' });
+    expect(useVerseStore.getState()).toMatchObject({
+      versesLoading: false,
+      versesLoaded: false,
+      versesError: 'latest boom',
+    });
 
     loader.pending.get('traditional')!.resolve([verse('創世記', '起初，神創造天地。')]);
     await expect(stale).resolves.toBe(false);

@@ -5,10 +5,10 @@ import { useAppStore } from '@/stores/useAppStore';
 import { getDocumentTitle } from '@/lib/uiScript';
 
 interface DocumentTitleProps {
-    traditional: string;
-    simplified: string;
-    /** Skip the "| 你的話語" brand suffix (for the home page title). */
-    absolute?: boolean;
+  traditional: string;
+  simplified: string;
+  /** Skip the "| 你的話語" brand suffix (for the home page title). */
+  absolute?: boolean;
 }
 
 /**
@@ -17,18 +17,18 @@ interface DocumentTitleProps {
  * it whenever the metadata <title> is swapped back in.
  */
 export default function DocumentTitle({ traditional, simplified, absolute }: DocumentTitleProps) {
-    const language = useAppStore((state) => state.language);
+  const language = useAppStore((state) => state.language);
 
-    useEffect(() => {
-        const title = getDocumentTitle(language, { traditional, simplified }, absolute);
-        const apply = () => {
-            if (document.title !== title) document.title = title;
-        };
-        apply();
-        const observer = new MutationObserver(apply);
-        observer.observe(document.head, { childList: true, subtree: true, characterData: true });
-        return () => observer.disconnect();
-    }, [language, traditional, simplified, absolute]);
+  useEffect(() => {
+    const title = getDocumentTitle(language, { traditional, simplified }, absolute);
+    const apply = () => {
+      if (document.title !== title) document.title = title;
+    };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+    return () => observer.disconnect();
+  }, [language, traditional, simplified, absolute]);
 
-    return null;
+  return null;
 }

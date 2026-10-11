@@ -23,12 +23,12 @@ const MAX_VERSE = 176; // Psalm 119
  * canonical Bible range (book 1-66, chapter 1-150, verse 1-176).
  */
 export function isValidVerseId(value: unknown): value is string {
-    if (typeof value !== 'string') return false;
-    if (value.length === 0 || value.length > VERSE_ID_MAX_LENGTH) return false;
-    if (!VERSE_ID_PATTERN.test(value)) return false;
+  if (typeof value !== 'string') return false;
+  if (value.length === 0 || value.length > VERSE_ID_MAX_LENGTH) return false;
+  if (!VERSE_ID_PATTERN.test(value)) return false;
 
-    const [book = NaN, chapter = NaN, verse = NaN] = value.split('-').map((part) => Number(part));
-    return book >= 1 && book <= MAX_BOOK && chapter >= 1 && chapter <= MAX_CHAPTER && verse >= 1 && verse <= MAX_VERSE;
+  const [book = NaN, chapter = NaN, verse = NaN] = value.split('-').map((part) => Number(part));
+  return book >= 1 && book <= MAX_BOOK && chapter >= 1 && chapter <= MAX_CHAPTER && verse >= 1 && verse <= MAX_VERSE;
 }
 
 /** Only "favorite" is tracked server-side ("unfavorite" and "click" are not). */
@@ -36,24 +36,24 @@ export const ALLOWED_STATS_ACTIONS = ['favorite'] as const;
 export type StatsAction = (typeof ALLOWED_STATS_ACTIONS)[number];
 
 export function isValidStatsAction(value: unknown): value is StatsAction {
-    return typeof value === 'string' && (ALLOWED_STATS_ACTIONS as readonly string[]).includes(value);
+  return typeof value === 'string' && (ALLOWED_STATS_ACTIONS as readonly string[]).includes(value);
 }
 
 export type IncrementBodyResult = { ok: true; action: StatsAction; verseId: string } | { ok: false; error: string };
 
 /** Validate the parsed JSON body of POST /api/stats/increment. */
 export function validateIncrementBody(body: unknown): IncrementBodyResult {
-    if (body === null || typeof body !== 'object' || Array.isArray(body)) {
-        return { ok: false, error: 'Body must be a JSON object' };
-    }
-    const { action, verseId } = body as Record<string, unknown>;
-    if (!isValidStatsAction(action)) {
-        return { ok: false, error: 'Invalid action' };
-    }
-    if (!isValidVerseId(verseId)) {
-        return { ok: false, error: 'Invalid verseId' };
-    }
-    return { ok: true, action, verseId };
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+    return { ok: false, error: 'Body must be a JSON object' };
+  }
+  const { action, verseId } = body as Record<string, unknown>;
+  if (!isValidStatsAction(action)) {
+    return { ok: false, error: 'Invalid action' };
+  }
+  if (!isValidVerseId(verseId)) {
+    return { ok: false, error: 'Invalid verseId' };
+  }
+  return { ok: true, action, verseId };
 }
 
 export type TrackUserBodyResult = { ok: true } | { ok: false; error: string };
@@ -65,18 +65,18 @@ export type TrackUserBodyResult = { ok: true } | { ok: false; error: string };
  * by caller-controlled data.
  */
 export function validateTrackUserBody(raw: string): TrackUserBodyResult {
-    if (raw.trim() === '') return { ok: true };
-    let parsed: unknown;
-    try {
-        parsed = JSON.parse(raw);
-    } catch {
-        return { ok: false, error: 'Invalid JSON body' };
-    }
-    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        return { ok: false, error: 'Body must be a JSON object' };
-    }
-    if (Object.keys(parsed).length > 0) {
-        return { ok: false, error: 'Unexpected fields' };
-    }
-    return { ok: true };
+  if (raw.trim() === '') return { ok: true };
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { ok: false, error: 'Invalid JSON body' };
+  }
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { ok: false, error: 'Body must be a JSON object' };
+  }
+  if (Object.keys(parsed).length > 0) {
+    return { ok: false, error: 'Unexpected fields' };
+  }
+  return { ok: true };
 }

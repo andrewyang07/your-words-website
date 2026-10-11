@@ -20,12 +20,17 @@ async function snap(page, name) {
 }
 function pngSize(buf) {
   return buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
-    ? `${buf.readUInt32BE(16)}x${buf.readUInt32BE(20)}` : 'not-png';
+    ? `${buf.readUInt32BE(16)}x${buf.readUInt32BE(20)}`
+    : 'not-png';
 }
 
 /** Fresh context = fresh localStorage. Simplified Chinese + guide dismissed, like a returning user. */
 async function newPage(browser, { simplified = true } = {}) {
-  const context = await browser.newContext({ viewport: { width: 430, height: 932 }, acceptDownloads: true, locale: 'zh-CN' });
+  const context = await browser.newContext({
+    viewport: { width: 430, height: 932 },
+    acceptDownloads: true,
+    locale: 'zh-CN',
+  });
   if (simplified) {
     await context.addInitScript(() => {
       if (!localStorage.getItem('your-words-app')) {
@@ -45,7 +50,9 @@ async function dismissGuide(page) {
   try {
     await skip.waitFor({ state: 'visible', timeout: 3000 });
     await skip.click();
-  } catch { /* no guide this time */ }
+  } catch {
+    /* no guide this time */
+  }
 }
 async function skipWholeRound(page) {
   await page.getByRole('heading', { name: '先读一遍，不急着记' }).waitFor();
@@ -77,7 +84,7 @@ const flows = {
     await add.click();
     await page.getByRole('button', { name: '取消我的收藏' }).first().waitFor();
     await snap(page, 'search-favorited');
-    const stored = JSON.parse(await page.evaluate(() => localStorage.getItem('favorites-storage')) ?? '{}');
+    const stored = JSON.parse((await page.evaluate(() => localStorage.getItem('favorites-storage'))) ?? '{}');
     const [id] = stored?.state?.favorites ?? [];
     if (!id) throw new Error('favorites-storage empty after click');
     const [book, chapter, verse] = [id.split('-').slice(0, -2).join('-'), ...id.split('-').slice(-2)];
@@ -101,7 +108,10 @@ const flows = {
   async reciteLink(browser) {
     if (!HAS_SHARE_LINK) return 'SKIP';
     const { context, page, errors } = await newPage(browser);
-    const before = await (async () => { await page.goto(`${BASE}/`); return page.evaluate(() => Object.keys(localStorage).sort()); })();
+    const before = await (async () => {
+      await page.goto(`${BASE}/`);
+      return page.evaluate(() => Object.keys(localStorage).sort());
+    })();
     await page.goto(`${BASE}/memorize?p=19-23-1~3&t=${encodeURIComponent('诗篇23')}&sv=1`);
     await dismissGuide(page);
     await page.getByRole('heading', { name: '诗篇23' }).waitFor();
@@ -116,7 +126,10 @@ const flows = {
     await snap(page, 'p-completed');
 
     // Completion card: real click → download (headless has no file share).
-    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: '生成卡片' }).click()]);
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: '生成卡片' }).click(),
+    ]);
     const cardPath = path.join(OUT, download.suggestedFilename());
     await download.saveAs(cardPath);
     const size = pngSize(readFileSync(cardPath));
@@ -132,7 +145,9 @@ const flows = {
     const after = await page.evaluate(() => Object.keys(localStorage).sort());
     // Pre-existing app keys that may appear later in a session are allowed; anything else is new storage.
     const knownKeys = ['user-tracked', 'favorites-storage', 'your-words-app'];
-    const added = after.filter((key) => !before.includes(key) && !knownKeys.includes(key) && !key.startsWith('your-words:memorize-'));
+    const added = after.filter(
+      (key) => !before.includes(key) && !knownKeys.includes(key) && !key.startsWith('your-words:memorize-'),
+    );
     if (added.length) throw new Error(`new storage keys: ${added}`);
     await context.close();
     if (errors.length) throw new Error(`page errors: ${errors.join(' | ')}`);
@@ -164,7 +179,10 @@ const flows = {
     await page.addInitScript(() => {
       // Seed favorites the way the store persists them (the favorites flow proves the UI path separately).
       if (!localStorage.getItem('favorites-storage')) {
-        localStorage.setItem('favorites-storage', JSON.stringify({ state: { favorites: ['诗篇-23-1', '诗篇-23-2', '约翰福音-3-16'] }, version: 0 }));
+        localStorage.setItem(
+          'favorites-storage',
+          JSON.stringify({ state: { favorites: ['诗篇-23-1', '诗篇-23-2', '约翰福音-3-16'] }, version: 0 }),
+        );
       }
     });
     await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: BASE });
@@ -185,8 +203,14 @@ const flows = {
     await dialog.getByRole('button', { name: '复制链接' }).click();
     // Headless clipboard is unreliable: accept success or the manual-copy fallback, and record which.
     const copyStatus = dialog.getByText(/链接已复制|请手动复制/);
-    const copyResult = await copyStatus.waitFor({ timeout: 5000 }).then(() => copyStatus.textContent(), () => 'no status (clipboard promise pending)');
-    const [qrDownload] = await Promise.all([page.waitForEvent('download'), dialog.getByRole('link', { name: '保存二维码' }).click()]);
+    const copyResult = await copyStatus.waitFor({ timeout: 5000 }).then(
+      () => copyStatus.textContent(),
+      () => 'no status (clipboard promise pending)',
+    );
+    const [qrDownload] = await Promise.all([
+      page.waitForEvent('download'),
+      dialog.getByRole('link', { name: '保存二维码' }).click(),
+    ]);
     const qrPath = path.join(OUT, qrDownload.suggestedFilename());
     await qrDownload.saveAs(qrPath);
     const qrSize = pngSize(readFileSync(qrPath));
@@ -219,21 +243,35 @@ const flows = {
 const wanted = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(flows);
 const browser = await chromium.launch({ headless: true });
 for (const name of wanted) {
-  if (!flows[name]) { results.push({ name, status: 'FAIL', detail: 'unknown flow' }); continue; }
+  if (!flows[name]) {
+    results.push({ name, status: 'FAIL', detail: 'unknown flow' });
+    continue;
+  }
   try {
     const detail = await flows[name](browser);
-    results.push(detail === 'SKIP'
-      ? { name, status: 'SKIP', detail: 'share-link feature not in this checkout' }
-      : { name, status: 'PASS', detail });
+    results.push(
+      detail === 'SKIP'
+        ? { name, status: 'SKIP', detail: 'share-link feature not in this checkout' }
+        : { name, status: 'PASS', detail },
+    );
   } catch (error) {
     const failShot = lastPage && !lastPage.isClosed() ? await snap(lastPage, `FAIL-${name}`).catch(() => null) : null;
-    const at = String(error?.stack ?? '').split('\n').find((line) => line.includes('drive.mjs'))?.match(/drive\.mjs:(\d+)/)?.[1];
-    results.push({ name, status: 'FAIL', detail: `${String(error?.message ?? error).split('\n')[0]}${at ? ` [drive.mjs:${at}]` : ''}${failShot ? ` (see ${path.basename(failShot)})` : ''}` });
+    const at = String(error?.stack ?? '')
+      .split('\n')
+      .find((line) => line.includes('drive.mjs'))
+      ?.match(/drive\.mjs:(\d+)/)?.[1];
+    results.push({
+      name,
+      status: 'FAIL',
+      detail: `${String(error?.message ?? error).split('\n')[0]}${at ? ` [drive.mjs:${at}]` : ''}${failShot ? ` (see ${path.basename(failShot)})` : ''}`,
+    });
   }
 }
 await browser.close();
 for (const r of results) console.log(`${r.status} ${r.name} — ${r.detail}`);
 writeFileSync(path.join(OUT, 'results.json'), JSON.stringify(results, null, 2));
 const fails = results.filter((r) => r.status === 'FAIL').length;
-console.log(`BROWSER SUMMARY pass=${results.filter((r) => r.status === 'PASS').length} fail=${fails} skip=${results.filter((r) => r.status === 'SKIP').length}  (screenshots: ${OUT})`);
+console.log(
+  `BROWSER SUMMARY pass=${results.filter((r) => r.status === 'PASS').length} fail=${fails} skip=${results.filter((r) => r.status === 'SKIP').length}  (screenshots: ${OUT})`,
+);
 process.exit(fails ? 1 : 0);

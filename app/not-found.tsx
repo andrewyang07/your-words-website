@@ -3,19 +3,19 @@ import DocumentTitle from '@/components/layout/DocumentTitle';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: '找不到頁面',
-    robots: {
-        index: false,
-        follow: false,
-        googleBot: { index: false, follow: false },
-    },
+  title: '找不到頁面',
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: { index: false, follow: false },
+  },
 };
 
 export default function NotFound() {
-    return (
-        <>
-            <DocumentTitle traditional="找不到頁面" simplified="找不到页面" />
-            <NotFoundPageClient />
-        </>
-    );
+  return (
+    <>
+      <DocumentTitle traditional="找不到頁面" simplified="找不到页面" />
+      <NotFoundPageClient />
+    </>
+  );
 }

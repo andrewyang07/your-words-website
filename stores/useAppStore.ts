@@ -26,7 +26,6 @@ export const useAppStore = create<AppState>()(
         language: state.language,
         theme: state.theme,
       }),
-    }
-  )
+    },
+  ),
 );
-
