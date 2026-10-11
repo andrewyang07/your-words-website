@@ -10,12 +10,20 @@ interface SearchResultsProps {
 }
 
 export default function SearchResults({ showKeyboardHint = true }: SearchResultsProps) {
-  const { results, resultsTruncated, selectedIndex, loading, query } = useSearchStore();
+  const { results, resultsTruncated, selectedIndex, loading, fallbackLoading, query } = useSearchStore();
   const language = useAppStore((s) => s.language);
 
   if (loading) {
     return (
-      <div className="w-full max-w-3xl mx-auto mt-6 space-y-4">
+      <div className="w-full max-w-3xl mx-auto mt-6 space-y-4" aria-busy="true">
+        <p role="status" className="px-1 text-center text-sm text-stone-600 dark:text-stone-400 font-chinese">
+          {language === 'traditional' ? '載入中…' : '加载中…'}
+          {fallbackLoading && (
+            <span className="mt-1 block text-xs">
+              {language === 'traditional' ? '首次搜索需下載經文資料，約需數秒' : '首次搜索需下载经文数据，约需数秒'}
+            </span>
+          )}
+        </p>
         {[1, 2, 3].map((i) => (
           <div
             key={i}

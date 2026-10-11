@@ -350,6 +350,13 @@ export function getStandardBookName(bookInput: string): string | null {
   return null;
 }
 
+/** Exact (non-fuzzy) book name or abbreviation, Simplified or Traditional. "以马内利" is NOT a book. */
+export function isExactBookName(bookInput: string): boolean {
+  const normalized = normalizeTraditionalBookName(bookInput.trim());
+  if (!normalized) return false;
+  return normalized in BOOK_ABBREVIATIONS || Object.values(BOOK_ABBREVIATIONS).includes(normalized);
+}
+
 function normalizeTraditionalBookName(value: string): string {
   const charMap: Record<string, string> = {
     創: '创',

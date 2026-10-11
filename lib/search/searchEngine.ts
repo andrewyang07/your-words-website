@@ -7,6 +7,7 @@
 import MiniSearch from 'minisearch';
 import { fetchWithCache } from '@/lib/bibleDataCache';
 import type { SearchResult, ContextVerse, BibleData, BookMapping } from '@/types/search';
+import { isExactBookName } from '@/lib/verseParser';
 import { parseReference } from './referenceParser';
 import { buildPinyinIndexAsync, searchPinyin, type PinyinIndex } from './fuzzyPinyin';
 import { DEFAULT_SEARCH_LIMIT, hasCjk, type SearchResponse } from './searchHelpers';
@@ -33,6 +34,14 @@ function chineseTokenizer(text: string): string[] {
   const words = text.toLowerCase().match(/[a-z']+/g) || [];
   return [...cjk, ...words];
 }
+
+function isCjkTextQuery(query: string): boolean {
+  if (!hasCjk(query)) return false;
+  const bookPart = query.replace(/[\s\d:：.,，\-–~～]+$/u, '');
+  return !isExactBookName(bookPart);
+}
+
+const EXACT_PHRASE_BOOST = 1000;
 
 let toSimplifiedPromise: Promise<(value: string) => string> | null = null;
 
@@ -175,7 +184,9 @@ class SearchEngine {
     if (!trimmed) return { results: [], truncated: false };
 
     // Try reference parse first (O(1))
-    const ref = parseReference(trimmed, this.bookMappings);
+    // CJK book names are only references when the book part is an exact name/abbreviation: the fuzzy
+    // matcher would otherwise read "以马内利" as 利未记 (contains 利) and "耶稣哭了" as 耶利米书.
+    const ref = isCjkTextQuery(trimmed) ? null : parseReference(trimmed, this.bookMappings);
     if (ref && (ref.bookChinese || ref.bookEnglish)) {
       const refResults = this.searchByReference(ref);
       if (refResults.length > 0) {
@@ -323,6 +334,14 @@ class SearchEngine {
       }
     }
 
+    // Exact phrase matches in the verse text form their own top tier, applied to ALL candidates before the
+    // `limit` cut so a contiguous CJK match is never pushed out by verses that merely share single characters.
+    if (hasCJK && query.length >= 2) {
+      for (const [id, score] of scores) {
+        if (this.verseTextById(id)?.includes(query)) scores.set(id, score + EXACT_PHRASE_BOOST);
+      }
+    }
+
     // Sort by score descending, take top `limit` for boosting
     const scoreEntries = Array.from(scores.entries());
     scoreEntries.sort((a, b) => b[1] - a[1]);
@@ -372,6 +391,13 @@ class SearchEngine {
 
     results.sort((a, b) => b.score - a.score);
     return { results, truncated };
+  }
+
+  private verseTextById(id: string): string | undefined {
+    const parts = id.split('-');
+    const verse = parts.pop();
+    const chapter = parts.pop();
+    return this.bibleData?.chinese[parts.join('-')]?.[chapter ?? '']?.[verse ?? ''];
   }
 
   getContext(bookKey: string, chapter: number, verse: number): ContextVerse[] {

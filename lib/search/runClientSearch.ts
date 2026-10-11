@@ -8,7 +8,16 @@ import { DEFAULT_SEARCH_LIMIT, type SearchResponse } from './searchHelpers';
  * Verse references ("约翰福音 3:16", "John 3:16", ranges) are parsed before Pagefind so the
  * exact verse(s) rank first, followed by the normal full-text results.
  */
-export async function runClientSearch(query: string, limit = DEFAULT_SEARCH_LIMIT): Promise<SearchResponse> {
+export type RunClientSearchOptions = {
+  /** Called when Pagefind failed and the MiniSearch fallback must first download/index the Bible. */
+  onFallbackLoading?: () => void;
+};
+
+export async function runClientSearch(
+  query: string,
+  limit = DEFAULT_SEARCH_LIMIT,
+  options: RunClientSearchOptions = {},
+): Promise<SearchResponse> {
   const trimmed = query.trim();
   if (!trimmed) return { results: [], truncated: false };
 
@@ -25,6 +34,7 @@ export async function runClientSearch(query: string, limit = DEFAULT_SEARCH_LIMI
   } catch {
     const engine = getSearchEngine();
     if (!engine.initialized) {
+      options.onFallbackLoading?.();
       await engine.initialize();
     }
     return engine.searchWithMeta(trimmed, limit);
