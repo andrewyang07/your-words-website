@@ -39,7 +39,7 @@ async function resolveReference(query: string) {
     const books = await loadBooks();
     return parseVerseReference(
       query,
-      books.map((b) => ({ key: b.key, nameEnglish: b.nameEnglish }))
+      books.map((b) => ({ key: b.key, nameEnglish: b.nameEnglish })),
     );
   } catch {
     return null;

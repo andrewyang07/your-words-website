@@ -22,10 +22,7 @@ const MAX_RANGE = 30;
  * "John 3:16", "Jn 3:16", "罗 8:28-30"). Book-only / chapter-only queries return null
  * so they keep the normal full-text behaviour.
  */
-export function parseVerseReference(
-  query: string,
-  bookMappings: BookMapping[]
-): VerseReference | null {
+export function parseVerseReference(query: string, bookMappings: BookMapping[]): VerseReference | null {
   const trimmed = query.trim();
   if (!/\d\s*[:：.]\s*\d/.test(trimmed)) return null;
 
@@ -41,8 +38,7 @@ export function parseVerseReference(
   if (!ref?.bookChinese || !ref.chapter || !ref.verse) return null;
 
   const verseStart = ref.verse;
-  const verseEnd =
-    rangeEnd && rangeEnd >= verseStart ? Math.min(rangeEnd, verseStart + MAX_RANGE - 1) : verseStart;
+  const verseEnd = rangeEnd && rangeEnd >= verseStart ? Math.min(rangeEnd, verseStart + MAX_RANGE - 1) : verseStart;
   return { bookKey: ref.bookChinese, chapter: ref.chapter, verseStart, verseEnd };
 }
 
@@ -63,7 +59,7 @@ export async function promoteReference(
   results: SearchResult[],
   ref: VerseReference,
   limit: number,
-  loadVerses: (ref: VerseReference, missing: number[]) => Promise<SearchResult[]>
+  loadVerses: (ref: VerseReference, missing: number[]) => Promise<SearchResult[]>,
 ): Promise<SearchResult[]> {
   const hits = new Map<number, SearchResult>();
   for (const r of results) if (inRef(r, ref)) hits.set(r.verse, r);
@@ -101,10 +97,7 @@ export function loadBooks(): Promise<BookRecord[]> {
 }
 
 /** Fallback for a referenced verse Pagefind did not return: read it from the (cached) corpus. */
-export async function loadVersesFromCorpus(
-  ref: VerseReference,
-  missing: number[]
-): Promise<SearchResult[]> {
+export async function loadVersesFromCorpus(ref: VerseReference, missing: number[]): Promise<SearchResult[]> {
   const [{ fetchWithCache }, books] = await Promise.all([import('@/lib/bibleDataCache'), loadBooks()]);
   const bible = (await fetchWithCache('/data/CUV_bible.json')) as Record<
     string,

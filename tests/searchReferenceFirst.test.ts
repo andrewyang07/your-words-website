@@ -1,11 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { parseVerseReference } from '../lib/search/referenceFirst';
+import { runClientSearch } from '../lib/search/runClientSearch';
 import type { SearchResult } from '../types/search';
 
 vi.mock('../lib/bibleDataCache', () => ({
   fetchWithCache: vi.fn(async (url: string) =>
-    JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', url), 'utf8'))
+    JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', url), 'utf8')),
   ),
 }));
 
@@ -16,9 +18,6 @@ vi.mock('../lib/search/pagefindClient', () => ({
     return { results: pagefind.results, truncated: false };
   }),
 }));
-
-import { runClientSearch } from '../lib/search/runClientSearch';
-import { parseVerseReference } from '../lib/search/referenceFirst';
 
 const books = (
   JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public/data/books.json'), 'utf8')) as {
@@ -86,24 +85,14 @@ describe('runClientSearch reference-first', () => {
     '%s puts John 3:16 first, then full-text results',
     async (q) => {
       const { results } = await runClientSearch(q);
-      expect(ids(results)).toEqual([
-        '约翰福音 3:16',
-        '约翰福音 16:3',
-        '约翰一书 3:16',
-        '约翰福音 3:17',
-      ]);
+      expect(ids(results)).toEqual(['约翰福音 3:16', '约翰福音 16:3', '约翰一书 3:16', '约翰福音 3:17']);
       expect(results[0]?.matchType).toBe('reference');
-    }
+    },
   );
 
   it('orders a range in verse order and fills verses Pagefind missed from the corpus', async () => {
     const { results } = await runClientSearch('约翰福音 3:16-18');
-    expect(ids(results).slice(0, 4)).toEqual([
-      '约翰福音 3:16',
-      '约翰福音 3:17',
-      '约翰福音 3:18',
-      '约翰福音 16:3',
-    ]);
+    expect(ids(results).slice(0, 4)).toEqual(['约翰福音 3:16', '约翰福音 3:17', '约翰福音 3:18', '约翰福音 16:3']);
     expect(results[2]?.textChinese).toContain('信');
   });
 

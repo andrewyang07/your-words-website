@@ -138,9 +138,9 @@ function SearchPageInner() {
           >
             {isHomeMode && (
               <>
-                <h1 className="mb-3 font-chinese text-4xl font-semibold tracking-tight text-stone-950 dark:text-stone-50 sm:text-5xl">
+                <h2 className="mb-3 font-chinese text-4xl font-semibold tracking-tight text-stone-950 dark:text-stone-50 sm:text-5xl">
                   {language === 'traditional' ? '聖經搜索' : '圣经搜索'}
-                </h1>
+                </h2>
                 <p className="mb-8 text-center font-chinese text-sm text-stone-600 dark:text-stone-400">
                   {language === 'traditional' ? '支持經文引用、關鍵詞、拼音搜索' : '支持经文引用、关键词、拼音搜索'}
                 </p>
