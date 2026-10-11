@@ -1,9 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, ArrowLeft, BookOpen, ChevronRight, Eye, RotateCcw } from 'lucide-react';
-import { decodeVerseList, decodeVerseRef, encodeVerseRef } from '@/lib/bibleBookMapping';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AlertCircle, ArrowLeft, BookOpen, ChevronRight, Eye, Link2, RotateCcw } from 'lucide-react';
+import { decodeVerseRef, encodeVerseRef } from '@/lib/bibleBookMapping';
+import { buildReciteUrl, MAX_RECITE_VERSES, MAX_TITLE_LEN, parseReciteParams, type ParsedReciteParams } from '@/lib/reciteLink';
+import { localDateString, shareCompletionCard } from '@/lib/memorize/completionCard';
+import { verseReference } from '@/lib/memorize/reference';
+import ReciteLinkList from '@/components/memorize/ReciteLinkList';
+import ShareReciteDialog from '@/components/memorize/ShareReciteDialog';
 import { loadCuvVersesById } from '@/lib/memorize/loadVerses';
 import {
   buildMemorizationSession,
@@ -31,7 +36,6 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import { MemorizeHelpButton, useMemorizeGuide } from '@/components/memorize/MemorizeGuide';
 import { useAppStore } from '@/stores/useAppStore';
-import booksData from '@/public/data/books.json';
 import type { Language } from '@/types/verse';
 import { DA_CHEN_ZHUYIN_ROWS, zhuyinForPhysicalKey } from '@/lib/memorize/zhuyinKeyboard';
 
@@ -51,6 +55,9 @@ const copy = {
     finished: '本轮结束', retry: '重新背诵', chooseAnother: '选择另一节', finishAndReturn: '完成并返回',
     backHome: '返回首页', title: '深度背诵', pickerHeading: '选择一节，慢慢记住',
     pickerDescription: '每次只背一节。四个阶段都可以跳过。', empty: '先收藏一节想背的经文', browse: '浏览经文',
+    nextVerse: '下一节', backToList: '返回列表', makeCard: '生成卡片', cardFailed: '卡片生成失败', cardBrand: '你的話語 yourwords.me', cardDone: '我背下来了 ✓',
+    createLink: '生成背诵链接', generate: '生成', cancel: '取消', titlePlaceholder: '给这组经文起个名字（可选）', titleLabel: '链接标题',
+    selectedCount: (n: number) => `已选 ${n} 节`, maxVerses: `一次最多 ${MAX_RECITE_VERSES} 节`, onlyFirst: `收藏超过 ${MAX_RECITE_VERSES} 节，已默认勾选前 ${MAX_RECITE_VERSES} 节`,
   },
   traditional: {
     stages: [
@@ -67,6 +74,9 @@ const copy = {
     finished: '本輪結束', retry: '重新背誦', chooseAnother: '選擇另一節', finishAndReturn: '完成並返回',
     backHome: '返回首頁', title: '深度背誦', pickerHeading: '選擇一節，慢慢記住',
     pickerDescription: '每次只背一節。四個階段都可以跳過。', empty: '先收藏一節想背的經文', browse: '瀏覽經文',
+    nextVerse: '下一節', backToList: '返回列表', makeCard: '生成卡片', cardFailed: '卡片生成失敗', cardBrand: '你的話語 yourwords.me', cardDone: '我背下來了 ✓',
+    createLink: '生成背誦連結', generate: '生成', cancel: '取消', titlePlaceholder: '給這組經文起個名字（可選）', titleLabel: '連結標題',
+    selectedCount: (n: number) => `已選 ${n} 節`, maxVerses: `一次最多 ${MAX_RECITE_VERSES} 節`, onlyFirst: `收藏超過 ${MAX_RECITE_VERSES} 節，已預設勾選前 ${MAX_RECITE_VERSES} 節`,
   },
 } as const;
 
@@ -104,6 +114,11 @@ export default function MemorizePageClient() {
   const [completed, setCompleted] = useState(false);
   const [sessionLanguage, setSessionLanguage] = useState<Language | null>(null);
   const [keyboardLayout, setKeyboardLayout] = useState<KeyboardLayout>('t9');
+  // 链接模式（?p= / ?s=）。completedIds 只在内存中，刷新即丢失（不持久化）。
+  const [link, setLink] = useState<(ParsedReciteParams & { missingCount: number }) | null>(null);
+  const [completedIds, setCompletedIds] = useState<ReadonlySet<string>>(() => new Set());
+  const [shareUrl, setShareUrl] = useState<{ url: string; title: string | null } | null>(null);
+  const [cardError, setCardError] = useState(false);
   const sessionActive = useRef(false);
   const sessionRef = useRef<MemorizationSession | null>(null);
   const taiwanReadingsSeed = useRef<string | null>(null);
@@ -151,6 +166,15 @@ export default function MemorizePageClient() {
       const requestLanguage = language;
       setLoadError(null);
       try {
+        const linkParams = parseReciteParams(window.location.search);
+        if (linkParams.source) {
+          const loadedLink = await loadCuvVersesById(linkParams.ids, requestLanguage);
+          if (cancelled) return;
+          setLink({ ...linkParams, missingCount: linkParams.ids.length - loadedLink.length });
+          setVerses(loadedLink);
+          setVersesLanguage(requestLanguage);
+          return;
+        }
         const { ids, directId } = resolveMemorizeSourceIds(window.location.search, favoriteIds);
         const loaded = await loadCuvVersesById(ids, requestLanguage);
         if (cancelled) return;
@@ -193,6 +217,7 @@ export default function MemorizePageClient() {
     if (!selected || !session) return;
     if (nextStage >= stageNeedsInitials.length) {
       setCompleted(true);
+      setCompletedIds((current) => new Set(current).add(selected.id));
       return;
     }
     const resolvedStage = nextStage as MemorizationStage;
@@ -265,11 +290,56 @@ export default function MemorizePageClient() {
 
   if (!selected || !session) {
     if (versesLanguage !== language) return <LoadingSpinner language={language} />;
-    return <VersePicker verses={verses} language={language} onSelect={(verse) => startVerse(verse, language)} guide={guide} />;
+    const openShare = (ids: string[], title: string | null) => setShareUrl({ url: buildReciteUrl({ origin: window.location.origin, ids, title }), title });
+    const shareDialog = shareUrl && (
+      <ShareReciteDialog open onClose={() => setShareUrl(null)} url={shareUrl.url} title={shareUrl.title} language={language} />
+    );
+    if (link) {
+      return (
+        <ReciteLinkList
+          verses={verses}
+          language={language}
+          title={link.title}
+          invalidCount={link.invalidCount + link.missingCount}
+          truncated={link.truncated}
+          newerSchema={link.newerSchema}
+          completedIds={completedIds}
+          onSelect={(verse) => startVerse(verse, language)}
+          onShare={() => openShare(verses.map((verse) => verse.id), link.title)}
+          helpButton={<MemorizeHelpButton label={guide.helpLabel} onClick={guide.openGuide} />}
+        >
+          {guide.dialog}
+          {shareDialog}
+        </ReciteLinkList>
+      );
+    }
+    return (
+      <VersePicker verses={verses} language={language} onSelect={(verse) => startVerse(verse, language)} guide={guide} onCreateLink={openShare}>
+        {shareDialog}
+      </VersePicker>
+    );
   }
 
   if (completed) {
     const completionFacts = completionFactsForRound(session);
+    const linkIndex = link ? verses.findIndex((verse) => verse.id === selected.id) : -1;
+    const nextLinkVerse = linkIndex >= 0 ? verses[linkIndex + 1] : undefined;
+    const backToList = () => { sessionActive.current = false; setSelected(null); setSession(null); setSessionLanguage(null); setCompleted(false); };
+    const makeCard = async () => {
+      setCardError(false);
+      try {
+        await shareCompletionCard({
+          reference: reference(selected, activeLanguage),
+          text: selected.text,
+          date: localDateString(),
+          title: link?.title ?? null,
+          brand: activeCopy.cardBrand,
+          doneLabel: activeCopy.cardDone,
+        }, `yourwords-${selected.bookKey}-${selected.chapter}-${selected.verse}.png`);
+      } catch {
+        setCardError(true);
+      }
+    };
     return (
       <main className="memorize-page flex min-h-[100dvh] flex-col px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
         <header className="mx-auto flex w-full max-w-3xl justify-end">
@@ -284,12 +354,18 @@ export default function MemorizePageClient() {
               language={activeLanguage}
               assistanceCount={completionFacts.assistanceCount}
               skippedStageCount={completionFacts.skippedStageCount}
+              cardLabel={activeCopy.makeCard}
+              onCreateCard={() => void makeCard()}
             />
+            {cardError && <p role="alert" className="mt-2 text-sm text-red-800 dark:text-red-300">{activeCopy.cardFailed}</p>}
           </div>
           <div className="mt-8 grid gap-3">
-            <button onClick={() => void restartVerse()} className="memorize-primary"><RotateCcw className="h-4 w-4" />{activeCopy.retry}</button>
-            <button onClick={() => { sessionActive.current = false; setSelected(null); setSession(null); setSessionLanguage(null); setCompleted(false); }} className="memorize-secondary">{activeCopy.chooseAnother}</button>
-            <Link href="/" className="memorize-secondary">{activeCopy.finishAndReturn}</Link>
+            {nextLinkVerse && (
+              <button onClick={() => startVerse(nextLinkVerse, language)} className="memorize-primary">{activeCopy.nextVerse}<ChevronRight className="h-4 w-4" /></button>
+            )}
+            <button onClick={() => void restartVerse()} className={nextLinkVerse ? 'memorize-secondary' : 'memorize-primary'}><RotateCcw className="h-4 w-4" />{activeCopy.retry}</button>
+            <button onClick={backToList} className="memorize-secondary">{link ? activeCopy.backToList : activeCopy.chooseAnother}</button>
+            {!link && <Link href="/" className="memorize-secondary">{activeCopy.finishAndReturn}</Link>}
           </div>
         </section>
         {guide.dialog}
@@ -630,13 +706,55 @@ function VersePicker({
   language,
   onSelect,
   guide,
+  onCreateLink,
+  children,
 }: {
   verses: Verse[];
   language: Language;
   onSelect: (verse: Verse) => void;
   guide: ReturnType<typeof useMemorizeGuide>;
+  onCreateLink: (ids: string[], title: string | null) => void;
+  children?: ReactNode;
 }) {
   const pickerCopy = copy[language];
+  const [selecting, setSelecting] = useState(false);
+  const [checked, setChecked] = useState<ReadonlySet<string>>(() => new Set());
+  const [linkTitle, setLinkTitle] = useState('');
+  const [limitNotice, setLimitNotice] = useState<string | null>(null);
+  const startSelecting = () => {
+    setChecked(new Set(verses.slice(0, MAX_RECITE_VERSES).map((verse) => verse.id)));
+    setLimitNotice(verses.length > MAX_RECITE_VERSES ? pickerCopy.onlyFirst : null);
+    setLinkTitle('');
+    setSelecting(true);
+  };
+  const toggle = (id: string) => {
+    setChecked((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else if (next.size >= MAX_RECITE_VERSES) {
+        setLimitNotice(pickerCopy.maxVerses);
+        return current;
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+  const generate = () => {
+    const ids = verses.filter((verse) => checked.has(verse.id)).map((verse) => verse.id);
+    if (ids.length === 0) return;
+    if (ids.length > MAX_RECITE_VERSES) { setLimitNotice(pickerCopy.maxVerses); return; }
+    onCreateLink(ids, linkTitle);
+  };
+  // 首页“背诵链接”入口：/memorize?create=1 直接进入勾选模式
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (autoStarted.current || verses.length === 0) return;
+    autoStarted.current = true;
+    if (new URLSearchParams(window.location.search).get('create') === '1') startSelecting();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verses.length]);
   return (
     <main className="memorize-page min-h-[100dvh] px-4 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-2xl">
@@ -666,13 +784,43 @@ function VersePicker({
             <p className="mt-4 text-lg">{pickerCopy.empty}</p>
             <Link href="/" className="memorize-primary mx-auto mt-6 max-w-xs">{pickerCopy.browse}</Link>
           </div>
+        ) : selecting ? (
+          <div className="grid gap-3">
+            <div className="liquid-glass grid gap-3 rounded-2xl p-4">
+              <input
+                type="text"
+                aria-label={pickerCopy.titleLabel}
+                maxLength={MAX_TITLE_LEN}
+                value={linkTitle}
+                onChange={(event) => setLinkTitle(event.target.value)}
+                placeholder={pickerCopy.titlePlaceholder}
+                className="w-full rounded-xl border border-stone-900/10 bg-white/70 px-3 py-2 text-base dark:border-white/10 dark:bg-white/[0.06]"
+              />
+              {limitNotice && <p role="status" className="text-sm text-amber-800 dark:text-amber-200">{limitNotice}</p>}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm text-stone-500">{pickerCopy.selectedCount(checked.size)}</span>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setSelecting(false)} className="memorize-secondary !w-auto px-4">{pickerCopy.cancel}</button>
+                  <button type="button" onClick={generate} disabled={checked.size === 0} className="memorize-primary !w-auto px-4 disabled:opacity-40">{pickerCopy.generate}</button>
+                </div>
+              </div>
+            </div>
+            {verses.map((verse) => (
+              <label key={verse.id} className="liquid-glass flex min-h-[88px] cursor-pointer gap-4 rounded-2xl p-5">
+                <input type="checkbox" checked={checked.has(verse.id)} onChange={() => toggle(verse.id)} className="mt-1 h-5 w-5 shrink-0 accent-amber-800" />
+                <span className="min-w-0"><span className="text-xs tracking-[0.18em] text-stone-500">{reference(verse, language)}</span><span className="mt-2 block line-clamp-2 leading-7">{verse.text}</span></span>
+              </label>
+            ))}
+          </div>
         ) : (
           <div className="grid gap-3">
+          <button type="button" onClick={startSelecting} className="memorize-secondary"><Link2 className="h-4 w-4" />{pickerCopy.createLink}</button>
           {verses.map((verse) => <button key={verse.id} onClick={() => onSelect(verse)} className="liquid-glass group min-h-[88px] rounded-2xl p-5 text-left transition hover:-translate-y-0.5 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:hover:bg-white/[0.07]"><span className="text-xs tracking-[0.18em] text-stone-500">{reference(verse, language)}</span><span className="mt-3 block line-clamp-4 text-lg leading-8">{verse.text}</span></button>)}
           </div>
         )}
       </div>
       {guide.dialog}
+      {children}
     </main>
   );
 }
@@ -688,9 +836,7 @@ function stageInstruction(stage: MemorizationStage, language: Language, keyboard
 }
 
 function reference(verse: Verse, language: Language) {
-  const book = booksData.books.find((candidate) => candidate.key === verse.bookKey);
-  const name = book ? (language === 'traditional' ? book.nameTraditional : book.nameSimplified) : verse.book;
-  return `${name} ${verse.chapter}:${verse.verse}`;
+  return verseReference(verse, language);
 }
 
 export function memorizeHref(verse: Verse) {
@@ -699,10 +845,9 @@ export function memorizeHref(verse: Verse) {
 
 export function resolveMemorizeSourceIds(search: string, favoriteIds: string[]) {
   const params = new URLSearchParams(search);
+  // ?p= / ?s= 由链接模式（parseReciteParams）处理；这里只处理 ?v= 与收藏。
   const encodedDirect = params.get('v');
-  const encodedShared = params.get('s');
-  const directRef = (encodedDirect ? decodeVerseRef(encodedDirect) : null)
-    ?? (encodedShared ? decodeVerseList(encodedShared)[0] : null);
+  const directRef = encodedDirect ? decodeVerseRef(encodedDirect) : null;
   const directId = directRef ? `${directRef.bookKey}-${directRef.chapter}-${directRef.verse}` : null;
   return { ids: [...new Set(directId ? [directId, ...favoriteIds] : favoriteIds)], directId };
 }

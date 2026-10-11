@@ -35,7 +35,7 @@ import { formatResultCount } from '@/lib/search/searchHelpers';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { Verse, Book } from '@/types/verse';
-import { encodeVerseList, encodeVerseRef, decodeVerseList, parseVerseId } from '@/lib/bibleBookMapping';
+import { encodeVerseList, decodeVerseList, parseVerseId } from '@/lib/bibleBookMapping';
 import { getSharedBannerCopy, getSharedVerseSaveSummary } from '@/lib/shareUtils.mjs';
 import { shareSavedVerseCollection } from '@/lib/shareCollection';
 import { logError } from '@/lib/errorHandler';
@@ -946,9 +946,9 @@ export default function HomePage() {
         newCount: sharedSaveSummary?.newCount,
         existingCount: sharedSaveSummary?.existingCount,
     });
-    const firstSharedVerse = sharedVerses[0];
-    const sharedMemorizeHref = firstSharedVerse
-        ? `/memorize?v=${encodeURIComponent(encodeVerseRef(firstSharedVerse.bookKey, firstSharedVerse.chapter, firstSharedVerse.verse))}`
+    // 背整组：/memorize?s=<同一个 s> 进入背诵链接模式（最多 50 节）
+    const sharedMemorizeHref = sharedVerses.length > 0
+        ? `/memorize?s=${encodeVerseList(sharedVerses)}`
         : '/memorize';
 
     useEffect(() => {
@@ -1276,6 +1276,16 @@ export default function HomePage() {
                                 <Share2 className="w-4 h-4" />
                                 <span className="font-chinese text-sm">{language === 'traditional' ? '複製收藏連結' : '复制收藏链接'}</span>
                             </button>
+                        )}
+                        {filterType === 'favorites' && favoritesCount > 0 && (
+                            <a
+                                href="/memorize?create=1"
+                                className="flex min-h-[44px] items-center gap-2 rounded-lg border border-amber-200 bg-white px-4 py-2 text-amber-800 shadow-sm transition-all hover:bg-amber-50 dark:border-amber-700 dark:bg-gray-800 dark:text-amber-300 dark:hover:bg-amber-900/20 touch-manipulation"
+                                title={language === 'traditional' ? '從收藏生成背誦連結' : '从收藏生成背诵链接'}
+                            >
+                                <BookOpenCheck className="w-4 h-4" />
+                                <span className="font-chinese text-sm">{language === 'traditional' ? '背誦連結' : '背诵链接'}</span>
+                            </a>
                         )}
 
                         {/* 书卷选择器 */}
