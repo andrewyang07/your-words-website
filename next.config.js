@@ -35,19 +35,13 @@ const nextConfig = {
         ],
       },
       // Cache policy for static search/data assets (see PR description):
-      // - Pagefind fragments/indexes/meta have content hashes in their file names → immutable.
+      // - Everything under /pagefind gets a short TTL, NOT `immutable`. Header rules match by path, not by file
+      //   existence, so on Vercel a 404 for a missing hashed file carries the same header; with a year-long
+      //   immutable TTL a 404 could be pinned in browsers (e.g. after a rollback restores that hash). 1h fresh +
+      //   1 day stale-while-revalidate bounds that, and the client falls back to MiniSearch when a /pagefind/
+      //   load fails (lib/search/pagefindClient.ts). Hashed files still revalidate cheaply (304).
       {
-        source: '/pagefind/:dir(fragment|index)/:file*',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
-      },
-      {
-        source: '/pagefind/:file(.*\\.pf_meta)',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
-      },
-      // - pagefind.js / pagefind-entry.json / wasm.*.pagefind etc. keep fixed names but point at the hashed files, so a
-      //   stale copy only matters briefly: short max-age + background revalidation.
-      {
-        source: '/pagefind/:file(pagefind[^.]*\\.(?:js|json|css)|wasm\\..*)',
+        source: '/pagefind/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=86400' }],
       },
       // - /data/*.json have unversioned names (Bible text rarely changes, presets change with deploys):
