@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BookOpen, Eye, Star, Share2, FileText, Palette, Globe, ChevronRight, CheckCircle, AlertCircle, Github } from 'lucide-react';
+import { BookOpen, Eye, Star, FileText, Palette, Globe, ChevronRight, CheckCircle, AlertCircle, Github } from 'lucide-react';
 import PageHeader from '@/components/layout/PageHeader';
 import SideMenu from '@/components/navigation/SideMenu';
 import { useAppStore } from '@/stores/useAppStore';

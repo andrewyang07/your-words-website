@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useMaskStore } from '@/stores/useMaskStore';
-import Select, { SelectOption } from '@/components/ui/Select';
-import Slider from '@/components/ui/Slider';
 import { RotateCcw, HelpCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useMaskStore } from '@/stores/useMaskStore';
+import Select, { type SelectOption } from '@/components/ui/Select';
+import Slider from '@/components/ui/Slider';
 import { useScriptPick } from '@/lib/useScriptPick';
 
 export default function MaskSettings() {
@@ -50,7 +50,7 @@ export default function MaskSettings() {
                     className="flex-shrink-0 w-7 h-7 flex items-center justify-center text-bible-500 hover:text-bible-700 dark:text-bible-400 dark:hover:text-bible-200 hover:bg-bible-100 dark:hover:bg-gray-700 rounded-full transition-colors touch-manipulation"
                     title={pick('查看提示模式說明', '查看提示模式说明')}
                     aria-label={pick('查看提示模式說明', '查看提示模式说明')}
-                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                     <HelpCircle className="w-4 h-4" />
                 </button>
@@ -146,7 +146,7 @@ export default function MaskSettings() {
                                 <button
                                     onClick={() => setShowHelp(false)}
                                     className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:bg-bible-100 dark:hover:bg-gray-700 rounded-full transition-colors touch-manipulation"
-                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                    style={{ WebkitTapHighlightColor: 'transparent' }}
                                     aria-label={pick('關閉', '关闭')}
                                 >
                                     <X className="w-5 h-5 text-bible-600 dark:text-bible-400" />

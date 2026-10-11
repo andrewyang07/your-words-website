@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import type { ReactNode } from 'react';
 import { ArrowLeft, BookOpen, Check, Share2 } from 'lucide-react';
 import { MAX_RECITE_VERSES } from '@/lib/reciteLink';
 import { verseReference } from '@/lib/memorize/reference';
 import type { Language, Verse } from '@/types/verse';
+import type { ReactNode } from 'react';
 
 export const reciteListCopy = {
   simplified: {

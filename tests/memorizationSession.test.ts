@@ -48,13 +48,13 @@ describe('deep memorization session', () => {
     const hiddenRuns = first.units.reduce<number[]>((runs, unit, index) => {
       if (!unit.recallable || !first.masks.partial65.has(index)) return runs;
       const previousIsHidden = first.masks.partial65.has(index - 1);
-      if (previousIsHidden) runs[runs.length - 1] += 1;
+      if (previousIsHidden) runs[runs.length - 1]! += 1;
       else runs.push(1);
       return runs;
     }, []);
     expect(Math.max(...hiddenRuns)).toBeLessThanOrEqual(4);
 
-    const clauseRanges = [[0, 7], [8, 14], [15, first.units.length - 1]];
+    const clauseRanges: Array<[number, number]> = [[0, 7], [8, 14], [15, first.units.length - 1]];
     for (const [start, end] of clauseRanges) {
       expect([...first.masks.partial65].some((index) => index >= start && index <= end)).toBe(true);
     }

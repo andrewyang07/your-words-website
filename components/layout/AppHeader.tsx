@@ -50,7 +50,7 @@ export default function AppHeader({ onMenuClick, rightButtons, subtitle }: AppHe
                     <button
                         onClick={onMenuClick}
                         className="flex items-center gap-2 px-3 md:px-4 py-2 bg-bible-100 dark:bg-gray-700 hover:bg-bible-200 dark:hover:bg-gray-600 rounded-lg transition-colors touch-manipulation min-h-[44px]"
-                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
                         title="菜单"
                         aria-label="打开菜单"
                     >

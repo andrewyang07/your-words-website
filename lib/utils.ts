@@ -1,8 +1,8 @@
 // 通用工具函数
 
-import { Verse } from '@/types/verse';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { type Verse } from '@/types/verse';
 
 // Tailwind CSS 类名合并工具
 export function cn(...inputs: ClassValue[]) {
@@ -19,7 +19,7 @@ export function shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
     }
     return shuffled;
 }

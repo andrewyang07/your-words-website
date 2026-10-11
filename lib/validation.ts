@@ -27,7 +27,7 @@ export function isValidVerseId(value: unknown): value is string {
     if (value.length === 0 || value.length > VERSE_ID_MAX_LENGTH) return false;
     if (!VERSE_ID_PATTERN.test(value)) return false;
 
-    const [book, chapter, verse] = value.split('-').map((part) => Number(part));
+    const [book = NaN, chapter = NaN, verse = NaN] = value.split('-').map((part) => Number(part));
     return book >= 1 && book <= MAX_BOOK && chapter >= 1 && chapter <= MAX_CHAPTER && verse >= 1 && verse <= MAX_VERSE;
 }
 
@@ -75,7 +75,7 @@ export function validateTrackUserBody(raw: string): TrackUserBodyResult {
     if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
         return { ok: false, error: 'Body must be a JSON object' };
     }
-    if (Object.keys(parsed as object).length > 0) {
+    if (Object.keys(parsed).length > 0) {
         return { ok: false, error: 'Unexpected fields' };
     }
     return { ok: true };

@@ -61,7 +61,7 @@ export interface CheckRateLimitDeps {
 function defaultRedis(): RateLimitRedis | null {
     if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
     try {
-        return createRedisClient() as unknown as RateLimitRedis;
+        return createRedisClient();
     } catch {
         return null;
     }

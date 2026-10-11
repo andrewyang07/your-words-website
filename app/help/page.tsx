@@ -1,7 +1,7 @@
-import type { Metadata } from 'next';
-import HelpPageClient from './HelpPageClient';
 import ScriptText from '@/components/ui/ScriptText';
 import DocumentTitle from '@/components/layout/DocumentTitle';
+import HelpPageClient from './HelpPageClient';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: '使用幫助',

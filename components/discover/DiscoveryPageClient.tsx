@@ -55,7 +55,7 @@ export default function DiscoveryPageClient() {
       }
     }
 
-    loadInitial();
+    void loadInitial();
     return () => {
       cancelled = true;
     };
@@ -83,7 +83,7 @@ export default function DiscoveryPageClient() {
       }
     }
 
-    loadChapter();
+    void loadChapter();
     return () => {
       cancelled = true;
     };

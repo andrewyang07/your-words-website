@@ -8,13 +8,13 @@ import { useAppStore } from '@/stores/useAppStore';
 import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
 import PageHeader from '@/components/layout/PageHeader';
-import type { NoteEditorHandle } from './NoteEditor';
+import { getAllNotes, getNote, saveNote, createNote, migrateFromLocalStorage, extractTitle } from '@/lib/noteStorage';
+import { buildInsertedVerseMarkdown, getInsertionToast, uniqueVerseReferences } from '@/lib/noteMarkdown';
+import { useScriptPick } from '@/lib/useScriptPick';
 import VerseReferenceList from './VerseReferenceList';
 import OcrImporter from './OcrImporter';
 import NoteList from './NoteList';
-import { getAllNotes, getNote, saveNote, createNote, migrateFromLocalStorage, extractTitle, type Note } from '@/lib/noteStorage';
-import { buildInsertedVerseMarkdown, getInsertionToast, uniqueVerseReferences } from '@/lib/noteMarkdown';
-import { useScriptPick } from '@/lib/useScriptPick';
+import type { NoteEditorHandle } from './NoteEditor';
 
 // 动态导入非关键组件以提升性能
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -70,7 +70,7 @@ export default function BibleNoteClient() {
             const notes = await getAllNotes();
             let id: string;
             if (notes.length > 0) {
-                id = notes[0].id;
+                id = notes[0]!.id;
             } else {
                 const note = await createNote();
                 id = note.id;
@@ -402,7 +402,7 @@ export default function BibleNoteClient() {
                                 onClick={() => setShowExportMenu(!showExportMenu)}
                                 disabled={!content}
                                 className="flex min-h-[44px] items-center gap-2 rounded-xl px-2.5 py-2 text-stone-600 transition hover:bg-white/55 disabled:cursor-not-allowed disabled:opacity-45 dark:text-stone-300 dark:hover:bg-white/[0.06] sm:px-3 md:px-4 touch-manipulation"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                                 title={pick('導出筆記', '导出笔记')}
                                 aria-label={pick('導出筆記', '导出笔记')}
                             >
@@ -623,7 +623,7 @@ export default function BibleNoteClient() {
                                     ? 'bg-stone-950 text-white shadow-sm dark:bg-stone-100 dark:text-stone-950'
                                     : 'text-stone-600 dark:text-stone-300 hover:bg-white/70 dark:hover:bg-white/[0.08]'
                             }`}
-                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
                         >
                             {pick('編輯', '编辑')}
                         </button>
@@ -634,7 +634,7 @@ export default function BibleNoteClient() {
                                     ? 'bg-stone-950 text-white shadow-sm dark:bg-stone-100 dark:text-stone-950'
                                     : 'text-stone-600 dark:text-stone-300 hover:bg-white/70 dark:hover:bg-white/[0.08]'
                             }`}
-                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
                         >
                             引用
                             {references.length > 0 && (
@@ -696,7 +696,7 @@ export default function BibleNoteClient() {
                             ? 'bottom-[45vh]'
                             : 'bottom-6 lg:bottom-8'
                     } right-4 lg:right-8 min-h-[48px] rounded-full border border-stone-900/10 bg-white/[.78] px-4 text-stone-800 shadow-[0_14px_40px_rgba(68,64,60,0.12)] backdrop-blur-2xl transition-all duration-300 hover:bg-white dark:border-amber-200/10 dark:bg-[#1c1812]/90 dark:text-stone-100 z-40 flex items-center justify-center gap-2 touch-manipulation`}
-                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                     title={pick('打開聖經', '打开圣经')}
                     aria-label={pick('打開聖經查看器', '打开圣经查看器')}
                 >

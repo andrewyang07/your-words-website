@@ -103,7 +103,7 @@ export function buildPinyinIndexAsync(
   function processChunk() {
     const end = Math.min(offset + chunkSize, entries.length);
     for (let i = offset; i < end; i++) {
-      const [verseId, text] = entries[i];
+      const [verseId, text] = entries[i]!;
       const py = pinyin(text, { toneType: 'none', type: 'array' })
         .join('')
         .toLowerCase();

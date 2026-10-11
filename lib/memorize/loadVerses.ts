@@ -15,7 +15,7 @@ export async function loadCuvVersesById(ids: string[], language: Language = 'sim
   const loaded = new Map<string, Verse>();
   for (const [key, verseNumbers] of groups) {
     const [bookKey, chapterText] = key.split('\u0000');
-    const verses = await loadChapterVerses(bookKey, Number(chapterText), language);
+    const verses = await loadChapterVerses(bookKey!, Number(chapterText), language);
     verses.filter((verse) => verseNumbers.has(verse.verse)).forEach((verse) => loaded.set(verse.id, verse));
   }
 

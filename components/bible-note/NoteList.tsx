@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, FileText } from 'lucide-react';
-import { getAllNotes, deleteNote, createNote } from '@/lib/noteStorage';
+import { getAllNotes, deleteNote } from '@/lib/noteStorage';
 import { useScriptPick } from '@/lib/useScriptPick';
 
 interface NoteSummary {
@@ -39,7 +39,7 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
     }, []);
 
     useEffect(() => {
-        if (isOpen) loadNotes();
+        if (isOpen) void loadNotes();
     }, [isOpen, loadNotes]);
 
     const handleDelete = async (id: string) => {
@@ -50,7 +50,7 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
 
         if (id === currentNoteId) {
             if (updated.length > 0) {
-                onSelectNote(updated[0].id);
+                onSelectNote(updated[0]!.id);
             } else {
                 onNewNote();
             }

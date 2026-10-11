@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
 import NotFoundPageClient from '@/components/layout/NotFoundPageClient';
 import DocumentTitle from '@/components/layout/DocumentTitle';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: '找不到頁面',

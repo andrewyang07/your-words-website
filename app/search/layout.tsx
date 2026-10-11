@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
 import ScriptText from '@/components/ui/ScriptText';
 import DocumentTitle from '@/components/layout/DocumentTitle';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: '聖經搜索 - 中文、英文、拼音快速查經',

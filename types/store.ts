@@ -1,6 +1,6 @@
 // Zustand Store 类型定义
 
-import { Verse, Book, Language } from './verse';
+import { type Verse, type Book, type Language } from './verse';
 
 // 应用状态
 export interface AppState {

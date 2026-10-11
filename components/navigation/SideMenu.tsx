@@ -35,7 +35,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
     const resolveBookLabel = (verse: TopVerse) => {
         const parts = verse.verseId.split('-');
         if (parts.length === 3) {
-            const order = parseInt(parts[0], 10);
+            const order = parseInt(parts[0] ?? '', 10);
             const book = booksData.books.find((b) => b.order === order);
             if (book) return getBookDisplayName(book, language);
         }
@@ -62,7 +62,7 @@ export default function SideMenu({ isOpen, onClose, theme, onThemeChange, onView
                     setTopVersesLoading(false);
                 }
             };
-            fetchTopVerses();
+            void fetchTopVerses();
         }
     }, [isOpen]);
 

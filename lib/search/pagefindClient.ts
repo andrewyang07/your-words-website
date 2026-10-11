@@ -68,27 +68,27 @@ const COMMON_SEARCH_TERMS = [
 ];
 
 function damerauLevenshtein(a: string, b: string): number {
-  const matrix = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+  const width = b.length + 1;
+  // Flat (a.length + 1) × (b.length + 1) matrix; every index below is in bounds.
+  const matrix = new Array<number>((a.length + 1) * width).fill(0);
+  const at = (i: number, j: number) => matrix[i * width + j]!;
+  const set = (i: number, j: number, value: number) => { matrix[i * width + j] = value; };
 
-  for (let i = 0; i <= a.length; i += 1) matrix[i][0] = i;
-  for (let j = 0; j <= b.length; j += 1) matrix[0][j] = j;
+  for (let i = 0; i <= a.length; i += 1) set(i, 0, i);
+  for (let j = 0; j <= b.length; j += 1) set(0, j, j);
 
   for (let i = 1; i <= a.length; i += 1) {
     for (let j = 1; j <= b.length; j += 1) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
+      set(i, j, Math.min(at(i - 1, j) + 1, at(i, j - 1) + 1, at(i - 1, j - 1) + cost));
 
       if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
-        matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + 1);
+        set(i, j, Math.min(at(i, j), at(i - 2, j - 2) + 1));
       }
     }
   }
 
-  return matrix[a.length][b.length];
+  return at(a.length, b.length);
 }
 
 function getCorrectionVariants(query: string): string[] {
@@ -168,8 +168,8 @@ export async function searchWithPagefind(
   const merged: SearchResult[] = [];
 
   for (let variantIndex = 0; variantIndex < responses.length; variantIndex += 1) {
-    const response = responses[variantIndex];
-    const variant = variants[variantIndex];
+    const response = responses[variantIndex]!;
+    const variant = variants[variantIndex]!;
     const data = await Promise.all(
       response.results.slice(0, Math.max(limit * 3, 100)).map(async (result, index) => {
         const resultData = await result.data();

@@ -97,7 +97,7 @@ describe('phraseScore / rankByPhraseVariants (John 3:16 fixture)', () => {
       [john317Trad, john316Trad],
       ['神愛世人']
     );
-    expect(ranked[0].id).toBe('约翰福音-3-16');
+    expect(ranked[0]!.id).toBe('约翰福音-3-16');
     expect(phraseScore('神愛世人', john316Trad)).toBeGreaterThan(
       phraseScore('神愛世人', john317Trad)
     );
@@ -115,7 +115,7 @@ describe('phraseScore / rankByPhraseVariants (John 3:16 fixture)', () => {
       [john317Simp, john316Simp],
       ['神爱世人']
     );
-    expect(ranked[0].id).toBe('约翰福音-3-16');
+    expect(ranked[0]!.id).toBe('约翰福音-3-16');
   });
 
   it('ranks 3:16 first when OpenCC supplies both script variants', async () => {
@@ -129,7 +129,7 @@ describe('phraseScore / rankByPhraseVariants (John 3:16 fixture)', () => {
       const variants = [query, toTraditional(query), toSimplified(query)];
       // Pagefind meta textChinese is traditional (CUVT)
       const ranked = rankByPhraseVariants([john317Trad, john316Trad], variants);
-      expect(ranked[0].id).toBe('约翰福音-3-16');
+      expect(ranked[0]!.id).toBe('约翰福音-3-16');
     }
   });
 });

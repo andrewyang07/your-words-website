@@ -1,6 +1,6 @@
 // 数据加载和处理工具
 
-import { Verse, Book, Language } from '@/types/verse';
+import { type Verse, type Book, type Language } from '@/types/verse';
 import { PRESET_VERSE_REFERENCES } from './constants';
 import { logError, logWarning } from './errorHandler';
 import { getBookDisplayName } from './uiScript';
@@ -18,7 +18,7 @@ export async function loadPresetVerses(language: Language): Promise<Verse[]> {
 
         const verses: Verse[] = [];
 
-        PRESET_VERSE_REFERENCES.forEach((ref, index) => {
+        PRESET_VERSE_REFERENCES.forEach((ref) => {
             const bookData = bibleData[ref.book];
             if (!bookData) {
                 logWarning('loadPresetVerses', `书卷不存在: ${ref.book}`);
@@ -119,7 +119,7 @@ export async function loadBooks(language: Language = 'traditional'): Promise<Boo
         const data = await response.json();
 
         // 根据语言设置 name 属性
-        return data.books.map((book: any) => ({
+        return (data.books as Omit<Book, 'id' | 'name'>[]).map((book) => ({
             ...book,
             id: book.key,
             name: language === 'simplified' ? book.nameSimplified : book.nameTraditional,

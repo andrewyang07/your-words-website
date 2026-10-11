@@ -81,7 +81,7 @@ describe('sendStats', () => {
     fetchMock.mockResolvedValue(ok());
     await vi.advanceTimersByTimeAsync(5_000);
     expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect(JSON.parse(fetchMock.mock.calls[2][1].body).verseId).toBe('43-3-16');
+    expect(JSON.parse(fetchMock.mock.calls[2]![1].body).verseId).toBe('43-3-16');
   });
 
   it('bounds the deferred queue', async () => {

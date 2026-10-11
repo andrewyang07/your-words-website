@@ -97,7 +97,7 @@ export default function SearchResultCard({
 
     if (!wasFavorite) {
       const encoded = encodeVerseRef(result.bookKey, result.chapter, result.verse);
-      sendStats('favorite', encoded);
+      void sendStats('favorite', encoded);
     }
   };
 
@@ -155,7 +155,7 @@ export default function SearchResultCard({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleCopy();
+              void handleCopy();
             }}
             className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
             title="复制"

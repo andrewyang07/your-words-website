@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ImagePlus, Loader2, ScanText, Check, X } from 'lucide-react';
 import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
 
@@ -27,7 +27,7 @@ function loadTesseractScript(): Promise<void> {
     if (window.Tesseract) return Promise.resolve();
 
     return new Promise((resolve, reject) => {
-        const existing = document.querySelector(`script[src="${TESSERACT_CDN}"]`) as HTMLScriptElement | null;
+        const existing = document.querySelector<HTMLScriptElement>(`script[src="${TESSERACT_CDN}"]`);
         if (existing) {
             existing.addEventListener('load', () => resolve());
             existing.addEventListener('error', () => reject(new Error('Failed to load OCR engine')));

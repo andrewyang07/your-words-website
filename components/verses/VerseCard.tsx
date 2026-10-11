@@ -2,9 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Verse } from '@/types/verse';
-import { CardSize } from '@/types/common';
 import { Star, BookOpen } from 'lucide-react';
+import { type Verse } from '@/types/verse';
+import { type CardSize } from '@/types/common';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { maskVerseText } from '@/lib/utils';
@@ -86,7 +86,7 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         // 只统计"收藏"动作，不统计"取消收藏"
         if (!wasFavorite) {
             const verseId = getVerseNumericId(verse);
-            sendStats('favorite', verseId);
+            void sendStats('favorite', verseId);
         }
     };
 

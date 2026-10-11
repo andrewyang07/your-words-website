@@ -51,7 +51,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         (placeholderIndexRef.current + 1) % PLACEHOLDER_EXAMPLES.length;
       if (inputRef.current && !query) {
         inputRef.current.placeholder =
-          PLACEHOLDER_EXAMPLES[placeholderIndexRef.current];
+          PLACEHOLDER_EXAMPLES[placeholderIndexRef.current] ?? '';
       }
     }, 3000);
     return () => clearInterval(interval);
@@ -108,7 +108,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       const delay = isReference ? 0 : 150;
 
       timerRef.current = setTimeout(() => {
-        performSearch(value);
+        void performSearch(value);
       }, delay);
     },
     [setQuery, setResults, performSearch]

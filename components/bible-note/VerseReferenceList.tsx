@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { BookOpen, Loader2, Sparkles } from 'lucide-react';
-import { VerseReference } from '@/lib/verseParser';
+import { type VerseReference } from '@/lib/verseParser';
 import { getVerseText } from '@/lib/verseLoader';
-import VerseCard from './VerseCard';
 import { useScriptPick } from '@/lib/useScriptPick';
+import VerseCard from './VerseCard';
 
 interface VerseWithText extends VerseReference {
     text: string | null;

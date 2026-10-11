@@ -3,7 +3,7 @@
  * 用于发送统计数据到 API
  */
 
-import { Verse } from '@/types/verse';
+import { type Verse } from '@/types/verse';
 import { encodeVerseRef } from './bibleBookMapping';
 import { isValidVerseId } from './validation';
 
@@ -15,8 +15,8 @@ import { isValidVerseId } from './validation';
 export function getVerseNumericId(verse: Verse): string {
     // 从 verse.id 中提取 bookKey
     const parts = verse.id.split('-');
-    const verseNum = parseInt(parts[parts.length - 1]);
-    const chapterNum = parseInt(parts[parts.length - 2]);
+    const verseNum = parseInt(parts[parts.length - 1] ?? '');
+    const chapterNum = parseInt(parts[parts.length - 2] ?? '');
     const bookKey = parts.slice(0, -2).join('-');
 
     return encodeVerseRef(bookKey, chapterNum, verseNum);
@@ -64,7 +64,7 @@ function scheduleFlush() {
 
 async function flushDeferredFavorites(): Promise<void> {
     while (deferredFavorites.length > 0 && Date.now() >= blockedUntil) {
-        const verseId = deferredFavorites[0];
+        const verseId = deferredFavorites[0]!;
         const result = await postFavorite(verseId);
         if (result === 'deferred') {
             // 仍被限流：保留队列，等待下一个窗口

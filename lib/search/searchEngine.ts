@@ -5,8 +5,6 @@
  */
 
 import MiniSearch from 'minisearch';
-import { parseReference } from './referenceParser';
-import { buildPinyinIndex, buildPinyinIndexAsync, searchPinyin, type PinyinIndex } from './fuzzyPinyin';
 import { fetchWithCache } from '@/lib/bibleDataCache';
 import type {
   SearchResult,
@@ -14,6 +12,8 @@ import type {
   BibleData,
   BookMapping,
 } from '@/types/search';
+import { parseReference } from './referenceParser';
+import { buildPinyinIndexAsync, searchPinyin, type PinyinIndex } from './fuzzyPinyin';
 import {
   DEFAULT_SEARCH_LIMIT,
   hasCjk,
@@ -28,7 +28,7 @@ function tokenizeChinese(text: string): string[] {
   if (!chars) return [];
   const tokens: string[] = [...chars];
   for (let i = 0; i < chars.length - 1; i++) {
-    tokens.push(chars[i] + chars[i + 1]);
+    tokens.push(chars[i]! + chars[i + 1]!);
   }
   return tokens;
 }
@@ -236,7 +236,7 @@ class SearchEngine {
           bookEnglish: bookEnglish || '',
           chapter: ref.chapter,
           verse: ref.verse,
-          textChinese: chapterData[String(ref.verse)],
+          textChinese: chapterData[String(ref.verse)]!,
           textEnglish:
             englishBook?.[String(ref.chapter)]?.[String(ref.verse)] || '',
           score: 100,
@@ -258,7 +258,7 @@ class SearchEngine {
             bookEnglish: bookEnglish || '',
             chapter: ref.chapter,
             verse: v,
-            textChinese: chapterData[String(v)],
+            textChinese: chapterData[String(v)]!,
             textEnglish:
               englishBook?.[String(ref.chapter)]?.[String(v)] || '',
             score: 90 - v,

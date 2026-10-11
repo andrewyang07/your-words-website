@@ -9,16 +9,12 @@ import {
     X,
     Eye,
     EyeOff,
-    Sun,
-    Moon,
-    Monitor,
     Languages,
     HelpCircle,
     RotateCcw,
     ChevronDown,
     Check,
     Share2,
-    Info,
     Menu,
     ArrowLeft,
     Users,
@@ -34,7 +30,7 @@ import { bookMatchesFilter, getBookDisplayName, getChromeCopy, getTestamentLabel
 import { formatResultCount } from '@/lib/search/searchHelpers';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
-import { Verse, Book } from '@/types/verse';
+import { type Verse, type Book } from '@/types/verse';
 import { encodeVerseList, decodeVerseList, parseVerseId } from '@/lib/bibleBookMapping';
 import { getSharedBannerCopy, getSharedVerseSaveSummary } from '@/lib/shareUtils.mjs';
 import { shareSavedVerseCollection } from '@/lib/shareCollection';
@@ -46,7 +42,7 @@ import ReaderTextSizeSetting from '@/components/settings/ReaderTextSizeSetting';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
-import { trackUser, getVerseNumericId } from '@/lib/statsUtils';
+import { trackUser } from '@/lib/statsUtils';
 import { useScriptPick } from '@/lib/useScriptPick';
 
 // 动态导入非关键组件以提升性能
@@ -62,7 +58,7 @@ export default function HomePage() {
     const { language, theme, setLanguage, setTheme } = useAppStore();
     const chrome = getChromeCopy(language);
     const { verses, books, loadVerses, loadBooks } = useVerseStore();
-    const { isFavorite, addFavorites, getFavoritesList } = useFavoritesStore();
+    const { addFavorites, getFavoritesList } = useFavoritesStore();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -70,7 +66,6 @@ export default function HomePage() {
     const [filterType, setFilterType] = useState<FilterType>('all');
     const [selectedBook, setSelectedBook] = useState<Book | null>(null);
     const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
-    const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [shuffleKey, setShuffleKey] = useState(0);
     const [showAllContent, setShowAllContent] = useState(false);
 
@@ -195,7 +190,7 @@ export default function HomePage() {
     // 追踪用户访问和获取全局统计
     useEffect(() => {
         // 追踪新用户
-        trackUser();
+        void trackUser();
 
         // 获取全局统计数据（带错误处理和加载状态）
         const fetchStats = async () => {
@@ -212,7 +207,7 @@ export default function HomePage() {
                 setStatsLoading(false);
             }
         };
-        fetchStats();
+        void fetchStats();
     }, []);
 
     // 关闭引导卡片
@@ -290,7 +285,7 @@ export default function HomePage() {
         // (default script, then the saved one). Ignore the stale response of the first run.
         let cancelled = false;
         setLoadingChapter(true);
-        import('@/lib/dataLoader').then(({ loadChapterVerses }) => {
+        void import('@/lib/dataLoader').then(({ loadChapterVerses }) => {
             loadChapterVerses(selectedBook.key, selectedChapter, language)
                 .then((verses) => {
                     if (cancelled) return;
@@ -398,7 +393,7 @@ export default function HomePage() {
                     }
                 };
 
-                loadSharedVerses();
+                void loadSharedVerses();
             }
         }
         return () => cancelSharedLoad();
@@ -486,7 +481,7 @@ export default function HomePage() {
             }
         };
 
-        loadAllFavorites();
+        void loadAllFavorites();
         return () => {
             cancelled = true;
         };
@@ -633,12 +628,6 @@ export default function HomePage() {
                 window.history.replaceState({}, '', window.location.pathname);
             }
         }
-    };
-
-    const handleFilterChange = (type: FilterType) => {
-        setFilterType(type);
-        setShowFilterMenu(false);
-        // 不清除分享状态，保留URL
     };
 
     const handleToggleFavorites = () => {
@@ -989,8 +978,6 @@ export default function HomePage() {
         return counts;
     }, [favoritesVersesData, books]);
 
-    const hasActiveFilters = filterType !== 'all' || selectedBook !== null;
-
     if (loading) return <LoadingSpinner language={language} />;
     if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
@@ -1047,7 +1034,7 @@ export default function HomePage() {
                                 onClick={() => setShowStatsModal(true)}
                                 className="hidden md:flex lg:hidden items-center gap-1 px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                                 title={language === 'traditional' ? '查看全站統計（非我的收藏）' : '查看全站统计（非我的收藏）'}
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
                                 {statsLoading ? (
                                     <span className="h-4 w-24 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
@@ -1068,7 +1055,7 @@ export default function HomePage() {
                                         ? (language === 'traditional' ? '查看統計' : '查看统计')
                                         : `${language === 'traditional' ? '查看統計，訪客' : '查看统计，访客'} ${globalStats.totalUsers.toLocaleString()}，${language === 'traditional' ? '全站收藏次數' : '全站收藏次数'} ${globalStats.totalFavorites.toLocaleString()}`
                                 }
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
                                 {statsLoading ? (
                                     <span className="h-4 w-4 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded-full animate-pulse-slow"></span>
@@ -1081,7 +1068,7 @@ export default function HomePage() {
                             <button
                                 onClick={handleOpenGuide}
                                 className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                                 title={language === 'traditional' ? '顯示使用幫助' : '显示使用帮助'}
                                 aria-label={language === 'traditional' ? '顯示使用幫助' : '显示使用帮助'}
                             >
@@ -1093,7 +1080,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowMaskSettingsDesktop(!showMaskSettingsDesktop)}
                                 className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                                 title={language === 'traditional' ? '打開閱讀與提示設定' : '打开阅读与提示设置'}
                                 aria-label={language === 'traditional' ? '打開閱讀與提示設定' : '打开阅读与提示设置'}
                                 aria-expanded={showMaskSettingsDesktop}
@@ -1113,7 +1100,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => handleLanguageChange(language === 'simplified' ? 'traditional' : 'simplified')}
                                 className="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                                 title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
                                 aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
                             >
@@ -1127,7 +1114,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowAllContent(!showAllContent)}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                                 title={showAllContent ? (language === 'traditional' ? '切換到背誦模式' : '切换到背诵模式') : (language === 'traditional' ? '切換到閱讀模式' : '切换到阅读模式')}
                                 aria-label={showAllContent ? (language === 'traditional' ? '切換到背誦模式' : '切换到背诵模式') : (language === 'traditional' ? '切換到閱讀模式' : '切换到阅读模式')}
                                 aria-pressed={showAllContent}
@@ -1149,7 +1136,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowMaskSettingsMobile(!showMaskSettingsMobile)}
                                 className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                                 title={`${language === 'traditional' ? '閱讀設定' : '阅读设置'}（${maskSettingsSummary}）`}
                                 aria-label={`${language === 'traditional' ? '打開閱讀與提示設定，當前' : '打开阅读与提示设置，当前'}${maskSettingsSummary}`}
                                 aria-expanded={showMaskSettingsMobile}
@@ -1162,7 +1149,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setShowSideMenu(true)}
                                 className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                                 title={language === 'traditional' ? '菜單' : '菜单'}
                                 aria-label={language === 'traditional' ? '打開菜單' : '打开菜单'}
                             >
@@ -1271,7 +1258,7 @@ export default function HomePage() {
                                 onClick={handleShareFavorites}
                                 className="flex min-h-[44px] items-center gap-2 rounded-lg border border-blue-200 bg-white px-4 py-2 text-blue-600 shadow-sm transition-all hover:bg-blue-50 dark:border-blue-700 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-blue-900/20 touch-manipulation"
                                 title={language === 'traditional' ? '複製完整收藏的分享連結' : '复制完整收藏的分享链接'}
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
                                 <Share2 className="w-4 h-4" />
                                 <span className="font-chinese text-sm">{language === 'traditional' ? '複製收藏連結' : '复制收藏链接'}</span>
@@ -1475,7 +1462,7 @@ export default function HomePage() {
                                     <a
                                         href="/bible-note"
                                         className="flex items-center gap-2 px-4 py-2 bg-bible-500 hover:bg-bible-600 text-white rounded-lg transition-colors shadow-sm touch-manipulation min-h-[44px]"
-                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        style={{ WebkitTapHighlightColor: 'transparent' }}
                                         title={pick('返回聖經筆記本', '返回圣经笔记本')}
                                     >
                                         <ArrowLeft className="w-4 h-4" />
@@ -1488,7 +1475,7 @@ export default function HomePage() {
                                     <button
                                         onClick={handleClearFilters}
                                         className="liquid-button flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] touch-manipulation"
-                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        style={{ WebkitTapHighlightColor: 'transparent' }}
                                         title={language === 'traditional' ? '返回精選經文' : '返回精选经文'}
                                     >
                                         <RotateCcw className="w-4 h-4 text-stone-600 dark:text-stone-300" />
@@ -1505,7 +1492,7 @@ export default function HomePage() {
                             <button
                                 onClick={handleShuffle}
                                 className="liquid-button flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] touch-manipulation"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                                 title="重新排列"
                             >
                                 <Shuffle className="w-4 h-4 text-stone-600 dark:text-stone-300" />
@@ -1571,7 +1558,7 @@ export default function HomePage() {
                                     <button
                                         onClick={handleAddAllShared}
                                         className="min-h-[44px] rounded-xl border border-stone-900/10 bg-stone-950 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-stone-800 dark:border-white/10 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-white font-chinese touch-manipulation"
-                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        style={{ WebkitTapHighlightColor: 'transparent' }}
                                     >
                                         {language === 'traditional' ? '一鍵收藏' : '一键收藏'}
                                     </button>
@@ -1579,7 +1566,7 @@ export default function HomePage() {
                                 <button
                                     onClick={handleCancelShare}
                                     className="min-h-[44px] rounded-xl border border-stone-900/10 bg-white/80 px-4 py-2 text-sm text-stone-600 transition hover:bg-white hover:text-stone-950 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-300 dark:hover:bg-white/[0.09] dark:hover:text-white font-chinese touch-manipulation"
-                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                    style={{ WebkitTapHighlightColor: 'transparent' }}
                                 >
                                     {sharedBannerCopy.actionLabel}
                                 </button>
@@ -1675,7 +1662,7 @@ export default function HomePage() {
                                 className="flex-shrink-0 p-1 hover:bg-bible-100 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation"
                                 title="关闭提示"
                                 aria-label="关闭提示"
-                                style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
                                 <X className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                             </button>
@@ -1700,7 +1687,7 @@ export default function HomePage() {
                                         <button
                                             onClick={handleCloseGuide}
                                             className="flex-shrink-0 ml-2 p-2 hover:bg-bible-200/50 dark:hover:bg-gray-700 rounded transition-colors touch-manipulation"
-                                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                            style={{ WebkitTapHighlightColor: 'transparent' }}
                                             title="关闭引导"
                                         >
                                             <X className="w-4 h-4 text-stone-500 dark:text-stone-400" />
@@ -2193,7 +2180,7 @@ export default function HomePage() {
                                         key={chapterNum}
                                         onClick={() => handleChapterSelect(chapterNum)}
                                         className="aspect-square flex items-center justify-center bg-bible-100 dark:bg-gray-700 text-stone-800 dark:text-stone-200 hover:bg-bible-400 hover:text-white hover:shadow-md rounded-lg font-semibold shadow-sm touch-manipulation transition-all duration-200 hover:scale-105 active:scale-95"
-                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        style={{ WebkitTapHighlightColor: 'transparent' }}
                                         title={`第 ${chapterNum} 章`}
                                     >
                                         {chapterNum}

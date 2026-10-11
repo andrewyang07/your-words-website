@@ -1,6 +1,6 @@
 'use client';
 
-import { Component, ReactNode } from 'react';
+import { Component, type ReactNode } from 'react';
 import { logError } from '@/lib/errorHandler';
 import { useScriptPick } from '@/lib/useScriptPick';
 
@@ -50,12 +50,12 @@ export class ErrorBoundary extends Component<Props, State> {
         return { hasError: true, error };
     }
 
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         // 记录错误信息
         logError('ErrorBoundary', { error, errorInfo });
     }
 
-    render() {
+    override render() {
         if (this.state.hasError) {
             // 自定义错误 UI
             if (this.props.fallback) {

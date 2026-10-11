@@ -29,7 +29,7 @@ function getCanonicalSharedVerses(verseIds: string[]) {
     .map(parseVerseId)
     .filter((verse): verse is NonNullable<typeof verse> => verse !== null && Boolean(bookKeyToId[verse.bookKey]))
     .sort((left, right) =>
-      bookKeyToId[left.bookKey] - bookKeyToId[right.bookKey]
+      bookKeyToId[left.bookKey]! - bookKeyToId[right.bookKey]!
       || left.chapter - right.chapter
       || left.verse - right.verse
     );

@@ -54,7 +54,7 @@ export const useFavoritesStore = create<FavoritesState>()(
       // 反序列化
       onRehydrateStorage: () => (state) => {
         if (state && Array.isArray(state.favorites)) {
-          state.favorites = new Set(state.favorites as any);
+          state.favorites = new Set(state.favorites);
         }
       },
     }

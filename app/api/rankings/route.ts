@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import { safeRedisScanResult, safeRedisMgetResult } from '@/lib/redisUtils';
 import { isValidVerseId } from '@/lib/validation';
 import { decodeVerseRef } from '@/lib/bibleBookMapping';
-import booksData from '@/public/data/books.json';
 import bibleDataTraditional from '@/public/data/CUVT_bible.json';
-
 import { cacheControl, RANKINGS_CACHE, EMPTY_RESULT_CACHE, NO_STORE } from '@/lib/cachePolicy';
 
 // 本地开发环境检测
@@ -85,7 +83,7 @@ export async function GET() {
             }
 
             try {
-                const bookData = (bibleDataTraditional as any)[decoded.bookKey];
+                const bookData = (bibleDataTraditional as Record<string, Record<string, Record<string, string>> | undefined>)[decoded.bookKey];
                 if (!bookData) {
                     console.error(`Book not found: ${decoded.bookKey}`);
                     return { ...item, text: '' };

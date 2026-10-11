@@ -1,7 +1,7 @@
-import type { Metadata } from 'next';
 import DocumentTitle from '@/components/layout/DocumentTitle';
 import MemorizePageClient from '@/components/memorize/MemorizePageClient';
 import { excerpt, getRecitePreview, searchParamsToString } from '@/lib/reciteLinkServer';
+import type { Metadata } from 'next';
 
 const staticMetadata: Metadata = {
   title: '深度背诵',

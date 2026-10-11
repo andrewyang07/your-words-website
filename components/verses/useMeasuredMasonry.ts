@@ -39,7 +39,7 @@ function useContainerWidth(containerRef: RefObject<HTMLDivElement | null>) {
     const observer = new ResizeObserver(([entry]) => {
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
       frameRef.current = requestAnimationFrame(() => {
-        setWidth((current) => Math.abs(current - entry.contentRect.width) > 0.5 ? entry.contentRect.width : current);
+        setWidth((current) => entry && Math.abs(current - entry.contentRect.width) > 0.5 ? entry.contentRect.width : current);
       });
     });
     observer.observe(container);

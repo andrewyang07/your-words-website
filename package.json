@@ -48,6 +48,8 @@
     "zustand": "^4.5.7"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^20.11.0",
     "@types/opencc-js": "^1.0.3",
@@ -57,11 +59,17 @@
     "autoprefixer": "^10.4.0",
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.8",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "husky": "^9.1.7",
     "jsdom": "26.1.0",
+    "lint-staged": "^17.6.0",
     "pagefind": "^1.5.2",
     "postcss": "8.5.25",
+    "prettier": "^3.9.10",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.3.0",
+    "typescript-eslint": "^8.71.1",
     "vitest": "^4.1.10"
   },
   "overrides": {

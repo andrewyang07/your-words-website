@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback , Fragment } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
-import { getChapter, getBookMetadata } from '@/lib/verseLoader';
+import { getChapter, getBookMetadata, type BookMetadata } from '@/lib/verseLoader';
 import { useScriptPick } from '@/lib/useScriptPick';
 
 interface ChapterViewerProps {
@@ -25,7 +24,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
     const [isInserting, setIsInserting] = useState(false);
     const [bookDisplayName, setBookDisplayName] = useState(book);
     const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
-    const [allBooks, setAllBooks] = useState<any[]>([]);
+    const [allBooks, setAllBooks] = useState<BookMetadata[]>([]);
     const [currentBook, setCurrentBook] = useState(book);
     const [currentChapter, setCurrentChapter] = useState(chapter);
     const [maxChapter, setMaxChapter] = useState(1);
@@ -126,8 +125,8 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
             const currentBookIndex = allBooks.findIndex((b) => b.key === currentBook);
             if (currentBookIndex > 0) {
                 const prevBook = allBooks[currentBookIndex - 1];
-                setCurrentBook(prevBook.key);
-                setCurrentChapter(prevBook.chapters);
+                setCurrentBook(prevBook!.key);
+                setCurrentChapter(prevBook!.chapters);
             }
         }
     }, [currentChapter, currentBook, allBooks]);
@@ -140,7 +139,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
             const currentBookIndex = allBooks.findIndex((b) => b.key === currentBook);
             if (currentBookIndex < allBooks.length - 1) {
                 const nextBook = allBooks[currentBookIndex + 1];
-                setCurrentBook(nextBook.key);
+                setCurrentBook(nextBook!.key);
                 setCurrentChapter(1);
             }
         }
@@ -202,7 +201,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                 book: currentBook,
                 chapter: currentChapter,
                 verse: verseNum,
-                text: verses[verseNum],
+                text: verses[verseNum] ?? '',
             }));
 
         onInsertVerses(versesToInsert);
@@ -303,7 +302,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                         onClick={handlePrevChapter}
                                         disabled={!canGoPrev}
                                         className="min-h-[40px] min-w-[40px] rounded-full border border-stone-900/10 bg-white/60 p-2 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] md:min-h-[44px] md:min-w-[44px]"
-                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        style={{ WebkitTapHighlightColor: 'transparent' }}
                                         title="上一章"
                                         aria-label="上一章"
                                     >
@@ -313,7 +312,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                         onClick={handleNextChapter}
                                         disabled={!canGoNext}
                                         className="min-h-[40px] min-w-[40px] rounded-full border border-stone-900/10 bg-white/60 p-2 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] md:min-h-[44px] md:min-w-[44px]"
-                                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                        style={{ WebkitTapHighlightColor: 'transparent' }}
                                         title="下一章"
                                         aria-label="下一章"
                                     >
@@ -324,7 +323,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                 <button
                                     onClick={onClose}
                                     className="min-h-[40px] rounded-full px-3 py-2 font-chinese text-sm text-stone-600 transition-colors hover:bg-white/70 dark:text-stone-300 dark:hover:bg-white/[0.08] md:min-h-[44px]"
-                                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                    style={{ WebkitTapHighlightColor: 'transparent' }}
                                     title={pick('關閉', '关闭')}
                                     aria-label={pick('關閉章節查看器', '关闭章节查看器')}
                                 >
@@ -400,7 +399,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                                             }}
                                                             disabled={isInserting}
                                                             className="flex min-h-[40px] min-w-[40px] flex-shrink-0 items-center justify-center gap-1 rounded-full border border-stone-900/10 bg-white/80 px-3 py-2 text-stone-700 shadow-sm transition-colors hover:bg-white disabled:opacity-40 dark:border-white/10 dark:bg-white/[0.07] dark:text-stone-100 dark:hover:bg-white/[0.1] md:min-w-0"
-                                                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                                            style={{ WebkitTapHighlightColor: 'transparent' }}
                                                             title={pick('插入此節', '插入此节')}
                                                             aria-label={pick('插入此節', '插入此节')}
                                                         >
@@ -429,7 +428,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                         <button
                                             onClick={handleClearSelection}
                                             className="min-h-[40px] rounded-full border border-stone-900/10 bg-white/70 px-3 py-2 font-chinese text-xs text-stone-600 transition-colors hover:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:text-stone-300 md:text-sm touch-manipulation"
-                                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                            style={{ WebkitTapHighlightColor: 'transparent' }}
                                         >
                                             取消
                                         </button>
@@ -437,7 +436,7 @@ export default function ChapterViewer({ isOpen, onClose, book, chapter, targetVe
                                             onClick={handleInsertSelected}
                                             disabled={isInserting}
                                             className="flex min-h-[40px] items-center gap-1 rounded-full bg-stone-950 px-3 py-2 font-chinese text-xs text-white shadow-sm transition-colors hover:bg-stone-800 disabled:opacity-40 dark:bg-stone-100 dark:text-stone-950 md:px-4 md:text-sm touch-manipulation"
-                                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                                            style={{ WebkitTapHighlightColor: 'transparent' }}
                                         >
                                             {isInserting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                                             <span>{pick('插入選中 (', '插入选中 (')}{selectedVerses.size})</span>

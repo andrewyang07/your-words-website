@@ -19,7 +19,7 @@ export default function VerseCard({
     reference,
     book,
     chapter,
-    verse,
+    verse: _verse,
     text,
     onViewChapter,
 }: VerseCardProps) {
@@ -43,7 +43,7 @@ export default function VerseCard({
                 <button
                     onClick={onViewChapter}
                     className="flex min-h-[32px] items-center gap-1 rounded-full border border-stone-900/10 bg-white/80 px-2 py-1 text-xs text-stone-600 shadow-sm transition-colors hover:bg-white hover:text-stone-950 dark:border-amber-200/10 dark:bg-[#2a2117] dark:text-stone-300 dark:hover:bg-white/[0.08] touch-manipulation"
-                    style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                     title={`查看 ${book} 第 ${chapter} 章`}
                     aria-label={`查看 ${book} 第 ${chapter} 章`}
                 >

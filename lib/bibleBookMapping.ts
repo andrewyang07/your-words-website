@@ -45,9 +45,9 @@ export function decodeVerseRef(encoded: string): {
         return null;
     }
 
-    const bookId = parseInt(parts[0], 10);
-    const chapter = parseInt(parts[1], 10);
-    const verse = parseInt(parts[2], 10);
+    const bookId = parseInt(parts[0] ?? '', 10);
+    const chapter = parseInt(parts[1] ?? '', 10);
+    const verse = parseInt(parts[2] ?? '', 10);
 
     if (isNaN(bookId) || isNaN(chapter) || isNaN(verse)) {
         return null;

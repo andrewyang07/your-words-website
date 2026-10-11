@@ -1,4 +1,5 @@
 // 经文内容加载工具（带缓存）
+import type booksJson from '@/public/data/books.json';
 
 interface BibleData {
     [bookName: string]: {
@@ -80,9 +81,13 @@ export async function getChapter(
 /**
  * 获取书卷元数据（名称和章节数）
  */
-let booksMetadata: any[] | null = null;
+export type BookMetadata = (typeof booksJson.books)[number];
 
-export async function getBookMetadata(bookKey?: string): Promise<any> {
+let booksMetadata: BookMetadata[] | null = null;
+
+export async function getBookMetadata(): Promise<BookMetadata[]>;
+export async function getBookMetadata(bookKey: string): Promise<BookMetadata | null>;
+export async function getBookMetadata(bookKey?: string): Promise<BookMetadata[] | BookMetadata | null> {
     if (!booksMetadata) {
         try {
             const response = await fetch('/data/books.json');
@@ -98,7 +103,7 @@ export async function getBookMetadata(bookKey?: string): Promise<any> {
     }
 
     if (bookKey) {
-        return booksMetadata?.find((book: any) => book.key === bookKey) || null;
+        return booksMetadata?.find((book) => book.key === bookKey) || null;
     }
 
     return booksMetadata || [];

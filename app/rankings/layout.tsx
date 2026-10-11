@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import { type Metadata } from 'next';
 import ScriptText from '@/components/ui/ScriptText';
 import DocumentTitle from '@/components/layout/DocumentTitle';
 

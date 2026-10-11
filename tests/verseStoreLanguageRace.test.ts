@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useVerseStore } from '../stores/useVerseStore';
 import type { Verse } from '../types/verse';
+
 
 const loader = vi.hoisted(() => ({
   pending: new Map<string, { resolve: (verses: Verse[]) => void; reject: (error: Error) => void }>(),
@@ -11,8 +13,6 @@ vi.mock('../lib/dataLoader', () => ({
   loadChapterVerses: vi.fn(),
   loadBooks: vi.fn(),
 }));
-
-import { useVerseStore } from '../stores/useVerseStore';
 
 const verse = (book: string, text: string): Verse => ({
   id: '创世记-1-1',
@@ -40,8 +40,8 @@ describe('useVerseStore.loadVerses language race', () => {
     loader.pending.get('traditional')!.resolve([verse('創世記', '起初，神創造天地。')]);
     await first;
 
-    expect(useVerseStore.getState().verses[0].book).toBe('创世记');
-    expect(useVerseStore.getState().verses[0].text).toBe('起初，神创造天地。');
+    expect(useVerseStore.getState().verses[0]!.book).toBe('创世记');
+    expect(useVerseStore.getState().verses[0]!.text).toBe('起初，神创造天地。');
   });
 
   it('keeps loading and resolves false when a stale request finishes while the latest is pending', async () => {

@@ -467,7 +467,7 @@ describe('deep memorization controls', () => {
     fireEvent.click(await view.findByRole('button', { name: /神爱世人/ }));
     await view.findByRole('heading', { name: '先读一遍，不急着记' });
 
-    act(() => window.dispatchEvent(new StorageEvent('storage', {
+    void act(() => window.dispatchEvent(new StorageEvent('storage', {
       key: 'your-words-app',
       newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
     })));
@@ -502,7 +502,7 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '继续' }));
     await view.findByRole('heading', { name: '凭留下的字，补全句子' });
 
-    act(() => window.dispatchEvent(new StorageEvent('storage', {
+    void act(() => window.dispatchEvent(new StorageEvent('storage', {
       key: 'your-words-app',
       newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
     })));
@@ -536,7 +536,7 @@ describe('deep memorization controls', () => {
     const view = render(<><AppStoreStorageSync /><MemorizePageClient /></>);
     await view.findByRole('heading', { name: '出错了' });
 
-    act(() => window.dispatchEvent(new StorageEvent('storage', {
+    void act(() => window.dispatchEvent(new StorageEvent('storage', {
       key: 'your-words-app',
       newValue: JSON.stringify({ state: { language: 'traditional', theme: 'system' }, version: 0 }),
     })));
@@ -982,8 +982,8 @@ describe('memorize share link (背诵链接)', () => {
 
     await view.findByRole('heading', { name: '诗篇23' });
     const second = view.getAllByRole('listitem')[1];
-    expect(within(second).getByText('已背完')).toBeTruthy();
-    expect(within(view.getAllByRole('listitem')[0]).queryByText('已背完')).toBeNull();
+    expect(within(second!).getByText('已背完')).toBeTruthy();
+    expect(within(view.getAllByRole('listitem')[0]!).queryByText('已背完')).toBeNull();
     expect(window.location.search).toBe(`?p=19-23-1~3&t=${encodeURIComponent('诗篇23')}&sv=1`);
     expect(setItem.mock.calls.filter(([key]) => !String(key).startsWith('your-words:memorize-keyboard-layout'))).toEqual([]);
   });
@@ -1045,12 +1045,12 @@ describe('memorize share link (背诵链接)', () => {
     fireEvent.click(await view.findByRole('button', { name: '生成背诵链接' }));
     const boxes = view.getAllByRole('checkbox') as HTMLInputElement[];
     expect(boxes.every((box) => box.checked)).toBe(true);
-    fireEvent.click(boxes[2]);
+    fireEvent.click(boxes[2]!);
     fireEvent.change(view.getByRole('textbox', { name: '链接标题' }), { target: { value: '小组' } });
     fireEvent.click(view.getByRole('button', { name: '生成' }));
 
     const dialog = await view.findByRole('dialog');
-    const input = within(dialog).getByRole('textbox', { name: '背诵链接网址' }) as HTMLInputElement;
+    const input = within(dialog).getByRole<HTMLInputElement>('textbox', { name: '背诵链接网址' });
     expect(input.value).toBe(`${window.location.origin}/memorize?p=19-23-1~2&t=${encodeURIComponent('小组')}&sv=1`);
     expect(within(dialog).getByRole('button', { name: '复制链接' })).toBeTruthy();
   });

@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Languages, HelpCircle, Eye, EyeOff, Filter, ChevronDown, Check } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
+import dynamic from 'next/dynamic';
 import { useAppStore } from '@/stores/useAppStore';
-import RankingsList from '@/components/rankings/RankingsList';
+import RankingsList, { type RankingItem } from '@/components/rankings/RankingsList';
 import PageHeader from '@/components/layout/PageHeader';
 import booksData from '@/public/data/books.json';
 import { getBookDisplayName, getChromeCopy } from '@/lib/uiScript';
-import dynamic from 'next/dynamic';
 import { useScriptPick } from '@/lib/useScriptPick';
 
 // 动态导入侧边栏
@@ -29,7 +29,7 @@ export default function RankingsPage() {
     const router = useRouter();
     const { language, theme, setLanguage, setTheme } = useAppStore();
     const chrome = getChromeCopy(language);
-    const [rankings, setRankings] = useState([]);
+    const [rankings, setRankings] = useState<RankingItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<'load' | 'network' | null>(null);
     const [showSideMenu, setShowSideMenu] = useState(false);
@@ -55,16 +55,16 @@ export default function RankingsPage() {
             }
         };
 
-        fetchRankings();
+        void fetchRankings();
     }, []);
     
     // 筛选排行榜
     const filteredRankings = useMemo(() => {
         if (bookFilter === 'all') return rankings;
         
-        return rankings.filter((item: any) => {
+        return rankings.filter((item: RankingItem) => {
             const [bookIndexStr] = item.verseId.split('-');
-            const bookIndex = parseInt(bookIndexStr);
+            const bookIndex = parseInt(bookIndexStr ?? '');
             const book = booksData.books.find(b => b.order === bookIndex);
             
             if (bookFilter === 'old') return book?.testament === 'old';
@@ -82,9 +82,9 @@ export default function RankingsPage() {
             books: {} as Record<string, number>
         };
         
-        rankings.forEach((item: any) => {
+        rankings.forEach((item: RankingItem) => {
             const [bookIndexStr] = item.verseId.split('-');
-            const bookIndex = parseInt(bookIndexStr);
+            const bookIndex = parseInt(bookIndexStr ?? '');
             const book = booksData.books.find(b => b.order === bookIndex);
             if (book) {
                 if (book.testament === 'old') counts.old++;
@@ -107,7 +107,7 @@ export default function RankingsPage() {
                         <button
                             onClick={() => router.push('/help')}
                             className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
-                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
                             title="显示使用帮助"
                             aria-label="显示使用帮助"
                         >
@@ -117,7 +117,7 @@ export default function RankingsPage() {
                         <button
                             onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
                             className="liquid-button hidden md:flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
-                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
                             title={language === 'simplified' ? '切换到繁体' : '切換到簡體'}
                             aria-label={language === 'simplified' ? '切换到繁体中文' : '切換到簡體中文'}
                         >
@@ -129,7 +129,7 @@ export default function RankingsPage() {
                         <button
                             onClick={() => setShowAllContent(!showAllContent)}
                             className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
-                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
                             title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
                             aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
                             aria-pressed={showAllContent}

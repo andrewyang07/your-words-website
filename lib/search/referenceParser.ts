@@ -154,10 +154,10 @@ function tryChineseReference(
   } else if (match[4]) {
     // Format: book chapter
     bookPart = match[4];
-    chapter = parseInt(match[5], 10);
+    chapter = parseInt(match[5]!, 10);
   } else {
     // Format: book only
-    bookPart = match[6];
+    bookPart = match[6]!;
   }
 
   const standardName = getStandardBookName(bookPart);
@@ -180,7 +180,7 @@ function tryEnglishReference(
   );
   if (!match) return null;
 
-  const bookPart = match[1].trim().toLowerCase();
+  const bookPart = match[1]!.trim().toLowerCase();
   const chapter = match[2] ? parseInt(match[2], 10) : undefined;
   const verse = match[3] ? parseInt(match[3], 10) : undefined;
 

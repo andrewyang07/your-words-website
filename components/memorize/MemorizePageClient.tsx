@@ -31,12 +31,11 @@ import {
 } from '@/lib/memorize/session';
 import { CompletionReward } from '@/components/memorize/CompletionReward';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
-import type { Verse } from '@/types/verse';
+import type { Verse , Language } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import { MemorizeHelpButton, useMemorizeGuide } from '@/components/memorize/MemorizeGuide';
 import { useAppStore } from '@/stores/useAppStore';
-import type { Language } from '@/types/verse';
 import { DA_CHEN_ZHUYIN_ROWS, zhuyinForPhysicalKey } from '@/lib/memorize/zhuyinKeyboard';
 
 const copy = {
@@ -194,7 +193,7 @@ export default function MemorizePageClient() {
         if (!cancelled) setLoading(false);
       }
     }
-    load();
+    void load();
     return () => { cancelled = true; };
   }, [favoriteIds, language, startVerse]);
 

@@ -66,7 +66,7 @@ export default function PageHeader({
                         <button
                             onClick={onHelpClick}
                             className="flex min-h-[44px] items-center gap-2 rounded-xl px-2.5 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] sm:px-3 md:px-4 touch-manipulation"
-                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
                             title={copy.help}
                             aria-label={copy.help}
                         >
@@ -79,7 +79,7 @@ export default function PageHeader({
                     <button
                         onClick={onMenuClick}
                         className="flex min-h-[44px] items-center gap-2 rounded-xl px-2.5 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] sm:px-3 md:px-4 touch-manipulation"
-                        style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
                         title={copy.menuButton}
                         aria-label={copy.openMenu}
                     >

@@ -117,7 +117,7 @@ export function renderCompletionCard(ctx: CardContext, data: CompletionCardData)
 
 /** 生成 PNG 并分享（支持文件分享时）或下载。用户取消分享时静默返回。 */
 export async function shareCompletionCard(data: CompletionCardData, fileName: string): Promise<'shared' | 'downloaded' | 'cancelled'> {
-  if (document.fonts?.ready) await document.fonts.ready;
+  if ('fonts' in document) await document.fonts.ready;
   const canvas = document.createElement('canvas');
   canvas.width = CARD_WIDTH;
   canvas.height = CARD_HEIGHT;

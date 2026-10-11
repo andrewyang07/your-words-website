@@ -2,7 +2,6 @@
 import { createRequire } from 'node:module';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-
 const require = createRequire(path.join(process.env.NODE_PATH ?? '', 'noop.js'));
 const { chromium } = require('playwright-core');
 const BASE = process.env.VERIFY_BASE ?? 'http://localhost:3460';

@@ -10,7 +10,7 @@ import { getBookDisplayName, getTestamentLabel } from '@/lib/uiScript';
 import booksData from '@/public/data/books.json';
 import { useScriptPick } from '@/lib/useScriptPick';
 
-interface RankingItem {
+export interface RankingItem {
     verseId: string;
     favorites: number;
     text?: string;
@@ -30,9 +30,9 @@ export default function RankingsList({ rankings }: RankingsListProps) {
     const enrichedRankings = useMemo(() => {
         return rankings.map((item) => {
             const [bookIndexStr, chapterStr, verseStr] = item.verseId.split('-');
-            const bookIndex = parseInt(bookIndexStr);
-            const chapter = parseInt(chapterStr);
-            const verse = parseInt(verseStr);
+            const bookIndex = parseInt(bookIndexStr ?? '');
+            const chapter = parseInt(chapterStr ?? '');
+            const verse = parseInt(verseStr ?? '');
 
             // 根据 bookIndex 找到对应的书卷
             const book = booksData.books.find((b) => b.order === bookIndex);
@@ -63,7 +63,7 @@ export default function RankingsList({ rankings }: RankingsListProps) {
         const wasFavorite = isFavorite(verseId);
         toggleFavorite(verseId);
         if (!wasFavorite) {
-            sendStats('favorite', numericVerseId);
+            void sendStats('favorite', numericVerseId);
         }
     };
 

@@ -73,11 +73,11 @@ export function calculateOrderedMasonry({
   const positions = items.map((item, index) => {
     let column = 0;
     for (let candidate = 1; candidate < safeColumnCount; candidate += 1) {
-      if (columnHeights[candidate] < columnHeights[column]) column = candidate;
+      if (columnHeights[candidate]! < columnHeights[column]!) column = candidate;
     }
 
-    const y = columnHeights[column];
-    columnHeights[column] += item.height + gap;
+    const y = columnHeights[column]!;
+    columnHeights[column] = y + item.height + gap;
 
     return {
       ...item,

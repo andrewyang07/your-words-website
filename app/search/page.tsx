@@ -68,7 +68,7 @@ function SearchPageInner() {
       }
     }
 
-    init();
+    void init();
 
     return () => {
       cancelled = true;

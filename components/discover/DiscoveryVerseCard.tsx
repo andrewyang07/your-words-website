@@ -2,11 +2,11 @@
 
 import { Check, Star } from 'lucide-react';
 import type { Verse } from '@/types/verse';
-import { getVerseReference } from './discoveryHelpers';
 import { getReaderTextStyle } from '@/lib/readerPreferences';
 import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { getTestamentLabel } from '@/lib/uiScript';
+import { getVerseReference } from './discoveryHelpers';
 
 interface DiscoveryVerseCardProps {
   verse: Verse;

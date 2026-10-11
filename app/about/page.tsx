@@ -1,7 +1,7 @@
-import type { Metadata } from 'next';
-import AboutPageClient from './AboutPageClient';
 import ScriptText from '@/components/ui/ScriptText';
 import DocumentTitle from '@/components/layout/DocumentTitle';
+import AboutPageClient from './AboutPageClient';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: '關於你的話語',

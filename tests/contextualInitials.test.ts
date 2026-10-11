@@ -32,13 +32,13 @@ describe('contextual Zhuyin first symbols', () => {
     ['聖靈降臨在你們身上', 'ㄕㄌㄐㄌㄗㄋㄇㄕㄕ'],
     ['圣灵降临在你们身上', 'ㄕㄌㄐㄌㄗㄋㄇㄕㄕ'],
   ])('uses Taiwan-primary readings across sampled CUV/CUVT text: %s', async (phrase, expected) => {
-    const readings = await buildTaiwanContextualPhonetics(phrase);
+    const readings = buildTaiwanContextualPhonetics(phrase);
     expect(readings.map((reading) => reading.zhuyin[0]).join('')).toBe(expected);
   });
 
   it.each(['願他們像蝸牛消化過去', '愿他们像蜗牛消化过去'])('makes the known Taiwan 蝸牛 reading primary and keeps pinyin-pro supplemental: %s', async (phrase) => {
-    const readings = await buildTaiwanContextualPhonetics(phrase);
-    const snail = readings[4];
+    const readings = buildTaiwanContextualPhonetics(phrase);
+    const snail = readings[4]!;
     expect(snail.zhuyin[0]).toBe('ㄍ');
     expect(snail.zhuyin.slice(1)).toContain('ㄨ');
     expect(snail.pinyin[0]).toBe('w');
@@ -46,7 +46,7 @@ describe('contextual Zhuyin first symbols', () => {
 
   it('keeps reasonable polyphonic first symbols as supplemental readings', () => {
     const readings = buildContextualPhonetics('長');
-    expect(readings[0].zhuyin).toEqual(expect.arrayContaining(['ㄔ', 'ㄓ']));
+    expect(readings[0]!.zhuyin).toEqual(expect.arrayContaining(['ㄔ', 'ㄓ']));
   });
 
   it('aligns phonetics only with Han Recall Units and fails safely', () => {

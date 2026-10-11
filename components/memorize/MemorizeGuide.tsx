@@ -214,10 +214,10 @@ function MemorizeGuideDialog({
       const last = controls[controls.length - 1];
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
-        last.focus();
+        last?.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
         event.preventDefault();
-        first.focus();
+        first?.focus();
       }
     };
     window.addEventListener('keydown', onKeyDown, true);

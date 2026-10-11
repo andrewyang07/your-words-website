@@ -1,6 +1,5 @@
 // 圣经经文自动补全逻辑
 
-import { getStandardBookName } from './verseParser';
 
 export interface AutocompleteOption {
     label: string; // 显示文本
@@ -167,13 +166,13 @@ function findBook(bookInput: string, books: Book[]): Book | null {
 export function isInVerseReference(text: string, cursorPosition: number): boolean {
     // 向前查找，直到遇到空白字符或开头
     let start = cursorPosition;
-    while (start > 0 && !/\s/.test(text[start - 1])) {
+    while (start > 0 && !/\s/.test(text[start - 1]!)) {
         start--;
     }
 
     // 向后查找，直到遇到空白字符或结尾
     let end = cursorPosition;
-    while (end < text.length && !/\s/.test(text[end])) {
+    while (end < text.length && !/\s/.test(text[end]!)) {
         end++;
     }
 
@@ -188,7 +187,7 @@ export function isInVerseReference(text: string, cursorPosition: number): boolea
  */
 export function extractPartialReference(text: string, cursorPosition: number): string {
     let start = cursorPosition;
-    while (start > 0 && !/[\s,，。！？；：]/.test(text[start - 1])) {
+    while (start > 0 && !/[\s,，。！？；：]/.test(text[start - 1]!)) {
         start--;
     }
 
