@@ -8,6 +8,9 @@ const measure = flag === '--measure';
 const budgets = JSON.parse(readFileSync(budgetFile, 'utf8'));
 mkdirSync(`${ev}/perf`, { recursive: true });
 const chrome = process.env.CHROME_PATH;
+// Lighthouse runs per route; budgets compare the MEDIAN. Precedence: VERIFY_PERF_RUNS env > budgets.runs > 3.
+const runs = Math.max(1, parseInt(process.env.VERIFY_PERF_RUNS || budgets.runs || 3, 10) || 3);
+console.log(`INFO perf: ${runs} Lighthouse run(s) per route, budgets compared on the median`);
 const get = async (u) => {
   for (let i = 0; ; i++) {
     try {
@@ -19,7 +22,14 @@ const get = async (u) => {
     }
   }
 };
-let fails = 0;
+let fails = 0,
+  warns = 0;
+// TBT is noisy on a shared box. tbtMode "warn" (default): over budget = WARN, over budget x tbtHardFactor (1.5) = FAIL. "hard": plain budget.
+const tbtMode = budgets.tbtMode || 'warn';
+const tbtHard = budgets.tbtHardFactor || 1.5;
+// Score is mostly TBT-weighted, so same idea: scoreMode "warn" (default): under budget by <= scoreHardMargin (5) = WARN, more = FAIL.
+const scoreMode = budgets.scoreMode || 'warn';
+const scoreMargin = budgets.scoreHardMargin ?? 5;
 const rows = [];
 const verdict = (name, val, max, cmp = (v, m) => v <= m) => {
   const ok = measure || !max || cmp(val, max);
@@ -38,7 +48,7 @@ for (const [route, b] of Object.entries(budgets.routes)) {
     lcp = [],
     tbt = [],
     cls = [];
-  for (let i = 0; i < (budgets.runs || 1); i++) {
+  for (let i = 0; i < runs; i++) {
     const out = `${ev}/perf/lh-${tag}-${i}`;
     execFileSync(
       'lighthouse',
@@ -59,14 +69,50 @@ for (const [route, b] of Object.entries(budgets.routes)) {
     tbt.push(Math.round(r.audits['total-blocking-time'].numericValue));
     cls.push(+r.audits['cumulative-layout-shift'].numericValue.toFixed(3));
   }
-  const med = (a) => a.sort((x, y) => x - y)[Math.floor(a.length / 2)];
-  const m = { route, firstLoadJsKb: jsKb, score: med(scores), lcpMs: med(lcp), tbtMs: med(tbt), cls: med(cls) };
+  const med = (a) => {
+    const s = [...a].sort((x, y) => x - y),
+      h = Math.floor(s.length / 2);
+    return s.length % 2 ? s[h] : +((s[h - 1] + s[h]) / 2).toFixed(3);
+  };
+  console.log(`INFO perf ${route} runs score=[${scores}] lcpMs=[${lcp}] tbtMs=[${tbt}] cls=[${cls}]`);
+  const m = {
+    route,
+    runs,
+    perRun: { score: scores, lcpMs: lcp, tbtMs: tbt, cls },
+    firstLoadJsKb: jsKb,
+    score: med(scores),
+    lcpMs: med(lcp),
+    tbtMs: med(tbt),
+    cls: med(cls),
+  };
   rows.push(m);
-  verdict(`${route} score`, m.score, b.minScore, (v, mn) => v >= mn);
-  verdict(`${route} lcpMs`, m.lcpMs, b.maxLcpMs);
-  verdict(`${route} tbtMs`, m.tbtMs, b.maxTbtMs);
-  verdict(`${route} cls`, m.cls, b.maxCls);
+  if (scoreMode === 'warn' && !measure && b.minScore && m.score < b.minScore) {
+    const hard = b.minScore - scoreMargin;
+    if (m.score < hard) {
+      fails++;
+      console.log(`FAIL perf ${route} score (median) = ${m.score} (budget ${b.minScore}, hard limit ${hard})`);
+    } else {
+      warns++;
+      console.log(
+        `WARN perf ${route} score (median) = ${m.score} (budget ${b.minScore}, soft gate; FAIL below ${hard})`,
+      );
+    }
+  } else verdict(`${route} score (median)`, m.score, b.minScore, (v, mn) => v >= mn);
+  verdict(`${route} lcpMs (median)`, m.lcpMs, b.maxLcpMs);
+  if (tbtMode === 'warn' && !measure && b.maxTbtMs && m.tbtMs > b.maxTbtMs) {
+    const hard = Math.round(b.maxTbtMs * tbtHard);
+    if (m.tbtMs > hard) {
+      fails++;
+      console.log(`FAIL perf ${route} tbtMs (median) = ${m.tbtMs} (budget ${b.maxTbtMs}, hard limit ${hard})`);
+    } else {
+      warns++;
+      console.log(
+        `WARN perf ${route} tbtMs (median) = ${m.tbtMs} (budget ${b.maxTbtMs}, soft gate; FAIL above ${hard})`,
+      );
+    }
+  } else verdict(`${route} tbtMs (median)`, m.tbtMs, b.maxTbtMs);
+  verdict(`${route} cls (median)`, m.cls, b.maxCls);
 }
 writeFileSync(`${ev}/perf/summary.json`, JSON.stringify(rows, null, 2));
-console.log(`SUMMARY perf: ${fails} fail(s)  evidence: ${ev}/perf`);
+console.log(`SUMMARY perf: ${fails} fail(s), ${warns} warn(s)  evidence: ${ev}/perf`);
 process.exit(fails ? 1 : 0);

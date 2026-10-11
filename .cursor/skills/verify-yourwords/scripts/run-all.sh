@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-shot proof (add --perf for the Lighthouse/JS budget gate, ~2 min): launch → doctor → HTTP checks → browser flows → cleanup. Evidence survives in .verify/evidence/<stamp>.
+# One-shot proof (add --perf for the Lighthouse/JS budget gate, adds ~5–12 min: 3 Lighthouse runs x 4 routes): launch → doctor → HTTP checks → browser flows → cleanup. Evidence survives in .verify/evidence/<stamp>.
 set -uo pipefail
 DIR="$(dirname "$0")"
 export VERIFY_EVIDENCE="${VERIFY_EVIDENCE:-${VERIFY_REPO:-$(cd "$DIR/../../../.." && pwd)}/.verify/evidence/$(date +%Y%m%d-%H%M%S)}"
