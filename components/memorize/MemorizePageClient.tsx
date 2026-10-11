@@ -55,7 +55,7 @@ const copy = {
     finished: '本轮结束', retry: '重新背诵', chooseAnother: '选择另一节', finishAndReturn: '完成并返回',
     backHome: '返回首页', title: '深度背诵', pickerHeading: '选择一节，慢慢记住',
     pickerDescription: '每次只背一节。四个阶段都可以跳过。', empty: '先收藏一节想背的经文', browse: '浏览经文',
-    nextVerse: '下一节', backToList: '返回列表', makeCard: '生成卡片', cardFailed: '卡片生成失败', cardBrand: '你的話語 yourwords.me', cardDone: '我背下来了 ✓',
+    nextVerse: '下一节', backToList: '返回列表', makeCard: '生成卡片', cardFailed: '卡片生成失败', cardBrand: '你的话语 yourwords.me', cardDone: '我背下来了 ✓',
     createLink: '生成背诵链接', generate: '生成', cancel: '取消', titlePlaceholder: '给这组经文起个名字（可选）', titleLabel: '链接标题',
     selectedCount: (n: number) => `已选 ${n} 节`, maxVerses: `一次最多 ${MAX_RECITE_VERSES} 节`, onlyFirst: `收藏超过 ${MAX_RECITE_VERSES} 节，已默认勾选前 ${MAX_RECITE_VERSES} 节`,
   },
@@ -347,7 +347,7 @@ export default function MemorizePageClient() {
         </header>
         <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center text-center">
           <p className="text-xs tracking-[0.28em] text-stone-500">{reference(selected, activeLanguage)}</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[0.08em]">{activeCopy.finished}</h1>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[0.08em]">{activeCopy.finished}</h2>
           <div className="mt-6">
             <CompletionReward
               kind="round"
@@ -433,7 +433,7 @@ export default function MemorizePageClient() {
       <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center py-5 sm:py-8">
         <div className="mb-5 text-center">
           <p className="text-xs tracking-[0.24em] text-stone-500">{reference(selected, activeLanguage)}</p>
-          <h1 className="mt-2 text-lg font-medium">{stageInstruction(stage, activeLanguage, keyboardLayout)}</h1>
+          <h2 className="mt-2 text-lg font-medium">{stageInstruction(stage, activeLanguage, keyboardLayout)}</h2>
         </div>
         <VerseExercise session={session} stage={stage} />
         {session.notes.length > 0 && (
@@ -767,7 +767,7 @@ function VersePicker({
         </header>
         <section className="py-7 sm:py-10">
           <p className="text-xs tracking-[0.28em] text-amber-800/70 dark:text-amber-200/70">{pickerCopy.title}</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[0.05em] sm:text-4xl">{pickerCopy.pickerHeading}</h1>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[0.05em] sm:text-4xl">{pickerCopy.pickerHeading}</h2>
           <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-stone-400">{pickerCopy.pickerDescription}</p>
           <ol className="mt-6 grid grid-cols-4 gap-1.5" aria-label={pickerCopy.pickerDescription}>
             {pickerCopy.stages.map(({ name }, index) => (

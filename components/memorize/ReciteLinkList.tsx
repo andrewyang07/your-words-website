@@ -70,7 +70,7 @@ export default function ReciteLinkList({
           </div>
         </header>
         <section className="py-7 sm:py-10">
-          <h1 className="text-3xl font-semibold tracking-[0.05em] sm:text-4xl">{title ?? text.defaultTitle}</h1>
+          <h2 className="text-3xl font-semibold tracking-[0.05em] sm:text-4xl">{title ?? text.defaultTitle}</h2>
           <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">{text.count(verses.length)}</p>
         </section>
         {notices.length > 0 && (

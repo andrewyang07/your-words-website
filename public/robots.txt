@@ -1,4 +1,4 @@
-# robots.txt for 你的話語
+# robots.txt for 你的话语
 User-agent: *
 Allow: /
 

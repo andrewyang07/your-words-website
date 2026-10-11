@@ -18,7 +18,7 @@ export default function AppHeader({ onMenuClick, rightButtons, subtitle }: AppHe
                     <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity" title="返回首頁">
                         <Image
                             src="/logo-light.png"
-                            alt="你的話語 Logo"
+                            alt="你的话语 Logo"
                             width={48}
                             height={48}
                             className="w-10 h-10 md:w-12 md:h-12"
@@ -31,7 +31,7 @@ export default function AppHeader({ onMenuClick, rightButtons, subtitle }: AppHe
                                     textShadow: '0 0 20px rgba(190, 158, 93, 0.3), 0 0 40px rgba(190, 158, 93, 0.15)',
                                 }}
                             >
-                                你的話語
+                                你的话语
                             </h1>
                             {subtitle && (
                                 <span className="text-sm md:text-base text-bible-600 dark:text-bible-400 font-chinese">

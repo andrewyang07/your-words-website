@@ -9,26 +9,26 @@ export const metadata: Metadata = {
         canonical: '/search',
     },
     openGraph: {
-        title: '聖經搜索 - 你的話語',
+        title: '聖經搜索 - 你的话语',
         description: '支持經文引用、關鍵詞與拼音的聖經搜索工具。',
         url: '/search',
-        siteName: '你的話語',
+        siteName: '你的话语',
         locale: 'zh_TW',
         type: 'website',
         images: [
             {
-                url: '/logo-light.png',
-                width: 1024,
-                height: 1024,
-                alt: '聖經搜索 - 你的話語',
+                url: '/og-default.png',
+                width: 1200,
+                height: 630,
+                alt: '聖經搜索 - 你的话语',
             },
         ],
     },
     twitter: {
-        card: 'summary',
-        title: '聖經搜索 - 你的話語',
+        card: 'summary_large_image',
+        title: '聖經搜索 - 你的话语',
         description: '支持經文引用、關鍵詞與拼音的聖經搜索工具。',
-        images: ['/logo-light.png'],
+        images: ['/og-default.png'],
     },
 };
 
