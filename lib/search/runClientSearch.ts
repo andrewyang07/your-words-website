@@ -22,7 +22,22 @@ export async function runClientSearch(
   if (!trimmed) return { results: [], truncated: false };
 
   try {
-    const { searchWithPagefind } = await import('./pagefindClient');
+    const pagefindClient = await import('./pagefindClient');
+    const { searchWithPagefind } = pagefindClient;
+    const chapterRef = await resolveChapterReference(trimmed);
+    if (chapterRef) {
+      // Chapter-only reference: that chapter's verses in order, then normal full-text results.
+      const [chapterVerses, response] = await Promise.all([
+        pagefindClient.searchChapterWithPagefind(chapterRef.bookOrder, chapterRef.chapter),
+        searchWithPagefind(trimmed, limit),
+      ]);
+      if (chapterVerses.length > 0) {
+        const ids = new Set(chapterVerses.map((r) => r.id));
+        const merged = [...chapterVerses, ...response.results.filter((r) => !ids.has(r.id))];
+        return { results: merged.slice(0, limit), truncated: merged.length > limit || response.truncated };
+      }
+      return response;
+    }
     const refPromise = resolveReference(trimmed);
     const response = await searchWithPagefind(trimmed, limit);
     const ref = await refPromise;
@@ -38,6 +53,16 @@ export async function runClientSearch(
       await engine.initialize();
     }
     return engine.searchWithMeta(trimmed, limit);
+  }
+}
+
+async function resolveChapterReference(query: string) {
+  if (!/\d$/.test(query) || /[:：.]/.test(query)) return null;
+  try {
+    const { parseChapterReference, loadBooks } = await import('./referenceFirst');
+    return parseChapterReference(query, await loadBooks());
+  } catch {
+    return null;
   }
 }
 

@@ -184,4 +184,23 @@ describe('home search clear (✕) with a slow in-flight search', () => {
     await new Promise((r) => setTimeout(r, 300));
     expect(pagefind.calls).toHaveLength(0);
   });
+
+  it('Escape cancels the in-flight search like ✕', async () => {
+    useAppStore.setState({ language: 'simplified' });
+    render(<HomePageClient />);
+    await waitFor(() => expect(pending.get('/data/books.json')).toBeDefined());
+    resolveAll('/data/books.json', booksJson);
+    resolveAll('/data/presets.json', presets('起初'));
+
+    const input = await screen.findByLabelText('搜索经文');
+    fireEvent.change(input, { target: { value: '神爱' } });
+    await waitFor(() => expect(pagefind.calls).toHaveLength(1));
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(screen.queryByText('正在翻找经文索引')).toBeNull();
+    expect((input as HTMLInputElement).value).toBe('');
+
+    await act(async () => pagefind.calls[0]!.resolve({ results: [staleHit], truncated: false }));
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByText(/STALE-RESULT/)).toBeNull();
+  });
 });

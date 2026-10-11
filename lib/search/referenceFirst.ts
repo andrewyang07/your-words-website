@@ -1,4 +1,5 @@
 import type { BookMapping, SearchResult } from '@/types/search';
+import { isExactBookName } from '@/lib/verseParser';
 import { parseReference } from './referenceParser';
 import { webBookName } from './webBookName';
 
@@ -11,6 +12,7 @@ export type VerseReference = {
 
 type BookRecord = {
   key: string;
+  order?: number;
   nameTraditional?: string;
   nameEnglish: string;
 };
@@ -41,6 +43,28 @@ export function parseVerseReference(query: string, bookMappings: BookMapping[]):
   const verseStart = ref.verse;
   const verseEnd = rangeEnd && rangeEnd >= verseStart ? Math.min(rangeEnd, verseStart + MAX_RANGE - 1) : verseStart;
   return { bookKey: ref.bookChinese, chapter: ref.chapter, verseStart, verseEnd };
+}
+
+export type ChapterReference = { bookKey: string; bookOrder: number; chapter: number };
+
+/**
+ * Chapter-only reference ("诗篇 23", "詩篇23", "诗 23", "Psalm 23", "Ps 23"). Chinese book names must be exact
+ * names/abbreviations so text like "以马内利 3" is not read as a reference.
+ */
+export function parseChapterReference(query: string, books: BookRecord[]): ChapterReference | null {
+  const match = /^(.+?)\s*(\d{1,3})$/.exec(query.trim());
+  if (!match?.[1] || !match[2]) return null;
+  const bookPart = match[1].trim();
+  if (/[\u3400-\u9fff]/.test(bookPart) && !isExactBookName(bookPart)) return null;
+
+  const ref = parseReference(
+    query.trim(),
+    books.map((b) => ({ key: b.key, nameEnglish: b.nameEnglish })),
+  );
+  if (!ref?.bookChinese || !ref.chapter || ref.verse) return null;
+  const book = books.find((b) => b.key === ref.bookChinese);
+  if (!book?.order) return null;
+  return { bookKey: book.key, bookOrder: book.order, chapter: ref.chapter };
 }
 
 function inRef(result: SearchResult, ref: VerseReference): boolean {
