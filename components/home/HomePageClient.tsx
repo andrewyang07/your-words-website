@@ -2304,7 +2304,7 @@ export default function HomePage() {
                                                 <span className="font-medium">5.0</span>
                                             </div>
                                         </div>
-                                        <p className="line-clamp-1 text-xs text-bible-600 dark:text-gray-400 font-chinese md:text-sm">
+                                        <p className="line-clamp-1 text-xs text-bible-800 dark:text-gray-400 font-chinese md:text-sm">
                                             {language === 'traditional'
                                                 ? '主屏幕小組件 · 雙語對照 · 把經文放在每天第一眼'
                                                 : '主屏幕小组件 · 双语对照 · 把经文放在每天第一眼'}

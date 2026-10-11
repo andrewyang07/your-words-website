@@ -347,7 +347,7 @@ export default function MemorizePageClient() {
         </header>
         <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center text-center">
           <p className="text-xs tracking-[0.28em] text-stone-500">{reference(selected, activeLanguage)}</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[0.08em]">{activeCopy.finished}</h1>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[0.08em]">{activeCopy.finished}</h2>
           <div className="mt-6">
             <CompletionReward
               kind="round"
@@ -433,7 +433,7 @@ export default function MemorizePageClient() {
       <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center py-5 sm:py-8">
         <div className="mb-5 text-center">
           <p className="text-xs tracking-[0.24em] text-stone-500">{reference(selected, activeLanguage)}</p>
-          <h1 className="mt-2 text-lg font-medium">{stageInstruction(stage, activeLanguage, keyboardLayout)}</h1>
+          <h2 className="mt-2 text-lg font-medium">{stageInstruction(stage, activeLanguage, keyboardLayout)}</h2>
         </div>
         <VerseExercise session={session} stage={stage} />
         {session.notes.length > 0 && (
@@ -767,7 +767,7 @@ function VersePicker({
         </header>
         <section className="py-7 sm:py-10">
           <p className="text-xs tracking-[0.28em] text-amber-800/70 dark:text-amber-200/70">{pickerCopy.title}</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[0.05em] sm:text-4xl">{pickerCopy.pickerHeading}</h1>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[0.05em] sm:text-4xl">{pickerCopy.pickerHeading}</h2>
           <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-stone-400">{pickerCopy.pickerDescription}</p>
           <ol className="mt-6 grid grid-cols-4 gap-1.5" aria-label={pickerCopy.pickerDescription}>
             {pickerCopy.stages.map(({ name }, index) => (
