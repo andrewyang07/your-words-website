@@ -26,7 +26,8 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
   const preview = await getRecitePreview(searchParamsToString(await searchParams));
   if (!preview) return staticMetadata;
   // 动态标题/图以背诵链接 v1 spec 为准（链接里的经文为简体 CUV，标题沿用链接作者的 t）
-  const title = preview.title ?? (preview.count > 1 ? `${preview.firstReference}等 ${preview.count} 节` : preview.firstReference);
+  const title =
+    preview.title ?? (preview.count > 1 ? `${preview.firstReference}等 ${preview.count} 节` : preview.firstReference);
   const description = excerpt(preview.firstText);
   // canonicalP 只含 0-9 - ~ ,，无需编码
   const imageQuery = `p=${preview.canonicalP}${preview.title ? `&t=${encodeURIComponent(preview.title)}` : ''}`;

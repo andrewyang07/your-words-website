@@ -4,44 +4,51 @@ import HelpPageClient from './HelpPageClient';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: '使用幫助',
+  title: '使用幫助',
+  description: '了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。',
+  alternates: {
+    canonical: '/help',
+  },
+  openGraph: {
+    title: '使用幫助 - 你的话语聖經背誦工具',
     description: '了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。',
-    alternates: {
-        canonical: '/help',
-    },
-    openGraph: {
-        title: '使用幫助 - 你的话语聖經背誦工具',
-        description: '了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。',
-        url: '/help',
-        siteName: '你的话语',
-        locale: 'zh_TW',
-        type: 'website',
-        images: [
-            {
-                url: '/og-default.png',
-                width: 1200,
-                height: 630,
-                alt: '你的话语 Logo',
-            },
-        ],
-    },
-    twitter: {
-        card: 'summary_large_image',
-        title: '使用幫助 - 你的话语聖經背誦工具',
-        description: '了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。',
-        images: ['/og-default.png'],
-    },
+    url: '/help',
+    siteName: '你的话语',
+    locale: 'zh_TW',
+    type: 'website',
+    images: [
+      {
+        url: '/og-default.png',
+        width: 1200,
+        height: 630,
+        alt: '你的话语 Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '使用幫助 - 你的话语聖經背誦工具',
+    description: '了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。',
+    images: ['/og-default.png'],
+  },
 };
 
 export default function HelpPage() {
-    return (
-        <>
-            <DocumentTitle traditional="使用幫助" simplified="使用帮助" />
-            <section className="sr-only" aria-label="使用幫助簡介">
-                <h1><ScriptText traditional="使用幫助" simplified="使用帮助" /></h1>
-                <p><ScriptText traditional="了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。" simplified="了解如何使用圣经背诵、搜索、Flash Card、收藏、分享与圣经笔记本功能。" /></p>
-            </section>
-            <HelpPageClient />
-        </>
-    );
+  return (
+    <>
+      <DocumentTitle traditional="使用幫助" simplified="使用帮助" />
+      <section className="sr-only" aria-label="使用幫助簡介">
+        <h1>
+          <ScriptText traditional="使用幫助" simplified="使用帮助" />
+        </h1>
+        <p>
+          <ScriptText
+            traditional="了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。"
+            simplified="了解如何使用圣经背诵、搜索、Flash Card、收藏、分享与圣经笔记本功能。"
+          />
+        </p>
+      </section>
+      <HelpPageClient />
+    </>
+  );
 }
