@@ -12,8 +12,7 @@ import SearchPage from '../app/search/page';
 // Serve the real bundled Bible JSON from public/data instead of the network, so the test exercises the
 // real corpus (Simplified CUV) with a Traditional query — the case that regressed.
 vi.mock('../lib/bibleDataCache', () => ({
-  fetchWithCache: async (url: string) =>
-    JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', url), 'utf8')),
+  fetchWithCache: async (url: string) => JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', url), 'utf8')),
 }));
 
 const navigation = vi.hoisted(() => ({ query: '' }));

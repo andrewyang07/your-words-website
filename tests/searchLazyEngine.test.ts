@@ -10,7 +10,7 @@ describe('/search keeps MiniSearch lazy', () => {
       const code = src(file);
       expect(code).not.toMatch(/^import .*lib\/search\/searchEngine/m);
       if (file !== 'components/search/SearchResultCard.tsx') expect(code).not.toMatch(/\.initialize\(\)/);
-    }
+    },
   );
 
   it('the root layout ships no next/font CJK webfont', () => {

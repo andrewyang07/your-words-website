@@ -10,270 +10,307 @@ import { getChromeCopy } from '@/lib/uiScript';
 import { useScriptPick } from '@/lib/useScriptPick';
 
 export default function AboutPageClient() {
-    const pick = useScriptPick();
-    const { theme, setTheme, language, setLanguage } = useAppStore();
-    const [showSideMenu, setShowSideMenu] = useState(false);
+  const pick = useScriptPick();
+  const { theme, setTheme, language, setLanguage } = useAppStore();
+  const [showSideMenu, setShowSideMenu] = useState(false);
 
-    return (
-        <div className="min-h-screen yw-page">
-            {/* 使用共用的 PageHeader */}
-            <PageHeader onMenuClick={() => setShowSideMenu(true)} showHelp={false} />
+  return (
+    <div className="min-h-screen yw-page">
+      {/* 使用共用的 PageHeader */}
+      <PageHeader onMenuClick={() => setShowSideMenu(true)} showHelp={false} />
 
-            {/* 侧边栏菜单 */}
-            <SideMenu 
-                isOpen={showSideMenu} 
-                onClose={() => setShowSideMenu(false)} 
-                theme={theme} 
-                onThemeChange={setTheme}
-                language={language}
-                onLanguageChange={setLanguage}
-            />
+      {/* 侧边栏菜单 */}
+      <SideMenu
+        isOpen={showSideMenu}
+        onClose={() => setShowSideMenu(false)}
+        theme={theme}
+        onThemeChange={setTheme}
+        language={language}
+        onLanguageChange={setLanguage}
+      />
 
-            {/* 主要内容 */}
-            <main className="yw-shell">
-                <div className="yw-panel overflow-hidden">
-                    {/* 标题部分 */}
-                    <div className="border-b border-stone-900/10 bg-white/[.42] p-6 md:p-8 dark:border-white/10 dark:bg-white/[0.035]">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="yw-icon-tile h-12 w-12">
-                                <Heart className="w-6 h-6 text-stone-700 dark:text-stone-200" />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-stone-950 dark:text-stone-50 font-chinese">{pick('你的話語', '你的话语')}</h2>
-                                <p className="text-sm text-stone-600 dark:text-stone-400 font-chinese">{pick('聖經背誦助手', '圣经背诵助手')}</p>
-                            </div>
-                        </div>
-                    </div>
+      {/* 主要内容 */}
+      <main className="yw-shell">
+        <div className="yw-panel overflow-hidden">
+          {/* 标题部分 */}
+          <div className="border-b border-stone-900/10 bg-white/[.42] p-6 md:p-8 dark:border-white/10 dark:bg-white/[0.035]">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="yw-icon-tile h-12 w-12">
+                <Heart className="w-6 h-6 text-stone-700 dark:text-stone-200" />
+              </div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-stone-950 dark:text-stone-50 font-chinese">
+                  {pick('你的話語', '你的话语')}
+                </h2>
+                <p className="text-sm text-stone-600 dark:text-stone-400 font-chinese">
+                  {pick('聖經背誦助手', '圣经背诵助手')}
+                </p>
+              </div>
+            </div>
+          </div>
 
-                    {/* 内容区域 */}
-                    <div className="p-6 md:p-8 space-y-8">
-                        {/* 项目介绍 */}
-                        <section className="space-y-4">
-                            <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
-                                <span className="text-2xl">📖</span>
-                                {pick('項目簡介', '项目简介')}
-                            </h3>
-                            <div className="text-stone-700 dark:text-stone-300 font-chinese leading-relaxed space-y-3">
-                                <p>
-                                    {pick('「你的話語」是一個專為幫助基督徒背誦聖經經文而設計的網頁應用。 通過卡片式學習、智能遮罩提示、收藏分享等功能， 讓背誦聖經變得更加輕鬆有效。', '「你的话语」是一个专为帮助基督徒背诵圣经经文而设计的网页应用。 通过卡片式学习、智能遮罩提示、收藏分享等功能， 让背诵圣经变得更加轻松有效。')}
-                                </p>
-                                <p>{pick('我們精選了 114 節核心經文，涵蓋信仰的基本真理。 你也可以自由選擇聖經 66 卷中的任意章節進行學習。', '我们精选了 114 节核心经文，涵盖信仰的基本真理。 你也可以自由选择圣经 66 卷中的任意章节进行学习。')}</p>
-                            </div>
-                        </section>
+          {/* 内容区域 */}
+          <div className="p-6 md:p-8 space-y-8">
+            {/* 项目介绍 */}
+            <section className="space-y-4">
+              <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
+                <span className="text-2xl">📖</span>
+                {pick('項目簡介', '项目简介')}
+              </h3>
+              <div className="text-stone-700 dark:text-stone-300 font-chinese leading-relaxed space-y-3">
+                <p>
+                  {pick(
+                    '「你的話語」是一個專為幫助基督徒背誦聖經經文而設計的網頁應用。 通過卡片式學習、智能遮罩提示、收藏分享等功能， 讓背誦聖經變得更加輕鬆有效。',
+                    '「你的话语」是一个专为帮助基督徒背诵圣经经文而设计的网页应用。 通过卡片式学习、智能遮罩提示、收藏分享等功能， 让背诵圣经变得更加轻松有效。',
+                  )}
+                </p>
+                <p>
+                  {pick(
+                    '我們精選了 114 節核心經文，涵蓋信仰的基本真理。 你也可以自由選擇聖經 66 卷中的任意章節進行學習。',
+                    '我们精选了 114 节核心经文，涵盖信仰的基本真理。 你也可以自由选择圣经 66 卷中的任意章节进行学习。',
+                  )}
+                </p>
+              </div>
+            </section>
 
-                        {/* 开发故事 */}
-                        <section className="space-y-4">
-                            <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
-                                <span className="text-2xl">📱</span>{pick('從 App 到 Web 的旅程', '从 App 到 Web 的旅程')}
-                            </h3>
-                            <div className="space-y-3 text-stone-700 dark:text-stone-300 font-chinese leading-relaxed">
-                                <p>
-                                    {pick('最初，我投入大量心血開發了一款名為「你的話語」的 iOS App，並成功在全球 App Store 上架。 雖然這款 App 採用卡片形式幫助弟兄姊妹背誦經文，但效果並不如預期。', '最初，我投入大量心血开发了一款名为「你的话语」的 iOS App，并成功在全球 App Store 上架。 虽然这款 App 采用卡片形式帮助弟兄姊妹背诵经文，但效果并不如预期。')}
-                                </p>
-                                <p>
-                                    {pick('然而，隨著時間推移，我逐漸意識到 App 的局限性：許多基督徒並不經常使用手機， 而網站的使用門檻更低，無需下載安裝，任何設備都能輕鬆訪問。', '然而，随着时间推移，我逐渐意识到 App 的局限性：许多基督徒并不经常使用手机， 而网站的使用门槛更低，无需下载安装，任何设备都能轻松访问。')}
-                                </p>
-                                <p>
-                                    {pick('在一次主日講道中，我突然有了新的想法（', '在一次主日讲道中，我突然有了新的想法（')}
-                                    <span className="text-amber-600 dark:text-amber-400 font-medium">
-                                        {pick('友情提醒：請不要效法我，還是要好好聽講道 😊', '友情提醒：请不要效法我，还是要好好听讲道 😊')}
-                                    </span>
-                                    {pick('），決定將這個概念轉化為網站。這兩張潦草的草圖，見證了從想法到現實的第一步。', '），决定将这个概念转化为网站。这两张潦草的草图，见证了从想法到现实的第一步。')}
-                                </p>
-                            </div>
-                        </section>
+            {/* 开发故事 */}
+            <section className="space-y-4">
+              <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
+                <span className="text-2xl">📱</span>
+                {pick('從 App 到 Web 的旅程', '从 App 到 Web 的旅程')}
+              </h3>
+              <div className="space-y-3 text-stone-700 dark:text-stone-300 font-chinese leading-relaxed">
+                <p>
+                  {pick(
+                    '最初，我投入大量心血開發了一款名為「你的話語」的 iOS App，並成功在全球 App Store 上架。 雖然這款 App 採用卡片形式幫助弟兄姊妹背誦經文，但效果並不如預期。',
+                    '最初，我投入大量心血开发了一款名为「你的话语」的 iOS App，并成功在全球 App Store 上架。 虽然这款 App 采用卡片形式帮助弟兄姊妹背诵经文，但效果并不如预期。',
+                  )}
+                </p>
+                <p>
+                  {pick(
+                    '然而，隨著時間推移，我逐漸意識到 App 的局限性：許多基督徒並不經常使用手機， 而網站的使用門檻更低，無需下載安裝，任何設備都能輕鬆訪問。',
+                    '然而，随着时间推移，我逐渐意识到 App 的局限性：许多基督徒并不经常使用手机， 而网站的使用门槛更低，无需下载安装，任何设备都能轻松访问。',
+                  )}
+                </p>
+                <p>
+                  {pick('在一次主日講道中，我突然有了新的想法（', '在一次主日讲道中，我突然有了新的想法（')}
+                  <span className="text-amber-600 dark:text-amber-400 font-medium">
+                    {pick('友情提醒：請不要效法我，還是要好好聽講道 😊', '友情提醒：请不要效法我，还是要好好听讲道 😊')}
+                  </span>
+                  {pick(
+                    '），決定將這個概念轉化為網站。這兩張潦草的草圖，見證了從想法到現實的第一步。',
+                    '），决定将这个概念转化为网站。这两张潦草的草图，见证了从想法到现实的第一步。',
+                  )}
+                </p>
+              </div>
+            </section>
 
-                        {/* 草图展示 */}
-                        <section className="space-y-4">
-                            <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
-                                <span className="text-2xl">✏️</span>
-                                {pick('構思草圖', '构思草图')}
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
-                                    <Image
-                                        src="/sketch-1.jpg"
-                                        alt={pick('網站構思草圖 1', '网站构思草图 1')}
-                                        width={600}
-                                        height={450}
-                                        loading="lazy"
-                                        quality={85}
-                                        className="w-full h-auto object-cover"
-                                    />
-                                    <p className="p-2 text-xs text-center text-stone-500 dark:text-stone-400">{pick('構思草圖（一）', '构思草图（一）')}</p>
-                                </div>
-                                <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
-                                    <Image
-                                        src="/sketch-2.jpg"
-                                        alt={pick('網站構思草圖 2', '网站构思草图 2')}
-                                        width={600}
-                                        height={450}
-                                        loading="lazy"
-                                        quality={85}
-                                        className="w-full h-auto object-cover"
-                                    />
-                                    <p className="p-2 text-xs text-center text-stone-500 dark:text-stone-400">{pick('構思草圖（二）', '构思草图（二）')}</p>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* 开发背景 */}
-                        <section className="space-y-4">
-                            <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
-                                <span className="text-2xl">✨</span>
-                                {pick('開發初衷', '开发初衷')}
-                            </h3>
-                            <div className="yw-section-card md:p-6">
-                                <p className="text-stone-700 dark:text-stone-300 font-chinese leading-relaxed mb-3">
-                                    {pick('這個項目的誕生源於對神話語的渴慕。作為開發者，我深信：', '这个项目的诞生源于对神话语的渴慕。作为开发者，我深信：')}
-                                </p>
-                                <blockquote className="border-l-4 border-bible-500 dark:border-bible-400 pl-4 italic text-stone-600 dark:text-stone-400 font-chinese">
-                                    {pick('「你的話是我腳前的燈，是我路上的光。」', '「你的话是我脚前的灯，是我路上的光。」')}
-                                    <br />
-                                    <span className="text-xs">{pick('— 詩篇 119:105', '— 诗篇 119:105')}</span>
-                                </blockquote>
-                                <p className="text-stone-700 dark:text-stone-300 font-chinese leading-relaxed mt-4">
-                                    {pick('我投入了大量心血開發這個工具，希望能幫助更多弟兄姐妹將神的話語藏在心裡。 這不僅是一個技術項目，更是一份屬靈的服事。', '我投入了大量心血开发这个工具，希望能帮助更多弟兄姐妹将神的话语藏在心里。 这不仅是一个技术项目，更是一份属灵的服事。')}
-                                </p>
-                            </div>
-                        </section>
-
-                        {/* iPhone App 推广 */}
-                        <section className="space-y-4">
-                            <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
-                                <span className="text-2xl">📱</span>
-                                心版 iOS App
-                            </h3>
-                            <div className="yw-section-card md:p-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="flex-shrink-0">
-                                        <Image
-                                            src="/xinban-logo.jpg"
-                                            alt="心版 App"
-                                            width={80}
-                                            height={80}
-                                            loading="lazy"
-                                            quality={85}
-                                            className="rounded-xl shadow-md"
-                                        />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h4 className="text-lg font-bold text-stone-950 dark:text-stone-50 font-chinese mb-2">
-                                            {language === 'traditional' ? 'iPhone 用戶推薦' : 'iPhone 用户推荐'}
-                                        </h4>
-                                        <p className="text-sm text-stone-700 dark:text-stone-300 font-chinese leading-relaxed mb-3">
-                                            {language === 'traditional'
-                                                ? '使用 iPhone？試試「心版」iOS App！ 將經文以小組件形式展示在主屏幕上， 每次解鎖手機，第一眼就看到神的話語。'
-                                                : '使用 iPhone？试试「心版」iOS App！ 将经文以小组件形式展示在主屏幕上， 每次解锁手机，第一眼就看到神的话语。'}
-                                        </p>
-                                        <p className="text-xs text-stone-600 dark:text-stone-400 font-chinese mb-3">
-                                            {getChromeCopy(language).xinbanPromoPara2}
-                                        </p>
-                                        <a
-                                            href="https://apps.apple.com/app/6744570052"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-chinese text-sm shadow-md"
-                                        >
-                                            {language === 'traditional' ? '前往 App Store 下載' : '前往 App Store 下载'}
-                                            <span>→</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* 开源项目 */}
-                        <section className="space-y-4">
-                            <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
-                                <Github className="w-6 h-6" />
-                                {pick('開源項目', '开源项目')}
-                            </h3>
-                            <div className="space-y-4">
-                                <div className="text-stone-700 dark:text-stone-300 font-chinese leading-relaxed">
-                                    <p className="mb-3">
-                                        {pick('這個項目已經開源！歡迎志同道合的開發者一起參與。 無論是代碼貢獻、功能建議，還是發現問題，都歡迎聯繫我。', '这个项目已经开源！欢迎志同道合的开发者一起参与。 无论是代码贡献、功能建议，还是发现问题，都欢迎联系我。')}
-                                    </p>
-                                </div>
-
-                                {/* GitHub 仓库信息 */}
-                                <div className="yw-section-card">
-                                    <div className="flex items-start gap-3">
-                                        <Github className="w-8 h-8 text-gray-700 dark:text-gray-300 flex-shrink-0 mt-1" />
-                                        <div className="flex-1">
-                                            <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200 font-chinese mb-2">{pick('GitHub 倉庫', 'GitHub 仓库')}</h4>
-                                            <a
-                                                href="https://github.com/andrewyang07/your-words-website"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-stone-700 dark:text-blue-400 hover:underline text-sm mb-3 block break-all"
-                                            >
-                                                github.com/andrewyang07/your-words-website
-                                            </a>
-                                            <div className="flex flex-wrap gap-2 mb-3">
-                                                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
-                                                    MIT License
-                                                </span>
-                                                <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs">
-                                                    TypeScript
-                                                </span>
-                                                <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded text-xs">
-                                                    Next.js
-                                                </span>
-                                            </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                                                <a
-                                                    href="https://github.com/andrewyang07/your-words-website/issues"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-stone-700 dark:hover:text-blue-400"
-                                                >
-                                                    <span>🐛</span>
-                                                    <span>{pick('報告 Bug', '报告 Bug')}</span>
-                                                </a>
-                                                <a
-                                                    href="https://github.com/andrewyang07/your-words-website/issues"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-stone-700 dark:hover:text-blue-400"
-                                                >
-                                                    <span>💡</span>
-                                                    <span>{pick('功能建議', '功能建议')}</span>
-                                                </a>
-                                                <a
-                                                    href="https://github.com/andrewyang07/your-words-website"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-stone-700 dark:hover:text-blue-400"
-                                                >
-                                                    <span>⭐</span>
-                                                    <span>{pick('給個 Star', '给个 Star')}</span>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* 联系方式 */}
-                                <div className="flex items-center gap-2 text-stone-600 dark:text-stone-400">
-                                    <Mail className="w-5 h-5" />
-                                    <span className="text-sm">{pick('聯繫郵箱：', '联系邮箱：')}</span>
-                                    <a href="mailto:yy9577@gmail.com" className="text-stone-700 dark:text-blue-400 hover:underline">
-                                        yy9577@gmail.com
-                                    </a>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* 版权信息 */}
-                        <section className="pt-6 border-t border-bible-200 dark:border-gray-700">
-                            <p className="text-center text-sm text-stone-500 dark:text-stone-400 font-chinese">
-                                {pick('© 2025 你的話語 · 願神的話語照亮你的人生道路', '© 2025 你的话语 · 愿神的话语照亮你的人生道路')}
-                            </p>
-                        </section>
-                    </div>
+            {/* 草图展示 */}
+            <section className="space-y-4">
+              <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
+                <span className="text-2xl">✏️</span>
+                {pick('構思草圖', '构思草图')}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
+                  <Image
+                    src="/sketch-1.jpg"
+                    alt={pick('網站構思草圖 1', '网站构思草图 1')}
+                    width={600}
+                    height={450}
+                    loading="lazy"
+                    quality={85}
+                    className="w-full h-auto object-cover"
+                  />
+                  <p className="p-2 text-xs text-center text-stone-500 dark:text-stone-400">
+                    {pick('構思草圖（一）', '构思草图（一）')}
+                  </p>
                 </div>
-            </main>
+                <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-md border border-bible-200 dark:border-gray-600">
+                  <Image
+                    src="/sketch-2.jpg"
+                    alt={pick('網站構思草圖 2', '网站构思草图 2')}
+                    width={600}
+                    height={450}
+                    loading="lazy"
+                    quality={85}
+                    className="w-full h-auto object-cover"
+                  />
+                  <p className="p-2 text-xs text-center text-stone-500 dark:text-stone-400">
+                    {pick('構思草圖（二）', '构思草图（二）')}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* 开发背景 */}
+            <section className="space-y-4">
+              <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
+                <span className="text-2xl">✨</span>
+                {pick('開發初衷', '开发初衷')}
+              </h3>
+              <div className="yw-section-card md:p-6">
+                <p className="text-stone-700 dark:text-stone-300 font-chinese leading-relaxed mb-3">
+                  {pick(
+                    '這個項目的誕生源於對神話語的渴慕。作為開發者，我深信：',
+                    '这个项目的诞生源于对神话语的渴慕。作为开发者，我深信：',
+                  )}
+                </p>
+                <blockquote className="border-l-4 border-bible-500 dark:border-bible-400 pl-4 italic text-stone-600 dark:text-stone-400 font-chinese">
+                  {pick('「你的話是我腳前的燈，是我路上的光。」', '「你的话是我脚前的灯，是我路上的光。」')}
+                  <br />
+                  <span className="text-xs">{pick('— 詩篇 119:105', '— 诗篇 119:105')}</span>
+                </blockquote>
+                <p className="text-stone-700 dark:text-stone-300 font-chinese leading-relaxed mt-4">
+                  {pick(
+                    '我投入了大量心血開發這個工具，希望能幫助更多弟兄姐妹將神的話語藏在心裡。 這不僅是一個技術項目，更是一份屬靈的服事。',
+                    '我投入了大量心血开发这个工具，希望能帮助更多弟兄姐妹将神的话语藏在心里。 这不仅是一个技术项目，更是一份属灵的服事。',
+                  )}
+                </p>
+              </div>
+            </section>
+
+            {/* iPhone App 推广 */}
+            <section className="space-y-4">
+              <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
+                <span className="text-2xl">📱</span>
+                心版 iOS App
+              </h3>
+              <div className="yw-section-card md:p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <Image
+                      src="/xinban-logo.jpg"
+                      alt="心版 App"
+                      width={80}
+                      height={80}
+                      loading="lazy"
+                      quality={85}
+                      className="rounded-xl shadow-md"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-lg font-bold text-stone-950 dark:text-stone-50 font-chinese mb-2">
+                      {language === 'traditional' ? 'iPhone 用戶推薦' : 'iPhone 用户推荐'}
+                    </h4>
+                    <p className="text-sm text-stone-700 dark:text-stone-300 font-chinese leading-relaxed mb-3">
+                      {language === 'traditional'
+                        ? '使用 iPhone？試試「心版」iOS App！ 將經文以小組件形式展示在主屏幕上， 每次解鎖手機，第一眼就看到神的話語。'
+                        : '使用 iPhone？试试「心版」iOS App！ 将经文以小组件形式展示在主屏幕上， 每次解锁手机，第一眼就看到神的话语。'}
+                    </p>
+                    <p className="text-xs text-stone-600 dark:text-stone-400 font-chinese mb-3">
+                      {getChromeCopy(language).xinbanPromoPara2}
+                    </p>
+                    <a
+                      href="https://apps.apple.com/app/6744570052"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-chinese text-sm shadow-md"
+                    >
+                      {language === 'traditional' ? '前往 App Store 下載' : '前往 App Store 下载'}
+                      <span>→</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* 开源项目 */}
+            <section className="space-y-4">
+              <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 font-chinese flex items-center gap-2">
+                <Github className="w-6 h-6" />
+                {pick('開源項目', '开源项目')}
+              </h3>
+              <div className="space-y-4">
+                <div className="text-stone-700 dark:text-stone-300 font-chinese leading-relaxed">
+                  <p className="mb-3">
+                    {pick(
+                      '這個項目已經開源！歡迎志同道合的開發者一起參與。 無論是代碼貢獻、功能建議，還是發現問題，都歡迎聯繫我。',
+                      '这个项目已经开源！欢迎志同道合的开发者一起参与。 无论是代码贡献、功能建议，还是发现问题，都欢迎联系我。',
+                    )}
+                  </p>
+                </div>
+
+                {/* GitHub 仓库信息 */}
+                <div className="yw-section-card">
+                  <div className="flex items-start gap-3">
+                    <Github className="w-8 h-8 text-gray-700 dark:text-gray-300 flex-shrink-0 mt-1" />
+                    <div className="flex-1">
+                      <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200 font-chinese mb-2">
+                        {pick('GitHub 倉庫', 'GitHub 仓库')}
+                      </h4>
+                      <a
+                        href="https://github.com/andrewyang07/your-words-website"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-stone-700 dark:text-blue-400 hover:underline text-sm mb-3 block break-all"
+                      >
+                        github.com/andrewyang07/your-words-website
+                      </a>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
+                          MIT License
+                        </span>
+                        <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs">
+                          TypeScript
+                        </span>
+                        <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded text-xs">
+                          Next.js
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                        <a
+                          href="https://github.com/andrewyang07/your-words-website/issues"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-stone-700 dark:hover:text-blue-400"
+                        >
+                          <span>🐛</span>
+                          <span>{pick('報告 Bug', '报告 Bug')}</span>
+                        </a>
+                        <a
+                          href="https://github.com/andrewyang07/your-words-website/issues"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-stone-700 dark:hover:text-blue-400"
+                        >
+                          <span>💡</span>
+                          <span>{pick('功能建議', '功能建议')}</span>
+                        </a>
+                        <a
+                          href="https://github.com/andrewyang07/your-words-website"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-stone-700 dark:hover:text-blue-400"
+                        >
+                          <span>⭐</span>
+                          <span>{pick('給個 Star', '给个 Star')}</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 联系方式 */}
+                <div className="flex items-center gap-2 text-stone-600 dark:text-stone-400">
+                  <Mail className="w-5 h-5" />
+                  <span className="text-sm">{pick('聯繫郵箱：', '联系邮箱：')}</span>
+                  <a href="mailto:yy9577@gmail.com" className="text-stone-700 dark:text-blue-400 hover:underline">
+                    yy9577@gmail.com
+                  </a>
+                </div>
+              </div>
+            </section>
+
+            {/* 版权信息 */}
+            <section className="pt-6 border-t border-bible-200 dark:border-gray-700">
+              <p className="text-center text-sm text-stone-500 dark:text-stone-400 font-chinese">
+                {pick('© 2025 你的話語 · 願神的話語照亮你的人生道路', '© 2025 你的话语 · 愿神的话语照亮你的人生道路')}
+              </p>
+            </section>
+          </div>
         </div>
-    );
+      </main>
+    </div>
+  );
 }

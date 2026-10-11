@@ -15,10 +15,7 @@ describe('uiScript', () => {
     expect(getBookDisplayName('创世记', 'traditional')).toBe('創世記');
     expect(getBookDisplayName('創世記', 'simplified')).toBe('创世记');
     expect(
-      getBookDisplayName(
-        { key: '约翰福音', nameSimplified: '约翰福音', nameTraditional: '約翰福音' },
-        'traditional'
-      )
+      getBookDisplayName({ key: '约翰福音', nameSimplified: '约翰福音', nameTraditional: '約翰福音' }, 'traditional'),
     ).toBe('約翰福音');
   });
 

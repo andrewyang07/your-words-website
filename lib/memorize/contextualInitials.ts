@@ -27,17 +27,43 @@ export function buildContextualInitials(
 }
 
 const zhuyinConsonants: ReadonlyArray<readonly [string, string]> = [
-  ['zh', 'ㄓ'], ['ch', 'ㄔ'], ['sh', 'ㄕ'],
-  ['b', 'ㄅ'], ['p', 'ㄆ'], ['m', 'ㄇ'], ['f', 'ㄈ'],
-  ['d', 'ㄉ'], ['t', 'ㄊ'], ['n', 'ㄋ'], ['l', 'ㄌ'],
-  ['g', 'ㄍ'], ['k', 'ㄎ'], ['h', 'ㄏ'],
-  ['j', 'ㄐ'], ['q', 'ㄑ'], ['x', 'ㄒ'],
-  ['r', 'ㄖ'], ['z', 'ㄗ'], ['c', 'ㄘ'], ['s', 'ㄙ'],
+  ['zh', 'ㄓ'],
+  ['ch', 'ㄔ'],
+  ['sh', 'ㄕ'],
+  ['b', 'ㄅ'],
+  ['p', 'ㄆ'],
+  ['m', 'ㄇ'],
+  ['f', 'ㄈ'],
+  ['d', 'ㄉ'],
+  ['t', 'ㄊ'],
+  ['n', 'ㄋ'],
+  ['l', 'ㄌ'],
+  ['g', 'ㄍ'],
+  ['k', 'ㄎ'],
+  ['h', 'ㄏ'],
+  ['j', 'ㄐ'],
+  ['q', 'ㄑ'],
+  ['x', 'ㄒ'],
+  ['r', 'ㄖ'],
+  ['z', 'ㄗ'],
+  ['c', 'ㄘ'],
+  ['s', 'ㄙ'],
 ];
 
 const zhuyinZeroInitials: ReadonlyArray<readonly [string, string]> = [
-  ['ang', 'ㄤ'], ['eng', 'ㄥ'], ['ai', 'ㄞ'], ['ei', 'ㄟ'], ['ao', 'ㄠ'], ['ou', 'ㄡ'],
-  ['an', 'ㄢ'], ['en', 'ㄣ'], ['er', 'ㄦ'], ['a', 'ㄚ'], ['o', 'ㄛ'], ['ê', 'ㄝ'], ['e', 'ㄜ'],
+  ['ang', 'ㄤ'],
+  ['eng', 'ㄥ'],
+  ['ai', 'ㄞ'],
+  ['ei', 'ㄟ'],
+  ['ao', 'ㄠ'],
+  ['ou', 'ㄡ'],
+  ['an', 'ㄢ'],
+  ['en', 'ㄣ'],
+  ['er', 'ㄦ'],
+  ['a', 'ㄚ'],
+  ['o', 'ㄛ'],
+  ['ê', 'ㄝ'],
+  ['e', 'ㄜ'],
 ];
 
 export function buildContextualPhonetics(
@@ -54,20 +80,17 @@ export function buildContextualPhonetics(
 
   return characters.flatMap((character, index) => {
     if (!hanPattern.test(character)) return [];
-    const syllables = [
-      readings.primary[index] ?? '',
-      ...(readings.alternatives[index] ?? []),
-    ];
+    const syllables = [readings.primary[index] ?? '', ...(readings.alternatives[index] ?? [])];
     const pinyinInitials = syllables
       .map((value) => value[0]?.toLocaleLowerCase())
       .filter((value): value is string => Boolean(value));
-    const zhuyinInitials = syllables
-      .map(firstZhuyinSymbol)
-      .filter((value): value is string => Boolean(value));
-    return [{
-      pinyin: [...new Set(pinyinInitials)],
-      zhuyin: [...new Set(zhuyinInitials)],
-    }];
+    const zhuyinInitials = syllables.map(firstZhuyinSymbol).filter((value): value is string => Boolean(value));
+    return [
+      {
+        pinyin: [...new Set(pinyinInitials)],
+        zhuyin: [...new Set(zhuyinInitials)],
+      },
+    ];
   });
 }
 

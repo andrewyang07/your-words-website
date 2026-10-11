@@ -49,7 +49,7 @@ export async function getRecitePreview(search: string): Promise<RecitePreview | 
       title: parsed.title,
       count: existing.length,
       firstReference: verseReference(first, 'simplified'),
-      firstText: bible[first.bookKey][String(first.chapter)][String(first.verse)],
+      firstText: bible[first.bookKey]![String(first.chapter)]![String(first.verse)]!,
     };
   } catch {
     return null;

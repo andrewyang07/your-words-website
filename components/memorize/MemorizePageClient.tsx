@@ -4,7 +4,13 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AlertCircle, ArrowLeft, BookOpen, ChevronRight, Eye, Link2, RotateCcw } from 'lucide-react';
 import { decodeVerseRef, encodeVerseRef } from '@/lib/bibleBookMapping';
-import { buildReciteUrl, MAX_RECITE_VERSES, MAX_TITLE_LEN, parseReciteParams, type ParsedReciteParams } from '@/lib/reciteLink';
+import {
+  buildReciteUrl,
+  MAX_RECITE_VERSES,
+  MAX_TITLE_LEN,
+  parseReciteParams,
+  type ParsedReciteParams,
+} from '@/lib/reciteLink';
 import { localDateString, shareCompletionCard } from '@/lib/memorize/completionCard';
 import { verseReference } from '@/lib/memorize/reference';
 import ReciteLinkList from '@/components/memorize/ReciteLinkList';
@@ -31,12 +37,11 @@ import {
 } from '@/lib/memorize/session';
 import { CompletionReward } from '@/components/memorize/CompletionReward';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
-import type { Verse } from '@/types/verse';
+import type { Verse, Language } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import { MemorizeHelpButton, useMemorizeGuide } from '@/components/memorize/MemorizeGuide';
 import { useAppStore } from '@/stores/useAppStore';
-import type { Language } from '@/types/verse';
 import { DA_CHEN_ZHUYIN_ROWS, zhuyinForPhysicalKey } from '@/lib/memorize/zhuyinKeyboard';
 
 const copy = {
@@ -47,17 +52,55 @@ const copy = {
       { name: '深遮', instruction: '只留少量线索，再想一遍' },
       { name: '首字母', instruction: '按每个字的拼音首字母' },
     ],
-    loadingError: '经文加载失败', backToPicker: '返回经文列表', skip: '跳过', note: '经文注释', notePrefix: '注：',
-    reveal: '显示这个字', skipRound: '跳过本轮', previous: '返回上一步', continue: '继续',
-    keyboard: '拼音首字母键盘', keyboardLayout: '键盘布局', t9: '九宫格', t9Keyboard: '九宫格键盘', qwertyKeyboard: 'QWERTY键盘', zhuyin: '注音', zhuyinKeyboard: '注音键盘', showPhysicalKeys: '显示实体键位', hidePhysicalKeys: '隐藏实体键位', hintedKey: '提示按键', retryInput: '再试一次', hintPrefix: '提示：请按', or: '或', keySuffix: '键',
+    loadingError: '经文加载失败',
+    backToPicker: '返回经文列表',
+    skip: '跳过',
+    note: '经文注释',
+    notePrefix: '注：',
+    reveal: '显示这个字',
+    skipRound: '跳过本轮',
+    previous: '返回上一步',
+    continue: '继续',
+    keyboard: '拼音首字母键盘',
+    keyboardLayout: '键盘布局',
+    t9: '九宫格',
+    t9Keyboard: '九宫格键盘',
+    qwertyKeyboard: 'QWERTY键盘',
+    zhuyin: '注音',
+    zhuyinKeyboard: '注音键盘',
+    showPhysicalKeys: '显示实体键位',
+    hidePhysicalKeys: '隐藏实体键位',
+    hintedKey: '提示按键',
+    retryInput: '再试一次',
+    hintPrefix: '提示：请按',
+    or: '或',
+    keySuffix: '键',
     zhuyinInstruction: '按每个字读音的第一个注音符号',
     stageProgress: (stage: number) => `第 ${stage} 阶段，共 4 阶段`,
-    finished: '本轮结束', retry: '重新背诵', chooseAnother: '选择另一节', finishAndReturn: '完成并返回',
-    backHome: '返回首页', title: '深度背诵', pickerHeading: '选择一节，慢慢记住',
-    pickerDescription: '每次只背一节。四个阶段都可以跳过。', empty: '先收藏一节想背的经文', browse: '浏览经文',
-    nextVerse: '下一节', backToList: '返回列表', makeCard: '生成卡片', cardFailed: '卡片生成失败', cardBrand: '你的话语 yourwords.me', cardDone: '我背下来了 ✓',
-    createLink: '生成背诵链接', generate: '生成', cancel: '取消', titlePlaceholder: '给这组经文起个名字（可选）', titleLabel: '链接标题',
-    selectedCount: (n: number) => `已选 ${n} 节`, maxVerses: `一次最多 ${MAX_RECITE_VERSES} 节`, onlyFirst: `收藏超过 ${MAX_RECITE_VERSES} 节，已默认勾选前 ${MAX_RECITE_VERSES} 节`,
+    finished: '本轮结束',
+    retry: '重新背诵',
+    chooseAnother: '选择另一节',
+    finishAndReturn: '完成并返回',
+    backHome: '返回首页',
+    title: '深度背诵',
+    pickerHeading: '选择一节，慢慢记住',
+    pickerDescription: '每次只背一节。四个阶段都可以跳过。',
+    empty: '先收藏一节想背的经文',
+    browse: '浏览经文',
+    nextVerse: '下一节',
+    backToList: '返回列表',
+    makeCard: '生成卡片',
+    cardFailed: '卡片生成失败',
+    cardBrand: '你的话语 yourwords.me',
+    cardDone: '我背下来了 ✓',
+    createLink: '生成背诵链接',
+    generate: '生成',
+    cancel: '取消',
+    titlePlaceholder: '给这组经文起个名字（可选）',
+    titleLabel: '链接标题',
+    selectedCount: (n: number) => `已选 ${n} 节`,
+    maxVerses: `一次最多 ${MAX_RECITE_VERSES} 节`,
+    onlyFirst: `收藏超过 ${MAX_RECITE_VERSES} 节，已默认勾选前 ${MAX_RECITE_VERSES} 节`,
   },
   traditional: {
     stages: [
@@ -66,17 +109,55 @@ const copy = {
       { name: '深遮', instruction: '只留少量線索，再想一遍' },
       { name: '首字母', instruction: '按每個字的拼音首字母' },
     ],
-    loadingError: '經文載入失敗', backToPicker: '返回經文列表', skip: '跳過', note: '經文註釋', notePrefix: '註：',
-    reveal: '顯示這個字', skipRound: '跳過本輪', previous: '返回上一步', continue: '繼續',
-    keyboard: '拼音首字母鍵盤', keyboardLayout: '鍵盤佈局', t9: '九宮格', t9Keyboard: '九宮格鍵盤', qwertyKeyboard: 'QWERTY 鍵盤', zhuyin: '注音', zhuyinKeyboard: '注音鍵盤', showPhysicalKeys: '顯示實體鍵位', hidePhysicalKeys: '隱藏實體鍵位', hintedKey: '提示按鍵', retryInput: '再試一次', hintPrefix: '提示：請按', or: '或', keySuffix: '鍵',
+    loadingError: '經文載入失敗',
+    backToPicker: '返回經文列表',
+    skip: '跳過',
+    note: '經文註釋',
+    notePrefix: '註：',
+    reveal: '顯示這個字',
+    skipRound: '跳過本輪',
+    previous: '返回上一步',
+    continue: '繼續',
+    keyboard: '拼音首字母鍵盤',
+    keyboardLayout: '鍵盤佈局',
+    t9: '九宮格',
+    t9Keyboard: '九宮格鍵盤',
+    qwertyKeyboard: 'QWERTY 鍵盤',
+    zhuyin: '注音',
+    zhuyinKeyboard: '注音鍵盤',
+    showPhysicalKeys: '顯示實體鍵位',
+    hidePhysicalKeys: '隱藏實體鍵位',
+    hintedKey: '提示按鍵',
+    retryInput: '再試一次',
+    hintPrefix: '提示：請按',
+    or: '或',
+    keySuffix: '鍵',
     zhuyinInstruction: '按每個字讀音的第一個注音符號',
     stageProgress: (stage: number) => `第 ${stage} 階段，共 4 階段`,
-    finished: '本輪結束', retry: '重新背誦', chooseAnother: '選擇另一節', finishAndReturn: '完成並返回',
-    backHome: '返回首頁', title: '深度背誦', pickerHeading: '選擇一節，慢慢記住',
-    pickerDescription: '每次只背一節。四個階段都可以跳過。', empty: '先收藏一節想背的經文', browse: '瀏覽經文',
-    nextVerse: '下一節', backToList: '返回列表', makeCard: '生成卡片', cardFailed: '卡片生成失敗', cardBrand: '你的話語 yourwords.me', cardDone: '我背下來了 ✓',
-    createLink: '生成背誦連結', generate: '生成', cancel: '取消', titlePlaceholder: '給這組經文起個名字（可選）', titleLabel: '連結標題',
-    selectedCount: (n: number) => `已選 ${n} 節`, maxVerses: `一次最多 ${MAX_RECITE_VERSES} 節`, onlyFirst: `收藏超過 ${MAX_RECITE_VERSES} 節，已預設勾選前 ${MAX_RECITE_VERSES} 節`,
+    finished: '本輪結束',
+    retry: '重新背誦',
+    chooseAnother: '選擇另一節',
+    finishAndReturn: '完成並返回',
+    backHome: '返回首頁',
+    title: '深度背誦',
+    pickerHeading: '選擇一節，慢慢記住',
+    pickerDescription: '每次只背一節。四個階段都可以跳過。',
+    empty: '先收藏一節想背的經文',
+    browse: '瀏覽經文',
+    nextVerse: '下一節',
+    backToList: '返回列表',
+    makeCard: '生成卡片',
+    cardFailed: '卡片生成失敗',
+    cardBrand: '你的話語 yourwords.me',
+    cardDone: '我背下來了 ✓',
+    createLink: '生成背誦連結',
+    generate: '生成',
+    cancel: '取消',
+    titlePlaceholder: '給這組經文起個名字（可選）',
+    titleLabel: '連結標題',
+    selectedCount: (n: number) => `已選 ${n} 節`,
+    maxVerses: `一次最多 ${MAX_RECITE_VERSES} 節`,
+    onlyFirst: `收藏超過 ${MAX_RECITE_VERSES} 節，已預設勾選前 ${MAX_RECITE_VERSES} 節`,
   },
 } as const;
 
@@ -133,23 +214,27 @@ export default function MemorizePageClient() {
     if (!globalNavigation) return;
     const wasInert = Boolean(globalNavigation.inert);
     globalNavigation.inert = true;
-    return () => { globalNavigation.inert = wasInert; };
+    return () => {
+      globalNavigation.inert = wasInert;
+    };
   }, []);
 
-  const startVerse = useCallback((verse: Verse, languageSnapshot: Language = language) => {
-    const seed = `${verse.id}:${crypto.randomUUID?.() ?? Date.now()}`;
-    sessionActive.current = true;
-    setSelected(verse);
-    setSession(buildMemorizationSession(verse.text, seed));
-    setSessionLanguage(languageSnapshot);
-    setStage(0);
-    setCompleted(false);
-  }, [language]);
+  const startVerse = useCallback(
+    (verse: Verse, languageSnapshot: Language = language) => {
+      const seed = `${verse.id}:${crypto.randomUUID?.() ?? Date.now()}`;
+      sessionActive.current = true;
+      setSelected(verse);
+      setSession(buildMemorizationSession(verse.text, seed));
+      setSessionLanguage(languageSnapshot);
+      setStage(0);
+      setCompleted(false);
+    },
+    [language],
+  );
 
   useEffect(() => {
-    const mediaQuery = typeof window.matchMedia === 'function'
-      ? window.matchMedia('(prefers-color-scheme: dark)')
-      : null;
+    const mediaQuery =
+      typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     const updateTheme = () => {
       const isDark = theme === 'dark' || (theme === 'system' && Boolean(mediaQuery?.matches));
       document.documentElement.classList.toggle('dark', isDark);
@@ -194,8 +279,10 @@ export default function MemorizePageClient() {
         if (!cancelled) setLoading(false);
       }
     }
-    load();
-    return () => { cancelled = true; };
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, [favoriteIds, language, startVerse]);
 
   const restartVerse = useCallback(async () => {
@@ -213,43 +300,52 @@ export default function MemorizePageClient() {
     }
   }, [language, selected, startVerse]);
 
-  const enterStage = useCallback(async (nextStage: number) => {
-    if (!selected || !session) return;
-    if (nextStage >= stageNeedsInitials.length) {
-      setCompleted(true);
-      setCompletedIds((current) => new Set(current).add(selected.id));
-      return;
-    }
-    const resolvedStage = nextStage as MemorizationStage;
-    // Advance immediately so Skip does not linger on a skipped-stage acknowledgment.
-    setStage(resolvedStage);
-    if (stageNeedsInitials[resolvedStage] && session.units.some((unit) => unit.recallable && unit.acceptedInitials.length === 0)) {
-      setLoadingInitials(true);
-      try {
-        const { buildContextualPhonetics } = await import('@/lib/memorize/contextualInitials');
-        const acceptedPhonetics = buildContextualPhonetics(session.body);
-        setSession((current) => current ? withAcceptedPhonetics(current, acceptedPhonetics) : current);
-      } catch {
-        // Keep the all-masked stage available: reveal-current and skip remain escape hatches.
-      } finally {
-        setLoadingInitials(false);
+  const enterStage = useCallback(
+    async (nextStage: number) => {
+      if (!selected || !session) return;
+      if (nextStage >= stageNeedsInitials.length) {
+        setCompleted(true);
+        setCompletedIds((current) => new Set(current).add(selected.id));
+        return;
       }
-    }
-  }, [selected, session]);
+      const resolvedStage = nextStage as MemorizationStage;
+      // Advance immediately so Skip does not linger on a skipped-stage acknowledgment.
+      setStage(resolvedStage);
+      if (
+        stageNeedsInitials[resolvedStage] &&
+        session.units.some((unit) => unit.recallable && unit.acceptedInitials.length === 0)
+      ) {
+        setLoadingInitials(true);
+        try {
+          const { buildContextualPhonetics } = await import('@/lib/memorize/contextualInitials');
+          const acceptedPhonetics = buildContextualPhonetics(session.body);
+          setSession((current) => (current ? withAcceptedPhonetics(current, acceptedPhonetics) : current));
+        } catch {
+          // Keep the all-masked stage available: reveal-current and skip remain escape hatches.
+        } finally {
+          setLoadingInitials(false);
+        }
+      }
+    },
+    [selected, session],
+  );
 
-  const submitKeyboardInput = useCallback((input: RecallKeyboardInput) => {
-    if (stage === 0) return;
-    setSession((current) => {
-      if (!current) return current;
-      if (stage === 1 || stage === 2) {
-        const key = stage === 1 ? 'partial30' : 'partial65';
-        const recall = pressMaskedInitial(current.maskRecall[key], current.units, current.masks[key], input);
-        return { ...current, maskRecall: { ...current.maskRecall, [key]: recall } };
-      }
-      const recall = pressInitial(current.recall, current.units, input);
-      return { ...current, recall };
-    });
-  }, [stage]);
+  const submitKeyboardInput = useCallback(
+    (input: RecallKeyboardInput) => {
+      if (stage === 0) return;
+      setSession((current) => {
+        if (!current) return current;
+        if (stage === 1 || stage === 2) {
+          const key = stage === 1 ? 'partial30' : 'partial65';
+          const recall = pressMaskedInitial(current.maskRecall[key], current.units, current.masks[key], input);
+          return { ...current, maskRecall: { ...current.maskRecall, [key]: recall } };
+        }
+        const recall = pressInitial(current.recall, current.units, input);
+        return { ...current, recall };
+      });
+    },
+    [stage],
+  );
 
   const handleKeyboardLayoutChange = useCallback((layout: KeyboardLayout) => {
     setKeyboardLayout(layout);
@@ -262,9 +358,9 @@ export default function MemorizePageClient() {
     void import('@/lib/memorize/taiwanZhuyin')
       .then(({ buildTaiwanContextualPhonetics }) => {
         const acceptedPhonetics = buildTaiwanContextualPhonetics(target.body);
-        setSession((current) => current?.seed === target.seed
-          ? withAcceptedPhonetics(current, acceptedPhonetics)
-          : current);
+        setSession((current) =>
+          current?.seed === target.seed ? withAcceptedPhonetics(current, acceptedPhonetics) : current,
+        );
         taiwanReadingsSeed.current = target.seed;
       })
       .catch(() => {
@@ -290,9 +386,16 @@ export default function MemorizePageClient() {
 
   if (!selected || !session) {
     if (versesLanguage !== language) return <LoadingSpinner language={language} />;
-    const openShare = (ids: string[], title: string | null) => setShareUrl({ url: buildReciteUrl({ origin: window.location.origin, ids, title }), title });
+    const openShare = (ids: string[], title: string | null) =>
+      setShareUrl({ url: buildReciteUrl({ origin: window.location.origin, ids, title }), title });
     const shareDialog = shareUrl && (
-      <ShareReciteDialog open onClose={() => setShareUrl(null)} url={shareUrl.url} title={shareUrl.title} language={language} />
+      <ShareReciteDialog
+        open
+        onClose={() => setShareUrl(null)}
+        url={shareUrl.url}
+        title={shareUrl.title}
+        language={language}
+      />
     );
     if (link) {
       return (
@@ -305,7 +408,12 @@ export default function MemorizePageClient() {
           newerSchema={link.newerSchema}
           completedIds={completedIds}
           onSelect={(verse) => startVerse(verse, language)}
-          onShare={() => openShare(verses.map((verse) => verse.id), link.title)}
+          onShare={() =>
+            openShare(
+              verses.map((verse) => verse.id),
+              link.title,
+            )
+          }
           helpButton={<MemorizeHelpButton label={guide.helpLabel} onClick={guide.openGuide} />}
         >
           {guide.dialog}
@@ -314,7 +422,13 @@ export default function MemorizePageClient() {
       );
     }
     return (
-      <VersePicker verses={verses} language={language} onSelect={(verse) => startVerse(verse, language)} guide={guide} onCreateLink={openShare}>
+      <VersePicker
+        verses={verses}
+        language={language}
+        onSelect={(verse) => startVerse(verse, language)}
+        guide={guide}
+        onCreateLink={openShare}
+      >
         {shareDialog}
       </VersePicker>
     );
@@ -324,18 +438,27 @@ export default function MemorizePageClient() {
     const completionFacts = completionFactsForRound(session);
     const linkIndex = link ? verses.findIndex((verse) => verse.id === selected.id) : -1;
     const nextLinkVerse = linkIndex >= 0 ? verses[linkIndex + 1] : undefined;
-    const backToList = () => { sessionActive.current = false; setSelected(null); setSession(null); setSessionLanguage(null); setCompleted(false); };
+    const backToList = () => {
+      sessionActive.current = false;
+      setSelected(null);
+      setSession(null);
+      setSessionLanguage(null);
+      setCompleted(false);
+    };
     const makeCard = async () => {
       setCardError(false);
       try {
-        await shareCompletionCard({
-          reference: reference(selected, activeLanguage),
-          text: selected.text,
-          date: localDateString(),
-          title: link?.title ?? null,
-          brand: activeCopy.cardBrand,
-          doneLabel: activeCopy.cardDone,
-        }, `yourwords-${selected.bookKey}-${selected.chapter}-${selected.verse}.png`);
+        await shareCompletionCard(
+          {
+            reference: reference(selected, activeLanguage),
+            text: selected.text,
+            date: localDateString(),
+            title: link?.title ?? null,
+            brand: activeCopy.cardBrand,
+            doneLabel: activeCopy.cardDone,
+          },
+          `yourwords-${selected.bookKey}-${selected.chapter}-${selected.verse}.png`,
+        );
       } catch {
         setCardError(true);
       }
@@ -357,15 +480,34 @@ export default function MemorizePageClient() {
               cardLabel={activeCopy.makeCard}
               onCreateCard={() => void makeCard()}
             />
-            {cardError && <p role="alert" className="mt-2 text-sm text-red-800 dark:text-red-300">{activeCopy.cardFailed}</p>}
+            {cardError && (
+              <p role="alert" className="mt-2 text-sm text-red-800 dark:text-red-300">
+                {activeCopy.cardFailed}
+              </p>
+            )}
           </div>
           <div className="mt-8 grid gap-3">
             {nextLinkVerse && (
-              <button onClick={() => startVerse(nextLinkVerse, language)} className="memorize-primary">{activeCopy.nextVerse}<ChevronRight className="h-4 w-4" /></button>
+              <button onClick={() => startVerse(nextLinkVerse, language)} className="memorize-primary">
+                {activeCopy.nextVerse}
+                <ChevronRight className="h-4 w-4" />
+              </button>
             )}
-            <button onClick={() => void restartVerse()} className={nextLinkVerse ? 'memorize-secondary' : 'memorize-primary'}><RotateCcw className="h-4 w-4" />{activeCopy.retry}</button>
-            <button onClick={backToList} className="memorize-secondary">{link ? activeCopy.backToList : activeCopy.chooseAnother}</button>
-            {!link && <Link href="/" className="memorize-secondary">{activeCopy.finishAndReturn}</Link>}
+            <button
+              onClick={() => void restartVerse()}
+              className={nextLinkVerse ? 'memorize-secondary' : 'memorize-primary'}
+            >
+              <RotateCcw className="h-4 w-4" />
+              {activeCopy.retry}
+            </button>
+            <button onClick={backToList} className="memorize-secondary">
+              {link ? activeCopy.backToList : activeCopy.chooseAnother}
+            </button>
+            {!link && (
+              <Link href="/" className="memorize-secondary">
+                {activeCopy.finishAndReturn}
+              </Link>
+            )}
           </div>
         </section>
         {guide.dialog}
@@ -374,7 +516,7 @@ export default function MemorizePageClient() {
   }
 
   const skip = () => {
-    setSession((current) => current ? skipMemorizationStage(current, stage) : current);
+    setSession((current) => (current ? skipMemorizationStage(current, stage) : current));
     void enterStage(stage + 1);
   };
 
@@ -404,12 +546,9 @@ export default function MemorizePageClient() {
     setStage((stage - 1) as MemorizationStage);
   };
 
-  const activeRecall = stage === 1 ? session.maskRecall.partial30
-    : stage === 2 ? session.maskRecall.partial65
-      : session.recall;
-  const activeMask = stage === 1 ? session.masks.partial30
-    : stage === 2 ? session.masks.partial65
-      : undefined;
+  const activeRecall =
+    stage === 1 ? session.maskRecall.partial30 : stage === 2 ? session.maskRecall.partial65 : session.recall;
+  const activeMask = stage === 1 ? session.masks.partial30 : stage === 2 ? session.masks.partial65 : undefined;
   const hintedInitials = activeRecall.hintVisible
     ? keyboardLayout === 'zhuyin'
       ? currentAcceptedZhuyin(activeRecall, session.units, activeMask)
@@ -420,12 +559,21 @@ export default function MemorizePageClient() {
   return (
     <main className="memorize-page flex min-h-[100dvh] flex-col overflow-x-hidden px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
       <header className="mx-auto grid w-full max-w-3xl grid-cols-[auto_1fr_auto] items-center gap-2">
-        <button type="button" onClick={exitVerse} className="memorize-icon" aria-label={activeCopy.backToPicker}><ArrowLeft className="h-5 w-5" /></button>
-        <div className="flex justify-center"><StageIndicator stage={stage} language={activeLanguage} /></div>
+        <button type="button" onClick={exitVerse} className="memorize-icon" aria-label={activeCopy.backToPicker}>
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <div className="flex justify-center">
+          <StageIndicator stage={stage} language={activeLanguage} />
+        </div>
         <div className="flex items-center justify-end gap-1">
           <MemorizeHelpButton label={guide.helpLabel} onClick={guide.openGuide} />
           {stageCompletionFacts.outcome === 'incomplete' && (
-            <button onClick={skip} className="min-h-11 rounded-xl px-2 text-sm text-stone-500 hover:bg-white/55 hover:text-stone-950 dark:hover:bg-white/[0.06] dark:hover:text-white">{activeCopy.skip}</button>
+            <button
+              onClick={skip}
+              className="min-h-11 rounded-xl px-2 text-sm text-stone-500 hover:bg-white/55 hover:text-stone-950 dark:hover:bg-white/[0.06] dark:hover:text-white"
+            >
+              {activeCopy.skip}
+            </button>
           )}
         </div>
       </header>
@@ -437,7 +585,10 @@ export default function MemorizePageClient() {
         </div>
         <VerseExercise session={session} stage={stage} />
         {session.notes.length > 0 && (
-          <aside className="mx-auto mt-4 max-w-2xl text-xs leading-6 text-stone-500" aria-label={activeCopy.note}>{activeCopy.notePrefix}{session.notes.join('；')}</aside>
+          <aside className="mx-auto mt-4 max-w-2xl text-xs leading-6 text-stone-500" aria-label={activeCopy.note}>
+            {activeCopy.notePrefix}
+            {session.notes.join('；')}
+          </aside>
         )}
         {stageCompletionFacts.outcome !== 'incomplete' && (
           <div className="mt-5">
@@ -454,9 +605,14 @@ export default function MemorizePageClient() {
           <div className="mt-5">
             <RecallFeedback language={activeLanguage} recall={activeRecall} hintedInitials={hintedInitials} />
             <div className="mb-3 flex items-center justify-between gap-3">
-              <button onClick={reveal} className="memorize-secondary !w-auto px-4"><Eye className="h-4 w-4" />{activeCopy.reveal}</button>
+              <button onClick={reveal} className="memorize-secondary !w-auto px-4">
+                <Eye className="h-4 w-4" />
+                {activeCopy.reveal}
+              </button>
               {stage === finalStage && stageCompletionFacts.outcome === 'incomplete' && (
-                <button onClick={skip} className="min-h-11 text-sm text-stone-500">{activeCopy.skipRound}</button>
+                <button onClick={skip} className="min-h-11 text-sm text-stone-500">
+                  {activeCopy.skipRound}
+                </button>
               )}
             </div>
             <AlphabetKeyboard
@@ -469,13 +625,22 @@ export default function MemorizePageClient() {
               onLayoutChange={handleKeyboardLayoutChange}
               onZhuyinSelected={guide.showZhuyinCoach}
             />
-            <button type="button" onClick={goToPreviousStage} className="memorize-secondary mx-auto mt-3 max-w-xs"><ArrowLeft className="h-4 w-4" />{activeCopy.previous}</button>
+            <button type="button" onClick={goToPreviousStage} className="memorize-secondary mx-auto mt-3 max-w-xs">
+              <ArrowLeft className="h-4 w-4" />
+              {activeCopy.previous}
+            </button>
             {stageCompletionFacts.outcome !== 'incomplete' && (
-              <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-3 max-w-xs">{activeCopy.continue}<ChevronRight className="h-4 w-4" /></button>
+              <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-3 max-w-xs">
+                {activeCopy.continue}
+                <ChevronRight className="h-4 w-4" />
+              </button>
             )}
           </div>
         ) : (
-          <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-7 max-w-xs">{activeCopy.continue}<ChevronRight className="h-4 w-4" /></button>
+          <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-7 max-w-xs">
+            {activeCopy.continue}
+            <ChevronRight className="h-4 w-4" />
+          </button>
         )}
       </section>
       {guide.dialog}
@@ -545,17 +710,29 @@ export function AlphabetKeyboard({
   }, [disabled, layout, onPress]);
 
   return (
-    <div className="mx-auto w-full max-w-2xl" role="group" aria-label={layout === 'zhuyin' ? keyboardCopy.zhuyinKeyboard : keyboardCopy.keyboard}>
+    <div
+      className="mx-auto w-full max-w-2xl"
+      role="group"
+      aria-label={layout === 'zhuyin' ? keyboardCopy.zhuyinKeyboard : keyboardCopy.keyboard}
+    >
       <div className="mb-3 flex justify-center" role="group" aria-label={keyboardCopy.keyboardLayout}>
         <div className="inline-flex rounded-full border border-stone-900/10 bg-white/45 p-1 dark:border-white/10 dark:bg-white/[0.04]">
-          {([['t9', keyboardCopy.t9], ['qwerty', 'QWERTY'], ['zhuyin', keyboardCopy.zhuyin]] as const).map(([value, label]) => (
+          {(
+            [
+              ['t9', keyboardCopy.t9],
+              ['qwerty', 'QWERTY'],
+              ['zhuyin', keyboardCopy.zhuyin],
+            ] as const
+          ).map(([value, label]) => (
             <button
               key={value}
               type="button"
               aria-pressed={layout === value}
               onClick={() => selectLayout(value)}
               className={`min-h-11 rounded-full px-3 text-xs font-medium transition sm:px-4 ${layout === value ? 'bg-stone-950 text-white shadow-sm dark:bg-stone-50 dark:text-stone-950' : 'text-stone-500 hover:text-stone-950 dark:hover:text-white'}`}
-            >{label}</button>
+            >
+              {label}
+            </button>
           ))}
         </div>
       </div>
@@ -566,7 +743,9 @@ export function AlphabetKeyboard({
             const hinted = isHinted(letters, hintedInitials);
             const wrong = isWrong(letters, wrongInitials);
             const label = letters ? `${number} ${letters}` : number;
-            const stateLabel = [wrong ? keyboardCopy.retryInput : '', hinted ? keyboardCopy.hintedKey : ''].filter(Boolean).join('，');
+            const stateLabel = [wrong ? keyboardCopy.retryInput : '', hinted ? keyboardCopy.hintedKey : '']
+              .filter(Boolean)
+              .join('，');
             return (
               <button
                 key={`${number}-${wrong ? wrongAttempt : 0}`}
@@ -577,7 +756,13 @@ export function AlphabetKeyboard({
                 className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border px-2 shadow-sm active:scale-[0.98] disabled:opacity-30 ${wrong ? 'memorize-wrong-key border-red-900 bg-red-950/10 text-red-950 ring-2 ring-red-900/20 dark:border-red-400 dark:bg-red-950/35 dark:text-red-100' : hinted ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
               >
                 <span className="text-base font-semibold">{number}</span>
-                {letters && <span className={`text-[11px] tracking-[0.16em] ${wrong ? 'text-red-950 dark:text-red-100' : hinted ? 'text-amber-950 dark:text-amber-100' : 'text-stone-500 dark:text-stone-400'}`}>{letters}</span>}
+                {letters && (
+                  <span
+                    className={`text-[11px] tracking-[0.16em] ${wrong ? 'text-red-950 dark:text-red-100' : hinted ? 'text-amber-950 dark:text-amber-100' : 'text-stone-500 dark:text-stone-400'}`}
+                  >
+                    {letters}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -594,7 +779,9 @@ export function AlphabetKeyboard({
                   onClick={() => onPress(singleInitialInput(letter))}
                   aria-label={`${letter}${wrongInitials.includes(letter.toLocaleLowerCase()) ? `，${keyboardCopy.retryInput}` : ''}${hintedInitials.includes(letter.toLocaleLowerCase()) ? `，${keyboardCopy.hintedKey}` : ''}`}
                   className={`min-h-11 min-w-0 flex-1 rounded-lg border text-sm font-semibold shadow-sm active:scale-95 disabled:opacity-40 sm:max-w-14 ${wrongInitials.includes(letter.toLocaleLowerCase()) ? 'memorize-wrong-key border-red-900 bg-red-950/10 text-red-950 ring-2 ring-red-900/20 dark:border-red-400 dark:bg-red-950/35 dark:text-red-100' : hintedInitials.includes(letter.toLocaleLowerCase()) ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
-                >{letter}</button>
+                >
+                  {letter}
+                </button>
               ))}
             </div>
           ))}
@@ -633,7 +820,14 @@ export function AlphabetKeyboard({
                         className={`relative flex h-11 min-h-11 w-11 min-w-11 shrink-0 items-center justify-center rounded-xl border text-lg font-semibold shadow-sm transition active:scale-95 disabled:opacity-40 ${wrong ? 'memorize-wrong-key border-red-900 bg-red-950/10 text-red-950 ring-2 ring-red-900/20 dark:border-red-400 dark:bg-red-950/35 dark:text-red-100' : hinted ? 'border-amber-700 bg-amber-100 text-amber-950 ring-2 ring-amber-700/25 dark:border-amber-300 dark:bg-amber-300/15 dark:text-amber-100' : 'border-stone-900/10 bg-white/65 dark:border-white/10 dark:bg-white/[0.06]'}`}
                       >
                         {symbol}
-                        {showPhysicalKeys && <span aria-hidden="true" className="absolute right-1.5 top-1 text-[8px] font-medium leading-none text-stone-400 dark:text-stone-500">{keyLabel}</span>}
+                        {showPhysicalKeys && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute right-1.5 top-1 text-[8px] font-medium leading-none text-stone-400 dark:text-stone-500"
+                          >
+                            {keyLabel}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -655,43 +849,74 @@ function isWrong(letters: string, wrongInitials: readonly string[]) {
   return Boolean(letters) && Array.from(letters).some((letter) => wrongInitials.includes(letter.toLocaleLowerCase()));
 }
 
-function RecallFeedback({ language, recall, hintedInitials }: { language: Language; recall: MemorizationSession['recall']; hintedInitials: readonly string[] }) {
+function RecallFeedback({
+  language,
+  recall,
+  hintedInitials,
+}: {
+  language: Language;
+  recall: MemorizationSession['recall'];
+  hintedInitials: readonly string[];
+}) {
   const feedbackCopy = copy[language];
-  const message = recall.lastAttempt === 'wrong'
-    ? recall.hintVisible && hintedInitials.length > 0
-      ? `${feedbackCopy.retryInput}。${feedbackCopy.hintPrefix} ${hintedInitials.map((initial) => initial.toLocaleUpperCase()).join(` ${feedbackCopy.or} `)} ${feedbackCopy.keySuffix}`
-      : feedbackCopy.retryInput
-    : '';
+  const message =
+    recall.lastAttempt === 'wrong'
+      ? recall.hintVisible && hintedInitials.length > 0
+        ? `${feedbackCopy.retryInput}。${feedbackCopy.hintPrefix} ${hintedInitials.map((initial) => initial.toLocaleUpperCase()).join(` ${feedbackCopy.or} `)} ${feedbackCopy.keySuffix}`
+        : feedbackCopy.retryInput
+      : '';
   return (
-    <p role="status" aria-live="polite" className="mb-3 flex min-h-6 items-center justify-center gap-1.5 text-sm text-red-800 dark:text-red-300">
-      {message && <><AlertCircle className="h-4 w-4" aria-hidden="true" />{message}</>}
+    <p
+      role="status"
+      aria-live="polite"
+      className="mb-3 flex min-h-6 items-center justify-center gap-1.5 text-sm text-red-800 dark:text-red-300"
+    >
+      {message && (
+        <>
+          <AlertCircle className="h-4 w-4" aria-hidden="true" />
+          {message}
+        </>
+      )}
     </p>
   );
 }
 
 export function VerseExercise({ session, stage }: { session: MemorizationSession; stage: MemorizationStage }) {
   let recallOrdinal = 0;
-  const activeRecall = stage === 1 ? session.maskRecall.partial30
-    : stage === 2 ? session.maskRecall.partial65
-      : session.recall;
+  const activeRecall =
+    stage === 1 ? session.maskRecall.partial30 : stage === 2 ? session.maskRecall.partial65 : session.recall;
   const revealedPartial30 = revealedMaskIndices(session.masks.partial30, session.maskRecall.partial30.cursor);
   const revealedPartial65 = revealedMaskIndices(session.masks.partial65, session.maskRecall.partial65.cursor);
   const activeMask = stage === 1 ? session.masks.partial30 : stage === 2 ? session.masks.partial65 : null;
   const currentUnitIndex = activeMask
     ? orderedMaskIndices(activeMask)[activeRecall.cursor]
-    : session.units.flatMap((unit, index) => unit.recallable ? [index] : [])[activeRecall.cursor];
+    : session.units.flatMap((unit, index) => (unit.recallable ? [index] : []))[activeRecall.cursor];
   const showWrongTarget = activeRecall.lastAttempt === 'wrong';
   return (
     <p className="memorize-verse whitespace-pre-wrap" aria-live="polite">
       {session.units.map((unit, index) => {
         if (!unit.recallable) return <span key={index}>{unit.text}</span>;
         const ordinal = recallOrdinal++;
-        const hidden = stage === 1 ? session.masks.partial30.has(index) && !revealedPartial30.has(index)
-          : stage === 2 ? session.masks.partial65.has(index) && !revealedPartial65.has(index)
-            : stage === 3 ? ordinal >= session.recall.cursor : false;
+        const hidden =
+          stage === 1
+            ? session.masks.partial30.has(index) && !revealedPartial30.has(index)
+            : stage === 2
+              ? session.masks.partial65.has(index) && !revealedPartial65.has(index)
+              : stage === 3
+                ? ordinal >= session.recall.cursor
+                : false;
         const current = hidden && index === currentUnitIndex;
         const wrong = current && showWrongTarget;
-        return <span key={`${index}-${wrong ? activeRecall.wrongAttempts : 0}`} data-current-recall={current || undefined} data-wrong={wrong || undefined} className={`${hidden ? 'memorize-hidden' : 'memorize-revealed'} ${wrong ? 'memorize-wrong-target' : ''}`}>{unit.text}</span>;
+        return (
+          <span
+            key={`${index}-${wrong ? activeRecall.wrongAttempts : 0}`}
+            data-current-recall={current || undefined}
+            data-wrong={wrong || undefined}
+            className={`${hidden ? 'memorize-hidden' : 'memorize-revealed'} ${wrong ? 'memorize-wrong-target' : ''}`}
+          >
+            {unit.text}
+          </span>
+        );
       })}
     </p>
   );
@@ -744,7 +969,10 @@ function VersePicker({
   const generate = () => {
     const ids = verses.filter((verse) => checked.has(verse.id)).map((verse) => verse.id);
     if (ids.length === 0) return;
-    if (ids.length > MAX_RECITE_VERSES) { setLimitNotice(pickerCopy.maxVerses); return; }
+    if (ids.length > MAX_RECITE_VERSES) {
+      setLimitNotice(pickerCopy.maxVerses);
+      return;
+    }
     onCreateLink(ids, linkTitle);
   };
   // 首页“背诵链接”入口：/memorize?create=1 直接进入勾选模式
@@ -753,15 +981,19 @@ function VersePicker({
     if (autoStarted.current || verses.length === 0) return;
     autoStarted.current = true;
     if (new URLSearchParams(window.location.search).get('create') === '1') startSelecting();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verses.length]);
   return (
     <main className="memorize-page min-h-[100dvh] px-4 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-2xl">
         <header className="flex items-center justify-between gap-3">
-          <Link href="/" className="memorize-icon" aria-label={pickerCopy.backHome}><ArrowLeft className="h-5 w-5" /></Link>
+          <Link href="/" className="memorize-icon" aria-label={pickerCopy.backHome}>
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
           <div className="flex items-center gap-2">
-            <span className="text-xs tracking-[0.24em] text-stone-500">{language === 'traditional' ? 'CUVT' : 'CUV'}</span>
+            <span className="text-xs tracking-[0.24em] text-stone-500">
+              {language === 'traditional' ? 'CUVT' : 'CUV'}
+            </span>
             <MemorizeHelpButton label={guide.helpLabel} onClick={guide.openGuide} />
           </div>
         </header>
@@ -782,7 +1014,9 @@ function VersePicker({
           <div className="liquid-glass rounded-3xl px-6 py-14 text-center">
             <BookOpen className="mx-auto h-6 w-6 text-stone-400" />
             <p className="mt-4 text-lg">{pickerCopy.empty}</p>
-            <Link href="/" className="memorize-primary mx-auto mt-6 max-w-xs">{pickerCopy.browse}</Link>
+            <Link href="/" className="memorize-primary mx-auto mt-6 max-w-xs">
+              {pickerCopy.browse}
+            </Link>
           </div>
         ) : selecting ? (
           <div className="grid gap-3">
@@ -796,26 +1030,59 @@ function VersePicker({
                 placeholder={pickerCopy.titlePlaceholder}
                 className="w-full rounded-xl border border-stone-900/10 bg-white/70 px-3 py-2 text-base dark:border-white/10 dark:bg-white/[0.06]"
               />
-              {limitNotice && <p role="status" className="text-sm text-amber-800 dark:text-amber-200">{limitNotice}</p>}
+              {limitNotice && (
+                <p role="status" className="text-sm text-amber-800 dark:text-amber-200">
+                  {limitNotice}
+                </p>
+              )}
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm text-stone-500">{pickerCopy.selectedCount(checked.size)}</span>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setSelecting(false)} className="memorize-secondary !w-auto px-4">{pickerCopy.cancel}</button>
-                  <button type="button" onClick={generate} disabled={checked.size === 0} className="memorize-primary !w-auto px-4 disabled:opacity-40">{pickerCopy.generate}</button>
+                  <button type="button" onClick={() => setSelecting(false)} className="memorize-secondary !w-auto px-4">
+                    {pickerCopy.cancel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={generate}
+                    disabled={checked.size === 0}
+                    className="memorize-primary !w-auto px-4 disabled:opacity-40"
+                  >
+                    {pickerCopy.generate}
+                  </button>
                 </div>
               </div>
             </div>
             {verses.map((verse) => (
               <label key={verse.id} className="liquid-glass flex min-h-[88px] cursor-pointer gap-4 rounded-2xl p-5">
-                <input type="checkbox" checked={checked.has(verse.id)} onChange={() => toggle(verse.id)} className="mt-1 h-5 w-5 shrink-0 accent-amber-800" />
-                <span className="min-w-0"><span className="text-xs tracking-[0.18em] text-stone-500">{reference(verse, language)}</span><span className="mt-2 block line-clamp-2 leading-7">{verse.text}</span></span>
+                <input
+                  type="checkbox"
+                  checked={checked.has(verse.id)}
+                  onChange={() => toggle(verse.id)}
+                  className="mt-1 h-5 w-5 shrink-0 accent-amber-800"
+                />
+                <span className="min-w-0">
+                  <span className="text-xs tracking-[0.18em] text-stone-500">{reference(verse, language)}</span>
+                  <span className="mt-2 block line-clamp-2 leading-7">{verse.text}</span>
+                </span>
               </label>
             ))}
           </div>
         ) : (
           <div className="grid gap-3">
-          <button type="button" onClick={startSelecting} className="memorize-secondary"><Link2 className="h-4 w-4" />{pickerCopy.createLink}</button>
-          {verses.map((verse) => <button key={verse.id} onClick={() => onSelect(verse)} className="liquid-glass group min-h-[88px] rounded-2xl p-5 text-left transition hover:-translate-y-0.5 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:hover:bg-white/[0.07]"><span className="text-xs tracking-[0.18em] text-stone-500">{reference(verse, language)}</span><span className="mt-3 block line-clamp-4 text-lg leading-8">{verse.text}</span></button>)}
+            <button type="button" onClick={startSelecting} className="memorize-secondary">
+              <Link2 className="h-4 w-4" />
+              {pickerCopy.createLink}
+            </button>
+            {verses.map((verse) => (
+              <button
+                key={verse.id}
+                onClick={() => onSelect(verse)}
+                className="liquid-glass group min-h-[88px] rounded-2xl p-5 text-left transition hover:-translate-y-0.5 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:hover:bg-white/[0.07]"
+              >
+                <span className="text-xs tracking-[0.18em] text-stone-500">{reference(verse, language)}</span>
+                <span className="mt-3 block line-clamp-4 text-lg leading-8">{verse.text}</span>
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -827,7 +1094,24 @@ function VersePicker({
 
 function StageIndicator({ stage, language }: { stage: MemorizationStage; language: Language }) {
   const stageCopy = copy[language];
-  return <div className="flex items-center gap-1.5" role="progressbar" aria-label={stageCopy.stageProgress(stage + 1)} aria-valuemin={1} aria-valuemax={stageNeedsInitials.length} aria-valuenow={stage + 1}>{stageCopy.stages.map(({ name }, index) => <span key={name} className={`h-1.5 rounded-full transition-all ${index === stage ? 'w-8 bg-amber-800 dark:bg-amber-200' : index < stage ? 'w-4 bg-amber-800/35 dark:bg-amber-200/35' : 'w-4 bg-stone-900/10 dark:bg-white/10'}`} title={name} />)}</div>;
+  return (
+    <div
+      className="flex items-center gap-1.5"
+      role="progressbar"
+      aria-label={stageCopy.stageProgress(stage + 1)}
+      aria-valuemin={1}
+      aria-valuemax={stageNeedsInitials.length}
+      aria-valuenow={stage + 1}
+    >
+      {stageCopy.stages.map(({ name }, index) => (
+        <span
+          key={name}
+          className={`h-1.5 rounded-full transition-all ${index === stage ? 'w-8 bg-amber-800 dark:bg-amber-200' : index < stage ? 'w-4 bg-amber-800/35 dark:bg-amber-200/35' : 'w-4 bg-stone-900/10 dark:bg-white/10'}`}
+          title={name}
+        />
+      ))}
+    </div>
+  );
 }
 
 function stageInstruction(stage: MemorizationStage, language: Language, keyboardLayout: KeyboardLayout) {

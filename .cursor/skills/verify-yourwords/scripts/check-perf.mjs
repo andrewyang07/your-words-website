@@ -8,8 +8,19 @@ const measure = flag === '--measure';
 const budgets = JSON.parse(readFileSync(budgetFile, 'utf8'));
 mkdirSync(`${ev}/perf`, { recursive: true });
 const chrome = process.env.CHROME_PATH;
-const get = async (u) => { for (let i = 0; ; i++) { try { const r = await fetch(u, { headers: { connection: 'close' } }); return Buffer.from(await r.arrayBuffer()); } catch (e) { if (i >= 3) throw e; await new Promise((ok) => setTimeout(ok, 500)); } } };
-let fails = 0; const rows = [];
+const get = async (u) => {
+  for (let i = 0; ; i++) {
+    try {
+      const r = await fetch(u, { headers: { connection: 'close' } });
+      return Buffer.from(await r.arrayBuffer());
+    } catch (e) {
+      if (i >= 3) throw e;
+      await new Promise((ok) => setTimeout(ok, 500));
+    }
+  }
+};
+let fails = 0;
+const rows = [];
 const verdict = (name, val, max, cmp = (v, m) => v <= m) => {
   const ok = measure || !max || cmp(val, max);
   if (!ok) fails++;
@@ -23,11 +34,27 @@ for (const [route, b] of Object.entries(budgets.routes)) {
   const jsKb = Math.round(gz / 1024);
   verdict(`${route} firstLoadJsKb`, jsKb, b.firstLoadJsKb);
   const tag = route === '/' ? 'home' : route.slice(1);
-  const scores = [], lcp = [], tbt = [], cls = [];
+  const scores = [],
+    lcp = [],
+    tbt = [],
+    cls = [];
   for (let i = 0; i < (budgets.runs || 1); i++) {
     const out = `${ev}/perf/lh-${tag}-${i}`;
-    execFileSync('npx', ['-y', 'lighthouse@12', base + route, '--only-categories=performance', '--output=json', '--output=html',
-      `--output-path=${out}`, '--quiet', '--chrome-flags=--headless=new --no-sandbox'], { stdio: 'inherit', env: { ...process.env, CHROME_PATH: chrome } });
+    execFileSync(
+      'npx',
+      [
+        '-y',
+        'lighthouse@12',
+        base + route,
+        '--only-categories=performance',
+        '--output=json',
+        '--output=html',
+        `--output-path=${out}`,
+        '--quiet',
+        '--chrome-flags=--headless=new --no-sandbox',
+      ],
+      { stdio: 'inherit', env: { ...process.env, CHROME_PATH: chrome } },
+    );
     const r = JSON.parse(readFileSync(`${out}.report.json`, 'utf8'));
     scores.push(Math.round(r.categories.performance.score * 100));
     lcp.push(Math.round(r.audits['largest-contentful-paint'].numericValue));

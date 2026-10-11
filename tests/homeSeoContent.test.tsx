@@ -30,8 +30,15 @@ describe('home SEO content', () => {
 
   it('uses the Simplified Chinese home title/description and the large OG card', () => {
     expect(homeMetadata.title).toEqual({ absolute: '背圣经经文 · 拼音查经 · Flash Card 记忆｜你的话语（免费）' });
-    expect(homeMetadata.description).toBe('免费在线背圣经：用拼音、中文或英文秒查和合本经文，Flash Card 逐节记忆，收藏、分享并写灵修笔记。');
-    expect(homeMetadata.openGraph).toMatchObject({ type: 'website', siteName: '你的话语', url: '/', images: [{ url: '/og-default.png', width: 1200, height: 630 }] });
+    expect(homeMetadata.description).toBe(
+      '免费在线背圣经：用拼音、中文或英文秒查和合本经文，Flash Card 逐节记忆，收藏、分享并写灵修笔记。',
+    );
+    expect(homeMetadata.openGraph).toMatchObject({
+      type: 'website',
+      siteName: '你的话语',
+      url: '/',
+      images: [{ url: '/og-default.png', width: 1200, height: 630 }],
+    });
     expect(homeMetadata.twitter).toMatchObject({ card: 'summary_large_image' });
   });
 

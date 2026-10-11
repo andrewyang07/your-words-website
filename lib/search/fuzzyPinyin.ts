@@ -18,18 +18,20 @@ import { pinyin } from 'pinyin-pro';
  * so even though the output isn't "real" pinyin, matching is consistent.
  */
 function normalizeFuzzy(s: string): string {
-  return s
-    // 2-char retroflex initials → alveolar (safe globally: zh/ch/sh are unambiguously initials)
-    .replace(/zh/g, 'z')
-    .replace(/ch/g, 'c')
-    .replace(/sh/g, 's')
-    // Nasal finals: back nasal → front nasal (longer patterns first)
-    .replace(/ang/g, 'an')
-    .replace(/eng/g, 'en')
-    .replace(/ing/g, 'in')
-    // Single-char initials (r→l, n→l)
-    .replace(/r/g, 'l')
-    .replace(/n/g, 'l');
+  return (
+    s
+      // 2-char retroflex initials → alveolar (safe globally: zh/ch/sh are unambiguously initials)
+      .replace(/zh/g, 'z')
+      .replace(/ch/g, 'c')
+      .replace(/sh/g, 's')
+      // Nasal finals: back nasal → front nasal (longer patterns first)
+      .replace(/ang/g, 'an')
+      .replace(/eng/g, 'en')
+      .replace(/ing/g, 'in')
+      // Single-char initials (r→l, n→l)
+      .replace(/r/g, 'l')
+      .replace(/n/g, 'l')
+  );
 }
 
 /**
@@ -49,9 +51,7 @@ export interface PinyinIndex {
 /**
  * Build dual pinyin indices (exact + fuzzy) for all verses.
  */
-export function buildPinyinIndex(
-  chinese: Record<string, Record<string, Record<string, string>>>
-): PinyinIndex {
+export function buildPinyinIndex(chinese: Record<string, Record<string, Record<string, string>>>): PinyinIndex {
   const exact = new Map<string, string>();
   const fuzzy = new Map<string, string>();
 
@@ -59,9 +59,7 @@ export function buildPinyinIndex(
     for (const [chapter, verses] of Object.entries(chapters)) {
       for (const [verse, text] of Object.entries(verses)) {
         const verseId = `${book}-${chapter}-${verse}`;
-        const py = pinyin(text, { toneType: 'none', type: 'array' })
-          .join('')
-          .toLowerCase();
+        const py = pinyin(text, { toneType: 'none', type: 'array' }).join('').toLowerCase();
         exact.set(verseId, py);
         fuzzy.set(verseId, normalizeFuzzy(py));
       }
@@ -78,7 +76,7 @@ export function buildPinyinIndex(
 export function buildPinyinIndexAsync(
   chinese: Record<string, Record<string, Record<string, string>>>,
   onComplete: (index: PinyinIndex) => void,
-  chunkSize = 150
+  chunkSize = 150,
 ): void {
   const exact = new Map<string, string>();
   const fuzzy = new Map<string, string>();
@@ -103,10 +101,8 @@ export function buildPinyinIndexAsync(
   function processChunk() {
     const end = Math.min(offset + chunkSize, entries.length);
     for (let i = offset; i < end; i++) {
-      const [verseId, text] = entries[i];
-      const py = pinyin(text, { toneType: 'none', type: 'array' })
-        .join('')
-        .toLowerCase();
+      const [verseId, text] = entries[i]!;
+      const py = pinyin(text, { toneType: 'none', type: 'array' }).join('').toLowerCase();
       exact.set(verseId, py);
       fuzzy.set(verseId, normalizeFuzzy(py));
     }
@@ -126,10 +122,7 @@ export function buildPinyinIndexAsync(
  * Search pinyin index with exact + fuzzy matching.
  * Returns Map<verseId, score>.
  */
-export function searchPinyin(
-  query: string,
-  index: PinyinIndex
-): Map<string, number> {
+export function searchPinyin(query: string, index: PinyinIndex): Map<string, number> {
   const scores = new Map<string, number>();
   const stripped = normalizePinyinInput(query);
   if (!stripped) return scores;

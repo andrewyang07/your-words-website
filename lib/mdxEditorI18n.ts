@@ -1,5 +1,5 @@
-import type { Translation } from '@mdxeditor/editor';
 import type { Language } from '@/types/verse';
+import type { Translation } from '@mdxeditor/editor';
 
 type Dictionary = Record<string, string>;
 

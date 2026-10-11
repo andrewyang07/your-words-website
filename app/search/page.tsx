@@ -18,17 +18,8 @@ import SearchHelp from '@/components/search/SearchHelp';
 function SearchPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const {
-    setQuery,
-    setEngineReady,
-    engineReady,
-    setResults,
-    setLoading,
-    setSearchLang,
-    results,
-    query,
-    loading,
-  } = useSearchStore();
+  const { setQuery, setEngineReady, engineReady, setResults, setLoading, setSearchLang, results, query, loading } =
+    useSearchStore();
   const { theme, setTheme, language, setLanguage } = useAppStore();
 
   const [showSideMenu, setShowSideMenu] = useState(false);
@@ -65,7 +56,7 @@ function SearchPageInner() {
       }
     }
 
-    init();
+    void init();
 
     return () => {
       cancelled = true;
@@ -82,16 +73,11 @@ function SearchPageInner() {
 
     if (trimmed === currentQ) return;
 
-    const nextUrl = trimmed
-      ? `/search?q=${encodeURIComponent(trimmed)}`
-      : '/search';
+    const nextUrl = trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : '/search';
     router.replace(nextUrl, { scroll: false });
   }, [query, queryHydrated, router, searchParams]);
 
-  const isHomeMode = useMemo(
-    () => !query.trim() && results.length === 0 && !loading,
-    [loading, query, results.length]
-  );
+  const isHomeMode = useMemo(() => !query.trim() && results.length === 0 && !loading, [loading, query, results.length]);
 
   return (
     <div className="min-h-screen yw-page">
@@ -153,9 +139,7 @@ function SearchPageInner() {
                   {language === 'traditional' ? '聖經搜索' : '圣经搜索'}
                 </h1>
                 <p className="mb-8 text-center font-chinese text-sm text-stone-600 dark:text-stone-400">
-                  {language === 'traditional'
-                    ? '支持經文引用、關鍵詞、拼音搜索'
-                    : '支持经文引用、关键词、拼音搜索'}
+                  {language === 'traditional' ? '支持經文引用、關鍵詞、拼音搜索' : '支持经文引用、关键词、拼音搜索'}
                 </p>
               </>
             )}
@@ -163,9 +147,7 @@ function SearchPageInner() {
             <SearchBox variant={isHomeMode ? 'hero' : 'compact'} autoFocus />
 
             <div
-              className={`mt-3 flex items-center ${
-                isHomeMode ? 'justify-center md:hidden' : 'justify-end md:hidden'
-              }`}
+              className={`mt-3 flex items-center ${isHomeMode ? 'justify-center md:hidden' : 'justify-end md:hidden'}`}
             >
               <LanguageToggle />
             </div>

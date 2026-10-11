@@ -57,7 +57,11 @@ describe('isValidVerseId', () => {
 
 describe('validateIncrementBody', () => {
   it('accepts a valid favorite', () => {
-    expect(validateIncrementBody({ action: 'favorite', verseId: '43-3-16' })).toEqual({ ok: true, action: 'favorite', verseId: '43-3-16' });
+    expect(validateIncrementBody({ action: 'favorite', verseId: '43-3-16' })).toEqual({
+      ok: true,
+      action: 'favorite',
+      verseId: '43-3-16',
+    });
   });
 
   it.each([
@@ -87,7 +91,10 @@ describe('validateTrackUserBody', () => {
     expect(validateTrackUserBody('{}')).toEqual({ ok: true });
   });
 
-  it.each(['not json', '[]', 'null', '"x"', '{"verseId":"../"}', '{"verseId":"43-3-16"}', '{"a":1}'])('rejects %s', (raw) => {
-    expect(validateTrackUserBody(raw).ok).toBe(false);
-  });
+  it.each(['not json', '[]', 'null', '"x"', '{"verseId":"../"}', '{"verseId":"43-3-16"}', '{"a":1}'])(
+    'rejects %s',
+    (raw) => {
+      expect(validateTrackUserBody(raw).ok).toBe(false);
+    },
+  );
 });

@@ -1,10 +1,5 @@
 import type { SearchResult } from '@/types/search';
-import {
-  DEFAULT_SEARCH_LIMIT,
-  hasCjk,
-  phraseScore,
-  type SearchResponse,
-} from './searchHelpers';
+import { DEFAULT_SEARCH_LIMIT, hasCjk, phraseScore, type SearchResponse } from './searchHelpers';
 
 export { hasCjk } from './searchHelpers';
 
@@ -32,12 +27,15 @@ type OpenCCModule = {
 };
 
 let pagefindPromise: Promise<PagefindModule> | null = null;
-let openCCPromise: Promise<{ toTraditional: (value: string) => string; toSimplified: (value: string) => string }> | null = null;
+let openCCPromise: Promise<{
+  toTraditional: (value: string) => string;
+  toSimplified: (value: string) => string;
+}> | null = null;
 
 async function loadPagefind(): Promise<PagefindModule> {
   if (!pagefindPromise) {
     // Keep Pagefind out of the Next bundle; it is generated into /public/pagefind at build time.
-    pagefindPromise = (new Function('return import("/pagefind/pagefind.js")')() as Promise<PagefindModule>);
+    pagefindPromise = new Function('return import("/pagefind/pagefind.js")')() as Promise<PagefindModule>;
   }
   return pagefindPromise;
 }
@@ -61,34 +59,67 @@ const toNumber = (value: string | undefined): number => {
 };
 
 const COMMON_SEARCH_TERMS = [
-  'love', 'loved', 'beginning', 'faith', 'hope', 'grace', 'peace', 'truth', 'life', 'light',
-  'god', 'lord', 'jesus', 'christ', 'spirit', 'wisdom', 'mercy', 'righteousness', 'salvation',
-  'forgiveness', 'kingdom', 'heaven', 'earth', 'creation', 'resurrection', 'prayer', 'covenant',
-  'yuehan', 'yesu', 'yehehua', 'shenaishiren', 'taichuyoudao', 'shipian', 'luoma', 'matai',
+  'love',
+  'loved',
+  'beginning',
+  'faith',
+  'hope',
+  'grace',
+  'peace',
+  'truth',
+  'life',
+  'light',
+  'god',
+  'lord',
+  'jesus',
+  'christ',
+  'spirit',
+  'wisdom',
+  'mercy',
+  'righteousness',
+  'salvation',
+  'forgiveness',
+  'kingdom',
+  'heaven',
+  'earth',
+  'creation',
+  'resurrection',
+  'prayer',
+  'covenant',
+  'yuehan',
+  'yesu',
+  'yehehua',
+  'shenaishiren',
+  'taichuyoudao',
+  'shipian',
+  'luoma',
+  'matai',
 ];
 
 function damerauLevenshtein(a: string, b: string): number {
-  const matrix = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+  const width = b.length + 1;
+  // Flat (a.length + 1) × (b.length + 1) matrix; every index below is in bounds.
+  const matrix = new Array<number>((a.length + 1) * width).fill(0);
+  const at = (i: number, j: number) => matrix[i * width + j]!;
+  const set = (i: number, j: number, value: number) => {
+    matrix[i * width + j] = value;
+  };
 
-  for (let i = 0; i <= a.length; i += 1) matrix[i][0] = i;
-  for (let j = 0; j <= b.length; j += 1) matrix[0][j] = j;
+  for (let i = 0; i <= a.length; i += 1) set(i, 0, i);
+  for (let j = 0; j <= b.length; j += 1) set(0, j, j);
 
   for (let i = 1; i <= a.length; i += 1) {
     for (let j = 1; j <= b.length; j += 1) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
+      set(i, j, Math.min(at(i - 1, j) + 1, at(i, j - 1) + 1, at(i - 1, j - 1) + cost));
 
       if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
-        matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + 1);
+        set(i, j, Math.min(at(i, j), at(i - 2, j - 2) + 1));
       }
     }
   }
 
-  return matrix[a.length][b.length];
+  return at(a.length, b.length);
 }
 
 function getCorrectionVariants(query: string): string[] {
@@ -96,8 +127,7 @@ function getCorrectionVariants(query: string): string[] {
   if (!/^[a-z\s]+$/.test(normalized) || normalized.length < 4) return [];
 
   const joined = normalized.replace(/\s+/g, '');
-  const candidates = COMMON_SEARCH_TERMS
-    .map((term) => ({ term, distance: damerauLevenshtein(joined, term) }))
+  const candidates = COMMON_SEARCH_TERMS.map((term) => ({ term, distance: damerauLevenshtein(joined, term) }))
     .filter(({ term, distance }) => distance > 0 && distance <= (term.length <= 5 ? 1 : 2))
     .sort((a, b) => a.distance - b.distance || a.term.length - b.term.length)
     .slice(0, 2)
@@ -154,10 +184,7 @@ function mapPagefindData(data: PagefindResultData, fallbackScore: number, query:
  * Pagefind search with OpenCC query variants + phrase boost.
  * Returns truncated=true when more than `limit` unique hits exist.
  */
-export async function searchWithPagefind(
-  query: string,
-  limit = DEFAULT_SEARCH_LIMIT
-): Promise<SearchResponse> {
+export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_LIMIT): Promise<SearchResponse> {
   const trimmed = query.trim();
   if (!trimmed) return { results: [], truncated: false };
 
@@ -168,13 +195,13 @@ export async function searchWithPagefind(
   const merged: SearchResult[] = [];
 
   for (let variantIndex = 0; variantIndex < responses.length; variantIndex += 1) {
-    const response = responses[variantIndex];
-    const variant = variants[variantIndex];
+    const response = responses[variantIndex]!;
+    const variant = variants[variantIndex]!;
     const data = await Promise.all(
       response.results.slice(0, Math.max(limit * 3, 100)).map(async (result, index) => {
         const resultData = await result.data();
-        return mapPagefindData(resultData, result.score ?? (limit - index), variant);
-      })
+        return mapPagefindData(resultData, result.score ?? limit - index, variant);
+      }),
     );
 
     for (const result of data) {

@@ -7,6 +7,6 @@ export function useScriptPick() {
   const language = useAppStore((state) => state.language);
   return useCallback(
     (traditional: string, simplified: string) => pickScript(language, traditional, simplified),
-    [language]
+    [language],
   );
 }

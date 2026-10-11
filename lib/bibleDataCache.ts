@@ -18,7 +18,7 @@ export async function fetchWithCache(url: string): Promise<unknown> {
       const response = await fetch(url);
       if (response.ok) {
         // Clone response before consuming (can only read body once)
-        cache.put(url, response.clone());
+        void cache.put(url, response.clone());
         return response.json();
       }
     } catch {

@@ -33,13 +33,24 @@ function deferFetch(url: string): Promise<unknown> {
 }
 
 const json = (data: unknown) => ({ ok: true, statusText: 'OK', json: async () => data });
-const booksJson = json({ books: [{ key: '创世记', nameSimplified: '创世记', nameTraditional: '創世記', nameEnglish: 'Genesis', chapters: 50, testament: 'old' }] });
+const booksJson = json({
+  books: [
+    {
+      key: '创世记',
+      nameSimplified: '创世记',
+      nameTraditional: '創世記',
+      nameEnglish: 'Genesis',
+      chapters: 50,
+      testament: 'old',
+    },
+  ],
+});
 // Both scripts load the same small presets file; request 0 is the stale default-script (繁) load, 1 the saved 简体.
 const presets = (text: string) => json({ simplified: { '创世记-1-1': text }, traditional: { '创世记-1-1': text } });
 const STALE = 0;
 const LATEST = 1;
 function resolvePreset(index: number, response: unknown) {
-  pending.get('/data/presets.json')![index].resolve(response);
+  pending.get('/data/presets.json')![index]!.resolve(response);
 }
 
 function resolveAll(url: string, response: unknown) {
@@ -55,23 +66,61 @@ beforeEach(() => {
     removeItem: (key: string) => values.delete(key),
     clear: () => values.clear(),
     key: (index: number) => Array.from(values.keys())[index] ?? null,
-    get length() { return values.size; },
+    get length() {
+      return values.size;
+    },
   });
   useAppStore.persist.setOptions({
     storage: createJSONStorage(() => ({ getItem: () => null, setItem: () => undefined, removeItem: () => undefined })),
   });
   useAppStore.setState({ language: 'traditional', theme: 'light' });
-  useVerseStore.setState({ verses: [], books: [], versesLoaded: false, booksLoaded: false, versesLoading: false, booksLoading: false, versesError: null, booksError: null });
-  vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
-  vi.stubGlobal('IntersectionObserver', class { observe() {} unobserve() {} disconnect() {} takeRecords() { return []; } });
+  useVerseStore.setState({
+    verses: [],
+    books: [],
+    versesLoaded: false,
+    booksLoaded: false,
+    versesLoading: false,
+    booksLoading: false,
+    versesError: null,
+    booksError: null,
+  });
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+      takeRecords() {
+        return [];
+      }
+    },
+  );
   vi.stubGlobal('matchMedia', () => ({
-    matches: false, media: '', onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true,
+    matches: false,
+    media: '',
+    onchange: null,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    dispatchEvent: () => true,
   }));
-  vi.stubGlobal('fetch', vi.fn((url: string) => {
-    if (url.startsWith('/data/')) return deferFetch(url);
-    if (url === '/api/stats') return Promise.resolve(json({ totalUsers: 1, totalFavorites: 2 }));
-    return Promise.resolve(json({}));
-  }));
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) => {
+      if (url.startsWith('/data/')) return deferFetch(url);
+      if (url === '/api/stats') return Promise.resolve(json({ totalUsers: 1, totalFavorites: 2 }));
+      return Promise.resolve(json({}));
+    }),
+  );
 });
 
 afterEach(() => {
@@ -134,7 +183,7 @@ describe('home initial load with a superseded (default-script) request', () => {
 
     await act(async () => {
       resolveAll('/data/books.json', booksJson);
-      pending.get('/data/presets.json')![STALE].reject(new Error('stale network error'));
+      pending.get('/data/presets.json')![STALE]!.reject(new Error('stale network error'));
     });
     expect(view.container.textContent).toContain('加载中');
     expect(view.container.textContent).not.toContain('stale network error');

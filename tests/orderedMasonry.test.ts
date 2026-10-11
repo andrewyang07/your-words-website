@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  calculateOrderedMasonry,
-  estimateVerseCardHeight,
-  getOrderedMasonryColumnCount,
-} from '../lib/orderedMasonry';
+import { calculateOrderedMasonry, estimateVerseCardHeight, getOrderedMasonryColumnCount } from '../lib/orderedMasonry';
 
 describe('ordered masonry layout', () => {
   it('keeps source order in a single mobile column', () => {
@@ -92,9 +88,15 @@ describe('ordered masonry layout', () => {
   it('estimates more height for larger text, longer text, and narrower cards', () => {
     const baseline = estimateVerseCardHeight({ textLength: 50, size: 'medium', textScale: 1, columnWidth: 280 });
 
-    expect(estimateVerseCardHeight({ textLength: 50, size: 'medium', textScale: 1.45, columnWidth: 280 })).toBeGreaterThan(baseline);
-    expect(estimateVerseCardHeight({ textLength: 160, size: 'medium', textScale: 1, columnWidth: 280 })).toBeGreaterThan(baseline);
-    expect(estimateVerseCardHeight({ textLength: 50, size: 'medium', textScale: 1, columnWidth: 180 })).toBeGreaterThan(baseline);
+    expect(
+      estimateVerseCardHeight({ textLength: 50, size: 'medium', textScale: 1.45, columnWidth: 280 }),
+    ).toBeGreaterThan(baseline);
+    expect(
+      estimateVerseCardHeight({ textLength: 160, size: 'medium', textScale: 1, columnWidth: 280 }),
+    ).toBeGreaterThan(baseline);
+    expect(estimateVerseCardHeight({ textLength: 50, size: 'medium', textScale: 1, columnWidth: 180 })).toBeGreaterThan(
+      baseline,
+    );
   });
 
   it('always uses one mobile column and drops a wide-layout column at 145%', () => {

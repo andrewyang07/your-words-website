@@ -38,12 +38,21 @@ beforeEach(() => {
     removeItem: (key: string) => values.delete(key),
     clear: () => values.clear(),
     key: (index: number) => Array.from(values.keys())[index] ?? null,
-    get length() { return values.size; },
+    get length() {
+      return values.size;
+    },
   });
   // Skip the first-run guide dialog so only the practice flow is under test.
-  window.localStorage.setItem('your-words:memorize-guide:v3', JSON.stringify({
-    version: 3, pickerSeen: true, inputSeen: true, zhuyinSeen: true, dismissed: true,
-  }));
+  window.localStorage.setItem(
+    'your-words:memorize-guide:v3',
+    JSON.stringify({
+      version: 3,
+      pickerSeen: true,
+      inputSeen: true,
+      zhuyinSeen: true,
+      dismissed: true,
+    }),
+  );
   useAppStore.persist.setOptions({
     storage: createJSONStorage(() => ({ getItem: () => null, setItem: () => undefined, removeItem: () => undefined })),
   });
@@ -52,10 +61,13 @@ beforeEach(() => {
   });
   useFavoritesStore.setState({ favorites: new Set() });
   window.history.replaceState({}, '', '/memorize?v=43-3-16');
-  vi.stubGlobal('fetch', vi.fn(async (url: string) => ({
-    ok: true,
-    json: async () => ({ 约翰福音: { 3: { 16: url.includes('CUVT') ? '神愛世人。' : '神爱世人。' } } }),
-  })));
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: string) => ({
+      ok: true,
+      json: async () => ({ 约翰福音: { 3: { 16: url.includes('CUVT') ? '神愛世人。' : '神爱世人。' } } }),
+    })),
+  );
 });
 
 afterEach(() => {

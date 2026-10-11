@@ -6,7 +6,11 @@ const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 const src = read('lib/constants.ts');
 const block = src.slice(src.indexOf('PRESET_VERSE_REFERENCES'));
 const body = block.slice(0, block.indexOf('];'));
-const refs = [...body.matchAll(/book:\s*'([^']+)',\s*chapter:\s*(\d+),\s*verse:\s*(\d+)/g)].map((m) => [m[1], m[2], m[3]]);
+const refs = [...body.matchAll(/book:\s*'([^']+)',\s*chapter:\s*(\d+),\s*verse:\s*(\d+)/g)].map((m) => [
+  m[1],
+  m[2],
+  m[3],
+]);
 if (refs.length === 0) throw new Error('no PRESET_VERSE_REFERENCES found');
 
 const pick = (bible) => {

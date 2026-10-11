@@ -24,22 +24,24 @@ describe('single-verse card actions', () => {
   it('does not expose sharing on normal, search-result, or discovery cards', () => {
     const surfaces = [
       renderToStaticMarkup(<VerseCard verse={verse} />),
-      renderToStaticMarkup(<SearchResultCard
-        result={{
-          id: verse.id,
-          bookKey: verse.bookKey,
-          bookTraditional: '約翰福音',
-          bookEnglish: 'John',
-          chapter: verse.chapter,
-          verse: verse.verse,
-          textChinese: verse.text,
-          textEnglish: 'For God so loved the world.',
-          score: 100,
-          matchType: 'reference',
-        }}
-        index={0}
-        isSelected={false}
-      />),
+      renderToStaticMarkup(
+        <SearchResultCard
+          result={{
+            id: verse.id,
+            bookKey: verse.bookKey,
+            bookTraditional: '約翰福音',
+            bookEnglish: 'John',
+            chapter: verse.chapter,
+            verse: verse.verse,
+            textChinese: verse.text,
+            textEnglish: 'For God so loved the world.',
+            score: 100,
+            matchType: 'reference',
+          }}
+          index={0}
+          isSelected={false}
+        />,
+      ),
       renderToStaticMarkup(<DiscoveryVerseCard verse={verse} saved={false} onSave={vi.fn()} />),
     ];
 

@@ -10,28 +10,32 @@ interface ShareSavedVerseCollectionArgs {
   clipboard?: ClipboardWriter;
 }
 
-export type ShareSavedVerseCollectionResult = {
-  status: 'copied';
-  url: string;
-  count: number;
-} | {
-  status: 'too-many';
-  count: number;
-  max: typeof MAX_SHARED_VERSES;
-} | {
-  status: 'manual-copy';
-  url: string;
-  count: number;
-};
+export type ShareSavedVerseCollectionResult =
+  | {
+      status: 'copied';
+      url: string;
+      count: number;
+    }
+  | {
+      status: 'too-many';
+      count: number;
+      max: typeof MAX_SHARED_VERSES;
+    }
+  | {
+      status: 'manual-copy';
+      url: string;
+      count: number;
+    };
 
 function getCanonicalSharedVerses(verseIds: string[]) {
   return [...new Set(verseIds)]
     .map(parseVerseId)
     .filter((verse): verse is NonNullable<typeof verse> => verse !== null && Boolean(bookKeyToId[verse.bookKey]))
-    .sort((left, right) =>
-      bookKeyToId[left.bookKey] - bookKeyToId[right.bookKey]
-      || left.chapter - right.chapter
-      || left.verse - right.verse
+    .sort(
+      (left, right) =>
+        bookKeyToId[left.bookKey]! - bookKeyToId[right.bookKey]! ||
+        left.chapter - right.chapter ||
+        left.verse - right.verse,
     );
 }
 

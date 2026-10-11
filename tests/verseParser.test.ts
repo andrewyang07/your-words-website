@@ -9,7 +9,7 @@ describe('parseVerseReferences', () => {
       expect.arrayContaining([
         expect.objectContaining({ book: '约翰福音', chapter: 3, startVerse: 16 }),
         expect.objectContaining({ book: '约翰福音', chapter: 3, startVerse: 17 }),
-      ])
+      ]),
     );
   });
 
@@ -20,7 +20,7 @@ describe('parseVerseReferences', () => {
       expect.arrayContaining([
         expect.objectContaining({ book: '约翰福音', chapter: 3, startVerse: 16, endVerse: 18 }),
         expect.objectContaining({ book: '约翰福音', chapter: 3, startVerse: 19 }),
-      ])
+      ]),
     );
   });
 
@@ -31,16 +31,14 @@ describe('parseVerseReferences', () => {
       expect.arrayContaining([
         expect.objectContaining({ book: '约翰福音', chapter: 3, startVerse: 16, endVerse: 18 }),
         expect.objectContaining({ book: '约翰福音', chapter: 3, startVerse: 19, endVerse: 21 }),
-      ])
+      ]),
     );
   });
 
   it('keeps English references through the OSS parser', () => {
     const refs = parseVerseReferences('Grace appears clearly in John 3:17.');
 
-    expect(refs).toEqual([
-      expect.objectContaining({ book: '约翰福音', chapter: 3, startVerse: 17 }),
-    ]);
+    expect(refs).toEqual([expect.objectContaining({ book: '约翰福音', chapter: 3, startVerse: 17 })]);
   });
 
   it('rejects external parser matches that span notebook paragraphs', () => {

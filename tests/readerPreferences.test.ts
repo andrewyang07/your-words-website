@@ -1,9 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  DEFAULT_READER_TEXT_SIZE,
-  READER_TEXT_SIZES,
-  getNextReaderTextSize,
-} from '../lib/readerPreferences';
+import { DEFAULT_READER_TEXT_SIZE, READER_TEXT_SIZES, getNextReaderTextSize } from '../lib/readerPreferences';
 
 describe('verse reading text size preference', () => {
   beforeEach(() => {
