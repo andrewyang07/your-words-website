@@ -4,6 +4,8 @@
 set -uo pipefail
 DIR="$(dirname "$0")"
 source "$DIR/env.sh"
-export CHROME_PATH="${CHROME_PATH:-$(ls "$HOME"/.cache/ms-playwright/chromium-*/chrome-linux*/chrome 2>/dev/null | sort | tail -1)}"
+"$DIR/ensure-tools.sh" >/dev/null || exit 1
+export CHROME_PATH="${CHROME_PATH:-$(node -e "process.stdout.write(require('$VERIFY_TOOLS/node_modules/playwright-core').chromium.executablePath())")}"
+export PATH="$VERIFY_TOOLS/node_modules/.bin:$PATH"  # local lighthouse
 [[ -x "$CHROME_PATH" ]] || { echo "FAIL perf: no Chromium found (set CHROME_PATH)"; exit 1; }
 node "$DIR/check-perf.mjs" "$VERIFY_BASE" "${VERIFY_PERF_BUDGETS:-$DIR/../perf-budgets.json}" "$VERIFY_EVIDENCE" "$@"

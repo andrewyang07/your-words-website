@@ -6,6 +6,7 @@ export VERIFY_EVIDENCE="${VERIFY_EVIDENCE:-${VERIFY_REPO:-$(cd "$DIR/../../../..
 source "$DIR/env.sh"
 trap '"$DIR/cleanup.sh"' EXIT
 PERF=0; ARGS=(); for a in "$@"; do [[ $a == --perf ]] && PERF=1 || ARGS+=("$a"); done; set -- "${ARGS[@]}"
+"$DIR/ensure-tools.sh" || exit 1
 "$DIR/launch.sh" "$@" || exit 1
 "$DIR/doctor.sh" || exit 1
 "$DIR/check-http.sh"; http=$?
