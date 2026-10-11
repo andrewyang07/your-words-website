@@ -9,7 +9,7 @@ export const useAppStore = create<AppState>()(
       currentMode: 'preset',
       loading: false,
       error: null,
-      language: 'traditional', // 默认繁体中文
+      language: 'simplified', // 新用户默认简体中文；已保存的偏好由 persist 恢复
       theme: 'system', // 默认跟随系统
 
       // Actions

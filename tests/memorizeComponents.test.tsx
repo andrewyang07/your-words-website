@@ -1170,3 +1170,14 @@ describe('memorize share link (背诵链接)', () => {
     expect(within(dialog).getByRole('button', { name: '复制链接' })).toBeTruthy();
   });
 });
+
+describe('memorize heading levels', () => {
+  it('memorize components render no <h1> (the page owns the single sr-only H1)', async () => {
+    const fs = await import('node:fs');
+    const src = fs.readFileSync(`${process.cwd()}/components/memorize/MemorizePageClient.tsx`, 'utf8');
+    expect(src).not.toMatch(/<h1[\s>]/);
+    for (const f of fs.readdirSync(`${process.cwd()}/components/memorize`)) {
+      expect(fs.readFileSync(`${process.cwd()}/components/memorize/${f}`, 'utf8'), f).not.toMatch(/<h1[\s>]/);
+    }
+  });
+});
