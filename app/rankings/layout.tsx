@@ -9,10 +9,10 @@ export const metadata: Metadata = {
         canonical: '/rankings',
     },
     openGraph: {
-        title: '全站聖經經文排行榜 - 你的話語',
+        title: '全站聖經經文排行榜 - 你的话语',
         description: '看看大家最常收藏、最爱背诵的圣经经文 Top 榜单。',
         url: '/rankings',
-        siteName: '你的話語',
+        siteName: '你的话语',
         locale: 'zh_CN',
         type: 'website',
         images: [
@@ -20,13 +20,13 @@ export const metadata: Metadata = {
                 url: '/og-default.png',
                 width: 1200,
                 height: 630,
-                alt: '全站聖經經文排行榜 - 你的話語',
+                alt: '全站聖經經文排行榜 - 你的话语',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: '全站聖經經文排行榜 - 你的話語',
+        title: '全站聖經經文排行榜 - 你的话语',
         description: '看看大家最常收藏、最爱背诵的圣经经文 Top 榜单。',
         images: ['/og-default.png'],
     },

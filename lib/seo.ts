@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-export const SITE_NAME = '你的話語';
+export const SITE_NAME = '你的话语';
 export const DEFAULT_OG_IMAGE = { url: '/og-default.png', width: 1200, height: 630, alt: '你的话语 - 免费圣经背诵与搜索' } as const;
 
 /**

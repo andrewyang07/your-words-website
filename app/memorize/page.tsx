@@ -9,7 +9,7 @@ const MEMORIZE_DESCRIPTION = '从收藏中选择一节和合本经文，分四�
 // 带参数的背诵链接（?p= / ?s= / ?v=）也以 /memorize 为 canonical
 const CANONICAL = '/memorize';
 
-// absolute：避免根布局模板拼上繁体的「| 你的話語」
+// absolute：自带品牌后缀，不再叠加根布局模板
 const BRAND_SUFFIX = ' | 你的话语';
 
 const staticMetadata: Metadata = {

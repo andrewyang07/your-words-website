@@ -10,10 +10,10 @@ export const metadata: Metadata = {
         canonical: '/help',
     },
     openGraph: {
-        title: '使用幫助 - 你的話語聖經背誦工具',
+        title: '使用幫助 - 你的话语聖經背誦工具',
         description: '了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。',
         url: '/help',
-        siteName: '你的話語',
+        siteName: '你的话语',
         locale: 'zh_TW',
         type: 'website',
         images: [
@@ -21,13 +21,13 @@ export const metadata: Metadata = {
                 url: '/og-default.png',
                 width: 1200,
                 height: 630,
-                alt: '你的話語 Logo',
+                alt: '你的话语 Logo',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: '使用幫助 - 你的話語聖經背誦工具',
+        title: '使用幫助 - 你的话语聖經背誦工具',
         description: '了解如何使用聖經背誦、搜索、Flash Card、收藏、分享與聖經筆記本功能。',
         images: ['/og-default.png'],
     },

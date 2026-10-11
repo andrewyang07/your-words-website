@@ -7,7 +7,7 @@ import { getDocumentTitle } from '@/lib/uiScript';
 interface DocumentTitleProps {
     traditional: string;
     simplified: string;
-    /** Skip the "| 你的話語" brand suffix (for the home page title). */
+    /** Skip the "| 你的话语" brand suffix (for the home page title). */
     absolute?: boolean;
 }
 

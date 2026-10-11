@@ -157,7 +157,7 @@ export function pickScript(language: UiScript, traditional: string, simplified: 
 
 const BRAND_SUFFIX = { traditional: ' | 你的話語', simplified: ' | 你的话语' } as const;
 
-/** Browser-tab title for a page in the given UI script (mirrors the `%s | 你的話語` metadata template). */
+/** Browser-tab title for a page in the given UI script (mirrors the `%s | 你的话语` metadata template). */
 export function getDocumentTitle(
   language: UiScript,
   title: { traditional: string; simplified: string },

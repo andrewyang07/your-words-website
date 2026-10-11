@@ -18,8 +18,8 @@ const notoSans = Noto_Sans_SC({
 export const metadata: Metadata = {
     metadataBase: new URL('https://www.yourwords.me'),
     title: {
-        default: '你的話語 - 免費聖經背誦與搜索工具',
-        template: '%s | 你的話語',
+        default: '你的话语 - 免費聖經背誦與搜索工具',
+        template: '%s | 你的话语',
     },
     description:
         '免費聖經背誦與搜索工具，支持中文、英文、拼音快速查找經文，提供 Flash Card 背誦、經文收藏、分享與聖經筆記本功能。',
@@ -45,8 +45,8 @@ export const metadata: Metadata = {
         locale: 'zh_CN',
         alternateLocale: ['zh_TW'],
         url: 'https://www.yourwords.me',
-        siteName: '你的話語',
-        title: '你的話語 - 免費聖經背誦與搜索工具',
+        siteName: '你的话语',
+        title: '你的话语 - 免費聖經背誦與搜索工具',
         description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速查找經文，提供 Flash Card 背誦、經文收藏、分享與聖經筆記本功能。',
         images: [
             {
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        title: '你的話語 - 免費聖經背誦與搜索工具',
+        title: '你的话语 - 免費聖經背誦與搜索工具',
         description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速查找經文，提供 Flash Card 背誦、經文收藏、分享與聖經筆記本功能。',
         images: ['/og-default.png'],
     },
@@ -77,7 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {
                 '@type': 'WebApplication',
                 '@id': 'https://www.yourwords.me/#app',
-                name: '你的話語',
+                name: '你的话语',
                 alternateName: ['你的话语', 'Your Words'],
                 description: '免費聖經背誦與搜索工具，支持中文、英文、拼音快速查找經文，提供 Flash Card 背誦、經文收藏、分享與聖經筆記本功能。',
                 url: 'https://www.yourwords.me',
@@ -95,7 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {
                 '@type': 'WebSite',
                 '@id': 'https://www.yourwords.me/#website',
-                name: '你的話語',
+                name: '你的话语',
                 alternateName: ['你的话语', 'Your Words'],
                 url: 'https://www.yourwords.me',
                 inLanguage: ['zh-TW', 'zh-CN', 'en'],
