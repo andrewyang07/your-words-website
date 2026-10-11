@@ -14,15 +14,30 @@ if ss -ltn "sport = :$VERIFY_PORT" | grep -q LISTEN; then
 fi
 [[ -d node_modules ]] || npm ci --no-audit --no-fund
 if [[ "$MODE" == prod ]]; then
-  if [[ $REBUILD == 1 || ! -f .next/BUILD_ID ]]; then
-    echo "building (npm run build)…"; npm run build > "$VERIFY_STATE/build.log" 2>&1 || { echo "FAIL build — see $VERIFY_STATE/build.log"; exit 1; }
+  # The build is stamped with the commit it came from; reuse it only if that matches a clean HEAD.
+  STAMP=.next/verify-build-commit
+  HEAD_SHA=$(git rev-parse HEAD)
+  # Source dirt that affects the build (skill files, tests and docs don't).
+  DIRTY=$(git status --porcelain -- . ':!.cursor' ':!tests' ':!docs' ':!*.md' ':!.verify' | head -5)
+  BUILT=$(cat "$STAMP" 2>/dev/null || echo none)
+  if [[ $REBUILD == 0 && -f .next/BUILD_ID ]]; then
+    if [[ -n "$DIRTY" ]]; then echo "INFO working tree has uncommitted source changes — rebuilding"; REBUILD=1
+    elif [[ "$BUILT" != "$HEAD_SHA" ]]; then echo "INFO existing build is from ${BUILT:0:12}, HEAD is ${HEAD_SHA:0:12} — rebuilding"; REBUILD=1
+    fi
   fi
+  if [[ $REBUILD == 1 || ! -f .next/BUILD_ID ]]; then
+    rm -f "$STAMP"; echo "building (npm run build)…"; npm run build > "$VERIFY_STATE/build.log" 2>&1 || { echo "FAIL build — see $VERIFY_STATE/build.log"; exit 1; }
+    if [[ -n "$DIRTY" ]]; then echo "${HEAD_SHA}-dirty" > "$STAMP"; else echo "$HEAD_SHA" > "$STAMP"; fi
+  fi
+  BUILT=$(cat "$STAMP")
+  echo "TESTING build of $BUILT ($(git log -1 --format=%s "$HEAD_SHA" | cut -c1-60))"
   setsid npx next start -p "$VERIFY_PORT" > "$LOGFILE" 2>&1 < /dev/null &
 else
   setsid npx next dev -p "$VERIFY_PORT" > "$LOGFILE" 2>&1 < /dev/null &
 fi
 echo $! > "$PIDFILE"
-git rev-parse HEAD > "$VERIFY_STATE/server-${VERIFY_PORT}.commit"
+if [[ "$MODE" == prod ]]; then echo "$BUILT" > "$VERIFY_STATE/server-${VERIFY_PORT}.commit"
+else git rev-parse HEAD > "$VERIFY_STATE/server-${VERIFY_PORT}.commit"; fi
 for _ in $(seq 1 90); do
   if curl -fs -o /dev/null "$VERIFY_BASE/"; then echo "READY $VERIFY_BASE (pid $(cat "$PIDFILE"), mode $MODE)"; exit 0; fi
   kill -0 "$(cat "$PIDFILE")" 2>/dev/null || { echo "FAIL server exited — see $LOGFILE"; exit 1; }
