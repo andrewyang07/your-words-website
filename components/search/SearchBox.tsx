@@ -20,6 +20,8 @@ interface SearchBoxProps {
 export default function SearchBox({ variant = 'hero', autoFocus = true }: SearchBoxProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Monotonic id of the latest search; responses from older requests are dropped so they can't overwrite newer ones.
+  const requestIdRef = useRef(0);
   const placeholderIndexRef = useRef(0);
 
   const {
@@ -56,6 +58,8 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
 
   const performSearch = useCallback(
     async (searchQuery: string) => {
+      const requestId = ++requestIdRef.current;
+      const isCurrent = () => requestId === requestIdRef.current;
       if (!searchQuery.trim()) {
         setResults([]);
         setLoading(false);
@@ -71,13 +75,15 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         const { results: searched, truncated } = await runClientSearch(searchQuery, undefined, {
           onFallbackLoading: () => useSearchStore.getState().setFallbackLoading(true),
         });
+        if (!isCurrent()) return;
         setResults(searched, truncated);
         setEngineReady(true);
       } catch (error) {
+        if (!isCurrent()) return;
         console.error('Search error:', error);
         setResults([]);
       } finally {
-        setLoading(false);
+        if (isCurrent()) setLoading(false);
       }
     },
     [setResults, setLoading, setEngineReady, setSearchLang],
@@ -91,9 +97,14 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       if (timerRef.current) clearTimeout(timerRef.current);
 
       if (!value.trim()) {
+        requestIdRef.current += 1; // invalidate any in-flight search
         setResults([]);
+        setLoading(false);
         return;
       }
+
+      // Show the loading state right away so the debounce window never flashes 未找到 for the new query.
+      setLoading(true);
 
       // Detect if likely a reference (contains digits after text) → immediate
       const isReference = /[a-zA-Z\u4e00-\u9fff]\s*\d/.test(value);
@@ -103,7 +114,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         void performSearch(value);
       }, delay);
     },
-    [setQuery, setResults, performSearch],
+    [setQuery, setResults, setLoading, performSearch],
   );
 
   const handleKeyDown = useCallback(

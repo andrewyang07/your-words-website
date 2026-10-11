@@ -2406,11 +2406,9 @@ export default function HomePage() {
                   <div className="h-5 w-5 rounded-full border-2 border-bible-400 border-t-transparent animate-spin dark:border-bible-300 dark:border-t-transparent" />
                 </div>
                 <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 font-chinese">
-                  正在翻找经文索引
+                  {chrome.searchingTitle}
                 </p>
-                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-chinese">
-                  引用会即时命中，全文搜索稍等半拍。
-                </p>
+                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-chinese">{chrome.searchingHint}</p>
               </div>
             </div>
           ) : searchQuery && searchResults.length === 0 && !isSearching ? (
