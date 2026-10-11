@@ -85,3 +85,6 @@ pnpm-debug.log*
 .#*
 \#*#
 *.orig
+
+# verify-yourwords skill scratch + evidence
+/.verify/
