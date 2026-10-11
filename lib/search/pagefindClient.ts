@@ -32,15 +32,10 @@ let openCCPromise: Promise<{
   toSimplified: (value: string) => string;
 }> | null = null;
 
-/** Versioned URL so immutable caching is scoped to the current bundle (see next.config.js). */
-export function pagefindUrl(version = process.env.NEXT_PUBLIC_PAGEFIND_VERSION): string {
-  return version ? `/pagefind/${version}/pagefind.js` : '/pagefind/pagefind.js';
-}
-
 async function loadPagefind(): Promise<PagefindModule> {
   if (!pagefindPromise) {
     // Keep Pagefind out of the Next bundle; it is generated into /public/pagefind at build time.
-    pagefindPromise = new Function('url', 'return import(url)')(pagefindUrl()) as Promise<PagefindModule>;
+    pagefindPromise = new Function('return import("/pagefind/pagefind.js")')() as Promise<PagefindModule>;
   }
   return pagefindPromise;
 }
