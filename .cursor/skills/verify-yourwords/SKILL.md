@@ -20,6 +20,10 @@ Ends with `VERIFY PASS|FAIL  evidence: <dir>`. Evidence is in `.verify/evidence/
 
 Env knobs: `VERIFY_PORT` (default 3460), `VERIFY_REPO` (verify another checkout/worktree with these scripts, e.g. a PR branch worktree), `VERIFY_EVIDENCE`, `VERIFY_TOOLS` (default `~/.cache/verify-yourwords`, where `playwright-core@1.64.0` is installed — never added to package.json).
 
+## Perf budgets
+
+`run-all.sh --perf` (or `scripts/check-perf.sh [--measure]` with a running prod server) runs Lighthouse mobile + First Load JS for `/`, `/search`, `/memorize`, `/note` and FAILs over `perf-budgets.json`. See [features/perf.md](features/perf.md).
+
 ## Launch
 
 ```bash
