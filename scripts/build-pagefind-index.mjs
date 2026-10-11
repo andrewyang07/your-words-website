@@ -45,7 +45,9 @@ async function main() {
   for (const book of books) {
     const simplifiedBook = simplified[book.key] || {};
     const traditionalBook = traditional[book.key] || {};
-    const englishBook = english[book.nameEnglish] || {};
+    // books.json names that differ from WEB_bible.json keys (keep in sync with lib/search/webBookName.ts).
+    const webName = { Psalms: 'Psalm', 'Song of Solomon': 'Song Of Solomon' }[book.nameEnglish] ?? book.nameEnglish;
+    const englishBook = english[webName] || {};
 
     for (const chapter of Object.keys(simplifiedBook).sort((a, b) => Number(a) - Number(b))) {
       const verses = simplifiedBook[chapter] || {};

@@ -1,43 +1,44 @@
 {
   "_note": "Budgets for check-perf.sh. Lighthouse mobile preset against the LOCAL prod build (next start), so absolute numbers differ from production. firstLoadJsKb = gzip KB of <script src> chunks referenced by the route's HTML. Tighten whenever a PR improves a number; loosen only with a reason in the PR.",
-  "runs": 1,
+  "runs": 3,
   "routes": {
     "/": {
-      "minScore": 50,
-      "maxLcpMs": 19500,
-      "maxTbtMs": 300,
+      "minScore": 62,
+      "maxLcpMs": 5200,
+      "maxTbtMs": 1000,
       "maxCls": 0.05,
-      "firstLoadJsKb": 320
+      "firstLoadJsKb": 312
     },
     "/search": {
-      "minScore": 8,
-      "maxLcpMs": 8500,
-      "maxTbtMs": 46000,
+      "minScore": 50,
+      "maxLcpMs": 5000,
+      "maxTbtMs": 1200,
       "maxCls": 0.53,
-      "firstLoadJsKb": 460
+      "firstLoadJsKb": 445
     },
     "/memorize": {
-      "minScore": 48,
-      "maxLcpMs": 18200,
-      "maxTbtMs": 300,
+      "minScore": 62,
+      "maxLcpMs": 5400,
+      "maxTbtMs": 1000,
       "maxCls": 0.05,
-      "firstLoadJsKb": 300
+      "firstLoadJsKb": 295
     },
     "/note": {
-      "minScore": 45,
-      "maxLcpMs": 15400,
-      "maxTbtMs": 500,
+      "minScore": 50,
+      "maxLcpMs": 7200,
+      "maxTbtMs": 1300,
       "maxCls": 0.05,
-      "firstLoadJsKb": 335
+      "firstLoadJsKb": 328
     }
   },
   "measured": {
     "date": "2026-10-11",
-    "commit": "7fab4f7",
-    "/": [303, 57, 17716, 0, 0],
-    "/search": [437, 12, 6916, 38563, 0.481],
-    "/memorize": [285, 55, 16529, 0, 0],
-    "/note": [318, 52, 13989, 237, 0],
+    "commit": "perf/bundle-cache (median of 3)",
+    "/": [303, 68, 4207, 759, 0],
+    "/search": [436, 58, 2557, 737, 0.484],
+    "/memorize": [285, 70, 4356, 624, 0],
+    "/note": [318, 57, 5859, 1010, 0],
     "_cols": "firstLoadJsKb, score, lcpMs, tbtMs, cls (local next start, LH mobile)"
-  }
+  },
+  "_tbtNote": "TBT only counts long tasks after FCP. perf/bundle-cache moved FCP from ~5.9s to ~1.1s (no CJK webfont), so the same pre-existing hydration long tasks (also present before) now fall inside the TBT window; total main-thread work went down. TBT budgets were re-based on the new medians. /search LCP is noisy locally (seen 2.1-9.2s across runs), hence wider headroom."
 }
