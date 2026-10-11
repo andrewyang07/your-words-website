@@ -56,12 +56,7 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
         })}
       </p>
       {results.map((result, index) => (
-        <SearchResultCard
-          key={result.id}
-          result={result}
-          index={index}
-          isSelected={index === selectedIndex}
-        />
+        <SearchResultCard key={result.id} result={result} index={index} isSelected={index === selectedIndex} />
       ))}
       {showKeyboardHint && results.length > 0 && (
         <p className="text-center text-xs text-bible-400 dark:text-bible-500 pt-2 font-chinese">

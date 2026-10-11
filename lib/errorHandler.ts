@@ -8,10 +8,10 @@
  * @param error 错误对象
  */
 export function logError(context: string, error: unknown): void {
-    if (process.env.NODE_ENV === 'development') {
-        console.error(`[${context}]`, error);
-    }
-    // 生产环境可以集成错误追踪服务（如 Sentry）
+  if (process.env.NODE_ENV === 'development') {
+    console.error(`[${context}]`, error);
+  }
+  // 生产环境可以集成错误追踪服务（如 Sentry）
 }
 
 /**
@@ -20,7 +20,7 @@ export function logError(context: string, error: unknown): void {
  * @param message 警告消息
  */
 export function logWarning(context: string, message: string): void {
-    if (process.env.NODE_ENV === 'development') {
-        console.warn(`[${context}]`, message);
-    }
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(`[${context}]`, message);
+  }
 }

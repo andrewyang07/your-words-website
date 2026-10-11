@@ -2,9 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Verse } from '@/types/verse';
-import { CardSize } from '@/types/common';
 import { Star, BookOpen } from 'lucide-react';
+import { type Verse } from '@/types/verse';
+import { type CardSize } from '@/types/common';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { maskVerseText } from '@/lib/utils';
@@ -15,87 +15,87 @@ import { useAppStore } from '@/stores/useAppStore';
 import { getTestamentLabel } from '@/lib/uiScript';
 
 interface VerseCardProps {
-    verse: Verse;
-    size?: CardSize;
-    onViewInBible?: () => void;
-    defaultRevealed?: boolean; // 是否默认展开
+  verse: Verse;
+  size?: CardSize;
+  onViewInBible?: () => void;
+  defaultRevealed?: boolean; // 是否默认展开
 }
 
 export default function VerseCard({ verse, size = 'medium', onViewInBible, defaultRevealed = false }: VerseCardProps) {
-    const router = useRouter();
-    const { isFavorite, toggleFavorite } = useFavoritesStore();
-    const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
-    const textSize = useReaderPreferencesStore((state) => state.textSize);
-    const language = useAppStore((state) => state.language);
-    const [isRevealed, setIsRevealed] = useState(defaultRevealed);
-    const isFav = isFavorite(verse.id);
+  const router = useRouter();
+  const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
+  const textSize = useReaderPreferencesStore((state) => state.textSize);
+  const language = useAppStore((state) => state.language);
+  const [isRevealed, setIsRevealed] = useState(defaultRevealed);
+  const isFav = isFavorite(verse.id);
 
-    // 当 defaultRevealed 改变时，更新 isRevealed
-    useEffect(() => {
-        setIsRevealed(defaultRevealed);
-    }, [defaultRevealed]);
+  // 当 defaultRevealed 改变时，更新 isRevealed
+  useEffect(() => {
+    setIsRevealed(defaultRevealed);
+  }, [defaultRevealed]);
 
-    // 计算遮罩字符数（固定或随机范围）
-    const visibleChars = useMemo(() => {
-        if (maskCharsType === 'fixed') {
-            return maskCharsFixed;
-        }
-        // 范围模式：为每张卡片生成随机数（基于 verse.id 保证稳定）
-        const seed = verse.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const random = Math.abs(Math.sin(seed)) * (maskCharsMax - maskCharsMin + 1);
-        return Math.floor(random) + maskCharsMin;
-    }, [verse.id, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax]);
+  // 计算遮罩字符数（固定或随机范围）
+  const visibleChars = useMemo(() => {
+    if (maskCharsType === 'fixed') {
+      return maskCharsFixed;
+    }
+    // 范围模式：为每张卡片生成随机数（基于 verse.id 保证稳定）
+    const seed = verse.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const random = Math.abs(Math.sin(seed)) * (maskCharsMax - maskCharsMin + 1);
+    return Math.floor(random) + maskCharsMin;
+  }, [verse.id, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax]);
 
-    const sizeClasses = {
-        small: 'p-4 sm:p-4 min-h-[120px]',
-        medium: 'p-5 sm:p-6 min-h-[160px]',
-        large: 'p-6 sm:p-8 min-h-[200px]',
-    };
+  const sizeClasses = {
+    small: 'p-4 sm:p-4 min-h-[120px]',
+    medium: 'p-5 sm:p-6 min-h-[160px]',
+    large: 'p-6 sm:p-8 min-h-[200px]',
+  };
 
-    const handleCardClick = (e: React.MouseEvent) => {
-        // 如果点击的是按钮，不翻转卡片
-        if ((e.target as HTMLElement).closest('button')) {
-            return;
-        }
-        setIsRevealed(!isRevealed);
-    };
+  const handleCardClick = (e: React.MouseEvent) => {
+    // 如果点击的是按钮，不翻转卡片
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    setIsRevealed(!isRevealed);
+  };
 
-    // 键盘导航支持
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setIsRevealed(!isRevealed);
-        }
-    };
+  // 键盘导航支持
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setIsRevealed(!isRevealed);
+    }
+  };
 
-    const handleViewInBible = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (onViewInBible) {
-            onViewInBible();
-        } else {
-            // 跳转到逐节背诵页面，并传递书卷和章节信息
-            router.push(`/study/chapter?book=${encodeURIComponent(verse.book)}&chapter=${verse.chapter}`);
-        }
-    };
+  const handleViewInBible = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onViewInBible) {
+      onViewInBible();
+    } else {
+      // 跳转到逐节背诵页面，并传递书卷和章节信息
+      router.push(`/study/chapter?book=${encodeURIComponent(verse.book)}&chapter=${verse.chapter}`);
+    }
+  };
 
-    const handleToggleFavorite = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const wasFavorite = isFav;
-        toggleFavorite(verse.id);
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const wasFavorite = isFav;
+    toggleFavorite(verse.id);
 
-        // 只统计"收藏"动作，不统计"取消收藏"
-        if (!wasFavorite) {
-            const verseId = getVerseNumericId(verse);
-            sendStats('favorite', verseId);
-        }
-    };
+    // 只统计"收藏"动作，不统计"取消收藏"
+    if (!wasFavorite) {
+      const verseId = getVerseNumericId(verse);
+      void sendStats('favorite', verseId);
+    }
+  };
 
-    // 显示预览文本或完整文本
-    const displayText = isRevealed ? verse.text : maskVerseText(verse.text, maskMode, visibleChars);
+  // 显示预览文本或完整文本
+  const displayText = isRevealed ? verse.text : maskVerseText(verse.text, maskMode, visibleChars);
 
-    return (
-        <div
-            className={`
+  return (
+    <div
+      className={`
         ${sizeClasses[size]}
         liquid-glass rounded-[1.4rem]
         cursor-pointer
@@ -108,78 +108,80 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
         active:scale-[0.985]
         focus:outline-none focus:ring-2 focus:ring-bible-500 dark:focus:ring-bible-400
       `}
-            onClick={handleCardClick}
-            onKeyDown={handleKeyDown}
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-            role="article"
-            aria-label={`${verse.book} ${verse.chapter}章${verse.verse}节，${isRevealed ? '已展开' : '已收起'}，按Enter或空格键切换`}
-            tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      style={{ WebkitTapHighlightColor: 'transparent' }}
+      role="article"
+      aria-label={`${verse.book} ${verse.chapter}章${verse.verse}节，${isRevealed ? '已展开' : '已收起'}，按Enter或空格键切换`}
+      tabIndex={0}
+    >
+      {/* 经文引用 */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1">
+          <span
+            className="reader-text inline-flex items-center rounded-full border border-stone-900/10 bg-white/45 px-2.5 py-1 text-stone-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-stone-300 font-medium font-chinese"
+            style={getReaderTextStyle(textSize, '14px') as React.CSSProperties}
+          >
+            {verse.book} {verse.chapter}:{verse.verse}
+          </span>
+        </div>
+        {/* 收藏星标 */}
+        <button
+          onClick={handleToggleFavorite}
+          className="-m-1 rounded-full p-2 text-stone-400 transition-all hover:scale-105 hover:bg-stone-900/5 dark:text-stone-500 dark:hover:bg-white/10 touch-manipulation"
+          title={isFav ? '取消我的收藏' : '加入我的收藏'}
+          aria-label={
+            isFav
+              ? `取消我的收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
+              : `加入我的收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
+          }
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
-            {/* 经文引用 */}
-            <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                    <span
-                        className="reader-text inline-flex items-center rounded-full border border-stone-900/10 bg-white/45 px-2.5 py-1 text-stone-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-stone-300 font-medium font-chinese"
-                        style={getReaderTextStyle(textSize, '14px') as React.CSSProperties}
-                    >
-                        {verse.book} {verse.chapter}:{verse.verse}
-                    </span>
-                </div>
-                {/* 收藏星标 */}
-                <button
-                    onClick={handleToggleFavorite}
-                    className="-m-1 rounded-full p-2 text-stone-400 transition-all hover:scale-105 hover:bg-stone-900/5 dark:text-stone-500 dark:hover:bg-white/10 touch-manipulation"
-                    title={isFav ? '取消我的收藏' : '加入我的收藏'}
-                    aria-label={
-                        isFav
-                            ? `取消我的收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
-                            : `加入我的收藏 ${verse.book} ${verse.chapter}:${verse.verse}`
-                    }
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                    <Star
-                        className={`w-5 h-5 transition-colors ${
-                            isFav ? 'text-amber-600 fill-amber-600 dark:text-amber-300 dark:fill-amber-300' : 'text-stone-300 dark:text-stone-600'
-                        }`}
-                    />
-                </button>
-            </div>
+          <Star
+            className={`w-5 h-5 transition-colors ${
+              isFav
+                ? 'text-amber-600 fill-amber-600 dark:text-amber-300 dark:fill-amber-300'
+                : 'text-stone-300 dark:text-stone-600'
+            }`}
+          />
+        </button>
+      </div>
 
-            {/* 经文内容 */}
-            <div className="relative flex-1">
-                <p
-                    className={`
+      {/* 经文内容 */}
+      <div className="relative flex-1">
+        <p
+          className={`
               reader-text reader-text-responsive
               text-stone-900 dark:text-stone-100 font-normal leading-[2.05] sm:leading-[1.9] font-chinese
               transition-opacity duration-200
               break-words overflow-wrap-anywhere
             `}
-                    style={getReaderTextStyle(textSize, '17px', '16px') as React.CSSProperties}
-                >
-                    {displayText}
-                </p>
-            </div>
+          style={getReaderTextStyle(textSize, '17px', '16px') as React.CSSProperties}
+        >
+          {displayText}
+        </p>
+      </div>
 
-            {/* 底部信息栏 */}
-            <div className="mt-4 flex items-center justify-between border-t border-stone-900/10 pt-3 dark:border-white/10">
-                <span className="rounded-full bg-stone-900/[0.035] px-2 py-1 text-[11px] text-stone-500 dark:bg-white/[0.055] dark:text-stone-400 font-chinese">
-                    {getTestamentLabel(verse.testament, language)}
-                </span>
+      {/* 底部信息栏 */}
+      <div className="mt-4 flex items-center justify-between border-t border-stone-900/10 pt-3 dark:border-white/10">
+        <span className="rounded-full bg-stone-900/[0.035] px-2 py-1 text-[11px] text-stone-500 dark:bg-white/[0.055] dark:text-stone-400 font-chinese">
+          {getTestamentLabel(verse.testament, language)}
+        </span>
 
-                <div className="flex items-center gap-1.5">
-                    {/* 查看整章按钮 */}
-                    <button
-                        onClick={handleViewInBible}
-                        className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded px-2 py-1 text-xs text-stone-500 transition-colors hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-50 touch-manipulation"
-                        title="查看本章所有经文"
-                        aria-label={`查看 ${verse.book} 第${verse.chapter}章所有经文`}
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                        <BookOpen className="w-3 h-3" />
-                        <span className="font-chinese">查看整章</span>
-                    </button>
-                </div>
-            </div>
+        <div className="flex items-center gap-1.5">
+          {/* 查看整章按钮 */}
+          <button
+            onClick={handleViewInBible}
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded px-2 py-1 text-xs text-stone-500 transition-colors hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-50 touch-manipulation"
+            title="查看本章所有经文"
+            aria-label={`查看 ${verse.book} 第${verse.chapter}章所有经文`}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <BookOpen className="w-3 h-3" />
+            <span className="font-chinese">查看整章</span>
+          </button>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

@@ -20,36 +20,37 @@ const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
  * 按 IP 限流：每小时 10 次（超限 429 + Retry-After，客户端不会标记 user-tracked，下次访问再试）。
  */
 export async function POST(request: Request) {
-    // 先校验：非法请求体直接 400，不触碰 Redis（含限流计数）
-    let raw = '';
-    try {
-        raw = await request.text();
-    } catch {
-        raw = '';
-    }
-    const parsed = raw.length > MAX_BODY_CHARS ? ({ ok: false, error: 'Payload too large' } as const) : validateTrackUserBody(raw);
-    if (!parsed.ok) {
-        return NextResponse.json({ error: parsed.error }, { status: 400, headers: NO_STORE_HEADERS });
+  // 先校验：非法请求体直接 400，不触碰 Redis（含限流计数）
+  let raw = '';
+  try {
+    raw = await request.text();
+  } catch {
+    raw = '';
+  }
+  const parsed =
+    raw.length > MAX_BODY_CHARS ? ({ ok: false, error: 'Payload too large' } as const) : validateTrackUserBody(raw);
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400, headers: NO_STORE_HEADERS });
+  }
+
+  // 本地开发且未配置 Redis，静默返回成功
+  if (isDevelopment && !isRedisConfigured) {
+    return NextResponse.json({ success: true, dev: true }, { headers: NO_STORE_HEADERS });
+  }
+
+  try {
+    const limit = await checkRateLimit(await getClientIdentifier(request), TRACK_USER_RATE_LIMIT);
+    if (!limit.allowed) {
+      return rateLimitedResponse(limit);
     }
 
-    // 本地开发且未配置 Redis，静默返回成功
-    if (isDevelopment && !isRedisConfigured) {
-        return NextResponse.json({ success: true, dev: true }, { headers: NO_STORE_HEADERS });
-    }
+    // 使用统一的 key 命名（不带 stats: 前缀）
+    await safeRedisIncr('total_users');
 
-    try {
-        const limit = await checkRateLimit(await getClientIdentifier(request), TRACK_USER_RATE_LIMIT);
-        if (!limit.allowed) {
-            return rateLimitedResponse(limit);
-        }
-
-        // 使用统一的 key 命名（不带 stats: 前缀）
-        await safeRedisIncr('total_users');
-
-        return NextResponse.json({ success: true }, { headers: NO_STORE_HEADERS });
-    } catch (error) {
-        console.error('Failed to track user:', error);
-        // 返回成功，避免影响用户体验
-        return NextResponse.json({ success: true }, { headers: NO_STORE_HEADERS });
-    }
+    return NextResponse.json({ success: true }, { headers: NO_STORE_HEADERS });
+  } catch (error) {
+    console.error('Failed to track user:', error);
+    // 返回成功，避免影响用户体验
+    return NextResponse.json({ success: true }, { headers: NO_STORE_HEADERS });
+  }
 }

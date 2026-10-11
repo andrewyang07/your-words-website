@@ -18,10 +18,7 @@ export function detectSearchLangFromQuery(query: string): 'zh' | 'en' | null {
   return hasCjk(trimmed) ? 'zh' : 'en';
 }
 
-export function formatResultCount(
-  count: number,
-  options: { truncated?: boolean; traditional?: boolean } = {}
-): string {
+export function formatResultCount(count: number, options: { truncated?: boolean; traditional?: boolean } = {}): string {
   const { truncated = false, traditional = false } = options;
   const n = truncated && count > 0 ? `${count}+` : String(count);
   return traditional ? `找到 ${n} 條結果` : `找到 ${n} 条结果`;
@@ -31,19 +28,13 @@ export function formatResultCount(
 export function phraseScore(query: string, result: SearchResult): number {
   const normalizedQuery = query.toLowerCase().replace(/\s+/g, '');
   const normalizedWithSpaces = query.toLowerCase().trim();
-  const haystacks = [
-    result.bookTraditional,
-    result.bookEnglish,
-    result.textChinese,
-    result.textEnglish,
-  ].map((value) => value.toLowerCase());
+  const haystacks = [result.bookTraditional, result.bookEnglish, result.textChinese, result.textEnglish].map((value) =>
+    value.toLowerCase(),
+  );
 
   let boost = 0;
   if (haystacks.some((value) => value.includes(normalizedWithSpaces))) boost += 100_000;
-  if (
-    normalizedQuery.length > 1 &&
-    haystacks.some((value) => value.replace(/\s+/g, '').includes(normalizedQuery))
-  ) {
+  if (normalizedQuery.length > 1 && haystacks.some((value) => value.replace(/\s+/g, '').includes(normalizedQuery))) {
     boost += 80_000;
   }
 
@@ -55,10 +46,7 @@ export function phraseScore(query: string, result: SearchResult): number {
  * (e.g. original + OpenCC traditional/simplified). Pure helper for tests /
  * MiniSearch fallback paths that lack Pagefind.
  */
-export function rankByPhraseVariants(
-  results: SearchResult[],
-  queryVariants: string[]
-): SearchResult[] {
+export function rankByPhraseVariants(results: SearchResult[], queryVariants: string[]): SearchResult[] {
   const variants = queryVariants.map((q) => q.trim()).filter(Boolean);
   if (variants.length === 0) return [...results].sort((a, b) => b.score - a.score);
 

@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { checkRateLimit, getClientIdentifier, rateLimitedResponse, type RateLimitConfig, type RateLimitRedis } from '../lib/rateLimit';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  rateLimitedResponse,
+  type RateLimitConfig,
+  type RateLimitRedis,
+} from '../lib/rateLimit';
 
 const CONFIG: RateLimitConfig = { name: 'test', limit: 3, windowSeconds: 60 };
 const T0 = 1_700_000_000_000; // fixed clock
@@ -99,7 +105,8 @@ describe('checkRateLimit', () => {
 });
 
 describe('getClientIdentifier', () => {
-  const idFor = (headers: Record<string, string>) => getClientIdentifier(new Request('http://localhost/x', { headers }));
+  const idFor = (headers: Record<string, string>) =>
+    getClientIdentifier(new Request('http://localhost/x', { headers }));
 
   it('hashes the IP (no raw IP in the identifier) and is stable', async () => {
     const a = await idFor({ 'x-forwarded-for': '203.0.113.7' });
@@ -111,7 +118,9 @@ describe('getClientIdentifier', () => {
   it('uses the first x-forwarded-for entry and prefers x-real-ip', async () => {
     const first = await idFor({ 'x-forwarded-for': '203.0.113.7, 10.0.0.1' });
     expect(first).toBe(await idFor({ 'x-forwarded-for': '203.0.113.7' }));
-    expect(await idFor({ 'x-real-ip': '198.51.100.9', 'x-forwarded-for': '203.0.113.7' })).toBe(await idFor({ 'x-real-ip': '198.51.100.9' }));
+    expect(await idFor({ 'x-real-ip': '198.51.100.9', 'x-forwarded-for': '203.0.113.7' })).toBe(
+      await idFor({ 'x-real-ip': '198.51.100.9' }),
+    );
     expect(await idFor({ 'x-forwarded-for': '198.51.100.9' })).not.toBe(first);
   });
 

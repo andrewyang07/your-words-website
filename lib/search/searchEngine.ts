@@ -5,20 +5,11 @@
  */
 
 import MiniSearch from 'minisearch';
-import { parseReference } from './referenceParser';
-import { buildPinyinIndex, buildPinyinIndexAsync, searchPinyin, type PinyinIndex } from './fuzzyPinyin';
 import { fetchWithCache } from '@/lib/bibleDataCache';
-import type {
-  SearchResult,
-  ContextVerse,
-  BibleData,
-  BookMapping,
-} from '@/types/search';
-import {
-  DEFAULT_SEARCH_LIMIT,
-  hasCjk,
-  type SearchResponse,
-} from './searchHelpers';
+import type { SearchResult, ContextVerse, BibleData, BookMapping } from '@/types/search';
+import { parseReference } from './referenceParser';
+import { buildPinyinIndexAsync, searchPinyin, type PinyinIndex } from './fuzzyPinyin';
+import { DEFAULT_SEARCH_LIMIT, hasCjk, type SearchResponse } from './searchHelpers';
 
 type BibleJSON = Record<string, Record<string, Record<string, string>>>;
 
@@ -28,7 +19,7 @@ function tokenizeChinese(text: string): string[] {
   if (!chars) return [];
   const tokens: string[] = [...chars];
   for (let i = 0; i < chars.length - 1; i++) {
-    tokens.push(chars[i] + chars[i + 1]);
+    tokens.push(chars[i]! + chars[i + 1]!);
   }
   return tokens;
 }
@@ -47,9 +38,7 @@ let toSimplifiedPromise: Promise<(value: string) => string> | null = null;
 /** The corpus is Simplified (CUV), so Traditional CJK queries must be normalized before keyword search. */
 async function normalizeToSimplified(query: string): Promise<string> {
   if (!hasCjk(query)) return query;
-  toSimplifiedPromise ??= import('opencc-js').then((opencc) =>
-    opencc.Converter({ from: 'tw', to: 'cn' })
-  );
+  toSimplifiedPromise ??= import('opencc-js').then((opencc) => opencc.Converter({ from: 'tw', to: 'cn' }));
   return (await toSimplifiedPromise)(query);
 }
 
@@ -177,10 +166,7 @@ class SearchEngine {
     return results;
   }
 
-  async searchWithMeta(
-    query: string,
-    limit = DEFAULT_SEARCH_LIMIT
-  ): Promise<SearchResponse> {
+  async searchWithMeta(query: string, limit = DEFAULT_SEARCH_LIMIT): Promise<SearchResponse> {
     if (!this._initialized || !this.bibleData) {
       return { results: [], truncated: false };
     }
@@ -209,12 +195,8 @@ class SearchEngine {
     if (!this.bibleData) return [];
     const { chinese, english } = this.bibleData;
 
-    const bookChinese =
-      ref.bookChinese ||
-      this.bookMappings.find((m) => m.nameEnglish === ref.bookEnglish)?.key;
-    const bookEnglish =
-      ref.bookEnglish ||
-      this.bookMappings.find((m) => m.key === ref.bookChinese)?.nameEnglish;
+    const bookChinese = ref.bookChinese || this.bookMappings.find((m) => m.nameEnglish === ref.bookEnglish)?.key;
+    const bookEnglish = ref.bookEnglish || this.bookMappings.find((m) => m.key === ref.bookChinese)?.nameEnglish;
 
     if (!bookChinese) return [];
 
@@ -236,9 +218,8 @@ class SearchEngine {
           bookEnglish: bookEnglish || '',
           chapter: ref.chapter,
           verse: ref.verse,
-          textChinese: chapterData[String(ref.verse)],
-          textEnglish:
-            englishBook?.[String(ref.chapter)]?.[String(ref.verse)] || '',
+          textChinese: chapterData[String(ref.verse)]!,
+          textEnglish: englishBook?.[String(ref.chapter)]?.[String(ref.verse)] || '',
           score: 100,
           matchType: 'reference',
         });
@@ -258,9 +239,8 @@ class SearchEngine {
             bookEnglish: bookEnglish || '',
             chapter: ref.chapter,
             verse: v,
-            textChinese: chapterData[String(v)],
-            textEnglish:
-              englishBook?.[String(ref.chapter)]?.[String(v)] || '',
+            textChinese: chapterData[String(v)]!,
+            textEnglish: englishBook?.[String(ref.chapter)]?.[String(v)] || '',
             score: 90 - v,
             matchType: 'reference',
           });
@@ -294,10 +274,7 @@ class SearchEngine {
     return results;
   }
 
-  private searchByKeyword(
-    query: string,
-    limit = DEFAULT_SEARCH_LIMIT
-  ): SearchResponse {
+  private searchByKeyword(query: string, limit = DEFAULT_SEARCH_LIMIT): SearchResponse {
     if (!this.bibleData || !this.miniSearch) {
       return { results: [], truncated: false };
     }
@@ -367,8 +344,7 @@ class SearchEngine {
       if (!textChinese) continue;
 
       const bookEnglish = englishMap.get(bookKey) || '';
-      const textEnglish =
-        english[bookEnglish]?.[String(chapter)]?.[String(verse)] || '';
+      const textEnglish = english[bookEnglish]?.[String(chapter)]?.[String(verse)] || '';
 
       // Boost score if query appears as exact substring
       let finalScore = score;
@@ -377,8 +353,7 @@ class SearchEngine {
       if (textEnglish.toLowerCase().includes(queryLower)) finalScore += 10;
       const isChinese = /[\u4e00-\u9fff]/.test(query);
       if (isChinese && textChinese.includes(query)) finalScore += 5;
-      if (!isChinese && textEnglish.toLowerCase().includes(queryLower))
-        finalScore += 5;
+      if (!isChinese && textEnglish.toLowerCase().includes(queryLower)) finalScore += 5;
 
       results.push({
         id: verseId,
@@ -398,16 +373,11 @@ class SearchEngine {
     return { results, truncated };
   }
 
-  getContext(
-    bookKey: string,
-    chapter: number,
-    verse: number
-  ): ContextVerse[] {
+  getContext(bookKey: string, chapter: number, verse: number): ContextVerse[] {
     if (!this.bibleData) return [];
     const { chinese, english } = this.bibleData;
 
-    const bookEnglish =
-      this.bookMappings.find((m) => m.key === bookKey)?.nameEnglish || '';
+    const bookEnglish = this.bookMappings.find((m) => m.key === bookKey)?.nameEnglish || '';
 
     const chapterData = chinese[bookKey]?.[String(chapter)];
     const englishChapterData = english[bookEnglish]?.[String(chapter)];
@@ -418,10 +388,7 @@ class SearchEngine {
       .sort((a, b) => a - b);
 
     const startVerse = Math.max(verse - 3, allVerses[0] || 1);
-    const endVerse = Math.min(
-      verse + 3,
-      allVerses[allVerses.length - 1] || verse
-    );
+    const endVerse = Math.min(verse + 3, allVerses[allVerses.length - 1] || verse);
 
     const context: ContextVerse[] = [];
     for (let v = startVerse; v <= endVerse; v++) {

@@ -30,10 +30,12 @@ let initPromise: Promise<void> | null = null;
 
 function ensureInitialized(): Promise<void> {
   if (!initPromise) {
-    initPromise = getSearchEngine().initialize().catch((err) => {
-      initPromise = null;
-      throw err;
-    });
+    initPromise = getSearchEngine()
+      .initialize()
+      .catch((err) => {
+        initPromise = null;
+        throw err;
+      });
   }
   return initPromise;
 }

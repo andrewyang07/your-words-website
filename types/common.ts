@@ -3,12 +3,12 @@
 export type CardSize = 'small' | 'medium' | 'large';
 
 export interface BaseComponentProps {
-    className?: string;
-    children?: React.ReactNode;
+  className?: string;
+  children?: React.ReactNode;
 }
 
 export interface VerseCardProps extends BaseComponentProps {
-    verse: import('./verse').Verse;
-    size?: CardSize;
-    onClick: () => void;
+  verse: import('./verse').Verse;
+  size?: CardSize;
+  onClick: () => void;
 }

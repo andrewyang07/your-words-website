@@ -25,15 +25,46 @@ export async function GET(request: Request) {
   const fonts = font ? [{ name: FONT_NAME, data: font, weight: 400 as const, style: 'normal' as const }] : undefined;
 
   const body = preview ? (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', padding: '64px 80px', background: '#f7f3ea', color: '#1c1917', fontFamily: FONT_NAME }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        height: '100%',
+        padding: '64px 80px',
+        background: '#f7f3ea',
+        color: '#1c1917',
+        fontFamily: FONT_NAME,
+      }}
+    >
       <div style={{ display: 'flex', fontSize: 30, color: '#92400e' }}>你的话语 · 背诵链接</div>
-      <div style={{ display: 'flex', marginTop: 28, fontSize: 60, lineHeight: 1.2 }}>{preview.title ?? preview.firstReference}</div>
-      {preview.title && <div style={{ display: 'flex', marginTop: 16, fontSize: 34, color: '#57534e' }}>{preview.firstReference}</div>}
-      <div style={{ display: 'flex', marginTop: 32, fontSize: 38, lineHeight: 1.6, color: '#292524' }}>{excerpt(preview.firstText)}</div>
-      <div style={{ display: 'flex', marginTop: 'auto', fontSize: 30, color: '#78716c' }}>{`共 ${preview.count} 节 · yourwords.me`}</div>
+      <div style={{ display: 'flex', marginTop: 28, fontSize: 60, lineHeight: 1.2 }}>
+        {preview.title ?? preview.firstReference}
+      </div>
+      {preview.title && (
+        <div style={{ display: 'flex', marginTop: 16, fontSize: 34, color: '#57534e' }}>{preview.firstReference}</div>
+      )}
+      <div style={{ display: 'flex', marginTop: 32, fontSize: 38, lineHeight: 1.6, color: '#292524' }}>
+        {excerpt(preview.firstText)}
+      </div>
+      <div
+        style={{ display: 'flex', marginTop: 'auto', fontSize: 30, color: '#78716c' }}
+      >{`共 ${preview.count} 节 · yourwords.me`}</div>
     </div>
   ) : (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: '#f7f3ea', color: '#1c1917', fontFamily: FONT_NAME }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+        background: '#f7f3ea',
+        color: '#1c1917',
+        fontFamily: FONT_NAME,
+      }}
+    >
       <div style={{ display: 'flex', fontSize: 72 }}>你的话语</div>
       <div style={{ display: 'flex', marginTop: 20, fontSize: 36, color: '#78716c' }}>深度背诵 · yourwords.me</div>
     </div>

@@ -41,12 +41,7 @@ export function getOrderedMasonryColumnCount(viewportWidth: number, textScale: n
   return reduceForLargestText ? 3 : 4;
 }
 
-export function estimateVerseCardHeight({
-  textLength,
-  size,
-  textScale,
-  columnWidth,
-}: VerseCardEstimateInput): number {
+export function estimateVerseCardHeight({ textLength, size, textScale, columnWidth }: VerseCardEstimateInput): number {
   const basePadding = { small: 32, medium: 48, large: 64 }[size];
   const baseMinimumHeight = { small: 120, medium: 160, large: 200 }[size];
   const spaceScale = Math.min(1.15, 1 + Math.max(0, textScale - 1) / 3);
@@ -73,11 +68,11 @@ export function calculateOrderedMasonry({
   const positions = items.map((item, index) => {
     let column = 0;
     for (let candidate = 1; candidate < safeColumnCount; candidate += 1) {
-      if (columnHeights[candidate] < columnHeights[column]) column = candidate;
+      if (columnHeights[candidate]! < columnHeights[column]!) column = candidate;
     }
 
-    const y = columnHeights[column];
-    columnHeights[column] += item.height + gap;
+    const y = columnHeights[column]!;
+    columnHeights[column] = y + item.height + gap;
 
     return {
       ...item,

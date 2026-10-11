@@ -2,11 +2,11 @@
 
 import { Check, Star } from 'lucide-react';
 import type { Verse } from '@/types/verse';
-import { getVerseReference } from './discoveryHelpers';
 import { getReaderTextStyle } from '@/lib/readerPreferences';
 import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { getTestamentLabel } from '@/lib/uiScript';
+import { getVerseReference } from './discoveryHelpers';
 
 interface DiscoveryVerseCardProps {
   verse: Verse;
@@ -28,7 +28,9 @@ export default function DiscoveryVerseCard({ verse, saved, onSave }: DiscoveryVe
           >
             {getVerseReference(verse)}
           </p>
-          <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">{getTestamentLabel(verse.testament, language)}</p>
+          <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+            {getTestamentLabel(verse.testament, language)}
+          </p>
         </div>
         {saved && (
           <span className="inline-flex items-center gap-1 rounded border border-emerald-700/20 bg-emerald-50 px-2 py-1 text-xs text-emerald-700 dark:border-emerald-300/20 dark:bg-emerald-300/10 dark:text-emerald-200">

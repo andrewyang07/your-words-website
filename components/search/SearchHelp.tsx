@@ -61,9 +61,7 @@ export default function SearchHelp() {
 
   return (
     <div className="mt-8 p-5 bg-bible-50 dark:bg-gray-800/50 rounded-xl border border-bible-200 dark:border-gray-700">
-      <h3 className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese mb-4">
-        {content.title}
-      </h3>
+      <h3 className="text-sm font-semibold text-bible-700 dark:text-bible-300 font-chinese mb-4">{content.title}</h3>
       <div className="space-y-3">
         {content.items.map((item) => (
           <div key={item.label} className="flex flex-col gap-0.5">
@@ -71,14 +69,10 @@ export default function SearchHelp() {
               <span className="text-sm font-medium text-bible-700 dark:text-bible-300 font-chinese shrink-0">
                 {item.label}
               </span>
-              <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">
-                {item.desc}
-              </span>
+              <span className="text-xs text-bible-500 dark:text-bible-400 font-chinese">{item.desc}</span>
             </div>
             {item.examples && (
-              <span className="text-xs text-bible-400 dark:text-bible-500 font-chinese ml-0.5">
-                {item.examples}
-              </span>
+              <span className="text-xs text-bible-400 dark:text-bible-500 font-chinese ml-0.5">{item.examples}</span>
             )}
           </div>
         ))}

@@ -33,7 +33,18 @@ function deferFetch(url: string): Promise<unknown> {
 }
 
 const json = (data: unknown) => ({ ok: true, statusText: 'OK', json: async () => data });
-const booksJson = json({ books: [{ key: '创世记', nameSimplified: '创世记', nameTraditional: '創世記', nameEnglish: 'Genesis', chapters: 50, testament: 'old' }] });
+const booksJson = json({
+  books: [
+    {
+      key: '创世记',
+      nameSimplified: '创世记',
+      nameTraditional: '創世記',
+      nameEnglish: 'Genesis',
+      chapters: 50,
+      testament: 'old',
+    },
+  ],
+});
 const bible = (book: string, text: string) => json({ [book]: { 1: { 1: text } } });
 
 function resolveAll(url: string, response: unknown) {
@@ -49,23 +60,61 @@ beforeEach(() => {
     removeItem: (key: string) => values.delete(key),
     clear: () => values.clear(),
     key: (index: number) => Array.from(values.keys())[index] ?? null,
-    get length() { return values.size; },
+    get length() {
+      return values.size;
+    },
   });
   useAppStore.persist.setOptions({
     storage: createJSONStorage(() => ({ getItem: () => null, setItem: () => undefined, removeItem: () => undefined })),
   });
   useAppStore.setState({ language: 'traditional', theme: 'light' });
-  useVerseStore.setState({ verses: [], books: [], versesLoaded: false, booksLoaded: false, versesLoading: false, booksLoading: false, versesError: null, booksError: null });
-  vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
-  vi.stubGlobal('IntersectionObserver', class { observe() {} unobserve() {} disconnect() {} takeRecords() { return []; } });
+  useVerseStore.setState({
+    verses: [],
+    books: [],
+    versesLoaded: false,
+    booksLoaded: false,
+    versesLoading: false,
+    booksLoading: false,
+    versesError: null,
+    booksError: null,
+  });
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+      takeRecords() {
+        return [];
+      }
+    },
+  );
   vi.stubGlobal('matchMedia', () => ({
-    matches: false, media: '', onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true,
+    matches: false,
+    media: '',
+    onchange: null,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    dispatchEvent: () => true,
   }));
-  vi.stubGlobal('fetch', vi.fn((url: string) => {
-    if (url.startsWith('/data/')) return deferFetch(url);
-    if (url === '/api/stats') return Promise.resolve(json({ totalUsers: 1, totalFavorites: 2 }));
-    return Promise.resolve(json({}));
-  }));
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) => {
+      if (url.startsWith('/data/')) return deferFetch(url);
+      if (url === '/api/stats') return Promise.resolve(json({ totalUsers: 1, totalFavorites: 2 }));
+      return Promise.resolve(json({}));
+    }),
+  );
 });
 
 afterEach(() => {

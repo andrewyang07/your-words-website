@@ -1,7 +1,7 @@
 export function uniquePreserveOrder<T extends string>(items: T[]): T[];
 export function getSharedVerseSaveSummary(
   verseIds: string[],
-  existingFavorites?: Set<string>
+  existingFavorites?: Set<string>,
 ): {
   total: number;
   uniqueTotal: number;

@@ -8,10 +8,7 @@ import { DEFAULT_SEARCH_LIMIT, type SearchResponse } from './searchHelpers';
  * Verse references ("约翰福音 3:16", "John 3:16", ranges) are parsed before Pagefind so the
  * exact verse(s) rank first, followed by the normal full-text results.
  */
-export async function runClientSearch(
-  query: string,
-  limit = DEFAULT_SEARCH_LIMIT
-): Promise<SearchResponse> {
+export async function runClientSearch(query: string, limit = DEFAULT_SEARCH_LIMIT): Promise<SearchResponse> {
   const trimmed = query.trim();
   if (!trimmed) return { results: [], truncated: false };
 

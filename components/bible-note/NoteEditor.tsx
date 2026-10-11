@@ -1,30 +1,24 @@
 'use client';
 
+import { type Ref, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import {
-    type Ref,
-    useEffect,
-    useImperativeHandle,
-    useMemo,
-    useRef,
-} from 'react';
-import {
-    BlockTypeSelect,
-    BoldItalicUnderlineToggles,
-    CreateLink,
-    InsertThematicBreak,
-    ListsToggle,
-    MDXEditor,
-    type MDXEditorMethods,
-    Separator,
-    UndoRedo,
-    headingsPlugin,
-    linkDialogPlugin,
-    linkPlugin,
-    listsPlugin,
-    markdownShortcutPlugin,
-    quotePlugin,
-    thematicBreakPlugin,
-    toolbarPlugin,
+  BlockTypeSelect,
+  BoldItalicUnderlineToggles,
+  CreateLink,
+  InsertThematicBreak,
+  ListsToggle,
+  MDXEditor,
+  type MDXEditorMethods,
+  Separator,
+  UndoRedo,
+  headingsPlugin,
+  linkDialogPlugin,
+  linkPlugin,
+  listsPlugin,
+  markdownShortcutPlugin,
+  quotePlugin,
+  thematicBreakPlugin,
+  toolbarPlugin,
 } from '@mdxeditor/editor';
 import { useAppStore } from '@/stores/useAppStore';
 import { getChromeCopy } from '@/lib/uiScript';
@@ -32,93 +26,97 @@ import { createMdxEditorTranslation } from '@/lib/mdxEditorI18n';
 import { useScriptPick } from '@/lib/useScriptPick';
 
 interface NoteEditorProps {
-    content: string;
-    onChange: (content: string) => void;
-    noteEditorRef?: Ref<NoteEditorHandle>;
+  content: string;
+  onChange: (content: string) => void;
+  noteEditorRef?: Ref<NoteEditorHandle>;
 }
 
 export interface NoteEditorHandle {
-    insertMarkdownAtCursor: (markdown: string) => boolean;
+  insertMarkdownAtCursor: (markdown: string) => boolean;
 }
 
 export default function NoteEditor({ content, onChange, noteEditorRef }: NoteEditorProps) {
-    const pick = useScriptPick();
-    const editorRef = useRef<MDXEditorMethods>(null);
-    const latestMarkdownRef = useRef(content);
-    const language = useAppStore((state) => state.language);
-    const translation = useMemo(() => createMdxEditorTranslation(language), [language]);
+  const pick = useScriptPick();
+  const editorRef = useRef<MDXEditorMethods>(null);
+  const latestMarkdownRef = useRef(content);
+  const language = useAppStore((state) => state.language);
+  const translation = useMemo(() => createMdxEditorTranslation(language), [language]);
 
-    useEffect(() => {
-        if (content === latestMarkdownRef.current) return;
-        latestMarkdownRef.current = content;
-        editorRef.current?.setMarkdown(content);
-    }, [content]);
+  useEffect(() => {
+    if (content === latestMarkdownRef.current) return;
+    latestMarkdownRef.current = content;
+    editorRef.current?.setMarkdown(content);
+  }, [content]);
 
-    const plugins = useMemo(
-        () => [
-            headingsPlugin({ allowedHeadingLevels: [2, 3] }),
-            listsPlugin(),
-            quotePlugin(),
-            thematicBreakPlugin(),
-            linkPlugin(),
-            linkDialogPlugin(),
-            markdownShortcutPlugin(),
-            toolbarPlugin({
-                toolbarContents: () => (
-                    <>
-                        <UndoRedo />
-                        <Separator />
-                        <BlockTypeSelect />
-                        <BoldItalicUnderlineToggles />
-                        <ListsToggle />
-                        <CreateLink />
-                        <InsertThematicBreak />
-                    </>
-                ),
-            }),
-        ],
-        []
-    );
+  const plugins = useMemo(
+    () => [
+      headingsPlugin({ allowedHeadingLevels: [2, 3] }),
+      listsPlugin(),
+      quotePlugin(),
+      thematicBreakPlugin(),
+      linkPlugin(),
+      linkDialogPlugin(),
+      markdownShortcutPlugin(),
+      toolbarPlugin({
+        toolbarContents: () => (
+          <>
+            <UndoRedo />
+            <Separator />
+            <BlockTypeSelect />
+            <BoldItalicUnderlineToggles />
+            <ListsToggle />
+            <CreateLink />
+            <InsertThematicBreak />
+          </>
+        ),
+      }),
+    ],
+    [],
+  );
 
-    useImperativeHandle(noteEditorRef, () => ({
-        insertMarkdownAtCursor(markdown: string) {
-            const editor = editorRef.current;
-            if (!editor) return false;
+  useImperativeHandle(
+    noteEditorRef,
+    () => ({
+      insertMarkdownAtCursor(markdown: string) {
+        const editor = editorRef.current;
+        if (!editor) return false;
 
-            editor.focus(undefined, { defaultSelection: 'rootEnd', preventScroll: true });
-            editor.insertMarkdown(markdown);
-            const nextMarkdown = editor.getMarkdown();
-            latestMarkdownRef.current = nextMarkdown;
-            onChange(nextMarkdown);
-            return true;
-        },
-    }), [onChange]);
+        editor.focus(undefined, { defaultSelection: 'rootEnd', preventScroll: true });
+        editor.insertMarkdown(markdown);
+        const nextMarkdown = editor.getMarkdown();
+        latestMarkdownRef.current = nextMarkdown;
+        onChange(nextMarkdown);
+        return true;
+      },
+    }),
+    [onChange],
+  );
 
-    const handleChange = (markdown: string) => {
-        latestMarkdownRef.current = markdown;
-        onChange(markdown);
-    };
+  const handleChange = (markdown: string) => {
+    latestMarkdownRef.current = markdown;
+    onChange(markdown);
+  };
 
-    return (
-        <div className="bible-note-mdx-editor overflow-hidden rounded-[1.75rem] border border-stone-200/70 bg-white/85 shadow-[0_24px_80px_rgba(68,64,60,0.08)] backdrop-blur-sm transition-all dark:border-amber-200/15 dark:bg-[#191612]/80">
-            <MDXEditor
-                key={language}
-                ref={editorRef}
-                markdown={content}
-                onChange={handleChange}
-                plugins={plugins}
-                translation={translation}
-                placeholder={
-                    <div className="text-stone-400">
-                        {getChromeCopy(language).notePlaceholder}
-                        <br />
-                        <br />
-                        {pick('直接寫下經文引用，如 約3:16 或 John 3:17', '直接写下经文引用，如 约3:16 或 John 3:17')}
-                    </div>
-                }
-                className="min-h-[620px] text-stone-900 dark:text-gray-100"
-                contentEditableClassName="prose prose-stone prose-sm max-w-none min-h-[560px] px-5 py-6 leading-8 focus:outline-none md:px-8 md:py-8 dark:prose-invert"
-            />
-        </div>
-    );
+  return (
+    <div className="bible-note-mdx-editor overflow-hidden rounded-[1.75rem] border border-stone-200/70 bg-white/85 shadow-[0_24px_80px_rgba(68,64,60,0.08)] backdrop-blur-sm transition-all dark:border-amber-200/15 dark:bg-[#191612]/80">
+      <MDXEditor
+        key={language}
+        ref={editorRef}
+        markdown={content}
+        onChange={handleChange}
+        plugins={plugins}
+        translation={translation}
+        placeholder={
+          <div className="text-stone-400">
+            {getChromeCopy(language).notePlaceholder}
+            <br />
+            <br />
+            {pick('直接寫下經文引用，如 約3:16 或 John 3:17', '直接写下经文引用，如 约3:16 或 John 3:17')}
+          </div>
+        }
+        className="min-h-[620px] text-stone-900 dark:text-gray-100"
+        contentEditableClassName="prose prose-stone prose-sm max-w-none min-h-[560px] px-5 py-6 leading-8 focus:outline-none md:px-8 md:py-8 dark:prose-invert"
+      />
+    </div>
+  );
 }

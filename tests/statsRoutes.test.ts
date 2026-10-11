@@ -23,7 +23,11 @@ const ALLOWED = { allowed: true, limit: 30, remaining: 29, retryAfterSeconds: 0,
 const BLOCKED = { allowed: false, limit: 30, remaining: 0, retryAfterSeconds: 17, degraded: false };
 
 function post(url: string, body?: string, contentType = 'application/json') {
-  return new Request(`http://localhost${url}`, { method: 'POST', body, headers: body === undefined ? {} : { 'Content-Type': contentType } });
+  return new Request(`http://localhost${url}`, {
+    method: 'POST',
+    body,
+    headers: body === undefined ? {} : { 'Content-Type': contentType },
+  });
 }
 const json = (v: unknown) => JSON.stringify(v);
 
@@ -141,7 +145,7 @@ describe('POST /api/stats/track-user', () => {
 const SHORT = 'public, s-maxage=30, stale-while-revalidate=30';
 const LONG_LIST = 'public, s-maxage=600, stale-while-revalidate=1800';
 const LONG_STATS = 'public, s-maxage=300, stale-while-revalidate=900';
-const ok = <T,>(value: T) => ({ value, degraded: false });
+const ok = <T>(value: T) => ({ value, degraded: false });
 
 describe('GET cache policies', () => {
   beforeEach(() => {
@@ -161,11 +165,15 @@ describe('GET cache policies', () => {
     expect((await GET()).headers.get('Cache-Control')).toBe(SHORT);
 
     // total_users fails (default 0), total_favorites is fine (non-zero): must NOT be cached long
-    redis.safeRedisGetResult.mockImplementation(async (key: string) => (key === 'total_users' ? { value: '0', degraded: true } : ok('99')));
+    redis.safeRedisGetResult.mockImplementation(async (key: string) =>
+      key === 'total_users' ? { value: '0', degraded: true } : ok('99'),
+    );
     expect((await GET()).headers.get('Cache-Control')).toBe(SHORT);
 
     // and the other way around
-    redis.safeRedisGetResult.mockImplementation(async (key: string) => (key === 'total_favorites' ? { value: '0', degraded: true } : ok('12')));
+    redis.safeRedisGetResult.mockImplementation(async (key: string) =>
+      key === 'total_favorites' ? { value: '0', degraded: true } : ok('12'),
+    );
     expect((await GET()).headers.get('Cache-Control')).toBe(SHORT);
   });
 

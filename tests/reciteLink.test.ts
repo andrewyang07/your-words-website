@@ -27,11 +27,14 @@ describe('parseReciteParams', () => {
     expect(parse('?p=43-3-16,43-3-16~17').ids).toEqual(['约翰福音-3-16', '约翰福音-3-17']);
   });
 
-  it.each(['99-1-1', 'abc', '43-3-18~16', '43-0-1', '43-3-1.5', '43-99-1', '043-3-16', '43-3-16 '])('counts %j as invalid without throwing', (segment) => {
-    const result = parse(`?p=43-3-16,${encodeURIComponent(segment)}`);
-    expect(result.ids).toEqual(['约翰福音-3-16']);
-    expect(result.invalidCount).toBe(1);
-  });
+  it.each(['99-1-1', 'abc', '43-3-18~16', '43-0-1', '43-3-1.5', '43-99-1', '043-3-16', '43-3-16 '])(
+    'counts %j as invalid without throwing',
+    (segment) => {
+      const result = parse(`?p=43-3-16,${encodeURIComponent(segment)}`);
+      expect(result.ids).toEqual(['约翰福音-3-16']);
+      expect(result.invalidCount).toBe(1);
+    },
+  );
 
   it('counts empty segments as invalid', () => {
     expect(parse('?p=43-3-16,,43-3-17').invalidCount).toBe(1);
@@ -53,7 +56,9 @@ describe('parseReciteParams', () => {
   });
 
   it('handles a 5000-character p quickly', () => {
-    const raw = Array.from({ length: 600 }, () => '43-3-16').join(',').slice(0, 5000);
+    const raw = Array.from({ length: 600 }, () => '43-3-16')
+      .join(',')
+      .slice(0, 5000);
     const started = performance.now();
     const result = parse(`?p=${raw}`);
     expect(performance.now() - started).toBeLessThan(100);
@@ -70,7 +75,9 @@ describe('parseReciteParams', () => {
 
   it('normalizes titles', () => {
     expect(parse(`?p=43-3-16&t=${encodeURIComponent('一'.repeat(45))}`).title).toBe('一'.repeat(40));
-    expect(parse(`?p=43-3-16&t=${encodeURIComponent('<script>alert(1)</script>')}`).title).toBe('<script>alert(1)</script>');
+    expect(parse(`?p=43-3-16&t=${encodeURIComponent('<script>alert(1)</script>')}`).title).toBe(
+      '<script>alert(1)</script>',
+    );
     expect(parse(`?p=43-3-16&t=${encodeURIComponent('   \t ')}`).title).toBeNull();
     expect(parse(`?p=43-3-16&t=${encodeURIComponent(' 诗篇\n\n 23 \u0007')}`).title).toBe('诗篇 23');
     expect(parse(`?p=43-3-16&t=${encodeURIComponent('😀'.repeat(41))}`).title).toBe('😀'.repeat(40));
@@ -104,7 +111,9 @@ describe('parseReciteParams', () => {
 
 describe('encodeRecitePassages / buildReciteUrl', () => {
   it('merges adjacent same-chapter verses and keeps order', () => {
-    expect(encodeRecitePassages(['约翰福音-3-16', '约翰福音-3-17', '约翰福音-3-18', '罗马书-8-28'])).toBe('43-3-16~18,45-8-28');
+    expect(encodeRecitePassages(['约翰福音-3-16', '约翰福音-3-17', '约翰福音-3-18', '罗马书-8-28'])).toBe(
+      '43-3-16~18,45-8-28',
+    );
     expect(encodeRecitePassages(['罗马书-8-28', '约翰福音-3-16'])).toBe('45-8-28,43-3-16');
     expect(encodeRecitePassages(['约翰福音-3-18', '约翰福音-3-17'])).toBe('43-3-18,43-3-17');
   });
@@ -115,10 +124,16 @@ describe('encodeRecitePassages / buildReciteUrl', () => {
   });
 
   it('builds a URL ending in sv=1 with an encoded title', () => {
-    const url = buildReciteUrl({ origin: 'https://www.yourwords.me', ids: ['诗篇-23-1', '诗篇-23-2'], title: '诗篇23 & 我' });
+    const url = buildReciteUrl({
+      origin: 'https://www.yourwords.me',
+      ids: ['诗篇-23-1', '诗篇-23-2'],
+      title: '诗篇23 & 我',
+    });
     expect(url).toBe(`https://www.yourwords.me/memorize?p=19-23-1~2&t=${encodeURIComponent('诗篇23 & 我')}&sv=1`);
     expect(url.endsWith('&sv=1')).toBe(true);
     expect(parse(new URL(url).search).title).toBe('诗篇23 & 我');
-    expect(buildReciteUrl({ origin: 'https://x.test', ids: ['诗篇-23-1'] })).toBe('https://x.test/memorize?p=19-23-1&sv=1');
+    expect(buildReciteUrl({ origin: 'https://x.test', ids: ['诗篇-23-1'] })).toBe(
+      'https://x.test/memorize?p=19-23-1&sv=1',
+    );
   });
 });
