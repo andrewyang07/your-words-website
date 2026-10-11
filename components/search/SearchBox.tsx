@@ -20,6 +20,8 @@ interface SearchBoxProps {
 export default function SearchBox({ variant = 'hero', autoFocus = true }: SearchBoxProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Monotonic id of the latest search; responses from older requests are dropped so they can't overwrite newer ones.
+  const requestIdRef = useRef(0);
   const placeholderIndexRef = useRef(0);
 
   const {
@@ -56,6 +58,8 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
 
   const performSearch = useCallback(
     async (searchQuery: string) => {
+      const requestId = ++requestIdRef.current;
+      const isCurrent = () => requestId === requestIdRef.current;
       if (!searchQuery.trim()) {
         setResults([]);
         setLoading(false);
@@ -71,17 +75,31 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         const { results: searched, truncated } = await runClientSearch(searchQuery, undefined, {
           onFallbackLoading: () => useSearchStore.getState().setFallbackLoading(true),
         });
+        if (!isCurrent()) return;
         setResults(searched, truncated);
         setEngineReady(true);
       } catch (error) {
+        if (!isCurrent()) return;
         console.error('Search error:', error);
         setResults([]);
       } finally {
-        setLoading(false);
+        if (isCurrent()) setLoading(false);
       }
     },
     [setResults, setLoading, setEngineReady, setSearchLang],
   );
+
+  // Single cancel-and-clear path for ✕, Escape and deleting the text: invalidates any in-flight search,
+  // drops a pending debounce, clears the store and stops the loading state.
+  const clear = useCallback(() => {
+    requestIdRef.current += 1;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    clearSearch();
+    setLoading(false);
+  }, [clearSearch, setLoading]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,9 +109,12 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       if (timerRef.current) clearTimeout(timerRef.current);
 
       if (!value.trim()) {
-        setResults([]);
+        clear();
         return;
       }
+
+      // Show the loading state right away so the debounce window never flashes 未找到 for the new query.
+      setLoading(true);
 
       // Detect if likely a reference (contains digits after text) → immediate
       const isReference = /[a-zA-Z\u4e00-\u9fff]\s*\d/.test(value);
@@ -103,7 +124,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         void performSearch(value);
       }, delay);
     },
-    [setQuery, setResults, performSearch],
+    [setQuery, setLoading, performSearch, clear],
   );
 
   const handleKeyDown = useCallback(
@@ -115,7 +136,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         e.preventDefault();
         setSelectedIndex(Math.max(selectedIndex - 1, -1));
       } else if (e.key === 'Escape') {
-        clearSearch();
+        clear();
         inputRef.current?.focus();
       } else if (e.key === 'Enter' && selectedIndex >= 0) {
         e.preventDefault();
@@ -127,7 +148,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         }
       }
     },
-    [selectedIndex, results, setSelectedIndex, clearSearch],
+    [selectedIndex, results, setSelectedIndex, clear],
   );
 
   return (
@@ -154,7 +175,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         {query && (
           <button
             onClick={() => {
-              clearSearch();
+              clear();
               inputRef.current?.focus();
             }}
             className="absolute right-3 p-1 rounded-full hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"

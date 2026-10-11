@@ -117,6 +117,8 @@ export const CHROME_COPY = {
     rankingsEmptyHint: '开始收藏经文吧！',
     notePlaceholder: '开始记录今天的灵修笔记…',
     matchingIndex: '正在匹配经文索引。',
+    searchingTitle: '正在翻找经文索引',
+    searchingHint: '引用会即时命中，全文搜索稍等半拍。',
     xinbanPromoPara2:
       '我也为这个 App 付出了大量心血，并让它全球上架。虽然功能很丰富，但对于不太常用手机的基督徒来说可能略显复杂。 因此，我开发了这个更简洁易用的网页版本。',
   },
@@ -127,6 +129,8 @@ export const CHROME_COPY = {
     rankingsEmptyHint: '開始收藏經文吧！',
     notePlaceholder: '開始記錄今天的靈修筆記…',
     matchingIndex: '正在匹配經文索引。',
+    searchingTitle: '正在翻找經文索引',
+    searchingHint: '引用會即時命中，全文搜索稍等半拍。',
     xinbanPromoPara2:
       '我也為這個 App 付出了大量心血，並讓它全球上架。雖然功能很豐富，但對於不太常用手機的基督徒來說可能略顯複雜。 因此，我開發了這個更簡潔易用的網頁版本。',
   },
