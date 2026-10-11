@@ -19,10 +19,16 @@
     "build": "next build --webpack",
     "search:build-index": "node scripts/build-pagefind-index.mjs",
     "start": "next start",
-    "lint": "eslint . && npm run lint:tw-opacity",
+    "lint": "eslint . && npm run lint:tw-opacity && npm run format:check",
     "lint:tw-opacity": "node scripts/check-tailwind-opacity.mjs",
     "test:unit": "vitest run",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "check": "npm run lint && npm run type-check && npm run test:unit",
+    "prepare": "husky"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.18",
@@ -76,5 +82,14 @@
     "js-yaml": "4.3.2",
     "postcss": "8.5.25",
     "sharp": "0.35.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,mts,js,mjs,cjs}": [
+      "prettier --write",
+      "eslint --fix --max-warnings=0 --no-warn-ignored"
+    ],
+    "*.{json,css,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }
