@@ -17,18 +17,18 @@ export const metadata: Metadata = {
         type: 'website',
         images: [
             {
-                url: '/logo-light.png',
-                width: 1024,
-                height: 1024,
+                url: '/og-default.png',
+                width: 1200,
+                height: 630,
                 alt: '聖經搜索 - 你的話語',
             },
         ],
     },
     twitter: {
-        card: 'summary',
+        card: 'summary_large_image',
         title: '聖經搜索 - 你的話語',
         description: '支持經文引用、關鍵詞與拼音的聖經搜索工具。',
-        images: ['/logo-light.png'],
+        images: ['/og-default.png'],
     },
 };
 

@@ -4,32 +4,31 @@ import DocumentTitle from '@/components/layout/DocumentTitle';
 
 export const metadata: Metadata = {
     title: '全站聖經經文排行榜',
-    description: '查看你的話語全站人氣排行榜（按全站收藏次數排序，非個人「我的收藏」）。',
+    description: '看看大家最常收藏、最爱背诵的圣经经文 Top 榜单。',
     alternates: {
         canonical: '/rankings',
     },
-    keywords: ['聖經', '經文', '全站排行榜', '全站收藏', '人氣', '統計'],
     openGraph: {
         title: '全站聖經經文排行榜 - 你的話語',
-        description: '查看你的話語全站人氣排行榜（非個人收藏）。',
+        description: '看看大家最常收藏、最爱背诵的圣经经文 Top 榜单。',
         url: '/rankings',
         siteName: '你的話語',
-        locale: 'zh_TW',
+        locale: 'zh_CN',
         type: 'website',
         images: [
             {
-                url: '/logo-light.png',
-                width: 1024,
-                height: 1024,
+                url: '/og-default.png',
+                width: 1200,
+                height: 630,
                 alt: '全站聖經經文排行榜 - 你的話語',
             },
         ],
     },
     twitter: {
-        card: 'summary',
+        card: 'summary_large_image',
         title: '全站聖經經文排行榜 - 你的話語',
-        description: '查看你的話語全站人氣排行榜（非個人收藏）。',
-        images: ['/logo-light.png'],
+        description: '看看大家最常收藏、最爱背诵的圣经经文 Top 榜单。',
+        images: ['/og-default.png'],
     },
 };
 

@@ -1017,9 +1017,10 @@ export default function HomePage() {
                                     />
                                 </span>
                                 <span className="min-w-0 overflow-visible py-0.5">
-                                    <h1 className="truncate text-[1.32rem] font-semibold leading-[1.22] tracking-[0.05em] text-stone-950 dark:text-stone-50 font-chinese sm:text-[1.55rem] sm:tracking-[0.08em] md:text-2xl">
+                                    {/* 品牌名不用 h1：首页唯一的 H1 在服务端渲染的 HomeSeoContent 里 */}
+                                    <p className="truncate text-[1.32rem] font-semibold leading-[1.22] tracking-[0.05em] text-stone-950 dark:text-stone-50 font-chinese sm:text-[1.55rem] sm:tracking-[0.08em] md:text-2xl">
                                         {language === 'traditional' ? '你的話語' : '你的话语'}
-                                    </h1>
+                                    </p>
                                     <span className="mt-0.5 hidden text-[10px] leading-none tracking-[0.28em] text-stone-500 dark:text-stone-400 sm:block">
                                         {language === 'traditional' ? '讀 · 查 · 背' : '读 · 查 · 背'}
                                     </span>
