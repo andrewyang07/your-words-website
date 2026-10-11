@@ -1,0 +1,67 @@
+{
+  "_note": "Budgets for check-perf.sh. Lighthouse mobile preset against the LOCAL prod build (next start), so absolute numbers differ from production. firstLoadJsKb = gzip KB of <script src> chunks referenced by the route's HTML. Tighten whenever a PR improves a number; loosen only with a reason in the PR.",
+  "runs": 1,
+  "routes": {
+    "/": {
+      "minScore": 50,
+      "maxLcpMs": 19500,
+      "maxTbtMs": 300,
+      "maxCls": 0.05,
+      "firstLoadJsKb": 320
+    },
+    "/search": {
+      "minScore": 8,
+      "maxLcpMs": 8500,
+      "maxTbtMs": 46000,
+      "maxCls": 0.53,
+      "firstLoadJsKb": 460
+    },
+    "/memorize": {
+      "minScore": 48,
+      "maxLcpMs": 18200,
+      "maxTbtMs": 300,
+      "maxCls": 0.05,
+      "firstLoadJsKb": 300
+    },
+    "/note": {
+      "minScore": 45,
+      "maxLcpMs": 15400,
+      "maxTbtMs": 500,
+      "maxCls": 0.05,
+      "firstLoadJsKb": 335
+    }
+  },
+  "measured": {
+    "date": "2026-10-11",
+    "commit": "7fab4f7",
+    "/": [
+      303,
+      57,
+      17716,
+      0,
+      0
+    ],
+    "/search": [
+      437,
+      12,
+      6916,
+      38563,
+      0.481
+    ],
+    "/memorize": [
+      285,
+      55,
+      16529,
+      0,
+      0
+    ],
+    "/note": [
+      318,
+      52,
+      13989,
+      237,
+      0
+    ],
+    "_cols": "firstLoadJsKb, score, lcpMs, tbtMs, cls (local next start, LH mobile)"
+  }
+}
