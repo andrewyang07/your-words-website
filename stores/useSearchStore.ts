@@ -17,6 +17,8 @@ interface SearchState {
     verses: ContextVerse[];
   } | null;
   loading: boolean;
+  /** True while the MiniSearch fallback downloads + indexes the Bible (first fallback query takes seconds). */
+  fallbackLoading: boolean;
   engineReady: boolean;
 
   setQuery: (query: string) => void;
@@ -25,6 +27,7 @@ interface SearchState {
   setSearchLang: (lang: SearchLang) => void;
   setContextVerse: (ctx: SearchState['contextVerse']) => void;
   setLoading: (loading: boolean) => void;
+  setFallbackLoading: (fallbackLoading: boolean) => void;
   setEngineReady: (ready: boolean) => void;
   clearSearch: () => void;
 }
@@ -46,6 +49,7 @@ export const useSearchStore = create<SearchState>()(
       searchLang: detectDefaultLang(),
       contextVerse: null,
       loading: false,
+      fallbackLoading: false,
       engineReady: false,
 
       setQuery: (query) => set({ query }),
@@ -53,7 +57,8 @@ export const useSearchStore = create<SearchState>()(
       setSelectedIndex: (selectedIndex) => set({ selectedIndex }),
       setSearchLang: (searchLang) => set({ searchLang }),
       setContextVerse: (contextVerse) => set({ contextVerse }),
-      setLoading: (loading) => set({ loading }),
+      setLoading: (loading) => set(loading ? { loading } : { loading, fallbackLoading: false }),
+      setFallbackLoading: (fallbackLoading) => set({ fallbackLoading }),
       setEngineReady: (engineReady) => set({ engineReady }),
       clearSearch: () =>
         set({

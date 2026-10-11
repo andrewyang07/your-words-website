@@ -42,7 +42,9 @@ function SearchPageInner() {
           const langFromQuery = detectSearchLangFromQuery(q);
           if (langFromQuery) setSearchLang(langFromQuery);
           setLoading(true);
-          const { results: searched, truncated } = await runClientSearch(q);
+          const { results: searched, truncated } = await runClientSearch(q, undefined, {
+            onFallbackLoading: () => useSearchStore.getState().setFallbackLoading(true),
+          });
           if (!cancelled) {
             setResults(searched, truncated);
             setLoading(false);

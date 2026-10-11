@@ -68,7 +68,9 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       setLoading(true);
       try {
         // Pagefind first; runClientSearch lazy-loads MiniSearch only if Pagefind fails.
-        const { results: searched, truncated } = await runClientSearch(searchQuery);
+        const { results: searched, truncated } = await runClientSearch(searchQuery, undefined, {
+          onFallbackLoading: () => useSearchStore.getState().setFallbackLoading(true),
+        });
         setResults(searched, truncated);
         setEngineReady(true);
       } catch (error) {
