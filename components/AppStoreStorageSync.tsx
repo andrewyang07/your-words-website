@@ -20,8 +20,20 @@ function applyThemeToDocument(theme: AppState['theme']) {
   document.documentElement.classList.toggle('dark', isDark);
 }
 
+export const TRADITIONAL_SCRIPT_CLASS = 'script-traditional';
+
+export function applyScriptToDocument(language: Language) {
+  document.documentElement.classList.toggle(TRADITIONAL_SCRIPT_CLASS, language === 'traditional');
+}
+
 export default function AppStoreStorageSync() {
   const theme = useAppStore((state) => state.theme);
+  const language = useAppStore((state) => state.language);
+
+  // 繁體模式下讓中文字體優先使用 TC 字形（見 globals.css .script-traditional）
+  useEffect(() => {
+    applyScriptToDocument(language);
+  }, [language]);
 
   // 全域套用主題，讓側欄「自動 / 淺色 / 深色」在任意頁面立即生效
   useEffect(() => {

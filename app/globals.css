@@ -520,3 +520,11 @@
   border-color: rgba(214, 188, 132, 0.16) !important;
   color: rgb(194 181 157) !important;
 }
+
+/* 繁體 UI：中文字體棧改為 TC 優先（class 由 AppStoreStorageSync 依語言設定在 <html>） */
+html.script-traditional body,
+html.script-traditional .font-chinese {
+  font-family:
+    'PingFang TC', 'Noto Sans CJK TC', 'Noto Sans TC', 'Source Han Sans TC', 'Microsoft JhengHei',
+    theme('fontFamily.chinese');
+}

@@ -43,6 +43,12 @@ const config: Config = {
           'Noto Sans SC',
           'Source Han Sans SC',
           'Microsoft YaHei',
+          // Traditional fallbacks (used when no SC font is installed, e.g. TC-only systems)
+          'PingFang TC',
+          'Noto Sans CJK TC',
+          'Noto Sans TC',
+          'Source Han Sans TC',
+          'Microsoft JhengHei',
           'WenQuanYi Micro Hei',
           'system-ui',
           '-apple-system',

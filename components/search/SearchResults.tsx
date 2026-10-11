@@ -60,7 +60,7 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
       ))}
       {showKeyboardHint && results.length > 0 && (
         <p className="text-center text-xs text-bible-400 dark:text-bible-500 pt-2 font-chinese">
-          ↑↓ 导航 · Enter 复制 · Esc 清除
+          {language === 'traditional' ? '↑↓ 導航 · Enter 複製 · Esc 清除' : '↑↓ 导航 · Enter 复制 · Esc 清除'}
         </p>
       )}
     </div>
