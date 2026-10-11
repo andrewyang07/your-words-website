@@ -1291,6 +1291,12 @@ export default function HomePage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' && searchQuery) {
+                    e.preventDefault();
+                    handleClearSearch();
+                  }
+                }}
                 placeholder={
                   language === 'traditional'
                     ? '試試：約3:16 / 神愛世人 / yuehan / lvoe'
