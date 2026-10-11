@@ -47,11 +47,9 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
   // Rotate placeholder
   useEffect(() => {
     const interval = setInterval(() => {
-      placeholderIndexRef.current =
-        (placeholderIndexRef.current + 1) % PLACEHOLDER_EXAMPLES.length;
+      placeholderIndexRef.current = (placeholderIndexRef.current + 1) % PLACEHOLDER_EXAMPLES.length;
       if (inputRef.current && !query) {
-        inputRef.current.placeholder =
-          PLACEHOLDER_EXAMPLES[placeholderIndexRef.current];
+        inputRef.current.placeholder = PLACEHOLDER_EXAMPLES[placeholderIndexRef.current] ?? '';
       }
     }, 3000);
     return () => clearInterval(interval);
@@ -72,9 +70,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       try {
         // Warm MiniSearch in parallel so fallback / ContextViewer stay available.
         const engine = getSearchEngine();
-        const warm = engine.initialized
-          ? Promise.resolve()
-          : engine.initialize().then(() => setEngineReady(true));
+        const warm = engine.initialized ? Promise.resolve() : engine.initialize().then(() => setEngineReady(true));
         if (engine.initialized) setEngineReady(true);
 
         const { results: searched, truncated } = await runClientSearch(searchQuery);
@@ -88,7 +84,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         setLoading(false);
       }
     },
-    [setResults, setLoading, setEngineReady, setSearchLang]
+    [setResults, setLoading, setEngineReady, setSearchLang],
   );
 
   const handleChange = useCallback(
@@ -108,10 +104,10 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       const delay = isReference ? 0 : 150;
 
       timerRef.current = setTimeout(() => {
-        performSearch(value);
+        void performSearch(value);
       }, delay);
     },
-    [setQuery, setResults, performSearch]
+    [setQuery, setResults, performSearch],
   );
 
   const handleKeyDown = useCallback(
@@ -135,15 +131,11 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         }
       }
     },
-    [selectedIndex, results, setSelectedIndex, clearSearch]
+    [selectedIndex, results, setSelectedIndex, clearSearch],
   );
 
   return (
-    <div
-      className={`relative w-full mx-auto ${
-        variant === 'hero' ? 'max-w-2xl' : 'max-w-3xl'
-      }`}
-    >
+    <div className={`relative w-full mx-auto ${variant === 'hero' ? 'max-w-2xl' : 'max-w-3xl'}`}>
       <div className="relative flex items-center">
         <Search
           className={`absolute pointer-events-none text-stone-400 dark:text-stone-500 ${

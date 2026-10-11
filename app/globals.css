@@ -5,450 +5,518 @@
 @tailwind utilities;
 
 @layer base {
-    body {
-        @apply bg-[#f8f5ee] font-chinese text-stone-900 antialiased dark:bg-[#11100d] dark:text-stone-100;
-    }
+  body {
+    @apply bg-[#f8f5ee] font-chinese text-stone-900 antialiased dark:bg-[#11100d] dark:text-stone-100;
+  }
 }
 
 /* 自定义滚动条 */
 @layer utilities {
-    .reader-text {
-        font-size: calc(var(--reader-base-size) * var(--reader-text-scale));
+  .reader-text {
+    font-size: calc(var(--reader-base-size) * var(--reader-text-scale));
+  }
+
+  @media (min-width: 640px) {
+    .reader-text-responsive {
+      font-size: calc(var(--reader-sm-base-size, var(--reader-base-size)) * var(--reader-text-scale));
     }
+  }
 
-    @media (min-width: 640px) {
-        .reader-text-responsive {
-            font-size: calc(var(--reader-sm-base-size, var(--reader-base-size)) * var(--reader-text-scale));
-        }
-    }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
-    .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
-    .scrollbar-none::-webkit-scrollbar { display: none; }
-    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  /* 下拉菜单滚动条样式 */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(190, 158, 93) transparent;
+  }
 
-    /* 下拉菜单滚动条样式 */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-bible-400/60 dark:bg-gray-500/60 rounded-full;
+    border: 1px solid transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-bible-500/80 dark:bg-gray-400/80;
+  }
+
+  @media (prefers-color-scheme: dark) {
     .scrollbar-thin {
-        scrollbar-width: thin;
-        scrollbar-color: rgb(190, 158, 93) transparent;
+      scrollbar-color: rgb(107, 114, 128) transparent;
     }
-
-    .scrollbar-thin::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .scrollbar-thin::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .scrollbar-thin::-webkit-scrollbar-thumb {
-        @apply bg-bible-400/60 dark:bg-gray-500/60 rounded-full;
-        border: 1px solid transparent;
-    }
-
-    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-        @apply bg-bible-500/80 dark:bg-gray-400/80;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .scrollbar-thin {
-            scrollbar-color: rgb(107, 114, 128) transparent;
-        }
-    }
+  }
 }
 
 /* 文本行数限制 */
 .line-clamp-4 {
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* TipTap editor prose styles */
 .ProseMirror {
-    outline: none;
+  outline: none;
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {
-    content: attr(data-placeholder);
-    float: left;
-    pointer-events: none;
-    height: 0;
-    @apply text-stone-400 dark:text-stone-500 font-chinese;
+  content: attr(data-placeholder);
+  float: left;
+  pointer-events: none;
+  height: 0;
+  @apply text-stone-400 dark:text-stone-500 font-chinese;
 }
 
 .ProseMirror h1 {
-    @apply text-2xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700;
+  @apply text-2xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700;
 }
 
 .ProseMirror h2 {
-    @apply text-xl font-bold text-gray-900 dark:text-gray-100 mt-5 mb-2;
+  @apply text-xl font-bold text-gray-900 dark:text-gray-100 mt-5 mb-2;
 }
 
 .ProseMirror h3 {
-    @apply text-lg font-semibold text-gray-900 dark:text-gray-100 mt-4 mb-2;
+  @apply text-lg font-semibold text-gray-900 dark:text-gray-100 mt-4 mb-2;
 }
 
 .ProseMirror p {
-    @apply text-gray-800 dark:text-gray-100 my-2 leading-relaxed;
+  @apply text-gray-800 dark:text-gray-100 my-2 leading-relaxed;
 }
 
 .ProseMirror blockquote {
-    @apply border-l-4 border-bible-500 dark:border-bible-400 pl-4 py-2 my-3 italic text-bible-700 dark:text-bible-300 bg-bible-50 dark:bg-gray-700/50 rounded-r;
+  @apply border-l-4 border-bible-500 dark:border-bible-400 pl-4 py-2 my-3 italic text-bible-700 dark:text-bible-300 bg-bible-50 dark:bg-gray-700/50 rounded-r;
 }
 
 .ProseMirror ul {
-    @apply list-disc list-outside ml-5 text-gray-800 dark:text-gray-100 my-3 space-y-1;
+  @apply list-disc list-outside ml-5 text-gray-800 dark:text-gray-100 my-3 space-y-1;
 }
 
 .ProseMirror ol {
-    @apply list-decimal list-outside ml-5 text-gray-800 dark:text-gray-100 my-3 space-y-1;
+  @apply list-decimal list-outside ml-5 text-gray-800 dark:text-gray-100 my-3 space-y-1;
 }
 
 .ProseMirror li {
-    @apply text-gray-800 dark:text-gray-100;
+  @apply text-gray-800 dark:text-gray-100;
 }
 
 .ProseMirror strong {
-    @apply font-bold text-gray-900 dark:text-white;
+  @apply font-bold text-gray-900 dark:text-white;
 }
 
 .ProseMirror em {
-    @apply italic text-gray-800 dark:text-gray-200;
+  @apply italic text-gray-800 dark:text-gray-200;
 }
 
 .ProseMirror code {
-    @apply bg-bible-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-bible-800 dark:text-bible-200 text-sm font-mono;
+  @apply bg-bible-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-bible-800 dark:text-bible-200 text-sm font-mono;
 }
 
 .ProseMirror pre {
-    @apply bg-bible-100 dark:bg-gray-700 p-3 rounded text-bible-800 dark:text-bible-200 text-sm font-mono my-3 overflow-x-auto;
+  @apply bg-bible-100 dark:bg-gray-700 p-3 rounded text-bible-800 dark:text-bible-200 text-sm font-mono my-3 overflow-x-auto;
 }
 
 .ProseMirror a {
-    @apply text-bible-600 dark:text-bible-400 underline hover:text-bible-700 dark:hover:text-bible-300;
+  @apply text-bible-600 dark:text-bible-400 underline hover:text-bible-700 dark:hover:text-bible-300;
 }
 
 .ProseMirror hr {
-    @apply my-6 border-gray-300 dark:border-gray-600;
+  @apply my-6 border-gray-300 dark:border-gray-600;
 }
 
 /* Tippy.js tooltip reset for suggestion popups */
 .tippy-box {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
 .tippy-content {
-    padding: 0 !important;
+  padding: 0 !important;
 }
 
-
-
 @layer components {
-    .memorize-page {
-        @apply bg-[#f8f5ee] text-stone-950 transition-colors dark:bg-[#11100d] dark:text-stone-50;
-        background-image:
-            radial-gradient(circle at 12% 0%, rgba(190, 158, 93, 0.13), transparent 31rem),
-            radial-gradient(circle at 88% 100%, rgba(120, 113, 108, 0.07), transparent 28rem),
-            repeating-linear-gradient(103deg, rgba(68, 64, 60, 0.012) 0, rgba(68, 64, 60, 0.012) 1px, transparent 1px, transparent 8px);
-    }
+  .memorize-page {
+    @apply bg-[#f8f5ee] text-stone-950 transition-colors dark:bg-[#11100d] dark:text-stone-50;
+    background-image:
+      radial-gradient(circle at 12% 0%, rgba(190, 158, 93, 0.13), transparent 31rem),
+      radial-gradient(circle at 88% 100%, rgba(120, 113, 108, 0.07), transparent 28rem),
+      repeating-linear-gradient(
+        103deg,
+        rgba(68, 64, 60, 0.012) 0,
+        rgba(68, 64, 60, 0.012) 1px,
+        transparent 1px,
+        transparent 8px
+      );
+  }
 
-    .dark .memorize-page {
-        background-image:
-            radial-gradient(circle at 12% 0%, rgba(190, 158, 93, 0.14), transparent 31rem),
-            radial-gradient(circle at 88% 100%, rgba(120, 113, 108, 0.07), transparent 28rem),
-            repeating-linear-gradient(103deg, rgba(255, 246, 220, 0.009) 0, rgba(255, 246, 220, 0.009) 1px, transparent 1px, transparent 9px);
-    }
+  .dark .memorize-page {
+    background-image:
+      radial-gradient(circle at 12% 0%, rgba(190, 158, 93, 0.14), transparent 31rem),
+      radial-gradient(circle at 88% 100%, rgba(120, 113, 108, 0.07), transparent 28rem),
+      repeating-linear-gradient(
+        103deg,
+        rgba(255, 246, 220, 0.009) 0,
+        rgba(255, 246, 220, 0.009) 1px,
+        transparent 1px,
+        transparent 9px
+      );
+  }
 
-    .memorize-icon {
-        @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-stone-900/10 bg-white/45 text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] backdrop-blur-xl transition hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200 dark:hover:bg-white/[0.09];
-    }
+  .memorize-icon {
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-stone-900/10 bg-white/45 text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] backdrop-blur-xl transition hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200 dark:hover:bg-white/[0.09];
+  }
 
-    .memorize-help {
-        @apply inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-stone-900/10 bg-white/45 px-2.5 text-xs text-stone-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] backdrop-blur-xl transition hover:bg-white/70 hover:text-stone-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-300 dark:hover:bg-white/[0.09] dark:hover:text-white;
-    }
+  .memorize-help {
+    @apply inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-stone-900/10 bg-white/45 px-2.5 text-xs text-stone-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] backdrop-blur-xl transition hover:bg-white/70 hover:text-stone-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-300 dark:hover:bg-white/[0.09] dark:hover:text-white;
+  }
 
-    .memorize-primary {
-        @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-bible-700 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-bible-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 focus-visible:ring-offset-2 dark:bg-bible-300 dark:text-stone-950 dark:hover:bg-bible-200 dark:focus-visible:ring-bible-300 dark:focus-visible:ring-offset-[#11100d];
-    }
+  .memorize-primary {
+    @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-bible-700 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-bible-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 focus-visible:ring-offset-2 dark:bg-bible-300 dark:text-stone-950 dark:hover:bg-bible-200 dark:focus-visible:ring-bible-300 dark:focus-visible:ring-offset-[#11100d];
+  }
 
-    .memorize-secondary {
-        @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-stone-900/10 bg-white/45 text-sm text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] backdrop-blur-xl transition hover:bg-white/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200 dark:hover:bg-white/[0.09];
-    }
+  .memorize-secondary {
+    @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-stone-900/10 bg-white/45 text-sm text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] backdrop-blur-xl transition hover:bg-white/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-stone-200 dark:hover:bg-white/[0.09];
+  }
 
-    .memorize-verse {
-        @apply relative mx-auto w-full max-w-2xl break-words overflow-hidden rounded-3xl border border-stone-900/10 bg-white/[0.68] px-5 py-7 text-[1.45rem] leading-[2.15] tracking-[0.08em] shadow-[0_24px_70px_rgba(68,64,60,0.10)] backdrop-blur-xl transition dark:border-white/10 dark:bg-white/[0.045] sm:px-8 sm:py-10 sm:text-[1.75rem];
-        background-image:
-            radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, 0.32), transparent 48%),
-            repeating-linear-gradient(101deg, rgba(68, 64, 60, 0.012) 0, rgba(68, 64, 60, 0.012) 1px, transparent 1px, transparent 11px);
-    }
+  .memorize-verse {
+    @apply relative mx-auto w-full max-w-2xl break-words overflow-hidden rounded-3xl border border-stone-900/10 bg-white/[0.68] px-5 py-7 text-[1.45rem] leading-[2.15] tracking-[0.08em] shadow-[0_24px_70px_rgba(68,64,60,0.10)] backdrop-blur-xl transition dark:border-white/10 dark:bg-white/[0.045] sm:px-8 sm:py-10 sm:text-[1.75rem];
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, 0.32), transparent 48%),
+      repeating-linear-gradient(
+        101deg,
+        rgba(68, 64, 60, 0.012) 0,
+        rgba(68, 64, 60, 0.012) 1px,
+        transparent 1px,
+        transparent 11px
+      );
+  }
 
-    .memorize-stage-tab {
-        @apply relative min-h-14 overflow-hidden rounded-xl border border-stone-900/10 bg-white/45 px-1.5 py-2 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04];
-    }
+  .memorize-stage-tab {
+    @apply relative min-h-14 overflow-hidden rounded-xl border border-stone-900/10 bg-white/45 px-1.5 py-2 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04];
+  }
 
-    .memorize-stage-tab::after {
-        content: '';
-        @apply absolute inset-x-0 bottom-0 h-0.5 bg-bible-700/45 dark:bg-bible-300/40;
-    }
+  .memorize-stage-tab::after {
+    content: '';
+    @apply absolute inset-x-0 bottom-0 h-0.5 bg-bible-700/45 dark:bg-bible-300/40;
+  }
 
-    .memorize-hidden {
-        @apply rounded-sm bg-stone-900/[0.09] text-transparent shadow-[inset_0_-1px_0_rgba(68,64,60,0.28)] dark:bg-white/[0.11] dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.3)];
-    }
+  .memorize-hidden {
+    @apply rounded-sm bg-stone-900/[0.09] text-transparent shadow-[inset_0_-1px_0_rgba(68,64,60,0.28)] dark:bg-white/[0.11] dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.3)];
+  }
 
+  .memorize-revealed {
+    animation: memorize-reveal 180ms ease-out;
+  }
+
+  .memorize-wrong-target {
+    @apply bg-red-950/15 text-transparent ring-1 ring-red-900/55 dark:bg-red-950/45 dark:ring-red-400/70;
+    animation: memorize-wrong-target 180ms ease-in-out;
+  }
+
+  .memorize-wrong-key {
+    animation: memorize-wrong-key 180ms ease-out;
+  }
+
+  @keyframes memorize-reveal {
+    from {
+      opacity: 0.25;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes memorize-wrong-target {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    35% {
+      transform: translateX(-2px);
+    }
+    70% {
+      transform: translateX(2px);
+    }
+  }
+  @keyframes memorize-wrong-key {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    45% {
+      transform: translateY(2px);
+    }
+  }
+  @keyframes memorize-wrong-fade {
+    from {
+      opacity: 0.72;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
     .memorize-revealed {
-        animation: memorize-reveal 180ms ease-out;
+      animation: none;
     }
-
-    .memorize-wrong-target {
-        @apply bg-red-950/15 text-transparent ring-1 ring-red-900/55 dark:bg-red-950/45 dark:ring-red-400/70;
-        animation: memorize-wrong-target 180ms ease-in-out;
-    }
-
+    .memorize-wrong-target,
     .memorize-wrong-key {
-        animation: memorize-wrong-key 180ms ease-out;
+      animation: memorize-wrong-fade 180ms ease-out;
     }
-
-    @keyframes memorize-reveal { from { opacity: 0.25; } to { opacity: 1; } }
-    @keyframes memorize-wrong-target { 0%, 100% { transform: translateX(0); } 35% { transform: translateX(-2px); } 70% { transform: translateX(2px); } }
-    @keyframes memorize-wrong-key { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(2px); } }
-    @keyframes memorize-wrong-fade { from { opacity: 0.72; } to { opacity: 1; } }
-
-    @media (prefers-reduced-motion: reduce) {
-        .memorize-revealed { animation: none; }
-        .memorize-wrong-target, .memorize-wrong-key { animation: memorize-wrong-fade 180ms ease-out; }
-        .memorize-page button, .memorize-page a, .memorize-stage-tab { transition-duration: 0.01ms !important; }
-        .memorize-page button:hover, .memorize-page button:active, .memorize-page a:hover, .memorize-page a:active { transform: none !important; }
+    .memorize-page button,
+    .memorize-page a,
+    .memorize-stage-tab {
+      transition-duration: 0.01ms !important;
     }
-
-    .liquid-glass {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.28));
-        border: 1px solid rgba(68, 64, 60, 0.10);
-        box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.58),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.18),
-            0 18px 46px rgba(68, 64, 60, 0.07);
-        backdrop-filter: blur(22px) saturate(135%);
-        -webkit-backdrop-filter: blur(22px) saturate(135%);
+    .memorize-page button:hover,
+    .memorize-page button:active,
+    .memorize-page a:hover,
+    .memorize-page a:active {
+      transform: none !important;
     }
+  }
 
-    .dark .liquid-glass {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.032));
-        border-color: rgba(255, 255, 255, 0.10);
-        box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.08),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.035),
-            0 20px 50px rgba(0, 0, 0, 0.18);
-    }
+  .liquid-glass {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.28));
+    border: 1px solid rgba(68, 64, 60, 0.1);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.58),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+      0 18px 46px rgba(68, 64, 60, 0.07);
+    backdrop-filter: blur(22px) saturate(135%);
+    -webkit-backdrop-filter: blur(22px) saturate(135%);
+  }
 
-    .liquid-button {
-        background: rgba(255, 255, 255, 0.38);
-        border: 1px solid rgba(68, 64, 60, 0.10);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
-        backdrop-filter: blur(16px) saturate(130%);
-        -webkit-backdrop-filter: blur(16px) saturate(130%);
-    }
+  .dark .liquid-glass {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.032));
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.035),
+      0 20px 50px rgba(0, 0, 0, 0.18);
+  }
 
-    .dark .liquid-button {
-        background: rgba(44, 38, 30, 0.72);
-        border-color: rgba(214, 188, 132, 0.16);
-        box-shadow:
-            inset 0 1px 0 rgba(255, 246, 220, 0.08),
-            0 10px 28px rgba(0, 0, 0, 0.18);
-    }
+  .liquid-button {
+    background: rgba(255, 255, 255, 0.38);
+    border: 1px solid rgba(68, 64, 60, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+    backdrop-filter: blur(16px) saturate(130%);
+    -webkit-backdrop-filter: blur(16px) saturate(130%);
+  }
 
-    .yw-page {
-        @apply min-h-screen bg-[#f8f5ee] text-stone-900 transition-colors dark:bg-[#11100d] dark:text-stone-100;
-        background-image:
-            radial-gradient(circle at top left, rgba(190, 158, 93, 0.12), transparent 34rem),
-            radial-gradient(circle at bottom right, rgba(120, 113, 108, 0.08), transparent 30rem);
-    }
+  .dark .liquid-button {
+    background: rgba(44, 38, 30, 0.72);
+    border-color: rgba(214, 188, 132, 0.16);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 246, 220, 0.08),
+      0 10px 28px rgba(0, 0, 0, 0.18);
+  }
 
-    .dark .yw-page {
-        background-image:
-            radial-gradient(circle at top left, rgba(190, 158, 93, 0.14), transparent 34rem),
-            radial-gradient(circle at bottom right, rgba(120, 113, 108, 0.08), transparent 30rem),
-            linear-gradient(180deg, rgba(255, 246, 220, 0.025), transparent 18rem);
-    }
+  .yw-page {
+    @apply min-h-screen bg-[#f8f5ee] text-stone-900 transition-colors dark:bg-[#11100d] dark:text-stone-100;
+    background-image:
+      radial-gradient(circle at top left, rgba(190, 158, 93, 0.12), transparent 34rem),
+      radial-gradient(circle at bottom right, rgba(120, 113, 108, 0.08), transparent 30rem);
+  }
 
-    .yw-shell {
-        @apply mx-auto max-w-6xl px-4 py-8 md:py-12;
-    }
+  .dark .yw-page {
+    background-image:
+      radial-gradient(circle at top left, rgba(190, 158, 93, 0.14), transparent 34rem),
+      radial-gradient(circle at bottom right, rgba(120, 113, 108, 0.08), transparent 30rem),
+      linear-gradient(180deg, rgba(255, 246, 220, 0.025), transparent 18rem);
+  }
 
-    .yw-panel {
-        @apply rounded-[1.5rem] border border-stone-900/10 bg-white/[0.72] shadow-[0_24px_70px_rgba(68,64,60,0.10)] dark:border-white/10 dark:bg-white/[0.045];
-    }
+  .yw-shell {
+    @apply mx-auto max-w-6xl px-4 py-8 md:py-12;
+  }
 
-    .yw-section-card {
-        @apply rounded-2xl border border-stone-900/10 bg-white/[0.58] p-4 md:p-5 dark:border-white/10 dark:bg-white/[0.04];
-    }
+  .yw-panel {
+    @apply rounded-[1.5rem] border border-stone-900/10 bg-white/[0.72] shadow-[0_24px_70px_rgba(68,64,60,0.10)] dark:border-white/10 dark:bg-white/[0.045];
+  }
 
-    .yw-soft-card {
-        @apply rounded-2xl border border-stone-900/10 bg-stone-50/75 p-4 dark:border-white/10 dark:bg-white/[0.035];
-    }
+  .yw-section-card {
+    @apply rounded-2xl border border-stone-900/10 bg-white/[0.58] p-4 md:p-5 dark:border-white/10 dark:bg-white/[0.04];
+  }
 
-    .yw-icon-tile {
-        @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-900/10 bg-white/70 text-stone-700 shadow-sm dark:border-white/10 dark:bg-white/[0.06] dark:text-stone-200;
-    }
+  .yw-soft-card {
+    @apply rounded-2xl border border-stone-900/10 bg-stone-50/75 p-4 dark:border-white/10 dark:bg-white/[0.035];
+  }
 
-    .yw-kicker {
-        @apply text-xs font-medium uppercase tracking-[0.24em] text-stone-500 dark:text-stone-400;
-    }
+  .yw-icon-tile {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-900/10 bg-white/70 text-stone-700 shadow-sm dark:border-white/10 dark:bg-white/[0.06] dark:text-stone-200;
+  }
 
-    .yw-heading {
-        @apply font-chinese text-2xl font-semibold tracking-tight text-stone-950 dark:text-stone-50 md:text-3xl;
-    }
+  .yw-kicker {
+    @apply text-xs font-medium uppercase tracking-[0.24em] text-stone-500 dark:text-stone-400;
+  }
 
-    .yw-body {
-        @apply font-chinese leading-relaxed text-stone-700 dark:text-stone-300;
-    }
+  .yw-heading {
+    @apply font-chinese text-2xl font-semibold tracking-tight text-stone-950 dark:text-stone-50 md:text-3xl;
+  }
+
+  .yw-body {
+    @apply font-chinese leading-relaxed text-stone-700 dark:text-stone-300;
+  }
 }
 
 /* MDXEditor notebook skin */
 .bible-note-mdx-editor {
-    color: rgb(41 37 36);
+  color: rgb(41 37 36);
 }
 
 .dark .bible-note-mdx-editor {
-    color: rgb(238 232 220);
-    background: rgba(25, 22, 18, 0.92) !important;
-    border-color: rgba(214, 188, 132, 0.18) !important;
-    box-shadow:
-        inset 0 1px 0 rgba(255, 246, 220, 0.06),
-        0 30px 90px rgba(0, 0, 0, 0.34) !important;
+  color: rgb(238 232 220);
+  background: rgba(25, 22, 18, 0.92) !important;
+  border-color: rgba(214, 188, 132, 0.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 220, 0.06),
+    0 30px 90px rgba(0, 0, 0, 0.34) !important;
 }
 
 .bible-note-mdx-editor [role='toolbar'] {
-    border-bottom: 1px solid rgba(214, 211, 209, 0.7);
-    background: rgba(250, 250, 249, 0.78);
-    padding: 0.6rem 0.75rem;
-    flex-wrap: wrap;
-    row-gap: 0.35rem;
-    max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+  border-bottom: 1px solid rgba(214, 211, 209, 0.7);
+  background: rgba(250, 250, 249, 0.78);
+  padding: 0.6rem 0.75rem;
+  flex-wrap: wrap;
+  row-gap: 0.35rem;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 /* Keep block-type trigger readable without forcing wide chrome on phones */
 .bible-note-mdx-editor [role='toolbar'] [role='combobox'] {
-    width: auto;
-    min-width: 5.5rem;
-    max-width: 9rem;
+  width: auto;
+  min-width: 5.5rem;
+  max-width: 9rem;
 }
 
 .dark .bible-note-mdx-editor [role='toolbar'] {
-    border-bottom-color: rgba(214, 188, 132, 0.14);
-    background: rgba(33, 29, 23, 0.96);
+  border-bottom-color: rgba(214, 188, 132, 0.14);
+  background: rgba(33, 29, 23, 0.96);
 }
 
 .bible-note-mdx-editor [role='toolbar'] button,
 .bible-note-mdx-editor [role='toolbar'] [role='radio'],
 .bible-note-mdx-editor [role='toolbar'] [role='combobox'] {
-    color: rgb(87 83 78);
+  color: rgb(87 83 78);
 }
 
 .dark .bible-note-mdx-editor [role='toolbar'] button,
 .dark .bible-note-mdx-editor [role='toolbar'] [role='radio'],
 .dark .bible-note-mdx-editor [role='toolbar'] [role='combobox'] {
-    background: rgba(255, 246, 220, 0.055) !important;
-    border-color: rgba(214, 188, 132, 0.14) !important;
-    color: rgb(226 218 204) !important;
+  background: rgba(255, 246, 220, 0.055) !important;
+  border-color: rgba(214, 188, 132, 0.14) !important;
+  color: rgb(226 218 204) !important;
 }
 
 .dark .bible-note-mdx-editor [role='toolbar'] button:hover,
 .dark .bible-note-mdx-editor [role='toolbar'] [role='radio']:hover,
 .dark .bible-note-mdx-editor [role='toolbar'] [role='combobox']:hover {
-    background: rgba(255, 246, 220, 0.10) !important;
-    color: rgb(255 248 232) !important;
+  background: rgba(255, 246, 220, 0.1) !important;
+  color: rgb(255 248 232) !important;
 }
 
 .dark .bible-note-mdx-editor [role='toolbar'] svg,
 .dark .bible-note-mdx-editor [role='toolbar'] [role='radio'] svg,
 .dark .bible-note-mdx-editor [role='toolbar'] button svg {
-    color: rgb(226 218 204) !important;
-    opacity: 1 !important;
-    stroke: currentColor !important;
+  color: rgb(226 218 204) !important;
+  opacity: 1 !important;
+  stroke: currentColor !important;
 }
 
 .dark .bible-note-mdx-editor [role='toolbar'] [aria-disabled='true'],
 .dark .bible-note-mdx-editor [role='toolbar'] button:disabled {
-    color: rgb(103 95 82) !important;
-    opacity: 0.72 !important;
+  color: rgb(103 95 82) !important;
+  opacity: 0.72 !important;
 }
 
 .dark .bible-note-mdx-editor [role='toolbar'] [aria-disabled='true'] svg,
 .dark .bible-note-mdx-editor [role='toolbar'] button:disabled svg {
-    color: rgb(103 95 82) !important;
+  color: rgb(103 95 82) !important;
 }
 
 .bible-note-mdx-editor .mdxeditor-root-contenteditable {
-    background: transparent;
+  background: transparent;
 }
 
 .bible-note-mdx-editor [contenteditable='true'] {
-    color: rgb(41 37 36);
+  color: rgb(41 37 36);
 }
 
 .dark .bible-note-mdx-editor [contenteditable='true'] {
-    color: rgb(238 232 220);
-    caret-color: rgb(217 171 89);
+  color: rgb(238 232 220);
+  caret-color: rgb(217 171 89);
 }
 
 .bible-note-mdx-editor [contenteditable='true'] p,
 .bible-note-mdx-editor [contenteditable='true'] h2,
 .bible-note-mdx-editor [contenteditable='true'] h3,
 .bible-note-mdx-editor [contenteditable='true'] li {
-    color: inherit;
+  color: inherit;
 }
 
 .bible-note-mdx-editor blockquote {
-    border-left-color: rgb(217 119 6 / 0.45);
-    background: rgb(245 245 244 / 0.55);
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
+  border-left-color: rgb(217 119 6 / 0.45);
+  background: rgb(245 245 244 / 0.55);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
 }
 
 .dark .bible-note-mdx-editor blockquote {
-    border-left-color: rgba(217, 171, 89, 0.62);
-    background: rgba(86, 66, 36, 0.22);
-    color: rgb(238 232 220);
+  border-left-color: rgba(217, 171, 89, 0.62);
+  background: rgba(86, 66, 36, 0.22);
+  color: rgb(238 232 220);
 }
 
 .dark .bible-note-mdx-editor [data-placeholder] {
-    color: rgb(165 154 135);
+  color: rgb(165 154 135);
 }
 
 .dark .notebook-side-panel {
-    background: rgba(26, 22, 17, 0.84) !important;
-    border-color: rgba(214, 188, 132, 0.14) !important;
-    box-shadow:
-        inset 0 1px 0 rgba(255, 246, 220, 0.055),
-        0 18px 54px rgba(0, 0, 0, 0.24) !important;
+  background: rgba(26, 22, 17, 0.84) !important;
+  border-color: rgba(214, 188, 132, 0.14) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 220, 0.055),
+    0 18px 54px rgba(0, 0, 0, 0.24) !important;
 }
 
 .dark .notebook-side-panel h3 {
-    color: rgb(245 239 228) !important;
+  color: rgb(245 239 228) !important;
 }
 
 .dark .notebook-side-panel p,
 .dark .notebook-side-panel span {
-    color: rgb(180 169 150);
+  color: rgb(180 169 150);
 }
 
 .dark .notebook-helper-pill {
-    background: rgba(255, 246, 220, 0.07) !important;
-    border-color: rgba(214, 188, 132, 0.16) !important;
-    color: rgb(194 181 157) !important;
+  background: rgba(255, 246, 220, 0.07) !important;
+  border-color: rgba(214, 188, 132, 0.16) !important;
+  color: rgb(194 181 157) !important;
 }

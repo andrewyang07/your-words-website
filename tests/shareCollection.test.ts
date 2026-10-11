@@ -65,16 +65,20 @@ describe('shareSavedVerseCollection', () => {
       count: 1,
     };
 
-    await expect(shareSavedVerseCollection({
-      verseIds: ['约翰福音-3-16'],
-      origin: 'https://example.com',
-      clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
-    })).resolves.toEqual(expected);
+    await expect(
+      shareSavedVerseCollection({
+        verseIds: ['约翰福音-3-16'],
+        origin: 'https://example.com',
+        clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+      }),
+    ).resolves.toEqual(expected);
 
-    await expect(shareSavedVerseCollection({
-      verseIds: ['约翰福音-3-16'],
-      origin: 'https://example.com',
-    })).resolves.toEqual(expected);
+    await expect(
+      shareSavedVerseCollection({
+        verseIds: ['约翰福音-3-16'],
+        origin: 'https://example.com',
+      }),
+    ).resolves.toEqual(expected);
   });
 
   it('produces a snapshot the existing receiver decoder reads as the same shared set', async () => {

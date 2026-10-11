@@ -68,13 +68,16 @@ export function CompletionReward({
   const shouldReduceMotion = reducedMotion ?? Boolean(prefersReducedMotion);
   const messages = rewardCopy[language];
   const skipped = kind === 'stage' && skippedStageCount > 0;
-  const seal = kind === 'round'
-    ? messages.roundSeal
-    : assistanceCount > 0 ? messages.assistedSeal : messages.independentSeal;
-  const message = kind === 'round'
-    ? messages.roundMessage(assistanceCount, skippedStageCount)
-    : skipped ? messages.skippedMessage
-      : assistanceCount > 0 ? messages.assistedMessage(assistanceCount) : messages.independentMessage;
+  const seal =
+    kind === 'round' ? messages.roundSeal : assistanceCount > 0 ? messages.assistedSeal : messages.independentSeal;
+  const message =
+    kind === 'round'
+      ? messages.roundMessage(assistanceCount, skippedStageCount)
+      : skipped
+        ? messages.skippedMessage
+        : assistanceCount > 0
+          ? messages.assistedMessage(assistanceCount)
+          : messages.independentMessage;
   const duration = shouldReduceMotion ? 0.2 : kind === 'round' ? 1.05 : 0.62;
 
   if (skipped) {
@@ -99,7 +102,13 @@ export function CompletionReward({
       transition={{ duration }}
       className={`mx-auto flex items-center justify-center gap-4 ${kind === 'round' ? 'flex-col' : 'max-w-xl rounded-3xl border border-stone-900/10 bg-white/40 px-4 py-4 dark:border-white/10 dark:bg-white/[0.035] sm:flex-row'}`}
     >
-      <Seal seal={seal} label={messages.sealLabel(seal)} kind={kind} assisted={assistanceCount > 0} reducedMotion={shouldReduceMotion} />
+      <Seal
+        seal={seal}
+        label={messages.sealLabel(seal)}
+        kind={kind}
+        assisted={assistanceCount > 0}
+        reducedMotion={shouldReduceMotion}
+      />
       <div className={kind === 'round' ? 'text-center' : 'min-w-0 text-left'}>
         <p className="flex items-center justify-center gap-1.5 font-serif text-lg font-semibold tracking-[0.12em] text-stone-900 dark:text-stone-100 sm:justify-start">
           <CheckCircle2 className="h-4 w-4 text-[#963a30] dark:text-[#d58375]" aria-hidden="true" />
@@ -108,7 +117,8 @@ export function CompletionReward({
         <p className="mt-1 text-sm leading-6 text-stone-600 dark:text-stone-300">{message}</p>
         {kind === 'round' && onCreateCard && cardLabel && (
           <button type="button" onClick={onCreateCard} className="memorize-secondary mx-auto mt-4 !w-auto px-4">
-            <ImageDown className="h-4 w-4" aria-hidden="true" />{cardLabel}
+            <ImageDown className="h-4 w-4" aria-hidden="true" />
+            {cardLabel}
           </button>
         )}
       </div>
@@ -138,7 +148,9 @@ function Seal({
     <motion.div
       data-testid="completion-seal-chrome"
       className="relative shrink-0 pointer-events-none"
-      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: kind === 'round' ? -18 : -12, rotate: -4, scale: 1.12 }}
+      initial={
+        reducedMotion ? { opacity: 0 } : { opacity: 0, y: kind === 'round' ? -18 : -12, rotate: -4, scale: 1.12 }
+      }
       animate={reducedMotion ? { opacity: 1 } : { opacity: assisted ? 0.7 : 0.92, y: 0, rotate: -1.5, scale: 1 }}
       transition={{ duration: reducedMotion ? 0.2 : kind === 'round' ? 1.05 : 0.62, ease: [0.22, 1, 0.36, 1] }}
       style={{ width: size, height: size }}
@@ -190,7 +202,9 @@ function Seal({
           fontWeight="700"
         >
           {characters.map((character, index) => (
-            <tspan key={`${character}-${index}`} x="60" y={startY + index * step}>{character}</tspan>
+            <tspan key={`${character}-${index}`} x="60" y={startY + index * step}>
+              {character}
+            </tspan>
           ))}
         </text>
       </svg>

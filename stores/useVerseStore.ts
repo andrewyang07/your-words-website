@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { VerseState } from '@/types/store';
+import { type VerseState } from '@/types/store';
 import { loadPresetVerses, loadBooks } from '@/lib/dataLoader';
 
 // The persisted UI language is applied after hydration, so loads for the default script can still be in
@@ -11,7 +11,7 @@ let latestBooksRequest = 0;
 const errorMessage = (error: unknown, fallback: string) =>
   error instanceof Error && error.message ? error.message : fallback;
 
-export const useVerseStore = create<VerseState>((set, get) => ({
+export const useVerseStore = create<VerseState>((set) => ({
   // 初始状态
   verses: [],
   books: [],

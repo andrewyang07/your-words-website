@@ -1,13 +1,11 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useSearchStore } from '@/stores/useSearchStore';
-import { useAppStore } from '@/stores/useAppStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchStore } from '@/stores/useSearchStore';
 
 export default function ContextViewer() {
   const { contextVerse, setContextVerse, searchLang } = useSearchStore();
-  const language = useAppStore((s) => s.language);
 
   if (!contextVerse) return null;
 

@@ -7,7 +7,10 @@ import { getReaderTextScale, type ReaderTextSize } from '@/lib/readerPreferences
 import { getCardSize } from '@/lib/utils';
 import type { Verse } from '@/types/verse';
 
-interface HeightMeasurement { height: number; layoutKey: string }
+interface HeightMeasurement {
+  height: number;
+  layoutKey: string;
+}
 
 function useViewportWidth() {
   const frameRef = useRef<number | null>(null);
@@ -39,7 +42,9 @@ function useContainerWidth(containerRef: RefObject<HTMLDivElement | null>) {
     const observer = new ResizeObserver(([entry]) => {
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
       frameRef.current = requestAnimationFrame(() => {
-        setWidth((current) => Math.abs(current - entry.contentRect.width) > 0.5 ? entry.contentRect.width : current);
+        setWidth((current) =>
+          entry && Math.abs(current - entry.contentRect.width) > 0.5 ? entry.contentRect.width : current,
+        );
       });
     });
     observer.observe(container);
@@ -65,7 +70,12 @@ function recordMeasurements(entries: ResizeObserverEntry[], cache: Map<string, H
   return changed;
 }
 
-function useCardHeightMeasurements(containerRef: RefObject<HTMLDivElement | null>, layoutKey: string, verseKey: string, enabled: boolean) {
+function useCardHeightMeasurements(
+  containerRef: RefObject<HTMLDivElement | null>,
+  layoutKey: string,
+  verseKey: string,
+  enabled: boolean,
+) {
   const cacheRef = useRef(new Map<string, HeightMeasurement>());
   const frameRef = useRef<number | null>(null);
   const [measurements, setMeasurements] = useState<Map<string, HeightMeasurement>>(() => new Map());
@@ -89,7 +99,11 @@ function useCardHeightMeasurements(containerRef: RefObject<HTMLDivElement | null
   return measurements;
 }
 
-export function useMeasuredMasonry(containerRef: RefObject<HTMLDivElement | null>, verses: Verse[], textSize: ReaderTextSize) {
+export function useMeasuredMasonry(
+  containerRef: RefObject<HTMLDivElement | null>,
+  verses: Verse[],
+  textSize: ReaderTextSize,
+) {
   const viewportWidth = useViewportWidth();
   const containerWidth = useContainerWidth(containerRef);
   const textScale = getReaderTextScale(textSize);
@@ -98,12 +112,25 @@ export function useMeasuredMasonry(containerRef: RefObject<HTMLDivElement | null
   const layoutKey = `${Math.round(columnWidth * 10) / 10}:${textSize}`;
   const verseKey = verses.map((verse) => verse.id).join('|');
   const measurements = useCardHeightMeasurements(containerRef, layoutKey, verseKey, columnWidth > 0);
-  return useMemo(() => calculateOrderedMasonry({
-    items: verses.map((verse) => ({ id: verse.id, height: measurements.get(verse.id)?.layoutKey === layoutKey
-      ? measurements.get(verse.id)!.height
-      : estimateVerseCardHeight({ textLength: verse.text.length, size: getCardSize(verse), textScale, columnWidth }) })),
-    columnCount,
-    columnWidth,
-    gap: VERSE_MASONRY_GAP,
-  }), [columnCount, columnWidth, layoutKey, measurements, textScale, verses]);
+  return useMemo(
+    () =>
+      calculateOrderedMasonry({
+        items: verses.map((verse) => ({
+          id: verse.id,
+          height:
+            measurements.get(verse.id)?.layoutKey === layoutKey
+              ? measurements.get(verse.id)!.height
+              : estimateVerseCardHeight({
+                  textLength: verse.text.length,
+                  size: getCardSize(verse),
+                  textScale,
+                  columnWidth,
+                }),
+        })),
+        columnCount,
+        columnWidth,
+        gap: VERSE_MASONRY_GAP,
+      }),
+    [columnCount, columnWidth, layoutKey, measurements, textScale, verses],
+  );
 }

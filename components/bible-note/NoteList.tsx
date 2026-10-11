@@ -3,161 +3,171 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, FileText } from 'lucide-react';
-import { getAllNotes, deleteNote, createNote } from '@/lib/noteStorage';
+import { getAllNotes, deleteNote } from '@/lib/noteStorage';
 import { useScriptPick } from '@/lib/useScriptPick';
 
 interface NoteSummary {
-    id: string;
-    title: string;
-    updatedAt: number;
+  id: string;
+  title: string;
+  updatedAt: number;
 }
 
 interface NoteListProps {
-    isOpen: boolean;
-    onClose: () => void;
-    currentNoteId: string | null;
-    onSelectNote: (id: string) => void;
-    onNewNote: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  currentNoteId: string | null;
+  onSelectNote: (id: string) => void;
+  onNewNote: () => void;
 }
 
 function relativeTime(ts: number): string {
-    const diff = Date.now() - ts;
-    const days = Math.floor(diff / 86400000);
-    if (days === 0) return '今天';
-    if (days === 1) return '昨天';
-    return `${days}天前`;
+  const diff = Date.now() - ts;
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return '今天';
+  if (days === 1) return '昨天';
+  return `${days}天前`;
 }
 
 export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote, onNewNote }: NoteListProps) {
-    const pick = useScriptPick();
-    const [notes, setNotes] = useState<NoteSummary[]>([]);
-    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const pick = useScriptPick();
+  const [notes, setNotes] = useState<NoteSummary[]>([]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-    const loadNotes = useCallback(async () => {
-        const all = await getAllNotes();
-        setNotes(all);
-    }, []);
+  const loadNotes = useCallback(async () => {
+    const all = await getAllNotes();
+    setNotes(all);
+  }, []);
 
-    useEffect(() => {
-        if (isOpen) loadNotes();
-    }, [isOpen, loadNotes]);
+  useEffect(() => {
+    if (isOpen) void loadNotes();
+  }, [isOpen, loadNotes]);
 
-    const handleDelete = async (id: string) => {
-        setConfirmDeleteId(null);
-        await deleteNote(id);
-        const updated = await getAllNotes();
-        setNotes(updated);
+  const handleDelete = async (id: string) => {
+    setConfirmDeleteId(null);
+    await deleteNote(id);
+    const updated = await getAllNotes();
+    setNotes(updated);
 
-        if (id === currentNoteId) {
-            if (updated.length > 0) {
-                onSelectNote(updated[0].id);
-            } else {
-                onNewNote();
-            }
-        }
-    };
+    if (id === currentNoteId) {
+      if (updated.length > 0) {
+        onSelectNote(updated[0]!.id);
+      } else {
+        onNewNote();
+      }
+    }
+  };
 
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-[10000] bg-black/50 dark:bg-black/70"
-                        onClick={onClose}
-                    />
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[10000] bg-black/50 dark:bg-black/70"
+            onClick={onClose}
+          />
 
-                    <motion.div
-                        initial={{ x: '-100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '-100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed left-0 top-0 z-[10001] flex h-full w-80 max-w-[85vw] flex-col bg-white shadow-2xl dark:bg-[#17130f]"
-                    >
-                        {/* 头部 */}
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-bible-200 dark:border-amber-200/10">
-                            <h3 className="font-semibold text-bible-800 dark:text-stone-100 font-chinese">我的笔记</h3>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={onNewNote}
-                                    className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bible-500 hover:bg-bible-600 text-white text-sm font-chinese transition-colors"
-                                    aria-label="新建笔记"
-                                >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    新建
-                                </button>
-                                <button
-                                    onClick={onClose}
-                                    className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-white/[0.08] transition-colors"
-                                    aria-label="关闭笔记列表"
-                                >
-                                    <X className="w-4 h-4 text-bible-600 dark:text-stone-400" />
-                                </button>
-                            </div>
-                        </div>
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed left-0 top-0 z-[10001] flex h-full w-80 max-w-[85vw] flex-col bg-white shadow-2xl dark:bg-[#17130f]"
+          >
+            {/* 头部 */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-bible-200 dark:border-amber-200/10">
+              <h3 className="font-semibold text-bible-800 dark:text-stone-100 font-chinese">我的笔记</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onNewNote}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bible-500 hover:bg-bible-600 text-white text-sm font-chinese transition-colors"
+                  aria-label="新建笔记"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  新建
+                </button>
+                <button
+                  onClick={onClose}
+                  className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-white/[0.08] transition-colors"
+                  aria-label="关闭笔记列表"
+                >
+                  <X className="w-4 h-4 text-bible-600 dark:text-stone-400" />
+                </button>
+              </div>
+            </div>
 
-                        {/* 列表 */}
-                        <div className="flex-1 overflow-y-auto py-2">
-                            {notes.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
-                                    <FileText className="w-10 h-10 text-bible-300 dark:text-stone-600" />
-                                    <p className="text-sm text-bible-500 dark:text-stone-400 font-chinese">
-                                        还没有笔记，点击新建开始
-                                    </p>
-                                </div>
-                            ) : (
-                                notes.map((note) => (
-                                    <div
-                                        key={note.id}
-                                        className={`group flex items-start gap-2 px-4 py-3 cursor-pointer transition-colors ${
-                                            note.id === currentNoteId
-                                                ? 'bg-bible-100 dark:bg-[#2a2117]'
-                                                : 'hover:bg-bible-50 dark:hover:bg-white/[0.06]'
-                                        }`}
-                                        onClick={() => { onSelectNote(note.id); onClose(); }}
-                                    >
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-chinese text-bible-800 dark:text-stone-100 line-clamp-2 leading-snug">
-                                                {note.title}
-                                            </p>
-                                            <p className="text-xs text-bible-400 dark:text-stone-500 font-chinese mt-0.5">
-                                                {relativeTime(note.updatedAt)}
-                                            </p>
-                                        </div>
-                                        {confirmDeleteId === note.id ? (
-                                            <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); void handleDelete(note.id); }}
-                                                    className="px-2 py-0.5 rounded text-xs font-chinese bg-red-500 hover:bg-red-600 text-white transition-colors"
-                                                >
-                                                    {pick('刪除', '删除')}
-                                                </button>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }}
-                                                    className="px-2 py-0.5 rounded text-xs font-chinese bg-gray-200 dark:bg-[#2a2117] hover:bg-gray-300 dark:hover:bg-white/[0.08] text-gray-700 dark:text-stone-200 transition-colors"
-                                                >
-                                                    取消
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(note.id); }}
-                                                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all flex-shrink-0 mt-0.5"
-                                                aria-label="删除笔记"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                                            </button>
-                                        )}
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
-    );
+            {/* 列表 */}
+            <div className="flex-1 overflow-y-auto py-2">
+              {notes.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
+                  <FileText className="w-10 h-10 text-bible-300 dark:text-stone-600" />
+                  <p className="text-sm text-bible-500 dark:text-stone-400 font-chinese">还没有笔记，点击新建开始</p>
+                </div>
+              ) : (
+                notes.map((note) => (
+                  <div
+                    key={note.id}
+                    className={`group flex items-start gap-2 px-4 py-3 cursor-pointer transition-colors ${
+                      note.id === currentNoteId
+                        ? 'bg-bible-100 dark:bg-[#2a2117]'
+                        : 'hover:bg-bible-50 dark:hover:bg-white/[0.06]'
+                    }`}
+                    onClick={() => {
+                      onSelectNote(note.id);
+                      onClose();
+                    }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-chinese text-bible-800 dark:text-stone-100 line-clamp-2 leading-snug">
+                        {note.title}
+                      </p>
+                      <p className="text-xs text-bible-400 dark:text-stone-500 font-chinese mt-0.5">
+                        {relativeTime(note.updatedAt)}
+                      </p>
+                    </div>
+                    {confirmDeleteId === note.id ? (
+                      <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleDelete(note.id);
+                          }}
+                          className="px-2 py-0.5 rounded text-xs font-chinese bg-red-500 hover:bg-red-600 text-white transition-colors"
+                        >
+                          {pick('刪除', '删除')}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmDeleteId(null);
+                          }}
+                          className="px-2 py-0.5 rounded text-xs font-chinese bg-gray-200 dark:bg-[#2a2117] hover:bg-gray-300 dark:hover:bg-white/[0.08] text-gray-700 dark:text-stone-200 transition-colors"
+                        >
+                          取消
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmDeleteId(note.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all flex-shrink-0 mt-0.5"
+                        aria-label="删除笔记"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                      </button>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
 }

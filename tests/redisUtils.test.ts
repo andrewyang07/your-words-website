@@ -1,4 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  safeRedisGet,
+  safeRedisGetResult,
+  safeRedisMgetResult,
+  safeRedisScanResult,
+  safeRedisScan,
+} from '../lib/redisUtils';
 
 const client = vi.hoisted(() => ({ get: vi.fn(), mget: vi.fn(), scan: vi.fn() }));
 vi.mock('@upstash/redis', () => ({
@@ -8,8 +15,6 @@ vi.mock('@upstash/redis', () => ({
     }
   },
 }));
-
-import { safeRedisGet, safeRedisGetResult, safeRedisMgetResult, safeRedisScanResult, safeRedisScan } from '../lib/redisUtils';
 
 beforeEach(() => {
   vi.stubEnv('KV_REST_API_URL', 'http://127.0.0.1:1');

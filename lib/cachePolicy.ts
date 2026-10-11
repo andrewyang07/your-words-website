@@ -9,14 +9,14 @@
  */
 
 export interface CachePolicy {
-    /** Seconds the CDN may serve the response as fresh. */
-    sMaxAge: number;
-    /** Seconds the CDN may serve stale while revalidating in the background. */
-    staleWhileRevalidate: number;
+  /** Seconds the CDN may serve the response as fresh. */
+  sMaxAge: number;
+  /** Seconds the CDN may serve stale while revalidating in the background. */
+  staleWhileRevalidate: number;
 }
 
 export function cacheControl(policy: CachePolicy): string {
-    return `public, s-maxage=${policy.sMaxAge}, stale-while-revalidate=${policy.staleWhileRevalidate}`;
+  return `public, s-maxage=${policy.sMaxAge}, stale-while-revalidate=${policy.staleWhileRevalidate}`;
 }
 
 /** /api/stats: two GETs per refresh; cheap, so keep it fairly fresh. */

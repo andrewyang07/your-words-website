@@ -49,8 +49,7 @@ export const useSearchStore = create<SearchState>()(
       engineReady: false,
 
       setQuery: (query) => set({ query }),
-      setResults: (results, truncated = false) =>
-        set({ results, resultsTruncated: truncated, selectedIndex: -1 }),
+      setResults: (results, truncated = false) => set({ results, resultsTruncated: truncated, selectedIndex: -1 }),
       setSelectedIndex: (selectedIndex) => set({ selectedIndex }),
       setSearchLang: (searchLang) => set({ searchLang }),
       setContextVerse: (contextVerse) => set({ contextVerse }),
@@ -71,6 +70,6 @@ export const useSearchStore = create<SearchState>()(
       partialize: (state) => ({
         searchLang: state.searchLang,
       }),
-    }
-  )
+    },
+  ),
 );

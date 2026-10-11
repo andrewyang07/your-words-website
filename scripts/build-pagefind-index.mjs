@@ -2,8 +2,8 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFile } from 'node:child_process';
-import { pinyin } from 'pinyin-pro';
 import { promisify } from 'node:util';
+import { pinyin } from 'pinyin-pro';
 
 const execFileAsync = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -11,16 +11,15 @@ const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, '.pagefind-source');
 const outputDir = path.join(root, 'public', 'pagefind');
 
-const readJson = async (relativePath) => JSON.parse(
-  await readFile(path.join(root, relativePath), 'utf8')
-);
+const readJson = async (relativePath) => JSON.parse(await readFile(path.join(root, relativePath), 'utf8'));
 
-const escapeHtml = (value) => String(value ?? '')
-  .replaceAll('&', '&amp;')
-  .replaceAll('<', '&lt;')
-  .replaceAll('>', '&gt;')
-  .replaceAll('"', '&quot;')
-  .replaceAll("'", '&#39;');
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 
 const slug = (value) => encodeURIComponent(value).replaceAll('%', '').slice(0, 80);
 
@@ -104,7 +103,7 @@ async function main() {
   const { stdout, stderr } = await execFileAsync(
     path.join(root, 'node_modules', '.bin', 'pagefind'),
     ['--site', sourceDir, '--output-path', outputDir, '--glob', '**/*.html'],
-    { cwd: root, maxBuffer: 1024 * 1024 * 20 }
+    { cwd: root, maxBuffer: 1024 * 1024 * 20 },
   );
 
   if (stdout.trim()) console.log(stdout.trim());

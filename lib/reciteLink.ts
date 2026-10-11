@@ -26,14 +26,19 @@ export interface VerseRef {
 }
 
 const chapterCounts: Record<string, number> = {};
-booksData.books.forEach((book) => { chapterCounts[book.key] = book.chapters; });
+booksData.books.forEach((book) => {
+  chapterCounts[book.key] = book.chapters;
+});
 
 // 不允许前导零，数字最多 3 位（最长的诗篇 119 篇 176 节）。
 const SEGMENT_PATTERN = /^([1-9]\d{0,2})-([1-9]\d{0,2})-([1-9]\d{0,2})(?:~([1-9]\d{0,2}))?$/;
 
 function normalizeTitle(raw: string | null): string | null {
   if (raw === null) return null;
-  const cleaned = raw.replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ').replace(/\s+/g, ' ').trim();
+  const cleaned = raw
+    .replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!cleaned) return null;
   // 按 code point 截断，不切开代理对
   return Array.from(cleaned).slice(0, MAX_TITLE_LEN).join('').trim() || null;
@@ -113,7 +118,8 @@ export function encodeRecitePassages(refs: Array<string | VerseRef>): string {
     const ref = typeof value === 'string' ? parseVerseId(value) : value;
     if (!ref) continue;
     const bookId = bookKeyToId[ref.bookKey];
-    if (!bookId || !Number.isInteger(ref.chapter) || !Number.isInteger(ref.verse) || ref.chapter < 1 || ref.verse < 1) continue;
+    if (!bookId || !Number.isInteger(ref.chapter) || !Number.isInteger(ref.verse) || ref.chapter < 1 || ref.verse < 1)
+      continue;
     const key = `${bookId}-${ref.chapter}-${ref.verse}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -134,6 +140,14 @@ export function buildReciteQuery({ ids, title }: { ids: Array<string | VerseRef>
   return `p=${encodeRecitePassages(ids)}${normalizedTitle ? `&t=${encodeURIComponent(normalizedTitle)}` : ''}&sv=${RECITE_SCHEMA_VERSION}`;
 }
 
-export function buildReciteUrl({ origin, ids, title }: { origin: string; ids: Array<string | VerseRef>; title?: string | null }): string {
+export function buildReciteUrl({
+  origin,
+  ids,
+  title,
+}: {
+  origin: string;
+  ids: Array<string | VerseRef>;
+  title?: string | null;
+}): string {
   return `${origin.replace(/\/+$/, '')}/memorize?${buildReciteQuery({ ids, title })}`;
 }
