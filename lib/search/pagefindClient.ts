@@ -202,6 +202,52 @@ async function getQueryVariants(query: string): Promise<string[]> {
   return unique(variants);
 }
 
+/** Must match cjkBigrams in scripts/build-pagefind-index.mjs. */
+export function toCjkBigramQuery(simplified: string): string | null {
+  const tokens: string[] = [];
+  for (const run of simplified.match(/[\u3400-\u9fff]+/g) ?? []) {
+    for (let i = 0; i + 1 < run.length; i += 1) {
+      tokens.push(`q${run.codePointAt(i)!.toString(36)}${run.codePointAt(i + 1)!.toString(36)}`);
+    }
+  }
+  return tokens.length > 0 ? [...new Set(tokens)].join(' ') : null;
+}
+
+/** Must match chapterToken in scripts/build-pagefind-index.mjs. */
+export function chapterToken(bookOrder: number, chapter: number): string {
+  return `ch${bookOrder}x${chapter}`;
+}
+
+/** Bigram (contiguous-ish CJK) hits rank above plain Pagefind word hits; exact phrases rank above both. */
+const BIGRAM_TIER = 50_000;
+
+async function loadResultData(result: PagefindSearchResult): Promise<PagefindResultData> {
+  let resultData: PagefindResultData | undefined;
+  try {
+    resultData = await result.data();
+  } catch (error) {
+    throw new PagefindLoadError(`fragment load failed: ${String(error)}`);
+  }
+  if (!resultData) throw new PagefindLoadError('fragment load returned no data');
+  return resultData;
+}
+
+/** Every verse of one chapter, in verse order (chapter-only references such as 诗篇 23). */
+export async function searchChapterWithPagefind(bookOrder: number, chapter: number): Promise<SearchResult[]> {
+  const failuresBefore = pagefindFetchFailures;
+  const pagefind = await loadPagefind();
+  const response = await pagefind.search(chapterToken(bookOrder, chapter));
+  const data = await Promise.all(response.results.map(loadResultData));
+  if (pagefindFetchFailures > failuresBefore) {
+    throw new PagefindLoadError('a /pagefind/ request failed during a chapter lookup');
+  }
+  return data
+    .map((d) => mapPagefindData(d, 0, ''))
+    .filter((r): r is SearchResult => r !== null && r.chapter === chapter)
+    .map((r) => ({ ...r, matchType: 'reference' as const }))
+    .sort((a, b) => a.verse - b.verse);
+}
+
 function mapPagefindData(data: PagefindResultData, fallbackScore: number, query: string): SearchResult | null {
   const meta = data.meta || {};
   const id = meta.id;
@@ -227,7 +273,7 @@ function mapPagefindData(data: PagefindResultData, fallbackScore: number, query:
 
   return {
     ...result,
-    score: phraseScore(query, result),
+    score: query ? phraseScore(query, result) : fallbackScore,
   };
 }
 
@@ -242,32 +288,47 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
   const failuresBefore = pagefindFetchFailures;
   const pagefind = await loadPagefind();
   const variants = await getQueryVariants(trimmed);
-  const responses = await Promise.all(variants.map((variant) => pagefind.search(variant, { excerptLength: 12 })));
-  const seen = new Set<string>();
-  const merged: SearchResult[] = [];
+  // Pagefind's zh segmenter only indexes dictionary words (出发, 以马内利 were unfindable), so CJK queries also
+  // search the bigram tokens the index build adds for the Simplified text.
+  const bigramQuery = hasCjk(trimmed) ? toCjkBigramQuery((await loadOpenCC()).toSimplified(trimmed)) : null;
+  const searches = bigramQuery ? [...variants, bigramQuery] : variants;
+  const responses = await Promise.all(searches.map((term) => pagefind.search(term, { excerptLength: 12 })));
+  const byId = new Map<string, SearchResult & { textSimplified: string }>();
 
-  for (let variantIndex = 0; variantIndex < responses.length; variantIndex += 1) {
-    const response = responses[variantIndex]!;
-    const variant = variants[variantIndex]!;
-    const data = await Promise.all(
-      response.results.slice(0, Math.max(limit * 3, 100)).map(async (result, index) => {
-        let resultData: PagefindResultData | undefined;
-        try {
-          resultData = await result.data();
-        } catch (error) {
-          throw new PagefindLoadError(`fragment load failed: ${String(error)}`);
-        }
-        if (!resultData) throw new PagefindLoadError('fragment load returned no data');
-        return mapPagefindData(resultData, result.score ?? limit - index, variant);
-      }),
-    );
-
-    for (const result of data) {
-      if (!result || seen.has(result.id)) continue;
-      seen.add(result.id);
-      merged.push(result);
-    }
+  for (let index = 0; index < responses.length; index += 1) {
+    const response = responses[index]!;
+    const isBigram = bigramQuery !== null && index === responses.length - 1;
+    const data = await Promise.all(response.results.slice(0, Math.max(limit * 3, 100)).map(loadResultData));
+    data.forEach((resultData, rank) => {
+      const mapped = mapPagefindData(resultData, (response.results[rank]?.score ?? 0) - rank / 1000, '');
+      if (!mapped) return;
+      const existing = byId.get(mapped.id);
+      const tier = isBigram ? BIGRAM_TIER : 0;
+      if (existing) {
+        existing.score = Math.max(existing.score, mapped.score + tier);
+      } else {
+        byId.set(mapped.id, {
+          ...mapped,
+          score: mapped.score + tier,
+          textSimplified: resultData.meta?.textSimplified ?? '',
+        });
+      }
+    });
   }
+
+  // Phrase boost against every variant and both scripts (the first variant may be Simplified while
+  // textChinese is Traditional, which used to leave the right verses unboosted).
+  const merged: SearchResult[] = [...byId.values()].map(({ textSimplified, ...result }) => {
+    let best = 0;
+    for (const variant of variants) {
+      best = Math.max(
+        best,
+        phraseScore(variant, { ...result, score: 0 }),
+        phraseScore(variant, { ...result, textChinese: textSimplified, score: 0 }),
+      );
+    }
+    return { ...result, score: result.score + best };
+  });
 
   if (pagefindFetchFailures > failuresBefore) {
     throw new PagefindLoadError('a /pagefind/ index or fragment request failed during this search');

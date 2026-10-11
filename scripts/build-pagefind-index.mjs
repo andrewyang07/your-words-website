@@ -21,6 +21,23 @@ const escapeHtml = (value) =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 
+// CJK bigrams encoded as ASCII words (以马 → "q<base36><base36>"). Pagefind's zh segmenter only indexes dictionary
+// words and re-segments any CJK we add, so substrings like 出发 / 以马内利 were otherwise unfindable.
+// Keep in sync with toCjkBigramQuery in lib/search/pagefindClient.ts.
+const cjkBigrams = (value) => {
+  const out = new Set();
+  for (const run of String(value ?? '').match(/[\u3400-\u9fff]+/g) ?? []) {
+    for (let i = 0; i < run.length - 1; i += 1) {
+      out.add(`q${run.codePointAt(i).toString(36)}${run.codePointAt(i + 1).toString(36)}`);
+    }
+  }
+  return [...out].join(' ');
+};
+
+// One ASCII token per chapter ("ch19x23" = 诗篇 23) so chapter-only references fetch exactly that chapter.
+// Keep in sync with chapterToken in lib/search/pagefindClient.ts.
+const chapterToken = (order, chapter) => `ch${order}x${chapter}`;
+
 const slug = (value) => encodeURIComponent(value).replaceAll('%', '').slice(0, 80);
 
 const toPinyinAliases = (value) => {
@@ -92,6 +109,8 @@ async function main() {
       <p>${escapeHtml(textTraditional)}</p>
       <p>${escapeHtml(textEnglish)}</p>
       <p>${escapeHtml(pinyinAliases)}</p>
+      <p>${escapeHtml(cjkBigrams(textSimplified))}</p>
+      <p>${chapterToken(book.order, chapter)}</p>
     </article>
   </main>
 </body>

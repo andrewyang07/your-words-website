@@ -1,0 +1,75 @@
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { resetPagefindClientForTests, type PagefindModule } from '../lib/search/pagefindClient';
+import { runClientSearch } from '../lib/search/runClientSearch';
+
+// Real data: the generated Pagefind index (built here if missing, e.g. in CI where tests run before `next build`).
+const root = process.cwd();
+const pagefindDir = path.join(root, 'public', 'pagefind');
+
+vi.mock('../lib/bibleDataCache', () => ({
+  fetchWithCache: async (url: string) => JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', url), 'utf8')),
+}));
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 240_000 });
+
+beforeAll(async () => {
+  if (!fs.existsSync(path.join(pagefindDir, 'pagefind.js'))) {
+    execFileSync('node', ['scripts/build-pagefind-index.mjs'], { cwd: root, stdio: 'ignore' });
+  }
+  // Serve /pagefind/* from disk for the real Pagefind runtime (main-thread mode).
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const rel = url.replace(/^.*\/pagefind\//, '').split('?')[0]!;
+    try {
+      return new Response(fs.readFileSync(path.join(pagefindDir, rel)), { status: 200 });
+    } catch {
+      return new Response('not found', { status: 404 });
+    }
+  });
+  const pagefind = (await import(
+    /* @vite-ignore */ pathToFileURL(path.join(pagefindDir, 'pagefind.js')).href
+  )) as PagefindModule & { options: (o: Record<string, unknown>) => Promise<void> };
+  await pagefind.options({ basePath: '/pagefind/', noWorker: true });
+  resetPagefindClientForTests(pagefind);
+});
+
+const refs = async (q: string, n: number) =>
+  (await runClientSearch(q)).results.slice(0, n).map((r) => `${r.bookKey} ${r.chapter}:${r.verse}`);
+
+describe('Pagefind result quality (real index)', () => {
+  it.each(['出发', '出發'])('%s finds the verse containing it (哈巴谷书 3:11)', async (q) => {
+    expect(await refs(q, 1)).toEqual(['哈巴谷书 3:11']);
+  });
+
+  it.each(['马利亚', '馬利亞'])('%s: top results all mention 马利亚', async (q) => {
+    const { results } = await runClientSearch(q);
+    expect(results.length).toBeGreaterThan(20);
+    for (const r of results.slice(0, 20)) expect(r.textChinese).toContain('馬利亞');
+  });
+
+  it.each(['诗篇 23', '詩篇 23', '诗篇23', '诗 23', 'Psalm 23'])(
+    '%s lists Psalm 23 in verse order first',
+    async (q) => {
+      expect(await refs(q, 6)).toEqual([1, 2, 3, 4, 5, 6].map((v) => `诗篇 23:${v}`));
+    },
+  );
+
+  it.each(['神爱世人', '神愛世人'])('%s → 约翰福音 3:16', async (q) => {
+    expect(await refs(q, 1)).toEqual(['约翰福音 3:16']);
+  });
+
+  it.each(['约翰福音 3:16', '約翰福音 3:16'])('%s → 约翰福音 3:16', async (q) => {
+    expect(await refs(q, 1)).toEqual(['约翰福音 3:16']);
+  });
+
+  it.each(['以马内利', '以馬內利'])('%s → only the three verses containing it, first', async (q) => {
+    expect(new Set(await refs(q, 3))).toEqual(new Set(['以赛亚书 7:14', '以赛亚书 8:8', '马太福音 1:23']));
+  });
+
+  it('耶稣哭了 → 约翰福音 11:35', async () => {
+    expect(await refs('耶稣哭了', 1)).toEqual(['约翰福音 11:35']);
+  });
+});
