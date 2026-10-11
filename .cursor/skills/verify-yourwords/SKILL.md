@@ -40,7 +40,7 @@ Tooling self-installs: `run-all.sh` (and `drive.sh` / `check-perf.sh`) call `scr
 ```bash
 .cursor/skills/verify-yourwords/scripts/doctor.sh
 ```
-Read-only: our pid alive, `GET /` 200, server was started from current `HEAD` (WARN if not → `launch.sh --rebuild` after `cleanup.sh`), uncommitted source changes (stale build), BUILD_ID, playwright-core present (missing tooling is reinstalled by `ensure-tools.sh`, not doctor).
+Read-only: our pid alive, `GET /` 200, server was started from a build of current `HEAD` (`launch.sh` stamps `.next/verify-build-commit` and auto-rebuilds when it differs from HEAD or source is dirty; WARN if not → `launch.sh --rebuild` after `cleanup.sh`), uncommitted source changes (stale build), BUILD_ID, playwright-core present (missing tooling is reinstalled by `ensure-tools.sh`, not doctor).
 
 ## Drive
 

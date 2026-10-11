@@ -18,7 +18,7 @@
       "minScore": 50,
       "maxLcpMs": 5000,
       "maxTbtMs": 1200,
-      "maxCls": 0.53,
+      "maxCls": 0.05,
       "firstLoadJsKb": 445
     },
     "/memorize": {
