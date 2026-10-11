@@ -19,6 +19,7 @@ type PagefindSearchResponse = {
 };
 
 export type PagefindModule = {
+  options?: (options: Record<string, unknown>) => Promise<void>;
   search: (query: string, options?: { excerptLength?: number }) => Promise<PagefindSearchResponse>;
 };
 
@@ -78,7 +79,14 @@ async function loadPagefind(): Promise<PagefindModule> {
   installPagefindFetchTracker();
   if (!pagefindPromise) {
     // Keep Pagefind out of the Next bundle; it is generated into /public/pagefind at build time.
-    pagefindPromise = new Function('return import("/pagefind/pagefind.js")')() as Promise<PagefindModule>;
+    pagefindPromise = (new Function('return import("/pagefind/pagefind.js")')() as Promise<PagefindModule>).then(
+      async (module) => {
+        // Run Pagefind on the main thread: in its Web Worker, index/fragment fetches bypass the fetch tracker
+        // above and load failures can't be detected. Must be set before the first search initialises it.
+        await module.options?.({ noWorker: true });
+        return module;
+      },
+    );
   }
   return pagefindPromise;
 }
