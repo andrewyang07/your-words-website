@@ -19,7 +19,8 @@
     "build": "next build --webpack",
     "search:build-index": "node scripts/build-pagefind-index.mjs",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . && npm run lint:tw-opacity",
+    "lint:tw-opacity": "node scripts/check-tailwind-opacity.mjs",
     "test:unit": "vitest run",
     "type-check": "tsc --noEmit"
   },

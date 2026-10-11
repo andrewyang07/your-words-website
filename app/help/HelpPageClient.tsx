@@ -31,7 +31,7 @@ export default function HelpPageClient() {
             <main className="yw-shell">
                 <div className="yw-panel overflow-hidden">
                     {/* 标题部分 */}
-                    <div className="border-b border-stone-900/10 bg-white/42 p-6 md:p-8 dark:border-white/10 dark:bg-white/[0.035]">
+                    <div className="border-b border-stone-900/10 bg-white/[.42] p-6 md:p-8 dark:border-white/10 dark:bg-white/[0.035]">
                         <h2 className="text-2xl md:text-3xl font-bold text-stone-950 dark:text-stone-50 font-chinese mb-2">使用教程</h2>
                         <p className="text-stone-600 dark:text-stone-400 font-chinese">{pick('詳細了解如何使用「你的話語」來背誦聖經', '详细了解如何使用「你的话语」来背诵圣经')}</p>
                     </div>

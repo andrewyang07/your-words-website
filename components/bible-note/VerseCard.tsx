@@ -30,7 +30,7 @@ export default function VerseCard({
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl border border-stone-900/10 bg-stone-50/70 p-3 transition-colors hover:border-amber-500/30 hover:bg-white/75 dark:border-amber-200/12 dark:bg-[#211b13]/70 dark:hover:bg-white/[0.06]"
+            className="rounded-2xl border border-stone-900/10 bg-stone-50/70 p-3 transition-colors hover:border-amber-500/30 hover:bg-white/75 dark:border-amber-200/[.12] dark:bg-[#211b13]/70 dark:hover:bg-white/[0.06]"
         >
             {/* 经文引用标题 */}
             <div className="flex items-center justify-between mb-1.5">

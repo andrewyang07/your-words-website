@@ -108,7 +108,7 @@ function SearchPageInner() {
       />
 
       {/* Top utility bar */}
-      <header className="sticky top-0 z-10 border-b border-stone-900/10 bg-[#f8f5ee]/72 backdrop-blur-2xl dark:border-white/10 dark:bg-[#0e1116]/72">
+      <header className="sticky top-0 z-10 border-b border-stone-900/10 bg-[#f8f5ee]/[.72] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0e1116]/[.72]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-4">
           <Link
             href="/"
@@ -147,7 +147,7 @@ function SearchPageInner() {
             className={`${
               isHomeMode
                 ? 'mx-auto flex min-h-[65vh] max-w-3xl flex-col items-center justify-center pt-8'
-                : 'sticky top-[73px] z-[9] border-b border-stone-900/10 bg-[#f8f5ee]/88 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#0b0f14]/88'
+                : 'sticky top-[73px] z-[9] border-b border-stone-900/10 bg-[#f8f5ee]/[.88] py-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#0b0f14]/[.88]'
             }`}
           >
             {isHomeMode && (

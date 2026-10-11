@@ -19,7 +19,7 @@ export default function DiscoveryVerseCard({ verse, saved, onSave }: DiscoveryVe
   const language = useAppStore((state) => state.language);
 
   return (
-    <article className="rounded-lg border border-stone-900/10 bg-white/78 p-4 shadow-[0_18px_50px_rgba(68,64,60,0.08)] dark:border-white/10 dark:bg-white/[0.045]">
+    <article className="rounded-lg border border-stone-900/10 bg-white/[.78] p-4 shadow-[0_18px_50px_rgba(68,64,60,0.08)] dark:border-white/10 dark:bg-white/[0.045]">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <p

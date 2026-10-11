@@ -25,7 +25,7 @@ export default function PageHeader({
 
     return (
         <header
-            className="sticky top-0 z-50 border-b border-stone-900/10 bg-[#f8f5ee]/72 backdrop-blur-2xl dark:border-amber-200/10 dark:bg-[#15120e]/82"
+            className="sticky top-0 z-50 border-b border-stone-900/10 bg-[#f8f5ee]/[.72] backdrop-blur-2xl dark:border-amber-200/10 dark:bg-[#15120e]/[.82]"
             role="banner"
         >
             <div className="relative z-[1] mx-auto max-w-6xl px-3 py-3 sm:px-4 md:py-4">

@@ -33,7 +33,7 @@ export default function AboutPageClient() {
             <main className="yw-shell">
                 <div className="yw-panel overflow-hidden">
                     {/* 标题部分 */}
-                    <div className="border-b border-stone-900/10 bg-white/42 p-6 md:p-8 dark:border-white/10 dark:bg-white/[0.035]">
+                    <div className="border-b border-stone-900/10 bg-white/[.42] p-6 md:p-8 dark:border-white/10 dark:bg-white/[0.035]">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="yw-icon-tile h-12 w-12">
                                 <Heart className="w-6 h-6 text-stone-700 dark:text-stone-200" />

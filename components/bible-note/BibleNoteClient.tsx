@@ -615,7 +615,7 @@ export default function BibleNoteClient() {
 
                 {/* Mobile tab navigation */}
                 <div className="lg:hidden mb-3">
-                    <div className="flex gap-1 rounded-full border border-stone-900/10 bg-white/60 p-1 shadow-[0_14px_40px_rgba(68,64,60,0.06)] backdrop-blur-xl dark:border-amber-200/12 dark:bg-[#1b1712]/74">
+                    <div className="flex gap-1 rounded-full border border-stone-900/10 bg-white/60 p-1 shadow-[0_14px_40px_rgba(68,64,60,0.06)] backdrop-blur-xl dark:border-amber-200/[.12] dark:bg-[#1b1712]/[.74]">
                         <button
                             onClick={() => setActiveTab('edit')}
                             className={`flex-1 py-1.5 rounded-lg font-chinese text-sm transition-all touch-manipulation min-h-[40px] ${
@@ -650,7 +650,7 @@ export default function BibleNoteClient() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     {/* Editor (desktop: 2/3 width) */}
                     <div className={`lg:col-span-2 ${activeTab === 'edit' ? 'block' : 'hidden lg:block'}`}>
-                        <div className="min-h-[520px] overflow-hidden rounded-[1.75rem] border border-stone-900/10 bg-white/78 shadow-[0_28px_80px_rgba(68,64,60,0.09)] backdrop-blur-xl dark:border-amber-200/12 dark:bg-[#1b1712]/74">
+                        <div className="min-h-[520px] overflow-hidden rounded-[1.75rem] border border-stone-900/10 bg-white/[.78] shadow-[0_28px_80px_rgba(68,64,60,0.09)] backdrop-blur-xl dark:border-amber-200/[.12] dark:bg-[#1b1712]/[.74]">
                             <NoteEditor
                                 noteEditorRef={editorRef}
                                 content={content}
@@ -695,7 +695,7 @@ export default function BibleNoteClient() {
                         chapterViewerState.isOpen
                             ? 'bottom-[45vh]'
                             : 'bottom-6 lg:bottom-8'
-                    } right-4 lg:right-8 min-h-[48px] rounded-full border border-stone-900/10 bg-white/78 px-4 text-stone-800 shadow-[0_14px_40px_rgba(68,64,60,0.12)] backdrop-blur-2xl transition-all duration-300 hover:bg-white dark:border-amber-200/10 dark:bg-[#1c1812]/90 dark:text-stone-100 z-40 flex items-center justify-center gap-2 touch-manipulation`}
+                    } right-4 lg:right-8 min-h-[48px] rounded-full border border-stone-900/10 bg-white/[.78] px-4 text-stone-800 shadow-[0_14px_40px_rgba(68,64,60,0.12)] backdrop-blur-2xl transition-all duration-300 hover:bg-white dark:border-amber-200/10 dark:bg-[#1c1812]/90 dark:text-stone-100 z-40 flex items-center justify-center gap-2 touch-manipulation`}
                     style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                     title={pick('打開聖經', '打开圣经')}
                     aria-label={pick('打開聖經查看器', '打开圣经查看器')}

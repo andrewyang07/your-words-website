@@ -109,7 +109,7 @@ export default function VerseReferenceList({
                 <button
                     onClick={onExpandAll}
                     disabled={isExpanding}
-                    className="flex min-h-[32px] items-center gap-1 rounded-full border border-stone-900/10 bg-white/72 px-3 py-1.5 text-xs text-stone-700 transition-colors hover:bg-white disabled:opacity-50 dark:border-amber-200/10 dark:bg-[#2a2117] dark:text-stone-200 dark:hover:bg-white/[0.08] touch-manipulation"
+                    className="flex min-h-[32px] items-center gap-1 rounded-full border border-stone-900/10 bg-white/[.72] px-3 py-1.5 text-xs text-stone-700 transition-colors hover:bg-white disabled:opacity-50 dark:border-amber-200/10 dark:bg-[#2a2117] dark:text-stone-200 dark:hover:bg-white/[0.08] touch-manipulation"
                     title={pick('將所有經文完整內容插入筆記', '将所有经文完整内容插入笔记')}
                 >
                     {isExpanding ? (
