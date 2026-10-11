@@ -24,7 +24,7 @@ Tooling self-installs: `run-all.sh` (and `drive.sh` / `check-perf.sh`) call `scr
 
 ## Perf budgets
 
-`run-all.sh --perf` (or `scripts/check-perf.sh [--measure]` with a running prod server) runs Lighthouse mobile + First Load JS for `/`, `/search`, `/memorize`, `/note` and FAILs over `perf-budgets.json`. See [features/perf.md](features/perf.md).
+`run-all.sh --perf` (or `scripts/check-perf.sh [--measure]` with a running prod server) runs Lighthouse mobile + First Load JS for `/`, `/search`, `/memorize`, `/note` and FAILs over `perf-budgets.json`, comparing the median of 3 Lighthouse runs per route (override: `VERIFY_PERF_RUNS=N` or `runs` in `perf-budgets.json`; per-run values and the median are printed). TBT is a soft gate by default (WARN over budget, FAIL over 1.5× budget; `tbtMode` in `perf-budgets.json`); score likewise (WARN up to 5 under, `scoreMode`). LCP/CLS/JS are hard. Takes ~5–12 min. See [features/perf.md](features/perf.md).
 
 ## Launch
 
