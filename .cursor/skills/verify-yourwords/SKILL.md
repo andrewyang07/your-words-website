@@ -18,7 +18,9 @@ All helpers live in `.cursor/skills/verify-yourwords/scripts/` and print `PASS|F
 ```
 Ends with `VERIFY PASS|FAIL  evidence: <dir>`. Evidence is in `.verify/evidence/<YYYYmmdd-HHMMSS>/` (gitignored) and survives cleanup; `.verify/evidence/latest-run` symlinks the last one.
 
-Env knobs: `VERIFY_PORT` (default 3460), `VERIFY_REPO` (verify another checkout/worktree with these scripts, e.g. a PR branch worktree), `VERIFY_EVIDENCE`, `VERIFY_TOOLS` (default `~/.cache/verify-yourwords`, where `playwright-core@1.64.0` is installed — never added to package.json).
+Env knobs: `VERIFY_PORT` (default 3460), `VERIFY_REPO` (verify another checkout/worktree with these scripts, e.g. a PR branch worktree), `VERIFY_EVIDENCE`, `VERIFY_TOOLS` (default `/workspace/.cache/verify-yourwords`, persistent across box restarts; holds `playwright-core@1.64.0`, `lighthouse@12` and Chromium under `ms-playwright/` via `PLAYWRIGHT_BROWSERS_PATH` — never added to package.json).
+
+Tooling self-installs: `run-all.sh` (and `drive.sh` / `check-perf.sh`) call `scripts/ensure-tools.sh`, which idempotently reinstalls anything missing (e.g. after a box restart wipes caches). First run after a wipe takes ~1 min extra; later runs are a no-op.
 
 ## Perf budgets
 
@@ -38,7 +40,7 @@ Env knobs: `VERIFY_PORT` (default 3460), `VERIFY_REPO` (verify another checkout/
 ```bash
 .cursor/skills/verify-yourwords/scripts/doctor.sh
 ```
-Read-only: our pid alive, `GET /` 200, server was started from current `HEAD` (WARN if not → `launch.sh --rebuild` after `cleanup.sh`), uncommitted source changes (stale build), BUILD_ID, playwright-core present.
+Read-only: our pid alive, `GET /` 200, server was started from current `HEAD` (WARN if not → `launch.sh --rebuild` after `cleanup.sh`), uncommitted source changes (stale build), BUILD_ID, playwright-core present (missing tooling is reinstalled by `ensure-tools.sh`, not doctor).
 
 ## Drive
 

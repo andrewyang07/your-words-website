@@ -41,10 +41,8 @@ for (const [route, b] of Object.entries(budgets.routes)) {
   for (let i = 0; i < (budgets.runs || 1); i++) {
     const out = `${ev}/perf/lh-${tag}-${i}`;
     execFileSync(
-      'npx',
+      'lighthouse',
       [
-        '-y',
-        'lighthouse@12',
         base + route,
         '--only-categories=performance',
         '--output=json',
