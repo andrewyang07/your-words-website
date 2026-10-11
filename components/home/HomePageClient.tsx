@@ -892,6 +892,12 @@ export default function HomePage() {
 
   // 清除搜索
   const handleClearSearch = useCallback(() => {
+    // Cancel a pending debounce and invalidate any in-flight search so it can't repopulate results.
+    searchRequestRef.current += 1;
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+      searchTimerRef.current = null;
+    }
     setSearchQuery('');
     setSearchResults([]);
     setIsSearching(false);

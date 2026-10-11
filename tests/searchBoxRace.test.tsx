@@ -93,6 +93,47 @@ describe('SearchBox', () => {
   });
 });
 
+describe('SearchBox clear while a slow search is in flight', () => {
+  async function startSlowSearch() {
+    const view = render(<SearchBox />);
+    const input = view.container.querySelector('input')!;
+    type(input, '神爱');
+    await act(async () => vi.advanceTimersByTime(200));
+    expect(pending.has('神爱')).toBe(true);
+    expect(useSearchStore.getState().loading).toBe(true);
+    return { view, input };
+  }
+
+  async function expectCancelled() {
+    expect(useSearchStore.getState().loading).toBe(false);
+    expect(useSearchStore.getState().query).toBe('');
+    await act(async () => pending.get('神爱')!({ results: [hit('stale')], truncated: false }));
+    expect(useSearchStore.getState().results).toEqual([]);
+    expect(useSearchStore.getState().loading).toBe(false);
+  }
+
+  it('✕ cancels the in-flight search', async () => {
+    const { view } = await startSlowSearch();
+    fireEvent.click(view.getByLabelText('清除搜索'));
+    await expectCancelled();
+  });
+
+  it('Escape cancels the in-flight search', async () => {
+    const { input } = await startSlowSearch();
+    fireEvent.keyDown(input, { key: 'Escape' });
+    await expectCancelled();
+  });
+
+  it('✕ during the debounce drops the pending search', async () => {
+    const view = render(<SearchBox />);
+    type(view.container.querySelector('input')!, '神爱');
+    fireEvent.click(view.getByLabelText('清除搜索'));
+    await act(async () => vi.advanceTimersByTime(500));
+    expect(pending.size).toBe(0);
+    expect(useSearchStore.getState().loading).toBe(false);
+  });
+});
+
 describe('home search spinner copy', () => {
   it('follows the UI script', () => {
     expect(getChromeCopy('simplified').searchingTitle).toBe('正在翻找经文索引');

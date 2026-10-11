@@ -89,6 +89,18 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
     [setResults, setLoading, setEngineReady, setSearchLang],
   );
 
+  // Single cancel-and-clear path for ✕, Escape and deleting the text: invalidates any in-flight search,
+  // drops a pending debounce, clears the store and stops the loading state.
+  const clear = useCallback(() => {
+    requestIdRef.current += 1;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    clearSearch();
+    setLoading(false);
+  }, [clearSearch, setLoading]);
+
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
@@ -97,9 +109,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       if (timerRef.current) clearTimeout(timerRef.current);
 
       if (!value.trim()) {
-        requestIdRef.current += 1; // invalidate any in-flight search
-        setResults([]);
-        setLoading(false);
+        clear();
         return;
       }
 
@@ -114,7 +124,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         void performSearch(value);
       }, delay);
     },
-    [setQuery, setResults, setLoading, performSearch],
+    [setQuery, setLoading, performSearch, clear],
   );
 
   const handleKeyDown = useCallback(
@@ -126,7 +136,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         e.preventDefault();
         setSelectedIndex(Math.max(selectedIndex - 1, -1));
       } else if (e.key === 'Escape') {
-        clearSearch();
+        clear();
         inputRef.current?.focus();
       } else if (e.key === 'Enter' && selectedIndex >= 0) {
         e.preventDefault();
@@ -138,7 +148,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         }
       }
     },
-    [selectedIndex, results, setSelectedIndex, clearSearch],
+    [selectedIndex, results, setSelectedIndex, clear],
   );
 
   return (
@@ -165,7 +175,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         {query && (
           <button
             onClick={() => {
-              clearSearch();
+              clear();
               inputRef.current?.focus();
             }}
             className="absolute right-3 p-1 rounded-full hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
