@@ -19,6 +19,10 @@ export const reciteListCopy = {
     empty: '链接中没有可背诵的经文',
     toFavorites: '去我的收藏',
     done: '已背完',
+    sharedBanner: (n: number) => `朋友分享了 ${n} 节经文`,
+    sharedHint: '一键加入我的收藏，之后也能在收藏里背。',
+    saveAll: '一键收藏',
+    savedAll: '已全部收藏',
   },
   traditional: {
     defaultTitle: '背誦連結',
@@ -31,6 +35,10 @@ export const reciteListCopy = {
     empty: '連結中沒有可背誦的經文',
     toFavorites: '去我的收藏',
     done: '已背完',
+    sharedBanner: (n: number) => `朋友分享了 ${n} 節經文`,
+    sharedHint: '一鍵加入我的收藏，之後也能在收藏裡背。',
+    saveAll: '一鍵收藏',
+    savedAll: '已全部收藏',
   },
 } as const;
 
@@ -42,6 +50,9 @@ export default function ReciteLinkList({
   truncated,
   newerSchema,
   completedIds,
+  shared = false,
+  savedCount = 0,
+  onSaveAll,
   onSelect,
   onShare,
   helpButton,
@@ -54,6 +65,10 @@ export default function ReciteLinkList({
   truncated: boolean;
   newerSchema: boolean;
   completedIds: ReadonlySet<string>;
+  /** Opened from a friend's link (/memorize?p= or ?s=): show the same banner + 一键收藏 as /?s=. */
+  shared?: boolean;
+  savedCount?: number;
+  onSaveAll?: () => void;
   onSelect: (verse: Verse) => void;
   onShare: () => void;
   helpButton?: ReactNode;
@@ -90,6 +105,38 @@ export default function ReciteLinkList({
           <h2 className="text-3xl font-semibold tracking-[0.05em] sm:text-4xl">{title ?? text.defaultTitle}</h2>
           <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">{text.count(verses.length)}</p>
         </section>
+        {shared && verses.length > 0 && (
+          <div
+            role="region"
+            aria-label={text.sharedBanner(verses.length)}
+            className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-900/10 bg-white/70 px-4 py-3 dark:border-white/10 dark:bg-white/[0.05]"
+          >
+            <div className="flex items-center gap-3">
+              <Share2 className="h-4 w-4 text-stone-500" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-semibold">{text.sharedBanner(verses.length)}</p>
+                <p className="text-xs text-stone-500">{text.sharedHint}</p>
+              </div>
+            </div>
+            {onSaveAll && (
+              <button
+                type="button"
+                onClick={onSaveAll}
+                disabled={savedCount >= verses.length}
+                className="memorize-primary !w-auto px-4 text-sm disabled:opacity-60"
+              >
+                {savedCount >= verses.length ? (
+                  <>
+                    <Check className="h-4 w-4" aria-hidden="true" />
+                    {text.savedAll}
+                  </>
+                ) : (
+                  text.saveAll
+                )}
+              </button>
+            )}
+          </div>
+        )}
         {notices.length > 0 && (
           <div
             role="status"
