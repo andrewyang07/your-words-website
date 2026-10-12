@@ -188,7 +188,7 @@ describe('home mobile/dark polish (QA group 5)', () => {
 
   it('mobile header icons carry visible labels and a visible theme toggle exists', async () => {
     await renderHome();
-    for (const label of ['设置', '菜单', '阅读', '深色']) expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+    for (const label of ['设置', '菜单', '背诵', '深色']) expect(screen.getAllByText(label).length).toBeGreaterThan(0);
     // 375px: the stats button (also in footer/drawer) is dropped so the brand name never truncates
     expect(screen.getByTestId('mobile-stats-button').className).toMatch(/(^|\s)hidden(\s|$)/);
     expect(screen.getByTestId('mobile-stats-button').className).toContain('min-[420px]:flex');
