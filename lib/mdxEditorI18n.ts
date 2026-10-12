@@ -24,6 +24,7 @@ const traditional: Dictionary = {
   'toolbar.redo': '重做 {{shortcut}}',
   'toolbar.toggleGroup': '切換群組',
   'dialog.close': '關閉對話框',
+  'contentArea.editableMarkdown': '筆記內容編輯區',
 };
 
 const simplified: Dictionary = {
@@ -47,6 +48,7 @@ const simplified: Dictionary = {
   'toolbar.redo': '重做 {{shortcut}}',
   'toolbar.toggleGroup': '切换分组',
   'dialog.close': '关闭对话框',
+  'contentArea.editableMarkdown': '笔记内容编辑区',
 };
 
 function applyInterpolations(template: string, interpolations?: Record<string, unknown>): string {
