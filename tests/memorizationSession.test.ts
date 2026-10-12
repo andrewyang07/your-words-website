@@ -5,9 +5,12 @@ import {
   completionFactsForStage,
   groupedInitialsInput,
   pressInitial,
+  pressMaskedInitial,
   revealMaskedCurrentUnit,
   revealCurrentUnit,
   skipMemorizationStage,
+  withStageRecall,
+  completeReadingStage,
   skipRecallStage,
   singleInitialInput,
   singleZhuyinInput,
@@ -146,6 +149,39 @@ describe('deep memorization session', () => {
     expect([...afterPartial.skippedStages]).toEqual([0, 1]);
     expect(afterPartial.maskRecall.partial30).toMatchObject({ complete: false, skipped: false });
     expect(session.skippedStages.size).toBe(0);
+  });
+
+  it('clears a skip when the user goes back and completes that stage manually', () => {
+    const session = buildMemorizationSession('神', 'skip-redo', [['s']]);
+    const skipped = skipMemorizationStage(skipMemorizationStage(session, 0), 2);
+    expect(completionFactsForStage(skipped, 2).outcome).toBe('skipped');
+
+    const recall = pressMaskedInitial(
+      skipped.maskRecall.partial65,
+      skipped.units,
+      skipped.masks.partial65,
+      singleInitialInput('s'),
+    );
+    const redone = completeReadingStage(withStageRecall(skipped, 2, recall));
+    expect(completionFactsForStage(redone, 2)).toEqual({ outcome: 'independent', assistanceCount: 0 });
+    expect(completionFactsForRound(redone).skippedStageCount).toBe(0);
+  });
+
+  it('a stage that stays skipped still counts as skipped', () => {
+    const session = buildMemorizationSession('神爱', 'skip-stays', [['s'], ['a']]);
+    const skipped = skipMemorizationStage(session, 1);
+    // Partial progress on the skipped stage does not clear it.
+    const partial = pressMaskedInitial(
+      skipped.maskRecall.partial30,
+      skipped.units,
+      skipped.masks.partial30,
+      singleInitialInput('x'),
+    );
+    const after = withStageRecall(skipped, 1, partial);
+    expect(completionFactsForStage(after, 1).outcome).toBe('skipped');
+    expect(completionFactsForRound(after).skippedStageCount).toBe(1);
+    // Other stages finishing doesn't touch it either.
+    expect(completionFactsForRound(completeReadingStage(after)).skippedStageCount).toBe(1);
   });
 
   it('adds resolved readings without resetting current-round facts', () => {
