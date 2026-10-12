@@ -10,6 +10,7 @@ import { useMaskStore } from '@/stores/useMaskStore';
 import { maskVerseText } from '@/lib/utils';
 import { getVerseNumericId, sendStats } from '@/lib/statsUtils';
 import { getReaderTextStyle } from '@/lib/readerPreferences';
+import { useScriptPick } from '@/lib/useScriptPick';
 import { useReaderPreferencesStore } from '@/stores/useReaderPreferencesStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { getTestamentLabel } from '@/lib/uiScript';
@@ -22,6 +23,7 @@ interface VerseCardProps {
 }
 
 export default function VerseCard({ verse, size = 'medium', onViewInBible, defaultRevealed = false }: VerseCardProps) {
+  const pick = useScriptPick();
   const router = useRouter();
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
@@ -112,7 +114,10 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
       onKeyDown={handleKeyDown}
       style={{ WebkitTapHighlightColor: 'transparent' }}
       role="article"
-      aria-label={`${verse.book} ${verse.chapter}章${verse.verse}节，${isRevealed ? '已展开' : '已收起'}，按Enter或空格键切换`}
+      aria-label={pick(
+        `${verse.book} ${verse.chapter}章${verse.verse}節，${isRevealed ? '已展開' : '已收起'}，按Enter或空格鍵切換`,
+        `${verse.book} ${verse.chapter}章${verse.verse}节，${isRevealed ? '已展开' : '已收起'}，按Enter或空格键切换`,
+      )}
       tabIndex={0}
     >
       {/* 经文引用 */}
@@ -173,8 +178,11 @@ export default function VerseCard({ verse, size = 'medium', onViewInBible, defau
           <button
             onClick={handleViewInBible}
             className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded px-2 py-1 text-xs text-stone-500 transition-colors hover:text-stone-950 dark:text-stone-400 dark:hover:text-stone-50 touch-manipulation"
-            title="查看本章所有经文"
-            aria-label={`查看 ${verse.book} 第${verse.chapter}章所有经文`}
+            title={pick('查看本章所有經文', '查看本章所有经文')}
+            aria-label={pick(
+              `查看 ${verse.book} 第${verse.chapter}章所有經文`,
+              `查看 ${verse.book} 第${verse.chapter}章所有经文`,
+            )}
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <BookOpen className="w-3 h-3" />

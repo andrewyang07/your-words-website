@@ -19,6 +19,7 @@ const SCANNED = [
   'components/search',
   'components/navigation/SideMenu.tsx',
   'components/memorize/ReciteLinkList.tsx',
+  'components/verses/VerseCard.tsx',
   'app/rankings/page.tsx',
   'app/search',
   'app/layout.tsx',
