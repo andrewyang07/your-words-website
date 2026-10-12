@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Star, BookOpen } from 'lucide-react';
 import { type Verse } from '@/types/verse';
@@ -19,46 +19,20 @@ interface VerseCardProps {
   size?: CardSize;
   onViewInBible?: () => void;
   defaultRevealed?: boolean; // 是否默认展开
-  /** Mount masked and reveal in idle time (only applies on mount when defaultRevealed). */
-  deferReveal?: boolean;
 }
 
-function scheduleIdle(fn: () => void): () => void {
-  if (typeof window.requestIdleCallback === 'function') {
-    const id = window.requestIdleCallback(fn, { timeout: 2000 });
-    return () => window.cancelIdleCallback(id);
-  }
-  const id = window.setTimeout(fn, 200);
-  return () => window.clearTimeout(id);
-}
-
-export default function VerseCard({
-  verse,
-  size = 'medium',
-  onViewInBible,
-  defaultRevealed = false,
-  deferReveal = false,
-}: VerseCardProps) {
+export default function VerseCard({ verse, size = 'medium', onViewInBible, defaultRevealed = false }: VerseCardProps) {
   const router = useRouter();
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
   const textSize = useReaderPreferencesStore((state) => state.textSize);
   const language = useAppStore((state) => state.language);
-  // Below-the-fold cards mount masked and switch to full text in idle time: rendering every card's
-  // full CJK text up front costs a lot of glyph layout on the first-load main thread (TBT).
-  // Masked text keeps the same character count, so the swap does not change card height.
-  const deferRef = useRef(deferReveal);
-  const [isRevealed, setIsRevealed] = useState(defaultRevealed && !deferReveal);
+  const [isRevealed, setIsRevealed] = useState(defaultRevealed);
   const isFav = isFavorite(verse.id);
 
   // 当 defaultRevealed 改变时，更新 isRevealed
   useEffect(() => {
-    if (!defaultRevealed || !deferRef.current) {
-      setIsRevealed(defaultRevealed);
-      return;
-    }
-    deferRef.current = false;
-    return scheduleIdle(() => setIsRevealed(true));
+    setIsRevealed(defaultRevealed);
   }, [defaultRevealed]);
 
   // 计算遮罩字符数（固定或随机范围）
