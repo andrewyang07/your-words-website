@@ -14,6 +14,7 @@ import {
   TrendingUp,
   ChevronRight,
   Search,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -29,6 +30,8 @@ interface SideMenuProps {
   onViewChapter?: (bookName: string, chapter: number) => void;
   language: 'simplified' | 'traditional';
   onLanguageChange: (lang: 'simplified' | 'traditional') => void;
+  /** Opens the site-wide stats popup (the header 统计 button is hidden on narrow phones). */
+  onOpenStats?: () => void;
 }
 
 interface TopVerse {
@@ -48,6 +51,7 @@ export default function SideMenu({
   onViewChapter,
   language,
   onLanguageChange,
+  onOpenStats,
 }: SideMenuProps) {
   const [topVerses, setTopVerses] = useState<TopVerse[]>([]);
   const [topVersesLoading, setTopVersesLoading] = useState(true);
@@ -186,6 +190,24 @@ export default function SideMenu({
                   <HelpCircle className="h-5 w-5 text-stone-500 transition-colors group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-stone-50" />
                   <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">{copy.help}</span>
                 </Link>
+
+                {/* 全站统计 */}
+                {onOpenStats && (
+                  <button
+                    type="button"
+                    data-testid="menu-open-stats"
+                    onClick={() => {
+                      onClose();
+                      onOpenStats();
+                    }}
+                    className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-white/55 dark:hover:bg-white/[0.07]"
+                  >
+                    <Users className="h-5 w-5 text-stone-500 transition-colors group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-stone-50" />
+                    <span className="font-chinese font-medium text-stone-800 dark:text-stone-200">
+                      {language === 'traditional' ? '統計' : '统计'}
+                    </span>
+                  </button>
+                )}
 
                 {/* 关于 */}
                 <Link
@@ -406,7 +428,11 @@ export default function SideMenu({
 
             {/* 底部信息 */}
             <div className="border-t border-stone-900/10 p-4 dark:border-white/10">
-              <p className="text-center text-xs text-stone-500 dark:text-stone-500 font-chinese">{copy.brand} © 2025</p>
+              <p className="text-center text-xs text-stone-500 dark:text-stone-500 font-chinese">
+                <span suppressHydrationWarning>
+                  {copy.brand} © {new Date().getFullYear()}
+                </span>
+              </p>
             </div>
           </motion.div>
         </>

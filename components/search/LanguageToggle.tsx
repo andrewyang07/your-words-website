@@ -13,14 +13,14 @@ export default function LanguageToggle() {
   const { searchLang, setSearchLang } = useSearchStore();
 
   return (
-    <div className="flex items-center gap-1 bg-bible-100 dark:bg-gray-800 rounded-lg p-1">
+    <div className="flex items-center gap-1 bg-bible-100 dark:bg-[#211d17] rounded-lg p-1">
       {options.map((opt) => (
         <button
           key={opt.value}
           onClick={() => setSearchLang(opt.value)}
           className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
             searchLang === opt.value
-              ? 'bg-white dark:bg-gray-700 text-bible-800 dark:text-bible-200 shadow-sm'
+              ? 'bg-white dark:bg-white/[0.1] text-bible-800 dark:text-gold-200 shadow-sm'
               : 'text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200'
           }`}
         >
