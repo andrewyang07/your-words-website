@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import SearchPage from '../app/search/page';
 import { MAX_QUERY_LENGTH } from '../lib/search/searchHelpers';
 import { useSearchStore } from '../stores/useSearchStore';
+import { preloadSearch } from '../lib/search/runClientSearch';
 
 const nav = vi.hoisted(() => ({ query: '' }));
 vi.mock('next/navigation', () => ({
@@ -68,5 +69,16 @@ describe('/search URL + history', () => {
     expect(input(view).maxLength).toBe(MAX_QUERY_LENGTH);
     fireEvent.change(input(view), { target: { value: 'a'.repeat(600) } });
     expect(useSearchStore.getState().query).toHaveLength(MAX_QUERY_LENGTH);
+  });
+
+  it('does not preload search on load/autofocus, only on user interaction (keeps TBT down)', async () => {
+    vi.mocked(preloadSearch).mockClear();
+    const view = render(<SearchPage />);
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
+    expect(preloadSearch).not.toHaveBeenCalled();
+    fireEvent.keyDown(input(view), { key: 'l' });
+    expect(preloadSearch).toHaveBeenCalled();
   });
 });

@@ -104,15 +104,3 @@ export function preloadSearch(): Promise<void> {
     });
   return preloadPromise;
 }
-
-/** Run preloadSearch when the browser is idle (or after a short timeout where requestIdleCallback is missing). */
-export function preloadSearchWhenIdle(): () => void {
-  if (typeof window === 'undefined') return () => {};
-  const run = () => void preloadSearch();
-  if ('requestIdleCallback' in window) {
-    const id = window.requestIdleCallback(run, { timeout: 2500 });
-    return () => window.cancelIdleCallback(id);
-  }
-  const id = setTimeout(run, 1200);
-  return () => clearTimeout(id);
-}

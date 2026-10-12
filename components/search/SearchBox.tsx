@@ -3,7 +3,7 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 import { useSearchStore } from '@/stores/useSearchStore';
-import { preloadSearch, preloadSearchWhenIdle, runClientSearch } from '@/lib/search/runClientSearch';
+import { preloadSearch, runClientSearch } from '@/lib/search/runClientSearch';
 import { MAX_QUERY_LENGTH, clampQuery, detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
 import { useScriptPick } from '@/lib/useScriptPick';
 
@@ -39,9 +39,6 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
     clearSearch,
     engineReady,
   } = useSearchStore();
-
-  // Warm Pagefind / OpenCC while idle so a cold first search doesn't sit on 加载中… for seconds.
-  useEffect(() => preloadSearchWhenIdle(), []);
 
   // Auto-focus on mount
   useEffect(() => {
@@ -170,7 +167,10 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
           value={query}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => void preloadSearch()}
+          // Warm Pagefind / OpenCC on real user interaction only. Not on idle or on the programmatic autofocus:
+          // that put ~250 ms of parse/compile into the load window (/search TBT +30%).
+          onPointerDown={() => void preloadSearch()}
+          onKeyDownCapture={() => void preloadSearch()}
           maxLength={MAX_QUERY_LENGTH}
           enterKeyHint="search"
           placeholder={PLACEHOLDER_EXAMPLES[0]}
