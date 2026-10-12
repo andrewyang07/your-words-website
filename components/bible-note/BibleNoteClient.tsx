@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { Suspense, lazy, useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import {
@@ -38,22 +38,43 @@ const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
 const ChapterViewer = dynamic(() => import('./ChapterViewer'), {
   ssr: false,
 });
-function NoteEditorLoading() {
+/**
+ * Shown until the MDXEditor chunk is ready. It renders the note itself (read-only) instead of a blank
+ * "正在打開筆記紙…" panel, so the page is useful immediately on cold loads.
+ */
+export function NoteEditorLoading({ content = '' }: { content?: string }) {
   const pick = useScriptPick();
   return (
-    <div className="min-h-[620px] rounded-[1.75rem] border border-stone-200/70 bg-white/75 p-6 text-sm text-stone-500 shadow-[0_24px_80px_rgba(68,64,60,0.08)] dark:border-amber-200/10 dark:bg-[#191612]/80 dark:text-stone-300">
-      {pick('正在打開筆記紙…', '正在打开笔记纸…')}
+    <div
+      aria-busy="true"
+      className="min-h-[620px] rounded-[1.75rem] border border-stone-200/70 bg-white/75 px-5 py-6 text-sm leading-8 text-stone-700 shadow-[0_24px_80px_rgba(68,64,60,0.08)] dark:border-amber-200/10 dark:bg-[#191612]/80 dark:text-stone-200 md:px-8 md:py-8"
+    >
+      <p className="mb-3 text-xs text-stone-400 dark:text-stone-500" role="status">
+        {pick('正在載入編輯器…', '正在载入编辑器…')}
+      </p>
+      {content ? (
+        <div className="whitespace-pre-wrap break-words font-chinese">{content.slice(0, 4000)}</div>
+      ) : (
+        <div className="text-stone-400">{pick('開始記錄今天的靈修筆記…', '开始记录今天的灵修笔记…')}</div>
+      )}
     </div>
   );
 }
 
-const NoteEditor = dynamic(() => import('./NoteEditor'), {
-  ssr: false,
-  loading: () => <NoteEditorLoading />,
-});
+const loadNoteEditor = () => import('./NoteEditor');
+const NoteEditor = lazy(loadNoteEditor);
+// Start fetching the (large) editor chunk as soon as this module evaluates instead of after hydration.
+if (typeof window !== 'undefined') void loadNoteEditor();
+
+const noopSubscribe = () => () => {};
 
 export default function BibleNoteClient() {
   const pick = useScriptPick();
+  const isClient = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
   const editorRef = useRef<NoteEditorHandle | null>(null);
   const { theme, setTheme, language, setLanguage } = useAppStore();
   const [content, setContent] = useState('');
@@ -61,6 +82,7 @@ export default function BibleNoteClient() {
   const [currentNoteId, setCurrentNoteId] = useState<string | null>(null);
   const [currentNoteCreatedAt, setCurrentNoteCreatedAt] = useState<number>(Date.now());
   const [showNoteList, setShowNoteList] = useState(false);
+  const [notesVersion, setNotesVersion] = useState(0);
   const [activeTab, setActiveTab] = useState<'edit' | 'references'>('edit');
   const [isExpanding, setIsExpanding] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -151,6 +173,7 @@ export default function BibleNoteClient() {
           updatedAt: Date.now(),
         });
         setSaveStatus('saved');
+        setNotesVersion((v) => v + 1);
         setTimeout(() => setSaveStatus('idle'), 2000);
       } catch (error) {
         console.error('Save failed:', error);
@@ -555,6 +578,8 @@ export default function BibleNoteClient() {
 
         <NoteList
           isOpen={showNoteList}
+          version={notesVersion}
+          currentTitle={showNoteList ? extractTitle(content) : undefined}
           onClose={() => setShowNoteList(false)}
           currentNoteId={currentNoteId}
           onSelectNote={handleSelectNote}
@@ -731,7 +756,13 @@ export default function BibleNoteClient() {
           {/* Editor (desktop: 2/3 width) */}
           <div className={`lg:col-span-2 ${activeTab === 'edit' ? 'block' : 'hidden lg:block'}`}>
             <div className="min-h-[520px] overflow-hidden rounded-[1.75rem] border border-stone-900/10 bg-white/[.78] shadow-[0_28px_80px_rgba(68,64,60,0.09)] backdrop-blur-xl dark:border-amber-200/[.12] dark:bg-[#1b1712]/[.74]">
-              <NoteEditor noteEditorRef={editorRef} content={content} onChange={setContent} />
+              {isClient ? (
+                <Suspense fallback={<NoteEditorLoading content={content} />}>
+                  <NoteEditor noteEditorRef={editorRef} content={content} onChange={setContent} />
+                </Suspense>
+              ) : (
+                <NoteEditorLoading content={content} />
+              )}
             </div>
           </div>
 

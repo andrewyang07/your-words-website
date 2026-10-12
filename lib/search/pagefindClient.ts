@@ -75,6 +75,11 @@ export function resetPagefindClientForTests(module?: PagefindModule): void {
   pagefindFetchFailures = 0;
 }
 
+/** Warm Pagefind + OpenCC (idle / focus) so the first real query does not pay for loading them. */
+export async function preloadPagefind(): Promise<void> {
+  await Promise.all([loadPagefind(), loadOpenCC()]);
+}
+
 async function loadPagefind(): Promise<PagefindModule> {
   installPagefindFetchTracker();
   if (!pagefindPromise) {
@@ -218,6 +223,51 @@ export function chapterToken(bookOrder: number, chapter: number): string {
   return `ch${bookOrder}x${chapter}`;
 }
 
+/**
+ * English relevance on top of Pagefind's stemmed score: whole-word matches of every query term, weighted by how
+ * focused the verse is (matches / √words). "love" → 1 Jn 4:8 "God is love" before long verses that merely
+ * contain love/loved/beloved several times.
+ */
+export function englishRelevance(query: string, text: string): number {
+  const terms = query.toLowerCase().match(/[a-z']+/g);
+  if (!terms || !text) return 0;
+  const words = text.toLowerCase().match(/[a-z']+/g) ?? [];
+  if (words.length === 0) return 0;
+  let matched = 0;
+  let hits = 0;
+  for (const term of new Set(terms)) {
+    const count = words.filter((w) => w === term).length;
+    if (count > 0) matched += 1;
+    hits += Math.min(count, 2);
+  }
+  if (matched === 0) return 0;
+  const coverage = matched / new Set(terms).size;
+  const density = hits / Math.sqrt(words.length);
+  return Math.round(coverage * 30_000 + density * 20_000);
+}
+
+/** Simplified CJK bigrams of a query (e.g. 以马内利 → 以马, 马内, 内利). */
+export function cjkBigrams(simplified: string): string[] {
+  const grams: string[] = [];
+  for (const run of simplified.match(/[\u3400-\u9fff]+/g) ?? []) {
+    for (let i = 0; i + 1 < run.length; i += 1) grams.push(run.slice(i, i + 2));
+  }
+  return [...new Set(grams)];
+}
+
+/**
+ * Multi-character CJK queries: when some results contain the whole phrase, drop results that do not contain
+ * every bigram of it (以马内利 used to include 赛 7:8, which has none of the phrase).
+ */
+export function requireAllBigramsWhenPhraseHits(results: SearchResult[], simplifiedQuery: string): SearchResult[] {
+  const phrase = (simplifiedQuery.match(/[\u3400-\u9fff]+/g) ?? []).join('');
+  const grams = cjkBigrams(simplifiedQuery);
+  if (phrase.length < 2 || grams.length === 0) return results;
+  const text = (r: SearchResult) => (r.textSimplified ?? '') || r.textChinese;
+  if (!results.some((r) => text(r).includes(phrase))) return results;
+  return results.filter((r) => grams.every((g) => text(r).includes(g)));
+}
+
 /** Bigram (contiguous-ish CJK) hits rank above plain Pagefind word hits; exact phrases rank above both. */
 const BIGRAM_TIER = 50_000;
 
@@ -318,8 +368,10 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
 
   // Phrase boost against every variant and both scripts (the first variant may be Simplified while
   // textChinese is Traditional, which used to leave the right verses unboosted).
+  const latinQuery = !hasCjk(trimmed) && /[a-z]/i.test(trimmed);
   const merged: SearchResult[] = [...byId.values()].map((result) => {
     const textSimplified = result.textSimplified ?? '';
+    const english = latinQuery ? englishRelevance(trimmed, result.textEnglish) : 0;
     let best = 0;
     for (const variant of variants) {
       best = Math.max(
@@ -328,14 +380,17 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
         phraseScore(variant, { ...result, textChinese: textSimplified, score: 0 }),
       );
     }
-    return { ...result, score: result.score + best };
+    return { ...result, score: result.score + best + english };
   });
+  const filtered = hasCjk(trimmed)
+    ? requireAllBigramsWhenPhraseHits(merged, (await loadOpenCC()).toSimplified(trimmed))
+    : merged;
 
   if (pagefindFetchFailures > failuresBefore) {
     throw new PagefindLoadError('a /pagefind/ index or fragment request failed during this search');
   }
 
-  const sorted = merged.sort((a, b) => b.score - a.score);
+  const sorted = filtered.sort((a, b) => b.score - a.score);
   const truncated = sorted.length > limit;
   return {
     results: sorted.slice(0, limit),

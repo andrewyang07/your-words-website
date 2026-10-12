@@ -77,12 +77,35 @@ export async function migrateFromLocalStorage(): Promise<string | null> {
   return note.id;
 }
 
+const UNTITLED = '无标题';
+
+/** Decodes the HTML entities / backslash escapes MDXEditor writes into markdown (e.g. a trailing space → `&#x20;`). */
+export function decodeMarkdownText(value: string): string {
+  return value
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec: string) => String.fromCodePoint(parseInt(dec, 10)))
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/\\([\\`*_{}\[\]()#+\-.!>~|])/g, '$1');
+}
+
 export function extractTitle(content: string): string {
-  const firstLine = content.split('\n').find((line) => line.trim());
-  return (
-    firstLine
-      ?.replace(/^#+\s*/, '')
-      .trim()
-      .slice(0, 30) || '无标题'
-  );
+  const firstLine = content.split('\n').find((line) => decodeMarkdownText(line).trim());
+  if (!firstLine) return UNTITLED;
+  const title = decodeMarkdownText(firstLine.replace(/^\s*#+\s*/, ''))
+    .replace(/\*\*|__|~~/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return Array.from(title).slice(0, 30).join('') || UNTITLED;
+}
+
+/** Title for display: cleans titles saved by older builds and localizes the untitled placeholder. */
+export function displayNoteTitle(title: string, language: 'simplified' | 'traditional'): string {
+  const cleaned = decodeMarkdownText(title).replace(/\s+/g, ' ').trim();
+  if (!cleaned || cleaned === UNTITLED || cleaned === '無標題') return language === 'traditional' ? '無標題' : UNTITLED;
+  return cleaned;
 }

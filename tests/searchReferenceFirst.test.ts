@@ -82,24 +82,24 @@ describe('parseVerseReference', () => {
 
 describe('runClientSearch reference-first', () => {
   it.each(['约翰福音 3:16', '約翰福音 3:16', '约3:16', 'John 3:16', 'Jn 3:16'])(
-    '%s puts John 3:16 first, then full-text results',
+    '%s shows just John 3:16 (no loose full-text matches)',
     async (q) => {
       const { results } = await runClientSearch(q);
-      expect(ids(results)).toEqual(['约翰福音 3:16', '约翰福音 16:3', '约翰一书 3:16', '约翰福音 3:17']);
+      expect(ids(results)).toEqual(['约翰福音 3:16']);
       expect(results[0]?.matchType).toBe('reference');
     },
   );
 
   it('orders a range in verse order and fills verses Pagefind missed from the corpus', async () => {
     const { results } = await runClientSearch('约翰福音 3:16-18');
-    expect(ids(results).slice(0, 4)).toEqual(['约翰福音 3:16', '约翰福音 3:17', '约翰福音 3:18', '约翰福音 16:3']);
+    expect(ids(results)).toEqual(['约翰福音 3:16', '约翰福音 3:17', '约翰福音 3:18']);
     expect(results[2]?.textChinese).toContain('信');
   });
 
   it('fetches the verse when Pagefind did not return it at all', async () => {
     pagefind.results = [hit('约翰福音', 16, 3, 50)];
     const { results } = await runClientSearch('罗马书 8:28');
-    expect(ids(results)).toEqual(['罗马书 8:28', '约翰福音 16:3']);
+    expect(ids(results)).toEqual(['罗马书 8:28']);
     expect(results[0]?.textChinese).toContain('万事都互相效力');
   });
 
@@ -109,8 +109,13 @@ describe('runClientSearch reference-first', () => {
   });
 
   it('respects the limit', async () => {
-    const { results } = await runClientSearch('约翰福音 3:16', 2);
-    expect(ids(results)).toEqual(['约翰福音 3:16', '约翰福音 16:3']);
+    const { results } = await runClientSearch('约翰福音 3:16-18', 2);
+    expect(ids(results)).toEqual(['约翰福音 3:16', '约翰福音 3:17']);
+  });
+
+  it('Jn 3 16 (space-separated) resolves to John 3:16', async () => {
+    const { results } = await runClientSearch('Jn 3 16');
+    expect(ids(results)).toEqual(['约翰福音 3:16']);
   });
 });
 

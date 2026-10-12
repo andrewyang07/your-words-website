@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { Suspense, useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { HelpCircle, Menu } from 'lucide-react';
 import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { runClientSearch } from '@/lib/search/runClientSearch';
-import { detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
+import { clampQuery, detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
 import SideMenu from '@/components/navigation/SideMenu';
 import SearchBox from '@/components/search/SearchBox';
 import SearchResults from '@/components/search/SearchResults';
@@ -15,69 +15,81 @@ import LanguageToggle from '@/components/search/LanguageToggle';
 import ContextViewer from '@/components/search/ContextViewer';
 import SearchHelp from '@/components/search/SearchHelp';
 
+/** Typing settles into a committed search after this long; only committed searches get a history entry. */
+const SEARCH_COMMIT_DELAY_MS = 800;
+
 /**
- * Reads ?q= and keeps it in sync with the store. It is the only part of /search that needs useSearchParams,
- * so it sits in its own Suspense boundary: the rest of the page is server-rendered instead of bailing out to
- * an empty shell, which used to drop the page in after hydration and shift the layout's footer (CLS ≈ 0.48).
+ * Keeps ?q= and the store in sync. It is the only part of /search that needs useSearchParams, so it sits in its
+ * own Suspense boundary: the rest of the page is server-rendered instead of bailing out to an empty shell, which
+ * used to drop the page in after hydration and shift the layout's footer (CLS ≈ 0.48).
+ *
+ * - URL → store: initial ?q= and Back/Forward run that search.
+ * - store → URL: a committed search (typing paused for SEARCH_COMMIT_DELAY_MS) pushes a history entry, so Back
+ *   walks through previous searches; clearing (✕ / Esc / deleting the text) removes ?q= immediately.
  */
 function SearchQuerySync() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { setQuery, setEngineReady, engineReady, setResults, setLoading, setSearchLang, query } = useSearchStore();
-  const [queryHydrated, setQueryHydrated] = useState(false);
+  const urlQuery = clampQuery((searchParams.get('q') || '').trim()).trim();
+  const query = useSearchStore((state) => state.query);
+  const engineReady = useSearchStore((state) => state.engineReady);
+  const setEngineReady = useSearchStore((state) => state.setEngineReady);
+  // The q value that URL and store currently agree on; null until the URL has been read once.
+  const syncedRef = useRef<string | null>(null);
+  const urlSearchIdRef = useRef(0);
 
-  // Initialize search engine and hydrate from ?q=
   useEffect(() => {
-    let cancelled = false;
-    const q = (searchParams.get('q') || '').trim();
+    // Pagefind answers queries; MiniSearch is only loaded lazily by runClientSearch when Pagefind fails.
+    if (!engineReady) setEngineReady(true);
+  }, [engineReady, setEngineReady]);
 
-    async function init() {
-      try {
-        // Pagefind answers queries; MiniSearch (≈2.6 MB of Bible JSON + main-thread indexing) is only
-        // loaded lazily by runClientSearch when Pagefind fails, or by ContextViewer on demand.
-        if (!engineReady) setEngineReady(true);
-
-        if (!cancelled && q) {
-          setQuery(q);
-          const langFromQuery = detectSearchLangFromQuery(q);
-          if (langFromQuery) setSearchLang(langFromQuery);
-          setLoading(true);
-          const { results: searched, truncated } = await runClientSearch(q, undefined, {
-            onFallbackLoading: () => useSearchStore.getState().setFallbackLoading(true),
-          });
-          if (!cancelled) {
-            setResults(searched, truncated);
-            setLoading(false);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to initialize search engine:', error);
-        if (!cancelled) setLoading(false);
-      } finally {
-        if (!cancelled) setQueryHydrated(true);
-      }
+  // URL → store
+  useEffect(() => {
+    if (syncedRef.current === urlQuery) return;
+    syncedRef.current = urlQuery;
+    const store = useSearchStore.getState();
+    if (store.query.trim() === urlQuery) return;
+    const searchId = ++urlSearchIdRef.current;
+    if (!urlQuery) {
+      store.clearSearch();
+      store.setLoading(false);
+      return;
     }
+    store.setQuery(urlQuery);
+    const langFromQuery = detectSearchLangFromQuery(urlQuery);
+    if (langFromQuery) store.setSearchLang(langFromQuery);
+    store.setLoading(true);
+    void runClientSearch(urlQuery, undefined, {
+      onFallbackLoading: () => useSearchStore.getState().setFallbackLoading(true),
+    })
+      .then(({ results, truncated }) => {
+        if (searchId !== urlSearchIdRef.current || useSearchStore.getState().query.trim() !== urlQuery) return;
+        useSearchStore.getState().setResults(results, truncated);
+      })
+      .catch((error: unknown) => console.error('Search from URL failed:', error))
+      .finally(() => {
+        if (searchId === urlSearchIdRef.current) useSearchStore.getState().setLoading(false);
+      });
+  }, [urlQuery]);
 
-    void init();
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Sync query to URL after initial hydration.
+  // store → URL
   useEffect(() => {
-    if (!queryHydrated) return;
-
-    const currentQ = (searchParams.get('q') || '').trim();
-    const trimmed = query.trim();
-
-    if (trimmed === currentQ) return;
-
-    const nextUrl = trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : '/search';
-    router.replace(nextUrl, { scroll: false });
-  }, [query, queryHydrated, router, searchParams]);
+    if (syncedRef.current === null) return;
+    const trimmed = clampQuery(query).trim();
+    // The URL effect above may have just set a newer query in this same commit; wait for that render.
+    if (trimmed !== clampQuery(useSearchStore.getState().query).trim()) return;
+    if (trimmed === syncedRef.current) return;
+    if (!trimmed) {
+      syncedRef.current = '';
+      urlSearchIdRef.current += 1;
+      window.history.replaceState(null, '', '/search');
+      return;
+    }
+    const timer = setTimeout(() => {
+      syncedRef.current = trimmed;
+      window.history.pushState(null, '', `/search?q=${encodeURIComponent(trimmed)}`);
+    }, SEARCH_COMMIT_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [query]);
 
   return null;
 }
