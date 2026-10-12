@@ -2,6 +2,23 @@ import type { SearchResult } from '@/types/search';
 
 export const DEFAULT_SEARCH_LIMIT = 50;
 
+/** Longest query we search; longer input is truncated (inputs also set maxLength). */
+export const MAX_QUERY_LENGTH = 100;
+
+export function clampQuery(query: string): string {
+  return Array.from(query).slice(0, MAX_QUERY_LENGTH).join('');
+}
+
+/**
+ * "Jn 3 16" / "约 3 16" / "John 3 16" → "Jn 3:16": a book name followed by two space-separated numbers is a
+ * chapter:verse reference. Anything else is returned unchanged.
+ */
+export function normalizeSpacedReference(query: string): string {
+  const match = /^(\d?\s*[A-Za-z\u3400-\u9fff][A-Za-z\u3400-\u9fff.\s]*?)\s+(\d{1,3})\s+(\d{1,3})$/.exec(query.trim());
+  if (!match) return query;
+  return `${match[1]!.trim()} ${match[2]}:${match[3]}`;
+}
+
 /** CJK Unified Ideographs + Extension A (same range as pagefindClient). */
 export function hasCjk(value: string): boolean {
   return /[\u3400-\u9fff]/.test(value);

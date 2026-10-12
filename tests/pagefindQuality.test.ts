@@ -73,3 +73,36 @@ describe('Pagefind result quality (real index)', () => {
     expect(await refs('耶稣哭了', 1)).toEqual(['约翰福音 11:35']);
   });
 });
+
+describe('search quality follow-ups (manual QA)', () => {
+  it.each(['Jn 3 16', 'John 3 16', '约 3 16'])('%s (space-separated) → 约翰福音 3:16 only', async (q) => {
+    expect(await refs(q, 5)).toEqual(['约翰福音 3:16']);
+  });
+
+  it('约翰福音 3:16 shows just the verse, no loose matches', async () => {
+    const { results } = await runClientSearch('约翰福音 3:16');
+    expect(results.map((r) => `${r.bookKey} ${r.chapter}:${r.verse}`)).toEqual(['约翰福音 3:16']);
+  });
+
+  it('love: top results contain the whole word and are focused verses', async () => {
+    const { results } = await runClientSearch('love');
+    for (const r of results.slice(0, 10)) expect(r.textEnglish).toMatch(/\blove\b/i);
+    const top5 = results.slice(0, 5).map((r) => `${r.bookKey} ${r.chapter}:${r.verse}`);
+    expect(top5).not.toContain('约翰福音 14:21');
+    expect(top5).not.toContain('何西阿书 3:1');
+  });
+
+  it.each(['以马内利', '以馬內利'])('%s: every result contains the phrase bigrams (no 赛 7:8)', async (q) => {
+    const { results } = await runClientSearch(q);
+    expect(results.length).toBeGreaterThan(0);
+    const ids = results.map((r) => `${r.bookKey} ${r.chapter}:${r.verse}`);
+    expect(ids).not.toContain('以赛亚书 7:8');
+    for (const r of results) expect(r.textSimplified ?? '').toMatch(/以马|马内|内利/);
+  });
+
+  it('caps very long queries instead of searching 600 characters', async () => {
+    const long = '爱'.repeat(600);
+    const { results } = await runClientSearch(long);
+    expect(Array.isArray(results)).toBe(true);
+  });
+});

@@ -1,5 +1,5 @@
 import { getSearchEngine } from './searchEngine';
-import { DEFAULT_SEARCH_LIMIT, type SearchResponse } from './searchHelpers';
+import { DEFAULT_SEARCH_LIMIT, clampQuery, normalizeSpacedReference, type SearchResponse } from './searchHelpers';
 
 /**
  * Homepage-parity search for /search: try Pagefind first (OpenCC + phraseScore),
@@ -18,8 +18,10 @@ export async function runClientSearch(
   limit = DEFAULT_SEARCH_LIMIT,
   options: RunClientSearchOptions = {},
 ): Promise<SearchResponse> {
-  const trimmed = query.trim();
+  let trimmed = clampQuery(query).trim();
   if (!trimmed) return { results: [], truncated: false };
+  const spaced = normalizeSpacedReference(trimmed);
+  if (spaced !== trimmed && (await resolveReference(spaced))) trimmed = spaced;
 
   try {
     const pagefindClient = await import('./pagefindClient');
@@ -45,6 +47,10 @@ export async function runClientSearch(
 
     const { promoteReference, loadVersesFromCorpus } = await import('./referenceFirst');
     const results = await promoteReference(response.results, ref, limit, loadVersesFromCorpus);
+    // Exact verse reference: show just the referenced verse(s). Loose full-text matches of "约翰福音 3:16"
+    // (other verses mentioning 约翰 / 16) are noise. Fall back to the full list only if the verse was not found.
+    const exact = results.filter((r) => r.matchType === 'reference');
+    if (exact.length > 0) return { results: exact, truncated: false };
     return { results, truncated: response.truncated };
   } catch {
     const engine = getSearchEngine();
@@ -79,4 +85,34 @@ async function resolveReference(query: string) {
   } catch {
     return null;
   }
+}
+
+let preloadPromise: Promise<void> | null = null;
+
+/**
+ * Warm everything the first search needs (Pagefind runtime, OpenCC, books.json). Safe to call repeatedly; errors
+ * are swallowed (the real search reports them / falls back to MiniSearch).
+ */
+export function preloadSearch(): Promise<void> {
+  preloadPromise ??= Promise.all([
+    import('./pagefindClient').then((m) => m.preloadPagefind()),
+    import('./referenceFirst').then((m) => m.loadBooks()),
+  ])
+    .then(() => undefined)
+    .catch(() => {
+      preloadPromise = null;
+    });
+  return preloadPromise;
+}
+
+/** Run preloadSearch when the browser is idle (or after a short timeout where requestIdleCallback is missing). */
+export function preloadSearchWhenIdle(): () => void {
+  if (typeof window === 'undefined') return () => {};
+  const run = () => void preloadSearch();
+  if ('requestIdleCallback' in window) {
+    const id = window.requestIdleCallback(run, { timeout: 2500 });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = setTimeout(run, 1200);
+  return () => clearTimeout(id);
 }
