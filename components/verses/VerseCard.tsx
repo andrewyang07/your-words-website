@@ -23,13 +23,22 @@ interface VerseCardProps {
   deferReveal?: boolean;
 }
 
-function scheduleIdle(fn: () => void): () => void {
-  if (typeof window.requestIdleCallback === 'function') {
-    const id = window.requestIdleCallback(fn, { timeout: 2000 });
-    return () => window.cancelIdleCallback(id);
+function whenNearViewport(el: Element | null, fn: () => void): () => void {
+  if (!el || typeof window.IntersectionObserver !== 'function') {
+    const id = window.setTimeout(fn, 0);
+    return () => window.clearTimeout(id);
   }
-  const id = window.setTimeout(fn, 200);
-  return () => window.clearTimeout(id);
+  const io = new window.IntersectionObserver(
+    (entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        io.disconnect();
+        fn();
+      }
+    },
+    { rootMargin: '800px 0px' },
+  );
+  io.observe(el);
+  return () => io.disconnect();
 }
 
 export default function VerseCard({
@@ -44,9 +53,11 @@ export default function VerseCard({
   const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
   const textSize = useReaderPreferencesStore((state) => state.textSize);
   const language = useAppStore((state) => state.language);
-  // Below-the-fold cards mount masked and switch to full text in idle time: rendering every card's
-  // full CJK text up front costs a lot of glyph layout on the first-load main thread (TBT).
-  // Masked text keeps the same character count, so the swap does not change card height.
+  // Below-the-fold cards mount masked and switch to full text only when they come near the viewport:
+  // rendering every card's full CJK text up front costs a lot of glyph layout on the first-load main
+  // thread (TBT). Masked text keeps the same character count, so the swap does not change card height,
+  // and the 800px margin means users scroll onto cards that are already revealed.
+  const cardRef = useRef<HTMLDivElement>(null);
   const deferRef = useRef(deferReveal);
   const [isRevealed, setIsRevealed] = useState(defaultRevealed && !deferReveal);
   const isFav = isFavorite(verse.id);
@@ -54,11 +65,12 @@ export default function VerseCard({
   // 当 defaultRevealed 改变时，更新 isRevealed
   useEffect(() => {
     if (!defaultRevealed || !deferRef.current) {
+      deferRef.current = false;
       setIsRevealed(defaultRevealed);
       return;
     }
     deferRef.current = false;
-    return scheduleIdle(() => setIsRevealed(true));
+    return whenNearViewport(cardRef.current, () => setIsRevealed(true));
   }, [defaultRevealed]);
 
   // 计算遮罩字符数（固定或随机范围）
@@ -134,6 +146,7 @@ export default function VerseCard({
         active:scale-[0.985]
         focus:outline-none focus:ring-2 focus:ring-bible-500 dark:focus:ring-bible-400
       `}
+      ref={cardRef}
       onClick={handleCardClick}
       onKeyDown={handleKeyDown}
       style={{ WebkitTapHighlightColor: 'transparent' }}
