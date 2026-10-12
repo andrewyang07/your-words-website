@@ -104,8 +104,8 @@ export default function SearchResultCard({ result, index, isSelected }: SearchRe
     <div
       className={`group rounded-2xl border p-5 transition-all cursor-pointer ${
         isSelected
-          ? 'border-bible-400 dark:border-bible-500 bg-bible-50/80 dark:bg-gray-800 shadow-sm'
-          : 'border-bible-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-bible-300 dark:hover:border-gray-600'
+          ? 'border-bible-400 dark:border-bible-500 bg-bible-50/80 dark:bg-[#211d17] shadow-sm'
+          : 'border-bible-200 dark:border-white/10 bg-white dark:bg-[#211d17] hover:border-bible-300 dark:hover:border-white/20'
       }`}
       onClick={() => setSelectedIndex(index)}
     >
