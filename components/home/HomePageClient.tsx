@@ -21,6 +21,8 @@ import {
   Search,
   SlidersHorizontal,
   BookOpenCheck,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
@@ -134,6 +136,10 @@ export default function HomePage() {
     totalFavorites: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
+  const [statsFailed, setStatsFailed] = useState(false);
+  /** One formatter for header, modal and footer so they can never disagree. */
+  const formatStat = (n: number) => (statsLoading ? '…' : statsFailed ? '—' : n.toLocaleString());
+  const currentYear = new Date().getFullYear();
   const [showStatsModal, setShowStatsModal] = useState(false); // 移动端统计 modal
   const { maskMode, maskCharsType, maskCharsFixed, maskCharsMin, maskCharsMax } = useMaskStore();
   const maskModeLabel = maskMode === 'punctuation' ? '每句' : language === 'traditional' ? '開頭' : '开头';
@@ -202,8 +208,11 @@ export default function HomePage() {
         if (response.ok) {
           const data = await response.json();
           setGlobalStats(data);
+        } else {
+          setStatsFailed(true);
         }
       } catch (error) {
+        setStatsFailed(true);
         console.error('Failed to fetch stats:', error);
         // 静默失败，不影响页面显示
       } finally {
@@ -1108,8 +1117,8 @@ export default function HomePage() {
                   <span className="h-4 w-48 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                 ) : (
                   <span className="whitespace-nowrap text-xs tracking-[0.08em] text-stone-600 dark:text-stone-300 font-chinese">
-                    {globalStats.totalUsers.toLocaleString()} {language === 'traditional' ? '訪客' : '访客'} ·{' '}
-                    {globalStats.totalFavorites.toLocaleString()}{' '}
+                    {formatStat(globalStats.totalUsers)} {language === 'traditional' ? '訪客' : '访客'} ·{' '}
+                    {formatStat(globalStats.totalFavorites)}{' '}
                     {language === 'traditional' ? '全站收藏次數' : '全站收藏次数'}
                   </span>
                 )}
@@ -1126,7 +1135,7 @@ export default function HomePage() {
                   <span className="h-4 w-24 bg-gradient-to-r from-bible-200 to-bible-300 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse-slow"></span>
                 ) : (
                   <span className="text-xs tracking-[0.08em] text-stone-600 dark:text-stone-300 font-chinese">
-                    {globalStats.totalUsers.toLocaleString()} · {globalStats.totalFavorites.toLocaleString()}
+                    {formatStat(globalStats.totalUsers)} · {formatStat(globalStats.totalFavorites)}
                   </span>
                 )}
               </button>
@@ -1134,7 +1143,7 @@ export default function HomePage() {
               {/* 全局统计 - 移动端（紧凑，可点击）*/}
               <button
                 onClick={() => setShowStatsModal(true)}
-                className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[44px]"
+                className="flex md:hidden flex-col items-center justify-center gap-0.5 px-1.5 py-1 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[40px]"
                 title={language === 'traditional' ? '查看全站統計' : '查看全站统计'}
                 aria-label={
                   statsLoading
@@ -1150,6 +1159,9 @@ export default function HomePage() {
                 ) : (
                   <Users className="w-4 h-4 text-stone-600 dark:text-stone-300" />
                 )}
+                <span className="text-[10px] leading-none md:hidden font-chinese">
+                  {language === 'traditional' ? '統計' : '统计'}
+                </span>
               </button>
 
               {/* 帮助按钮 - 只在平板/桌面端显示 */}
@@ -1204,10 +1216,28 @@ export default function HomePage() {
                 </span>
               </button>
 
+              {/* 明暗切换（始终可见） */}
+              <button
+                type="button"
+                data-testid="theme-toggle"
+                onClick={() => setTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark')}
+                className="flex flex-col items-center justify-center gap-0.5 px-1.5 py-1 md:flex-row md:gap-2 md:px-3 md:py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[40px]"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+                title={language === 'traditional' ? '切換淺色/深色' : '切换浅色/深色'}
+                aria-label={language === 'traditional' ? '切換淺色/深色模式' : '切换浅色/深色模式'}
+              >
+                <Moon className="w-4 h-4 md:w-5 md:h-5 dark:hidden" />
+                <Sun className="hidden w-4 h-4 md:w-5 md:h-5 dark:block" />
+                <span className="text-[10px] leading-none md:hidden font-chinese">
+                  <span className="dark:hidden">{language === 'traditional' ? '深色' : '深色'}</span>
+                  <span className="hidden dark:inline">{language === 'traditional' ? '淺色' : '浅色'}</span>
+                </span>
+              </button>
+
               {/* 阅读/背诵模式切换（始终显示） */}
               <button
                 onClick={() => setShowAllContent(!showAllContent)}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
+                className="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 px-1.5 py-1 md:px-4 md:py-2 min-w-[40px] rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
                 title={
                   showAllContent
@@ -1232,14 +1262,14 @@ export default function HomePage() {
                 {showAllContent ? (
                   <>
                     <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
-                    <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">
+                    <span className="text-[10px] leading-none md:text-sm md:leading-normal font-chinese text-stone-600 dark:text-stone-300">
                       {language === 'traditional' ? '背誦' : '背诵'}
                     </span>
                   </>
                 ) : (
                   <>
                     <Eye className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
-                    <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">
+                    <span className="text-[10px] leading-none md:text-sm md:leading-normal font-chinese text-stone-600 dark:text-stone-300">
                       {language === 'traditional' ? '閱讀' : '阅读'}
                     </span>
                   </>
@@ -1249,7 +1279,7 @@ export default function HomePage() {
               {/* 提示设置 - 移动端折叠入口 */}
               <button
                 onClick={() => setShowMaskSettingsMobile(!showMaskSettingsMobile)}
-                className="flex md:hidden items-center justify-center px-3 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[44px]"
+                className="flex md:hidden flex-col items-center justify-center gap-0.5 px-1.5 py-1 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[40px]"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
                 title={`${language === 'traditional' ? '閱讀設定' : '阅读设置'}（${maskSettingsSummary}）`}
                 aria-label={`${language === 'traditional' ? '打開閱讀與提示設定，當前' : '打开阅读与提示设置，当前'}${maskSettingsSummary}`}
@@ -1257,18 +1287,21 @@ export default function HomePage() {
                 aria-controls="mask-settings-mobile-panel"
               >
                 <SlidersHorizontal className="w-4 h-4 text-stone-600 dark:text-stone-300" />
+                <span className="text-[10px] leading-none md:hidden font-chinese">
+                  {language === 'traditional' ? '設定' : '设置'}
+                </span>
               </button>
 
               {/* 汉堡菜单按钮 - 移到最右侧 */}
               <button
                 onClick={() => setShowSideMenu(true)}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
+                className="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 px-1.5 py-1 md:px-4 md:py-2 min-w-[40px] rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px]"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
                 title={language === 'traditional' ? '菜單' : '菜单'}
                 aria-label={language === 'traditional' ? '打開菜單' : '打开菜单'}
               >
                 <Menu className="w-4 h-4 md:w-5 md:h-5 text-stone-600 dark:text-stone-300" />
-                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">
+                <span className="text-[10px] leading-none md:text-sm md:leading-normal font-chinese text-stone-600 dark:text-stone-300">
                   {language === 'traditional' ? '菜單' : '菜单'}
                 </span>
               </button>
@@ -1387,10 +1420,26 @@ export default function HomePage() {
             >
               <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
               <span className="font-chinese text-sm">
-                <span className="hidden sm:inline">我的收藏</span>
+                <span className={filterType === 'favorites' ? 'inline' : 'hidden sm:inline'}>
+                  {filterType === 'favorites' ? (language === 'traditional' ? '只看收藏' : '只看收藏') : '我的收藏'}
+                </span>
                 <span className="sm:ml-1 tabular-nums">{favoritesCount}</span>
               </span>
             </button>
+
+            {filterType === 'favorites' && (
+              <button
+                type="button"
+                data-testid="favorites-filter-clear"
+                onClick={handleToggleFavorites}
+                className="flex min-h-[44px] shrink-0 items-center gap-1 rounded-xl border border-gold-500/40 bg-white/80 px-3 py-2 text-sm text-gold-700 transition hover:bg-gold-50 dark:border-gold-400/30 dark:bg-white/[0.05] dark:text-gold-300 dark:hover:bg-white/[0.09] font-chinese touch-manipulation"
+                title={language === 'traditional' ? '取消收藏篩選，顯示全部經文' : '取消收藏筛选，显示全部经文'}
+                aria-label={language === 'traditional' ? '取消收藏篩選，顯示全部經文' : '取消收藏筛选，显示全部经文'}
+              >
+                <X className="h-3.5 w-3.5" />
+                {language === 'traditional' ? '看全部' : '看全部'}
+              </button>
+            )}
 
             {/* 分享收藏按钮 - 只在收藏筛选模式下显示 */}
             {filterType === 'favorites' && favoritesCount > 0 && (
@@ -1417,10 +1466,25 @@ export default function HomePage() {
               </a>
             )}
 
+            {/* 随机按钮 - 在精选经文和收藏界面显示，{language === 'traditional' ? '選擇書卷' : '选择书卷'}/章节/搜索时隐藏 */}
+            {!selectedBook && !searchQuery && (
+              <button
+                onClick={handleShuffle}
+                className="liquid-button flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+                title="重新排列"
+              >
+                <Shuffle className="w-4 h-4 text-stone-600 dark:text-stone-300" />
+                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">
+                  {language === 'traditional' ? '隨機' : '随机'}
+                </span>
+              </button>
+            )}
+
             {/* 书卷选择器 */}
             <Listbox value={selectedBook} onChange={handleBookSelect}>
               {({ open }) => (
-                <div className="relative z-[220] overflow-visible">
+                <div className="relative z-[220] grow overflow-visible sm:grow-0">
                   <Listbox.Button className="relative w-full min-w-[9rem] px-4 py-2.5 pr-10 bg-white/[.86] dark:bg-gray-800/[.86] hover:bg-bible-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-bible-200/80 dark:border-gray-700 shadow-sm font-chinese text-sm text-stone-800 dark:text-stone-200 text-left cursor-pointer touch-manipulation min-h-[44px]">
                     <span className="block">
                       {selectedBook?.name || (language === 'traditional' ? '選擇書卷' : '选择书卷')}
@@ -1638,21 +1702,6 @@ export default function HomePage() {
                 )}
               </>
             )}
-
-            {/* 随机按钮 - 在精选经文和收藏界面显示，{language === 'traditional' ? '選擇書卷' : '选择书卷'}/章节/搜索时隐藏 */}
-            {!selectedBook && !searchQuery && (
-              <button
-                onClick={handleShuffle}
-                className="liquid-button flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] touch-manipulation"
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-                title="重新排列"
-              >
-                <Shuffle className="w-4 h-4 text-stone-600 dark:text-stone-300" />
-                <span className="hidden sm:inline font-chinese text-stone-600 dark:text-stone-300 text-sm">
-                  {language === 'traditional' ? '隨機' : '随机'}
-                </span>
-              </button>
-            )}
           </div>
         </div>
       </header>
@@ -1692,12 +1741,13 @@ export default function HomePage() {
         {/* 分享横幅 */}
         {showShareBanner && sharedVerses.length > 0 && (
           <div
-            className="border-b border-stone-900/10 bg-white/70 py-4 shadow-[0_18px_45px_rgba(68,64,60,0.08)] backdrop-blur-xl transition-all duration-300 dark:border-white/10 dark:bg-gray-950/[.82]"
+            className="relative z-[1] mx-auto max-w-6xl px-4 pt-3 transition-all duration-300"
+            data-testid="share-banner"
             role="alert"
             aria-live="polite"
             aria-atomic="true"
           >
-            <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row">
+            <div className="liquid-glass flex flex-col items-center justify-between gap-3 rounded-[1.5rem] p-4 sm:flex-row">
               <div className="flex items-center gap-3 text-center sm:text-left">
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-stone-900/10 bg-stone-900/[0.04] text-stone-700 dark:border-white/10 dark:bg-white/[0.06] dark:text-stone-200">
                   {hasAddedAllShared ? <Star className="h-5 w-5 fill-current" /> : <Share2 className="h-5 w-5" />}
@@ -1740,7 +1790,10 @@ export default function HomePage() {
 
         {/* 分享Toast通知 */}
         {shareToast && (
-          <div className="fixed bottom-5 left-1/2 z-[10002] mx-4 max-w-md -translate-x-1/2 animate-fade-in md:bottom-auto md:top-24">
+          <div
+            className="fixed bottom-5 left-1/2 z-[10002] max-w-[calc(100vw-2rem)] -translate-x-1/2 animate-fade-in md:bottom-8"
+            data-testid="share-toast"
+          >
             <div className="flex items-center gap-3 rounded-2xl border border-stone-900/10 bg-white px-4 py-3 text-sm text-stone-800 shadow-[0_22px_60px_rgba(68,64,60,0.22)] dark:border-white/10 dark:bg-gray-950 dark:text-stone-100 font-chinese">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-stone-900/[0.05] text-stone-700 dark:bg-white/[0.08] dark:text-stone-200">
                 <Share2 className="h-4 w-4" />
@@ -1795,13 +1848,13 @@ export default function HomePage() {
               <p className="text-center text-sm text-stone-600 dark:text-stone-300 leading-relaxed font-chinese">
                 已有{' '}
                 <span className="font-bold text-stone-900 dark:text-stone-100">
-                  {globalStats.totalUsers.toLocaleString()}
+                  {formatStat(globalStats.totalUsers)}
                 </span>{' '}
                 {language === 'traditional' ? '位訪客在此背誦神的話語' : '位访客在此背诵神的话语'}
                 <br />
                 {language === 'traditional' ? '全站收藏次數' : '全站收藏次数'}{' '}
                 <span className="font-bold text-stone-900 dark:text-stone-100">
-                  {globalStats.totalFavorites.toLocaleString()}
+                  {formatStat(globalStats.totalFavorites)}
                 </span>
                 <br />
                 <span className="mt-2 inline-block text-xs text-stone-500 dark:text-stone-400">
@@ -2466,12 +2519,18 @@ export default function HomePage() {
               />
               {visibleCount < displayVerses.length && (
                 <div className="text-center py-8">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-bible-100 dark:bg-gray-700 rounded-lg">
-                    <div className="w-4 h-4 border-2 border-bible-400 dark:border-bible-300 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm text-bible-600 dark:text-bible-300 font-chinese">
-                      {chrome.loadMore} ({visibleCount} / {displayVerses.length})
-                    </span>
-                  </div>
+                  <button
+                    type="button"
+                    data-testid="load-more"
+                    onClick={() =>
+                      setVisibleCount(
+                        (prev) => prev + (window.innerWidth < 768 ? 12 : window.innerWidth < 1024 ? 18 : 24),
+                      )
+                    }
+                    className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-bible-200/80 bg-white/80 px-5 py-2 text-sm text-bible-700 shadow-sm transition hover:bg-bible-50 dark:border-white/10 dark:bg-white/[0.05] dark:text-bible-200 dark:hover:bg-white/[0.09] font-chinese touch-manipulation"
+                  >
+                    {chrome.loadMore} ({visibleCount} / {displayVerses.length})
+                  </button>
                 </div>
               )}
             </>
@@ -2561,7 +2620,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
                   <span className="font-bold text-stone-800 dark:text-stone-200">
-                    {globalStats.totalUsers.toLocaleString()}
+                    {formatStat(globalStats.totalUsers)}
                   </span>
                   <span className="text-xs text-stone-500 dark:text-stone-400">
                     {language === 'traditional' ? '位訪客' : '位访客'}
@@ -2570,7 +2629,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
                   <span className="font-bold text-gold-600 dark:text-gold-400">
-                    {globalStats.totalFavorites.toLocaleString()}
+                    {formatStat(globalStats.totalFavorites)}
                   </span>
                   <span className="text-xs text-stone-500 dark:text-stone-400">
                     {language === 'traditional' ? '全站收藏次數' : '全站收藏次数'}
@@ -2586,7 +2645,9 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
             <p>{chrome.blessing}</p>
             <p className="mt-2 text-xs">
-              {pick('© 2025 你的話語 · Made for Christ', '© 2025 你的话语 · Made for Christ')}
+              <span suppressHydrationWarning>
+                {pick(`© ${currentYear} 你的話語 · Made for Christ`, `© ${currentYear} 你的话语 · Made for Christ`)}
+              </span>
             </p>
           </div>
         </footer>

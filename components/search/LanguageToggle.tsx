@@ -13,7 +13,7 @@ export default function LanguageToggle() {
   const { searchLang, setSearchLang } = useSearchStore();
 
   return (
-    <div className="flex items-center gap-1 bg-bible-100 dark:bg-gray-800 rounded-lg p-1">
+    <div className="flex items-center gap-1 bg-bible-100 dark:bg-[#211d17] rounded-lg p-1">
       {options.map((opt) => (
         <button
           key={opt.value}

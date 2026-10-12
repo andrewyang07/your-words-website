@@ -406,7 +406,11 @@ export default function SideMenu({
 
             {/* 底部信息 */}
             <div className="border-t border-stone-900/10 p-4 dark:border-white/10">
-              <p className="text-center text-xs text-stone-500 dark:text-stone-500 font-chinese">{copy.brand} © 2025</p>
+              <p className="text-center text-xs text-stone-500 dark:text-stone-500 font-chinese">
+                <span suppressHydrationWarning>
+                  {copy.brand} © {new Date().getFullYear()}
+                </span>
+              </p>
             </div>
           </motion.div>
         </>
