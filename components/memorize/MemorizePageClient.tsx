@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { AlertCircle, ArrowLeft, BookOpen, ChevronRight, Eye, Link2, RotateCcw } from 'lucide-react';
+import { AlertCircle, ArrowLeft, BookOpen, ChevronRight, Eye, Link2, RotateCcw, Share2 } from 'lucide-react';
 import { decodeVerseRef, encodeVerseRef } from '@/lib/bibleBookMapping';
 import {
   buildReciteUrl,
@@ -37,6 +37,7 @@ import {
 } from '@/lib/memorize/session';
 import { CompletionReward } from '@/components/memorize/CompletionReward';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
+import { getSharedVerseSaveSummary } from '@/lib/shareUtils.mjs';
 import type { Verse, Language } from '@/types/verse';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
@@ -78,6 +79,14 @@ const copy = {
     zhuyinInstruction: '按每个字读音的第一个注音符号',
     stageProgress: (stage: number) => `第 ${stage} 阶段，共 4 阶段`,
     finished: '本轮结束',
+    shareVerse: '分享这节经文',
+    cardSaved: '卡片已保存到下载',
+    cardShared: '卡片已分享',
+    cardMaking: '正在生成卡片…',
+    qrCaption: '扫码一起背',
+    starterTitle: '或者从这几节开始',
+    stagesLabel: '背诵的四个阶段',
+    maskedSummary: (n: number) => `已遮住 ${n} 个字`,
     retry: '重新背诵',
     chooseAnother: '选择另一节',
     finishAndReturn: '完成并返回',
@@ -135,6 +144,14 @@ const copy = {
     zhuyinInstruction: '按每個字讀音的第一個注音符號',
     stageProgress: (stage: number) => `第 ${stage} 階段，共 4 階段`,
     finished: '本輪結束',
+    shareVerse: '分享這節經文',
+    cardSaved: '卡片已保存到下載',
+    cardShared: '卡片已分享',
+    cardMaking: '正在生成卡片…',
+    qrCaption: '掃碼一起背',
+    starterTitle: '或者從這幾節開始',
+    stagesLabel: '背誦的四個階段',
+    maskedSummary: (n: number) => `已遮住 ${n} 個字`,
     retry: '重新背誦',
     chooseAnother: '選擇另一節',
     finishAndReturn: '完成並返回',
@@ -162,6 +179,43 @@ const copy = {
 } as const;
 
 const stageNeedsInitials = [false, true, true, true] as const;
+/**
+ * Starter verses for users without favorites. Inlined (both scripts) so the empty /memorize page doesn't have to
+ * download the Bible JSON just to suggest three verses.
+ */
+const STARTER_VERSES = [
+  [
+    '约翰福音',
+    '約翰福音',
+    3,
+    16,
+    '神爱世人，甚至将他的独生子赐给他们，叫一切信他的，不致灭亡，反得永生。',
+    '神愛世人，甚至將他的獨生子賜給他們，叫一切信他的，不致滅亡，反得永生。',
+    'new',
+  ],
+  [
+    '诗篇',
+    '詩篇',
+    23,
+    1,
+    '（大卫的诗。）耶和华是我的牧者，我必不致缺乏。',
+    '（大衛的詩。）耶和華是我的牧者，我必不致缺乏。',
+    'old',
+  ],
+  ['腓立比书', '腓立比書', 4, 13, '我靠著那加给我力量的，凡事都能做。', '我靠著那加給我力量的，凡事都能做。', 'new'],
+] as const;
+
+export function starterVerses(language: Language): Verse[] {
+  return STARTER_VERSES.map(([key, keyTrad, chapter, verse, simp, trad, testament]) => ({
+    id: `${key}-${chapter}-${verse}`,
+    book: language === 'traditional' ? keyTrad : key,
+    bookKey: key,
+    chapter,
+    verse,
+    text: language === 'traditional' ? trad : simp,
+    testament,
+  }));
+}
 type MemorizationStage = 0 | 1 | 2 | 3;
 const finalStage: MemorizationStage = 3;
 export type KeyboardLayout = 't9' | 'qwerty' | 'zhuyin';
@@ -200,6 +254,8 @@ export default function MemorizePageClient() {
   const [completedIds, setCompletedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [shareUrl, setShareUrl] = useState<{ url: string; title: string | null } | null>(null);
   const [cardError, setCardError] = useState(false);
+  const [cardStatus, setCardStatus] = useState<'making' | 'shared' | 'downloaded' | null>(null);
+  const addFavorites = useFavoritesStore((state) => state.addFavorites);
   const sessionActive = useRef(false);
   const sessionRef = useRef<MemorizationSession | null>(null);
   const taiwanReadingsSeed = useRef<string | null>(null);
@@ -407,6 +463,15 @@ export default function MemorizePageClient() {
           truncated={link.truncated}
           newerSchema={link.newerSchema}
           completedIds={completedIds}
+          shared={link.source === 'p' || link.source === 's'}
+          savedCount={verses.filter((verse) => favorites.has(verse.id)).length}
+          onSaveAll={() => {
+            const summary = getSharedVerseSaveSummary(
+              verses.map((verse) => verse.id),
+              new Set(favoriteIds),
+            );
+            if (summary.newIds.length > 0) addFavorites(summary.newIds);
+          }}
           onSelect={(verse) => startVerse(verse, language)}
           onShare={() =>
             openShare(
@@ -428,6 +493,7 @@ export default function MemorizePageClient() {
         onSelect={(verse) => startVerse(verse, language)}
         guide={guide}
         onCreateLink={openShare}
+        starterVerses={starterVerses(language)}
       >
         {shareDialog}
       </VersePicker>
@@ -447,8 +513,9 @@ export default function MemorizePageClient() {
     };
     const makeCard = async () => {
       setCardError(false);
+      setCardStatus('making');
       try {
-        await shareCompletionCard(
+        const result = await shareCompletionCard(
           {
             reference: reference(selected, activeLanguage),
             text: selected.text,
@@ -458,11 +525,22 @@ export default function MemorizePageClient() {
             doneLabel: activeCopy.cardDone,
           },
           `yourwords-${selected.bookKey}-${selected.chapter}-${selected.verse}.png`,
+          {
+            qrUrl: buildReciteUrl({ origin: window.location.origin, ids: [selected.id], title: null }),
+            qrCaption: activeCopy.qrCaption,
+          },
         );
+        setCardStatus(result === 'cancelled' ? null : result);
       } catch {
+        setCardStatus(null);
         setCardError(true);
       }
     };
+    const shareThisVerse = () =>
+      setShareUrl({
+        url: buildReciteUrl({ origin: window.location.origin, ids: [selected.id], title: link?.title ?? null }),
+        title: link?.title ?? null,
+      });
     return (
       <main className="memorize-page flex min-h-[100dvh] flex-col px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
         <header className="mx-auto flex w-full max-w-3xl justify-end">
@@ -480,6 +558,15 @@ export default function MemorizePageClient() {
               cardLabel={activeCopy.makeCard}
               onCreateCard={() => void makeCard()}
             />
+            <p role="status" aria-live="polite" className="mt-2 min-h-5 text-sm text-stone-600 dark:text-stone-300">
+              {cardStatus === 'making'
+                ? activeCopy.cardMaking
+                : cardStatus === 'shared'
+                  ? activeCopy.cardShared
+                  : cardStatus === 'downloaded'
+                    ? activeCopy.cardSaved
+                    : ''}
+            </p>
             {cardError && (
               <p role="alert" className="mt-2 text-sm text-red-800 dark:text-red-300">
                 {activeCopy.cardFailed}
@@ -493,10 +580,11 @@ export default function MemorizePageClient() {
                 <ChevronRight className="h-4 w-4" />
               </button>
             )}
-            <button
-              onClick={() => void restartVerse()}
-              className={nextLinkVerse ? 'memorize-secondary' : 'memorize-primary'}
-            >
+            <button onClick={shareThisVerse} className={nextLinkVerse ? 'memorize-secondary' : 'memorize-primary'}>
+              <Share2 className="h-4 w-4" />
+              {activeCopy.shareVerse}
+            </button>
+            <button onClick={() => void restartVerse()} className="memorize-secondary">
               <RotateCcw className="h-4 w-4" />
               {activeCopy.retry}
             </button>
@@ -511,6 +599,15 @@ export default function MemorizePageClient() {
           </div>
         </section>
         {guide.dialog}
+        {shareUrl && (
+          <ShareReciteDialog
+            open
+            onClose={() => setShareUrl(null)}
+            url={shareUrl.url}
+            title={shareUrl.title}
+            language={activeLanguage}
+          />
+        )}
       </main>
     );
   }
@@ -892,32 +989,41 @@ export function VerseExercise({ session, stage }: { session: MemorizationSession
     ? orderedMaskIndices(activeMask)[activeRecall.cursor]
     : session.units.flatMap((unit, index) => (unit.recallable ? [index] : []))[activeRecall.cursor];
   const showWrongTarget = activeRecall.lastAttempt === 'wrong';
+  const items = session.units.map((unit, index) => {
+    if (!unit.recallable) return { index, text: unit.text, hidden: false, current: false, wrong: false, plain: true };
+    const ordinal = recallOrdinal++;
+    const hidden =
+      stage === 1
+        ? session.masks.partial30.has(index) && !revealedPartial30.has(index)
+        : stage === 2
+          ? session.masks.partial65.has(index) && !revealedPartial65.has(index)
+          : stage === 3
+            ? ordinal >= session.recall.cursor
+            : false;
+    const current = hidden && index === currentUnitIndex;
+    return { index, text: unit.text, hidden, current, wrong: current && showWrongTarget, plain: false };
+  });
+  const hiddenCount = items.filter((item) => item.hidden).length;
+  const language = useAppStore((state) => state.language);
   return (
     <p className="memorize-verse whitespace-pre-wrap" aria-live="polite">
-      {session.units.map((unit, index) => {
-        if (!unit.recallable) return <span key={index}>{unit.text}</span>;
-        const ordinal = recallOrdinal++;
-        const hidden =
-          stage === 1
-            ? session.masks.partial30.has(index) && !revealedPartial30.has(index)
-            : stage === 2
-              ? session.masks.partial65.has(index) && !revealedPartial65.has(index)
-              : stage === 3
-                ? ordinal >= session.recall.cursor
-                : false;
-        const current = hidden && index === currentUnitIndex;
-        const wrong = current && showWrongTarget;
-        return (
+      {hiddenCount > 0 && <span className="sr-only">{copy[language].maskedSummary(hiddenCount)} </span>}
+      {items.map((item) =>
+        item.plain ? (
+          <span key={item.index}>{item.text}</span>
+        ) : (
           <span
-            key={`${index}-${wrong ? activeRecall.wrongAttempts : 0}`}
-            data-current-recall={current || undefined}
-            data-wrong={wrong || undefined}
-            className={`${hidden ? 'memorize-hidden' : 'memorize-revealed'} ${wrong ? 'memorize-wrong-target' : ''}`}
+            key={`${item.index}-${item.wrong ? activeRecall.wrongAttempts : 0}`}
+            data-current-recall={item.current || undefined}
+            data-wrong={item.wrong || undefined}
+            // Masked characters are visually transparent; keep screen readers from reading them too.
+            aria-hidden={item.hidden || undefined}
+            className={`${item.hidden ? 'memorize-hidden' : 'memorize-revealed'} ${item.wrong ? 'memorize-wrong-target' : ''}`}
           >
-            {unit.text}
+            {item.text}
           </span>
-        );
-      })}
+        ),
+      )}
     </p>
   );
 }
@@ -932,6 +1038,7 @@ function VersePicker({
   onSelect,
   guide,
   onCreateLink,
+  starterVerses = [],
   children,
 }: {
   verses: Verse[];
@@ -939,6 +1046,7 @@ function VersePicker({
   onSelect: (verse: Verse) => void;
   guide: ReturnType<typeof useMemorizeGuide>;
   onCreateLink: (ids: string[], title: string | null) => void;
+  starterVerses?: Verse[];
   children?: ReactNode;
 }) {
   const pickerCopy = copy[language];
@@ -1001,9 +1109,9 @@ function VersePicker({
           <p className="text-xs tracking-[0.28em] text-amber-800/70 dark:text-amber-200/70">{pickerCopy.title}</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-[0.05em] sm:text-4xl">{pickerCopy.pickerHeading}</h2>
           <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-stone-400">{pickerCopy.pickerDescription}</p>
-          <ol className="mt-6 grid grid-cols-4 gap-1.5" aria-label={pickerCopy.pickerDescription}>
+          <ol className="mt-6 grid grid-cols-4 gap-1.5" aria-label={pickerCopy.stagesLabel}>
             {pickerCopy.stages.map(({ name }, index) => (
-              <li key={name} className="memorize-stage-tab">
+              <li key={name} className="memorize-stage-tab memorize-stage-static">
                 <span className="text-[10px] tabular-nums text-stone-400">{index + 1}</span>
                 <span className="mt-1 block text-xs font-medium text-stone-700 dark:text-stone-300">{name}</span>
               </li>
@@ -1017,6 +1125,27 @@ function VersePicker({
             <Link href="/" className="memorize-primary mx-auto mt-6 max-w-xs">
               {pickerCopy.browse}
             </Link>
+            {starterVerses.length > 0 && (
+              <div className="mt-8 text-left">
+                <p className="mb-3 text-center text-sm text-stone-500">{pickerCopy.starterTitle}</p>
+                <ul className="grid gap-2">
+                  {starterVerses.map((verse) => (
+                    <li key={verse.id}>
+                      <button
+                        type="button"
+                        onClick={() => onSelect(verse)}
+                        className="w-full rounded-2xl border border-stone-900/10 bg-white/60 p-4 text-left transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bible-700 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.08]"
+                      >
+                        <span className="block text-xs tracking-[0.18em] text-stone-500">
+                          {reference(verse, language)}
+                        </span>
+                        <span className="mt-1 block line-clamp-2 text-base leading-7">{verse.text}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         ) : selecting ? (
           <div className="grid gap-3">

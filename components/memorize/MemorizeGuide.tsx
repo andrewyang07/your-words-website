@@ -118,11 +118,15 @@ export function useMemorizeGuide(surface: GuideSurface, language: Language) {
   const automaticPage: GuidePage | null =
     !hydrated || progress.dismissed
       ? null
-      : surface === 'picker' && !progress.pickerSeen
-        ? 'overview'
-        : surface === 'input' && !progress.inputSeen
-          ? 'input'
-          : null;
+      : // The automatic guide appears once per user: whichever surface comes first (picker or the first
+        // input stage). Later stages never pop it again; the help button replays everything.
+        progress.pickerSeen || progress.inputSeen
+        ? null
+        : surface === 'picker'
+          ? 'overview'
+          : surface === 'input'
+            ? 'input'
+            : null;
   const visiblePage = page ?? automaticPage;
 
   const save = useCallback((next: GuideProgress) => {
@@ -167,8 +171,8 @@ export function useMemorizeGuide(surface: GuideSurface, language: Language) {
       }
       const next = {
         ...progress,
-        pickerSeen: progress.pickerSeen || currentPage === 'overview',
-        inputSeen: progress.inputSeen || currentPage === 'input',
+        pickerSeen: progress.pickerSeen || currentPage === 'overview' || currentPage === 'input',
+        inputSeen: progress.inputSeen || currentPage === 'input' || currentPage === 'overview',
         zhuyinSeen: progress.zhuyinSeen || currentPage === 'zhuyin',
       };
       save(next);

@@ -224,6 +224,15 @@
     @apply absolute inset-x-0 bottom-0 h-0.5 bg-bible-700/45 dark:bg-bible-300/40;
   }
 
+  /* Picker overview of the 4 stages: informational, so it must not look like tappable tabs. */
+  .memorize-stage-static {
+    @apply cursor-default select-none border-transparent bg-transparent shadow-none dark:border-transparent dark:bg-transparent;
+  }
+
+  .memorize-stage-static::after {
+    content: none;
+  }
+
   .memorize-hidden {
     @apply rounded-sm bg-stone-900/[0.09] text-transparent shadow-[inset_0_-1px_0_rgba(68,64,60,0.28)] dark:bg-white/[0.11] dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.3)];
   }

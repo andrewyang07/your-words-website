@@ -4,6 +4,7 @@
 
 export const CARD_WIDTH = 1080;
 export const CARD_HEIGHT = 1350;
+const CARD_HEIGHT_DEFAULT = CARD_HEIGHT;
 export const CARD_MAX_LINES = 12;
 export const CARD_FONT_FAMILY = '"PingFang SC","Noto Serif SC","Songti SC",serif';
 const ELLIPSIS = '…';
@@ -82,7 +83,14 @@ type CardContext = Pick<
   | 'strokeRect'
 >;
 
-export function renderCompletionCard(ctx: CardContext, data: CompletionCardData): void {
+export const QR_SIZE = 220;
+
+export function renderCompletionCard(
+  ctx: CardContext,
+  data: CompletionCardData,
+  options: { height?: number; qr?: CanvasImageSource | null; qrCaption?: string } = {},
+): void {
+  const CARD_HEIGHT = options.height ?? CARD_HEIGHT_DEFAULT;
   const padding = 96;
   const contentWidth = CARD_WIDTH - padding * 2;
 
@@ -99,7 +107,14 @@ export function renderCompletionCard(ctx: CardContext, data: CompletionCardData)
   ctx.font = `500 34px ${CARD_FONT_FAMILY}`;
   ctx.fillText(data.brand, padding, 112);
 
-  let y = 200;
+  // Vertically centre the title/reference/text block in the space between the brand and the footer, so short
+  // verses don't leave a large empty band at the bottom of the fixed-size card.
+  ctx.font = `400 48px ${CARD_FONT_FAMILY}`;
+  const measuredLines = wrapLines(data.text, (value) => ctx.measureText(value).width, contentWidth, CARD_MAX_LINES);
+  const blockHeight = (data.title ? 72 : 0) + 112 + Math.max(measuredLines.length, 1) * 74;
+  const top = 200;
+  const bottom = CARD_HEIGHT - 380;
+  let y = Math.max(top, Math.round(top + (bottom - top - blockHeight) / 2));
   if (data.title) {
     ctx.fillStyle = '#57534e';
     ctx.font = `500 40px ${CARD_FONT_FAMILY}`;
@@ -124,20 +139,46 @@ export function renderCompletionCard(ctx: CardContext, data: CompletionCardData)
   ctx.fillStyle = '#78716c';
   ctx.font = `400 34px ${CARD_FONT_FAMILY}`;
   ctx.fillText(data.date, padding, CARD_HEIGHT - 150);
+
+  if (options.qr && 'drawImage' in ctx) {
+    const x = CARD_WIDTH - padding - QR_SIZE;
+    const qrY = CARD_HEIGHT - 120 - QR_SIZE;
+    (ctx as unknown as CanvasRenderingContext2D).drawImage(options.qr, x, qrY, QR_SIZE, QR_SIZE);
+    if (options.qrCaption) {
+      ctx.fillStyle = '#78716c';
+      ctx.font = `400 26px ${CARD_FONT_FAMILY}`;
+      ctx.fillText(options.qrCaption, x, qrY + QR_SIZE + 12, QR_SIZE);
+    }
+  }
 }
 
 /** 生成 PNG 并分享（支持文件分享时）或下载。用户取消分享时静默返回。 */
 export async function shareCompletionCard(
   data: CompletionCardData,
   fileName: string,
+  options: { qrUrl?: string; qrCaption?: string } = {},
 ): Promise<'shared' | 'downloaded' | 'cancelled'> {
   if ('fonts' in document) await document.fonts.ready;
   const canvas = document.createElement('canvas');
-  canvas.width = CARD_WIDTH;
-  canvas.height = CARD_HEIGHT;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('canvas unavailable');
-  renderCompletionCard(ctx, data);
+  canvas.width = CARD_WIDTH;
+  canvas.height = CARD_HEIGHT;
+  let qr: HTMLCanvasElement | null = null;
+  if (options.qrUrl) {
+    try {
+      const QRCode = await import('qrcode');
+      qr = document.createElement('canvas');
+      await QRCode.toCanvas(qr, options.qrUrl, {
+        width: QR_SIZE,
+        margin: 1,
+        color: { dark: '#292524', light: '#f7f3ea' },
+      });
+    } catch {
+      qr = null; // The card is still useful without the code.
+    }
+  }
+  renderCompletionCard(ctx, data, { qr, qrCaption: options.qrCaption });
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
   if (!blob) throw new Error('canvas export failed');
 
