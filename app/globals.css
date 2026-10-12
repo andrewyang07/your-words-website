@@ -226,7 +226,7 @@
 
   /* Picker overview of the 4 stages: informational, so it must not look like tappable tabs. */
   .memorize-stage-static {
-    @apply cursor-default select-none border-transparent bg-transparent shadow-none dark:bg-transparent;
+    @apply cursor-default select-none border-transparent bg-transparent shadow-none dark:border-transparent dark:bg-transparent;
   }
 
   .memorize-stage-static::after {

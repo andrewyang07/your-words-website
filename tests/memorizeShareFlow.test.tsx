@@ -132,3 +132,13 @@ describe('starter verses for an empty /memorize', () => {
     expect(starterVerses('traditional')[0]!.book).toBe('約翰福音');
   });
 });
+
+describe('stage overview chips are non-interactive in both themes', () => {
+  it('overrides the base dark border', async () => {
+    const { readFileSync } = await import('node:fs');
+    const css = readFileSync('app/globals.css', 'utf8');
+    const rule = /\.memorize-stage-static \{([^}]*)\}/.exec(css)?.[1] ?? '';
+    expect(rule).toContain('dark:border-transparent');
+    expect(rule).toContain('border-transparent');
+  });
+});
