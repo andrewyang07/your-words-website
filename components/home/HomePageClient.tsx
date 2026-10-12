@@ -44,6 +44,7 @@ import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
 import { trackUser } from '@/lib/statsUtils';
 import { useScriptPick } from '@/lib/useScriptPick';
+import { pickVerseText, toScript, useScriptConverters } from '@/lib/search/scriptConvert';
 
 // 动态导入非关键组件以提升性能
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -492,6 +493,11 @@ export default function HomePage() {
     };
   }, [filterType, books, language, getFavoritesList]);
 
+  // Verse text in search results / friend-shared cards must follow the UI script even before a reload lands.
+  const scriptConverters = useScriptConverters(
+    searchResults.some((r) => !r.textSimplified) || sharedVersesData.length > 0,
+  );
+
   // SearchResult → Verse 转换
   const searchResultsAsVerses = useMemo((): Verse[] => {
     if (searchResults.length === 0) return [];
@@ -503,11 +509,11 @@ export default function HomePage() {
         bookKey: r.bookKey,
         chapter: r.chapter,
         verse: r.verse,
-        text: r.textChinese,
+        text: pickVerseText(r.textChinese, r.textSimplified, language, scriptConverters),
         testament: book?.testament || 'old',
       };
     });
-  }, [searchResults, books, language]);
+  }, [searchResults, books, language, scriptConverters]);
 
   // 筛选和排序经文
   const displayVerses = useMemo(() => {
@@ -518,7 +524,11 @@ export default function HomePage() {
 
     // 如果有分享链接，优先显示分享的经文
     if (showShareBanner && sharedVersesData.length > 0) {
-      return sharedVersesData;
+      return sharedVersesData.map((v) => ({
+        ...v,
+        book: getBookDisplayName(v.bookKey ?? v.book, language),
+        text: toScript(v.text, language, scriptConverters),
+      }));
     }
 
     // 如果选择了具体章节，显示章节经文
@@ -657,6 +667,8 @@ export default function HomePage() {
     shuffleKey,
     showShareBanner,
     sharedVersesData,
+    scriptConverters,
+    language,
     favoritesVersesData,
     bookFilter,
     favoritesBookFilter,

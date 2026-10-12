@@ -5,6 +5,7 @@ import { Search, X } from 'lucide-react';
 import { useSearchStore } from '@/stores/useSearchStore';
 import { runClientSearch } from '@/lib/search/runClientSearch';
 import { detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 const PLACEHOLDER_EXAMPLES = [
   '约3:16 · John 3:16 · 永生 · love',
@@ -18,6 +19,7 @@ interface SearchBoxProps {
 }
 
 export default function SearchBox({ variant = 'hero', autoFocus = true }: SearchBoxProps) {
+  const pick = useScriptPick();
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Monotonic id of the latest search; responses from older requests are dropped so they can't overwrite newer ones.
@@ -187,7 +189,10 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       </div>
       {!engineReady && (
         <p className="mt-2 text-center text-sm text-stone-500 dark:text-stone-400 font-chinese">
-          正在准备搜索引擎，您可以直接输入，完成后会自动搜索...
+          {pick(
+            '正在準備搜索引擎，您可以直接輸入，完成後會自動搜索…',
+            '正在准备搜索引擎，您可以直接输入，完成后会自动搜索…',
+          )}
         </p>
       )}
     </div>

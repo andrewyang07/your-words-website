@@ -7,7 +7,9 @@ export interface SearchResult {
   bookEnglish: string; // English book name (key in WEB_bible.json)
   chapter: number;
   verse: number;
-  textChinese: string;
+  textChinese: string; // CUV Traditional
+  /** CUV Simplified, when the source provides it (Pagefind meta). */
+  textSimplified?: string;
   textEnglish: string;
   score: number;
   matchType: 'reference' | 'keyword';

@@ -266,6 +266,7 @@ function mapPagefindData(data: PagefindResultData, fallbackScore: number, query:
     chapter,
     verse,
     textChinese,
+    ...(meta.textSimplified ? { textSimplified: meta.textSimplified } : {}),
     textEnglish: meta.textEnglish || '',
     score: fallbackScore,
     matchType: 'keyword',
@@ -293,7 +294,7 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
   const bigramQuery = hasCjk(trimmed) ? toCjkBigramQuery((await loadOpenCC()).toSimplified(trimmed)) : null;
   const searches = bigramQuery ? [...variants, bigramQuery] : variants;
   const responses = await Promise.all(searches.map((term) => pagefind.search(term, { excerptLength: 12 })));
-  const byId = new Map<string, SearchResult & { textSimplified: string }>();
+  const byId = new Map<string, SearchResult>();
 
   for (let index = 0; index < responses.length; index += 1) {
     const response = responses[index]!;
@@ -310,7 +311,6 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
         byId.set(mapped.id, {
           ...mapped,
           score: mapped.score + tier,
-          textSimplified: resultData.meta?.textSimplified ?? '',
         });
       }
     });
@@ -318,7 +318,8 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
 
   // Phrase boost against every variant and both scripts (the first variant may be Simplified while
   // textChinese is Traditional, which used to leave the right verses unboosted).
-  const merged: SearchResult[] = [...byId.values()].map(({ textSimplified, ...result }) => {
+  const merged: SearchResult[] = [...byId.values()].map((result) => {
+    const textSimplified = result.textSimplified ?? '';
     let best = 0;
     for (const variant of variants) {
       best = Math.max(

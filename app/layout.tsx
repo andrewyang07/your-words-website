@@ -156,7 +156,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="antialiased" suppressHydrationWarning>
         <AppStoreStorageSync />
-        <nav className="sr-only" aria-label="主要頁面">
+        <nav
+          className="sr-only"
+          data-global-nav=""
+          aria-label="主要页面"
+          data-aria-label-simplified="主要页面"
+          data-aria-label-traditional="主要頁面"
+        >
           <a href="/memorize">
             <ScriptText traditional="深度背誦" simplified="深度背诵" />
           </a>

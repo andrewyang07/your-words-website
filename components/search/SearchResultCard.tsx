@@ -6,6 +6,8 @@ import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { highlightText, type HighlightSegment } from '@/lib/search/highlighter';
+import { pickVerseText, queryForScript, useScriptConverters } from '@/lib/search/scriptConvert';
+import { pickScript } from '@/lib/uiScript';
 import { encodeVerseRef } from '@/lib/bibleBookMapping';
 import { sendStats } from '@/lib/statsUtils';
 import type { SearchResult } from '@/types/search';
@@ -49,10 +51,15 @@ export default function SearchResultCard({ result, index, isSelected }: SearchRe
   const showChinese = searchLang === 'zh';
   const showEnglish = searchLang === 'en';
 
+  // Verse text follows the UI script (Simplified UI used to show Traditional CUV text with Simplified highlights).
+  const needsConverter = showChinese && (/[\u3400-\u9fff]/.test(query) || !result.textSimplified);
+  const converters = useScriptConverters(needsConverter);
+  const textChinese = pickVerseText(result.textChinese, result.textSimplified, language, converters);
+
   const handleCopy = async () => {
     let text = '';
     if (showChinese) {
-      text = `${bookNameChinese} ${result.chapter}:${result.verse} ${result.textChinese}`;
+      text = `${bookNameChinese} ${result.chapter}:${result.verse} ${textChinese}`;
     } else {
       text = `${result.bookEnglish} ${result.chapter}:${result.verse} ${result.textEnglish}`;
     }
@@ -90,7 +97,7 @@ export default function SearchResultCard({ result, index, isSelected }: SearchRe
     }
   };
 
-  const zhSegments = highlightText(result.textChinese, query);
+  const zhSegments = highlightText(textChinese, queryForScript(query, language, converters));
   const enSegments = highlightText(result.textEnglish, query);
 
   return (
@@ -145,7 +152,8 @@ export default function SearchResultCard({ result, index, isSelected }: SearchRe
               void handleCopy();
             }}
             className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-gray-700 transition-colors"
-            title="复制"
+            title={pickScript(language, '複製', '复制')}
+            aria-label={pickScript(language, '複製', '复制')}
           >
             {copied ? (
               <Check className="w-4 h-4 text-green-500" />

@@ -22,8 +22,22 @@ function applyThemeToDocument(theme: AppState['theme']) {
 
 export const TRADITIONAL_SCRIPT_CLASS = 'script-traditional';
 
+/**
+ * Server components render Simplified (SSR html lang is zh-Hans). Elements that need a script-aware aria-label
+ * carry both variants as data attributes; this swaps them in on the client.
+ */
+export const ARIA_TRADITIONAL_ATTR = 'data-aria-label-traditional';
+export const ARIA_SIMPLIFIED_ATTR = 'data-aria-label-simplified';
+
 export function applyScriptToDocument(language: Language) {
-  document.documentElement.classList.toggle(TRADITIONAL_SCRIPT_CLASS, language === 'traditional');
+  const root = document.documentElement;
+  root.classList.toggle(TRADITIONAL_SCRIPT_CLASS, language === 'traditional');
+  root.lang = language === 'traditional' ? 'zh-Hant' : 'zh-Hans';
+  const attr = language === 'traditional' ? ARIA_TRADITIONAL_ATTR : ARIA_SIMPLIFIED_ATTR;
+  document.querySelectorAll<HTMLElement>(`[${attr}]`).forEach((el) => {
+    const label = el.getAttribute(attr);
+    if (label) el.setAttribute('aria-label', label);
+  });
 }
 
 export default function AppStoreStorageSync() {

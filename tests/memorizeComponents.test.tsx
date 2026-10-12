@@ -148,6 +148,7 @@ describe('deep memorization controls', () => {
   it('keeps the global navigation out of the practice focus order only while memorizing', async () => {
     const navigation = document.createElement('nav');
     navigation.setAttribute('aria-label', '主要頁面');
+    navigation.setAttribute('data-global-nav', '');
     navigation.innerHTML = '<a href="/search">聖經搜索</a>';
     document.body.append(navigation);
     useFavoritesStore.setState({ favorites: new Set() });
