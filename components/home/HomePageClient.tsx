@@ -44,6 +44,7 @@ import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
 import { trackUser } from '@/lib/statsUtils';
 import { useScriptPick } from '@/lib/useScriptPick';
+import RevealHint from '@/components/home/RevealHint';
 
 // 动态导入非关键组件以提升性能
 const SideMenu = dynamic(() => import('@/components/navigation/SideMenu'), {
@@ -67,7 +68,8 @@ export default function HomePage() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [shuffleKey, setShuffleKey] = useState(0);
-  const [showAllContent, setShowAllContent] = useState(false);
+  // 默认显示全文（不持久化：每次打开/刷新都回到显示全文）
+  const [showAllContent, setShowAllContent] = useState(true);
 
   // 筛选状态
   const [bookFilter, setBookFilter] = useState<BookFilterType>('all');
@@ -2057,15 +2059,6 @@ export default function HomePage() {
                         {language === 'traditional' ? '精選' : '精选'} 114{' '}
                         {language === 'traditional' ? '節經文' : '节经文'}
                       </span>
-                      <span className="text-xs text-stone-500 dark:text-stone-400 font-chinese">
-                        {showAllContent
-                          ? language === 'traditional'
-                            ? '閱讀模式：完整顯示經文。'
-                            : '阅读模式：完整显示经文。'
-                          : language === 'traditional'
-                            ? '空心圓是背誦遮字；點卡片可顯示全文。'
-                            : '空心圆是背诵遮字；点卡片可显示全文。'}
-                      </span>
                     </div>
                   </div>
                 )}
@@ -2369,6 +2362,10 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          {/* 操作提示胶囊（精选列表，状态条正下方） */}
+          {!searchQuery && !selectedBook && filterType !== 'favorites' && !showShareBanner && (
+            <RevealHint language={language} showAllContent={showAllContent} />
+          )}
         </div>
 
         {/* 经文卡片区域 */}
