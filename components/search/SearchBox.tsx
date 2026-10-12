@@ -168,10 +168,10 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder={PLACEHOLDER_EXAMPLES[0]}
-          className={`w-full border bg-white dark:bg-gray-800 text-stone-950 dark:text-stone-50 placeholder:text-bible-400 dark:placeholder:text-gray-500 focus:outline-none transition-all font-chinese ${
+          className={`w-full border bg-white dark:bg-[#211d17] text-stone-950 dark:text-stone-50 placeholder:text-bible-400 dark:placeholder:text-gray-500 focus:outline-none transition-all font-chinese ${
             variant === 'hero'
-              ? 'pl-12 pr-10 py-4 text-lg rounded-full border-bible-200 dark:border-gray-700 shadow-sm hover:shadow-md focus:shadow-md focus:border-bible-400 dark:focus:border-bible-500'
-              : 'pl-11 pr-10 py-3 text-base rounded-full border-bible-200 dark:border-gray-700 hover:shadow-sm focus:border-bible-400 dark:focus:border-bible-500 focus:shadow-sm'
+              ? 'pl-12 pr-10 py-4 text-lg rounded-full border-bible-200 dark:border-white/10 shadow-sm hover:shadow-md focus:shadow-md focus:border-bible-400 dark:focus:border-bible-500'
+              : 'pl-11 pr-10 py-3 text-base rounded-full border-bible-200 dark:border-white/10 hover:shadow-sm focus:border-bible-400 dark:focus:border-bible-500 focus:shadow-sm'
           }`}
         />
         {query && (

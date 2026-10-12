@@ -23,7 +23,7 @@ export default function LanguageToggle() {
     <div
       role="group"
       aria-label={language === 'traditional' ? '搜索語言' : '搜索语言'}
-      className="flex items-center gap-1 bg-bible-100 dark:bg-gray-800 rounded-lg p-1"
+      className="flex items-center gap-1 bg-bible-100 dark:bg-[#211d17] rounded-lg p-1"
     >
       {options.map((opt) => {
         const active = opt.lang === searchLang && (!opt.script || opt.script === language);
@@ -39,7 +39,7 @@ export default function LanguageToggle() {
             }}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
               active
-                ? 'bg-white dark:bg-gray-700 text-bible-800 dark:text-bible-200 shadow-sm'
+                ? 'bg-white dark:bg-white/[0.1] text-bible-800 dark:text-gold-200 shadow-sm'
                 : 'text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200'
             }`}
           >

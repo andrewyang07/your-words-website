@@ -305,7 +305,12 @@ export default function AboutPageClient() {
             {/* 版权信息 */}
             <section className="pt-6 border-t border-bible-200 dark:border-gray-700">
               <p className="text-center text-sm text-stone-500 dark:text-stone-400 font-chinese">
-                {pick('© 2025 你的話語 · 願神的話語照亮你的人生道路', '© 2025 你的话语 · 愿神的话语照亮你的人生道路')}
+                <span suppressHydrationWarning>
+                  {pick(
+                    `© ${new Date().getFullYear()} 你的話語 · 願神的話語照亮你的人生道路`,
+                    `© ${new Date().getFullYear()} 你的话语 · 愿神的话语照亮你的人生道路`,
+                  )}
+                </span>
               </p>
             </section>
           </div>

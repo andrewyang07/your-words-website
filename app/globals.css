@@ -537,3 +537,8 @@ html.script-traditional .font-chinese {
     'PingFang TC', 'Noto Sans CJK TC', 'Noto Sans TC', 'Source Han Sans TC', 'Microsoft JhengHei',
     theme('fontFamily.chinese');
 }
+
+/* 首页操作提示：已关闭时在首帧前隐藏（class 由 layout 内联脚本设置） */
+html.home-hint-dismissed .home-reveal-hint {
+  display: none;
+}
