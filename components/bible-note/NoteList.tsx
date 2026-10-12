@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, FileText } from 'lucide-react';
-import { getAllNotes, deleteNote } from '@/lib/noteStorage';
+import { getAllNotes, deleteNote, displayNoteTitle } from '@/lib/noteStorage';
+import { useAppStore } from '@/stores/useAppStore';
 import { useScriptPick } from '@/lib/useScriptPick';
 
 interface NoteSummary {
@@ -18,6 +19,10 @@ interface NoteListProps {
   currentNoteId: string | null;
   onSelectNote: (id: string) => void;
   onNewNote: () => void;
+  /** Live title of the open note (from the editor), so the list reflects edits before the autosave lands. */
+  currentTitle?: string;
+  /** Bumped after every save; the list reloads when it changes. */
+  version?: number;
 }
 
 function relativeTime(ts: number): string {
@@ -28,8 +33,17 @@ function relativeTime(ts: number): string {
   return `${days}天前`;
 }
 
-export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote, onNewNote }: NoteListProps) {
+export default function NoteList({
+  isOpen,
+  onClose,
+  currentNoteId,
+  onSelectNote,
+  onNewNote,
+  currentTitle,
+  version = 0,
+}: NoteListProps) {
   const pick = useScriptPick();
+  const language = useAppStore((state) => state.language);
   const [notes, setNotes] = useState<NoteSummary[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -40,7 +54,7 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
 
   useEffect(() => {
     if (isOpen) void loadNotes();
-  }, [isOpen, loadNotes]);
+  }, [isOpen, loadNotes, version]);
 
   const handleDelete = async (id: string) => {
     setConfirmDeleteId(null);
@@ -126,7 +140,10 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-chinese text-bible-800 dark:text-stone-100 line-clamp-2 leading-snug">
-                        {note.title}
+                        {displayNoteTitle(
+                          note.id === currentNoteId && currentTitle ? currentTitle : note.title,
+                          language,
+                        )}
                       </p>
                       <p className="text-xs text-bible-400 dark:text-stone-500 font-chinese mt-0.5">
                         {relativeTime(note.updatedAt)}
@@ -159,7 +176,7 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
                           e.stopPropagation();
                           setConfirmDeleteId(note.id);
                         }}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all flex-shrink-0 mt-0.5"
+                        className="flex-shrink-0 -my-1.5 -mr-2 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg opacity-100 transition-all hover:bg-red-100 focus-visible:opacity-100 dark:hover:bg-red-900/30 [@media(hover:hover)]:opacity-40 [@media(hover:hover)]:group-hover:opacity-100"
                         aria-label={pick('刪除筆記', '删除笔记')}
                       >
                         <Trash2 className="w-3.5 h-3.5 text-red-500" />
