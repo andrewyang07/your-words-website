@@ -241,8 +241,10 @@ describe('RevealHint dismissal', () => {
     const html = renderToString(<RevealHint language="simplified" showAllContent />);
     expect(html).toContain('home-reveal-hint');
     expect(html).toMatch(/class="[^"]*\bh-7\b[^"]*whitespace-nowrap/);
-    const mobile = '👆 点卡片遮字/显示 · 右上角「背诵」切换全部';
+    const mobile = '点卡片遮字/显示 · 右上角「背诵」切换全部';
     expect(html).toContain(mobile);
+    // no emoji glyphs: they pull in the color-emoji font on first paint (QA #58 TBT regression)
+    expect(html).not.toMatch(/\p{Extended_Pictographic}/u);
     expect([...mobile].length).toBeLessThanOrEqual(24);
   });
 });

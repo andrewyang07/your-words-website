@@ -1,6 +1,6 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { Pointer, X } from 'lucide-react';
 import { useState } from 'react';
 
 export const HOME_HINT_DISMISSED_KEY = 'home-hint-dismissed:v1';
@@ -43,14 +43,16 @@ export default function RevealHint({ language, showAllContent }: Props) {
       className="home-reveal-hint mt-3 flex h-7 w-fit max-w-full items-center gap-1 whitespace-nowrap rounded-full border border-amber-300/70 bg-amber-50 pl-3 pr-1 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 font-chinese"
       role="note"
     >
+      {/* SVG, not the 👆 emoji: drawing an emoji pulls in the color-emoji font on first paint (measurable TBT). */}
+      <Pointer className="mr-1 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
       <span className="truncate">
         <span className="sm:hidden">
-          {t ? `👆 點卡片遮字/顯示 · 右上角「${button}」切換全部` : `👆 点卡片遮字/显示 · 右上角「${button}」切换全部`}
+          {t ? `點卡片遮字/顯示 · 右上角「${button}」切換全部` : `点卡片遮字/显示 · 右上角「${button}」切换全部`}
         </span>
         <span className="hidden sm:inline">
           {t
-            ? `👆 點卡片可單獨遮字/顯示 · 點右上角「${button}」切換全部`
-            : `👆 点卡片可单独遮字/显示 · 点右上角「${button}」切换全部`}
+            ? `點卡片可單獨遮字/顯示 · 點右上角「${button}」切換全部`
+            : `点卡片可单独遮字/显示 · 点右上角「${button}」切换全部`}
         </span>
       </span>
       <button
