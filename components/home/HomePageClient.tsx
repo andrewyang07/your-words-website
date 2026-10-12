@@ -2506,8 +2506,8 @@ export default function HomePage() {
               <button
                 onClick={handleDismissAppPromo}
                 className="absolute right-2.5 top-2.5 z-10 rounded-full p-1.5 text-bible-400 transition hover:bg-bible-100 hover:text-bible-700 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                title="关闭推广"
-                aria-label="关闭心版推广"
+                title={pick('關閉推廣', '关闭推广')}
+                aria-label={pick('關閉心版推廣', '关闭心版推广')}
               >
                 <X className="w-4 h-4" />
               </button>
