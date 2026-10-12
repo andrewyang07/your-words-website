@@ -146,8 +146,10 @@ describe('home initial load with a superseded (default-script) request', () => {
       resolvePreset(STALE, presets('起初，神創造天地。'));
     });
 
-    expect(view.container.textContent).toContain('加载中');
+    expect(view.container.textContent).toContain('加载经文中');
     expect(view.container.textContent).not.toContain('暂无经文');
+    // No full-screen spinner: the search box is usable while verses load.
+    expect(view.container.querySelector('input[type="text"]')).not.toBeNull();
 
     await act(async () => {
       resolvePreset(LATEST, presets('起初，神创造天地。'));
@@ -164,7 +166,7 @@ describe('home initial load with a superseded (default-script) request', () => {
     await act(async () => {
       resolveAll('/data/books.json', booksJson);
     });
-    expect(view.container.textContent).toContain('加载中');
+    expect(view.container.textContent).toContain('加载经文中');
 
     await act(async () => {
       resolvePreset(LATEST, presets('起初，神创造天地。'));
@@ -185,7 +187,7 @@ describe('home initial load with a superseded (default-script) request', () => {
       resolveAll('/data/books.json', booksJson);
       pending.get('/data/presets.json')![STALE]!.reject(new Error('stale network error'));
     });
-    expect(view.container.textContent).toContain('加载中');
+    expect(view.container.textContent).toContain('加载经文中');
     expect(view.container.textContent).not.toContain('stale network error');
 
     await act(async () => {

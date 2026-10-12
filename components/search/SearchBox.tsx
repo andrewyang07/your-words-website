@@ -3,8 +3,8 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 import { useSearchStore } from '@/stores/useSearchStore';
-import { runClientSearch } from '@/lib/search/runClientSearch';
-import { detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
+import { preloadSearch, runClientSearch } from '@/lib/search/runClientSearch';
+import { MAX_QUERY_LENGTH, clampQuery, detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
 import { useScriptPick } from '@/lib/useScriptPick';
 
 const PLACEHOLDER_EXAMPLES = [
@@ -105,7 +105,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
+      const value = clampQuery(e.target.value);
       setQuery(value);
 
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -167,6 +167,12 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
           value={query}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          // Warm Pagefind / OpenCC on real user interaction only. Not on idle or on the programmatic autofocus:
+          // that put ~250 ms of parse/compile into the load window (/search TBT +30%).
+          onPointerDown={() => void preloadSearch()}
+          onKeyDownCapture={() => void preloadSearch()}
+          maxLength={MAX_QUERY_LENGTH}
+          enterKeyHint="search"
           placeholder={PLACEHOLDER_EXAMPLES[0]}
           className={`w-full border bg-white dark:bg-[#211d17] text-stone-950 dark:text-stone-50 placeholder:text-bible-400 dark:placeholder:text-gray-500 focus:outline-none transition-all font-chinese ${
             variant === 'hero'

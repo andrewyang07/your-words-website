@@ -10,6 +10,8 @@ import type { SearchResult } from '../types/search';
 
 const pending = vi.hoisted(() => new Map<string, (r: { results: unknown[]; truncated: boolean }) => void>());
 vi.mock('../lib/search/runClientSearch', () => ({
+  preloadSearch: () => Promise.resolve(),
+  preloadSearchWhenIdle: () => () => {},
   runClientSearch: (q: string) =>
     new Promise((resolve) => {
       pending.set(q, resolve);

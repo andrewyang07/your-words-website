@@ -29,7 +29,7 @@ import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { bookMatchesFilter, getBookDisplayName, getChromeCopy, getTestamentLabel } from '@/lib/uiScript';
-import { formatResultCount } from '@/lib/search/searchHelpers';
+import { MAX_QUERY_LENGTH, clampQuery, formatResultCount, normalizeSpacedReference } from '@/lib/search/searchHelpers';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { type Verse, type Book } from '@/types/verse';
@@ -41,7 +41,6 @@ import { shuffleArray } from '@/lib/utils';
 import type { SearchResult } from '@/types/search';
 import MaskSettings from '@/components/settings/MaskSettings';
 import ReaderTextSizeSetting from '@/components/settings/ReaderTextSizeSetting';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import MasonryLayout from '@/components/verses/MasonryLayout';
 import { trackUser } from '@/lib/statsUtils';
@@ -840,7 +839,8 @@ export default function HomePage() {
 
   // 搜索处理（防抖 150ms）
   const handleSearchChange = useCallback(
-    (value: string) => {
+    (rawValue: string) => {
+      const value = clampQuery(rawValue);
       setSearchQuery(value);
       searchRequestRef.current += 1;
       const requestId = searchRequestRef.current;
@@ -863,7 +863,7 @@ export default function HomePage() {
         try {
           if (requestId !== searchRequestRef.current) return;
 
-          const referenceResults = await searchByReferenceOnly(value);
+          const referenceResults = await searchByReferenceOnly(normalizeSpacedReference(value.trim()));
           if (requestId !== searchRequestRef.current) return;
 
           if (referenceResults.length > 0) {
@@ -1080,7 +1080,7 @@ export default function HomePage() {
     return counts;
   }, [favoritesVersesData, books]);
 
-  if (loading) return <LoadingSpinner language={language} />;
+  // No full-screen spinner on first load: the header and search render immediately; only the card area waits.
   if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
 
   return (
@@ -1339,6 +1339,8 @@ export default function HomePage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
+                onFocus={() => void import('@/lib/search/runClientSearch').then((m) => m.preloadSearch())}
+                maxLength={MAX_QUERY_LENGTH}
                 onKeyDown={(e) => {
                   if (e.key === 'Escape' && searchQuery) {
                     e.preventDefault();
@@ -2435,10 +2437,12 @@ export default function HomePage() {
 
         {/* 经文卡片区域 */}
         <div className="relative z-0 mx-auto max-w-6xl">
-          {loadingChapter || loadingFavorites ? (
-            <div className="text-center py-12">
+          {loading || loadingChapter || loadingFavorites ? (
+            <div className="text-center py-12" role="status" aria-busy="true">
               <div className="inline-block w-8 h-8 border-4 border-bible-300 dark:border-gray-600 border-t-bible-600 dark:border-t-bible-400 rounded-full animate-spin"></div>
-              <p className="mt-4 text-stone-500 dark:text-stone-400 font-chinese">加载经文中...</p>
+              <p className="mt-4 text-stone-500 dark:text-stone-400 font-chinese">
+                {pick('載入經文中…', '加载经文中…')}
+              </p>
             </div>
           ) : selectedBook && selectedChapter === null ? (
             // 选择了书卷但未选择章节，显示章节选择器
@@ -2545,7 +2549,7 @@ export default function HomePage() {
             </>
           ) : (
             <div className="text-center py-20">
-              <p className="text-stone-500 dark:text-stone-400 font-chinese">暂无经文</p>
+              <p className="text-stone-500 dark:text-stone-400 font-chinese">{pick('暫無經文', '暂无经文')}</p>
             </div>
           )}
         </div>
