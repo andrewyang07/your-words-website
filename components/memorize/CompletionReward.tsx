@@ -102,13 +102,15 @@ export function CompletionReward({
       transition={{ duration }}
       className={`mx-auto flex items-center justify-center gap-4 ${kind === 'round' ? 'flex-col' : 'max-w-xl rounded-3xl border border-stone-900/10 bg-white/40 px-4 py-4 dark:border-white/10 dark:bg-white/[0.035] sm:flex-row'}`}
     >
-      <Seal
-        seal={seal}
-        label={messages.sealLabel(seal)}
-        kind={kind}
-        assisted={assistanceCount > 0}
-        reducedMotion={shouldReduceMotion}
-      />
+      {kind === 'stage' && (
+        <Seal
+          seal={seal}
+          label={messages.sealLabel(seal)}
+          kind={kind}
+          assisted={assistanceCount > 0}
+          reducedMotion={shouldReduceMotion}
+        />
+      )}
       <div className={kind === 'round' ? 'text-center' : 'min-w-0 text-left'}>
         <p className="flex items-center justify-center gap-1.5 font-serif text-lg font-semibold tracking-[0.12em] text-stone-900 dark:text-stone-100 sm:justify-start">
           <CheckCircle2 className="h-4 w-4 text-[#963a30] dark:text-[#d58375]" aria-hidden="true" />

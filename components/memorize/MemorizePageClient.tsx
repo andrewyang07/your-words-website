@@ -31,6 +31,8 @@ import {
   singleInitialInput,
   singleZhuyinInput,
   skipMemorizationStage,
+  withStageRecall,
+  completeReadingStage,
   withAcceptedPhonetics,
   type MemorizationSession,
   type RecallKeyboardInput,
@@ -394,10 +396,9 @@ export default function MemorizePageClient() {
         if (stage === 1 || stage === 2) {
           const key = stage === 1 ? 'partial30' : 'partial65';
           const recall = pressMaskedInitial(current.maskRecall[key], current.units, current.masks[key], input);
-          return { ...current, maskRecall: { ...current.maskRecall, [key]: recall } };
+          return withStageRecall(current, stage, recall);
         }
-        const recall = pressInitial(current.recall, current.units, input);
-        return { ...current, recall };
+        return withStageRecall(current, 3, pressInitial(current.recall, current.units, input));
       });
     },
     [stage],
@@ -624,10 +625,9 @@ export default function MemorizePageClient() {
       if (stage === 1 || stage === 2) {
         const key = stage === 1 ? 'partial30' : 'partial65';
         const recall = revealMaskedCurrentUnit(current.maskRecall[key], current.units, current.masks[key]);
-        return { ...current, maskRecall: { ...current.maskRecall, [key]: recall } };
+        return withStageRecall(current, stage, recall);
       }
-      const recall = revealCurrentUnit(current.recall, current.units);
-      return { ...current, recall };
+      return withStageRecall(current, 3, revealCurrentUnit(current.recall, current.units));
     });
   };
 
@@ -734,7 +734,13 @@ export default function MemorizePageClient() {
             )}
           </div>
         ) : (
-          <button onClick={() => void enterStage(stage + 1)} className="memorize-primary mx-auto mt-7 max-w-xs">
+          <button
+            onClick={() => {
+              setSession((current) => (current ? completeReadingStage(current) : current));
+              void enterStage(stage + 1);
+            }}
+            className="memorize-primary mx-auto mt-7 max-w-xs"
+          >
             {activeCopy.continue}
             <ChevronRight className="h-4 w-4" />
           </button>

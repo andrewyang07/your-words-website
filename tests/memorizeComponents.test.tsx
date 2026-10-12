@@ -264,14 +264,14 @@ describe('deep memorization controls', () => {
     expect(view.queryByRole('img')).toBeNull();
   });
 
-  it('announces current-round assistance and skips with the full-round seal', () => {
+  it('announces current-round assistance and skips with the round level text and no seal graphic', () => {
     const view = render(
       <CompletionReward kind="round" language="simplified" assistanceCount={3} skippedStageCount={1} />,
     );
 
     expect(view.getByRole('status').textContent).toContain('藏于心');
     expect(view.getByRole('status').textContent).toContain('本轮使用了 3 次提示，跳过了 1 个阶段');
-    expect(view.getByLabelText('藏于心朱印')).toBeTruthy();
+    expect(view.queryByTestId('completion-seal')).toBeNull();
   });
 
   it('keeps traditional completion semantics in reduced-motion mode', () => {
@@ -281,13 +281,11 @@ describe('deep memorization controls', () => {
 
     expect(view.getByRole('status').textContent).toContain('藏於心');
     expect(view.getByRole('status').textContent).toContain('本輪未使用提示，也沒有跳過階段');
-    expect(view.getByLabelText('藏於心朱印')).toBeTruthy();
+    expect(view.queryByTestId('completion-seal')).toBeNull();
   });
 
-  it('exposes round and stage seal accessible names in Traditional and Simplified', () => {
+  it('exposes stage seal accessible names in Traditional and Simplified', () => {
     const cases = [
-      { kind: 'round' as const, language: 'traditional' as const, assistanceCount: 0, label: '藏於心朱印' },
-      { kind: 'round' as const, language: 'simplified' as const, assistanceCount: 0, label: '藏于心朱印' },
       { kind: 'stage' as const, language: 'traditional' as const, assistanceCount: 0, label: '熟記朱印' },
       { kind: 'stage' as const, language: 'simplified' as const, assistanceCount: 0, label: '熟记朱印' },
       { kind: 'stage' as const, language: 'traditional' as const, assistanceCount: 1, label: '漸熟朱印' },
@@ -307,7 +305,7 @@ describe('deep memorization controls', () => {
   it('does not render the removed outer blot on animated or reduced-motion seals', () => {
     const animated = render(
       <CompletionReward
-        kind="round"
+        kind="stage"
         language="traditional"
         assistanceCount={0}
         skippedStageCount={0}
@@ -319,7 +317,7 @@ describe('deep memorization controls', () => {
     animated.unmount();
 
     const reduced = render(
-      <CompletionReward kind="round" language="simplified" assistanceCount={0} skippedStageCount={0} reducedMotion />,
+      <CompletionReward kind="stage" language="simplified" assistanceCount={0} skippedStageCount={0} reducedMotion />,
     );
     assertNoOuterBlot(reduced.container);
     expect(reduced.queryByTestId('seal-outer-blot')).toBeNull();
@@ -387,7 +385,49 @@ describe('deep memorization controls', () => {
     fireEvent.click(view.getByRole('button', { name: '跳过本轮' }));
     await view.findByRole('heading', { name: '本轮结束' });
     expect(view.getByText('本轮未使用提示，跳过了 4 个阶段。')).toBeTruthy();
-    expect(view.getByLabelText('藏于心朱印')).toBeTruthy();
+    expect(view.queryByTestId('completion-seal')).toBeNull();
+  });
+
+  it('skip → go back → complete manually clears the skip and earns the level', async () => {
+    window.history.replaceState({}, '', '/memorize?v=43-3-16');
+    useFavoritesStore.setState({ favorites: new Set() });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({ 约翰福音: { 3: { 16: '神。' } } }) })),
+    );
+
+    const view = render(<MemorizePageClient />);
+    await view.findByRole('heading', { name: '先读一遍，不急着记' });
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByText('本阶段未使用提示，已独立完成。');
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
+
+    // Skip stage 2, then go back to it.
+    fireEvent.click(view.getByRole('button', { name: '跳过' }));
+    await view.findByRole('heading', { name: '按每个字的拼音首字母' });
+    fireEvent.click(view.getByRole('button', { name: '返回上一步' }));
+    await view.findByRole('heading', { name: '只留少量线索，再想一遍' });
+    expect(view.getByText('本阶段已跳过，不计作完成。')).toBeTruthy();
+
+    fireEvent.click(view.getByRole('button', { name: '知道了' }));
+    // Complete it manually: the skip record is cleared and the stage earns 熟记.
+    await waitFor(() => {
+      fireEvent.keyDown(window, { key: 's' });
+      expect(view.getByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
+    });
+    expect(view.queryByText('本阶段已跳过，不计作完成。')).toBeNull();
+    expect(view.getByLabelText('熟记朱印')).toBeTruthy();
+
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '按每个字的拼音首字母' });
+    await waitFor(() => {
+      fireEvent.keyDown(window, { key: 's' });
+      expect(view.getByText('本阶段未使用提示，已独立完成。')).toBeTruthy();
+    });
+    fireEvent.click(view.getByRole('button', { name: '继续' }));
+    await view.findByRole('heading', { name: '本轮结束' });
+    expect(view.getByText('本轮未使用提示，也没有跳过阶段。')).toBeTruthy();
   });
 
   it('does not offer Continue for an incomplete masked stage', async () => {

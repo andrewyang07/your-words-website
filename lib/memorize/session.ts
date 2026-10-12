@@ -296,6 +296,34 @@ export function skipMemorizationStage(
   return { ...session, skippedStages };
 }
 
+/**
+ * Store a stage's recall progress. If the user had skipped this stage and has now gone back and finished it
+ * themselves, the skip no longer describes what happened, so its record is cleared and the level is computed
+ * from the final state.
+ */
+export function withStageRecall(
+  session: MemorizationSession,
+  stage: 1 | 2 | 3,
+  recall: RecallState,
+): MemorizationSession {
+  const next =
+    stage === 3
+      ? { ...session, recall }
+      : { ...session, maskRecall: { ...session.maskRecall, [stage === 1 ? 'partial30' : 'partial65']: recall } };
+  if (!recall.complete || recall.skipped || !session.skippedStages.has(stage)) return next;
+  const skippedStages = new Set(session.skippedStages);
+  skippedStages.delete(stage);
+  return { ...next, skippedStages };
+}
+
+/** The reading stage has no recall; finishing it (Continue) clears an earlier skip. */
+export function completeReadingStage(session: MemorizationSession): MemorizationSession {
+  if (!session.skippedStages.has(0)) return session;
+  const skippedStages = new Set(session.skippedStages);
+  skippedStages.delete(0);
+  return { ...session, skippedStages };
+}
+
 export function completionFactsForStage(
   session: MemorizationSession,
   stage: MemorizationStageNumber,
