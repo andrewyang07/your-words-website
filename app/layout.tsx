@@ -3,6 +3,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import AppStoreStorageSync from '@/components/AppStoreStorageSync';
+import { HOME_HINT_BOOT_SCRIPT } from '@/components/home/RevealHint';
 import ScriptText from '@/components/ui/ScriptText';
 import type { Metadata } from 'next';
 import './globals.css';
@@ -153,6 +154,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `,
           }}
         />
+        {/* Hide a dismissed home hint before first paint (no flash / no layout shift). */}
+        <script dangerouslySetInnerHTML={{ __html: HOME_HINT_BOOT_SCRIPT }} />
       </head>
       <body className="antialiased" suppressHydrationWarning>
         <AppStoreStorageSync />
