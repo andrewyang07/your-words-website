@@ -56,6 +56,19 @@ export default function NoteList({
     if (isOpen) void loadNotes();
   }, [isOpen, loadNotes, version]);
 
+  // Esc closes the drawer (first cancels a pending delete confirmation).
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      e.preventDefault();
+      if (confirmDeleteId) setConfirmDeleteId(null);
+      else onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose, confirmDeleteId]);
+
   const handleDelete = async (id: string) => {
     setConfirmDeleteId(null);
     await deleteNote(id);

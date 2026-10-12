@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { displayNoteTitle, extractTitle } from '../lib/noteStorage';
 import { createMdxEditorTranslation } from '../lib/mdxEditorI18n';
@@ -47,6 +47,15 @@ describe('note list', () => {
     // Not hover-only: no unconditional opacity-0, touch-sized target.
     expect(del.className).not.toMatch(/(^|\s)opacity-0(\s|$)/);
     expect(del.className).toContain('min-h-[44px]');
+  });
+});
+
+describe('note list keyboard', () => {
+  it('closes on Escape', () => {
+    const onClose = vi.fn();
+    render(<NoteList isOpen onClose={onClose} currentNoteId="n1" onSelectNote={() => {}} onNewNote={() => {}} />);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
 
