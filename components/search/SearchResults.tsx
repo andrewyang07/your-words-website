@@ -27,7 +27,7 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="rounded-2xl border border-bible-200 dark:border-gray-700 p-5 animate-pulse bg-white dark:bg-gray-800"
+            className="rounded-2xl border border-bible-200 dark:border-white/10 p-5 animate-pulse bg-white dark:bg-[#211d17]"
           >
             <div className="h-4 bg-bible-200 dark:bg-gray-700 rounded w-1/3 mb-4" />
             <div className="h-3 bg-bible-100 dark:bg-gray-700/70 rounded w-full mb-2" />

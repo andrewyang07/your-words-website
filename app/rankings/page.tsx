@@ -358,7 +358,12 @@ export default function RankingsPage() {
         <div className="max-w-4xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 font-chinese">
           <p>{chrome.blessing} 🙏</p>
           <p className="mt-2 text-xs">
-            {pick('© 2025 你的話語 · Made with ❤️ for Christ', '© 2025 你的话语 · Made with ❤️ for Christ')}
+            <span suppressHydrationWarning>
+              {pick(
+                `© ${new Date().getFullYear()} 你的話語 · Made with ❤️ for Christ`,
+                `© ${new Date().getFullYear()} 你的话语 · Made with ❤️ for Christ`,
+              )}
+            </span>
           </p>
         </div>
       </footer>
