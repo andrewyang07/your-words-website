@@ -4,6 +4,8 @@ import path from 'node:path';
 import { cleanup, configure, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
+import LanguageToggle from '../components/search/LanguageToggle';
+import { useSearchStore } from '../stores/useSearchStore';
 import HomePageClient from '../components/home/HomePageClient';
 import { useFavoritesStore } from '../stores/useFavoritesStore';
 import { useAppStore } from '../stores/useAppStore';
@@ -177,7 +179,7 @@ describe('home mobile/dark polish (QA group 5)', () => {
     useFavoritesStore.setState({ favorites: new Set(['创世记-1-1']) });
     await renderHome(false);
     const clear = await screen.findByTestId('favorites-filter-clear');
-    expect(screen.getByText('只看收藏')).toBeTruthy();
+    expect(screen.queryByText(/只看收藏/)).toBeNull(); // the status bar already says 我的收藏 N
     fireEvent.click(clear);
     await waitFor(() => expect(screen.queryByTestId('favorites-filter-clear')).toBeNull());
     expect(screen.getByText('我的收藏')).toBeTruthy();
@@ -185,8 +187,10 @@ describe('home mobile/dark polish (QA group 5)', () => {
 
   it('mobile header icons carry visible labels and a visible theme toggle exists', async () => {
     await renderHome();
-    for (const label of ['统计', '设置', '菜单', '阅读', '深色'])
-      expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+    for (const label of ['设置', '菜单', '阅读', '深色']) expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+    // 375px: the stats button (also in footer/drawer) is dropped so the brand name never truncates
+    expect(screen.getByTestId('mobile-stats-button').className).toMatch(/(^|\s)hidden(\s|$)/);
+    expect(screen.getByTestId('mobile-stats-button').className).toContain('min-[420px]:flex');
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(useAppStore.getState().theme).toBe('dark');
   });
@@ -212,5 +216,15 @@ describe('home mobile/dark polish (QA group 5)', () => {
     const toast = src.slice(src.indexOf('data-testid="share-toast"') - 300, src.indexOf('data-testid="share-toast"'));
     expect(toast).toContain('bottom-5');
     expect(toast).not.toMatch(/top-24/);
+  });
+});
+
+describe('search language toggle (dark)', () => {
+  it('selected tab uses the warm palette, not blue-gray', () => {
+    useSearchStore.setState({ searchLang: 'zh' });
+    render(<LanguageToggle />);
+    const selected = screen.getAllByRole('button').find((b) => b.className.includes('shadow-sm'))!;
+    expect(selected.className).not.toMatch(/dark:bg-(gray|slate|blue)-/);
+    expect(selected.className).toContain('dark:text-gold-200');
   });
 });

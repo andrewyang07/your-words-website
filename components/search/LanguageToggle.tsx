@@ -20,7 +20,7 @@ export default function LanguageToggle() {
           onClick={() => setSearchLang(opt.value)}
           className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
             searchLang === opt.value
-              ? 'bg-white dark:bg-gray-700 text-bible-800 dark:text-bible-200 shadow-sm'
+              ? 'bg-white dark:bg-white/[0.1] text-bible-800 dark:text-gold-200 shadow-sm'
               : 'text-bible-600 dark:text-bible-400 hover:text-bible-800 dark:hover:text-bible-200'
           }`}
         >

@@ -1143,7 +1143,8 @@ export default function HomePage() {
               {/* 全局统计 - 移动端（紧凑，可点击）*/}
               <button
                 onClick={() => setShowStatsModal(true)}
-                className="flex md:hidden flex-col items-center justify-center gap-0.5 px-1.5 py-1 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[40px]"
+                data-testid="mobile-stats-button"
+                className="hidden min-[420px]:flex md:hidden flex-col items-center justify-center gap-0.5 px-1.5 py-1 rounded-xl text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] touch-manipulation min-h-[44px] min-w-[40px]"
                 title={language === 'traditional' ? '查看全站統計' : '查看全站统计'}
                 aria-label={
                   statsLoading
@@ -1420,10 +1421,8 @@ export default function HomePage() {
             >
               <Star className={`w-4 h-4 ${filterType === 'favorites' ? 'fill-white' : ''}`} />
               <span className="font-chinese text-sm">
-                <span className={filterType === 'favorites' ? 'inline' : 'hidden sm:inline'}>
-                  {filterType === 'favorites' ? (language === 'traditional' ? '只看收藏' : '只看收藏') : '我的收藏'}
-                </span>
-                <span className="sm:ml-1 tabular-nums">{favoritesCount}</span>
+                <span className="hidden sm:inline">我的收藏</span>
+                <span className="tabular-nums sm:ml-1">{favoritesCount}</span>
               </span>
             </button>
 
