@@ -1829,6 +1829,7 @@ export default function HomePage() {
           onViewChapter={handleViewChapterFromMenu}
           language={language}
           onLanguageChange={handleLanguageChange}
+          onOpenStats={() => setShowStatsModal(true)}
         />
 
         {/* 移动端统计 modal */}

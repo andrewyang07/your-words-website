@@ -4,6 +4,7 @@ import path from 'node:path';
 import { cleanup, configure, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJSONStorage } from 'zustand/middleware';
+import SideMenu from '../components/navigation/SideMenu';
 import LanguageToggle from '../components/search/LanguageToggle';
 import { useSearchStore } from '../stores/useSearchStore';
 import HomePageClient from '../components/home/HomePageClient';
@@ -216,6 +217,34 @@ describe('home mobile/dark polish (QA group 5)', () => {
     const toast = src.slice(src.indexOf('data-testid="share-toast"') - 300, src.indexOf('data-testid="share-toast"'));
     expect(toast).toContain('bottom-5');
     expect(toast).not.toMatch(/top-24/);
+  });
+});
+
+describe('stats popup from the side menu (phones < 420px)', () => {
+  it('menu 统计 item opens the same stats popup', async () => {
+    await renderHome();
+    stats.resolve(json({ totalUsers: 844, totalFavorites: 66 }));
+    fireEvent.click(screen.getByRole('button', { name: '打开菜单' }));
+    const item = await screen.findByTestId('menu-open-stats');
+    expect(item.textContent).toContain('统计');
+    fireEvent.click(item);
+    const heading = await screen.findByRole('heading', { name: '全站统计' });
+    await waitFor(() => expect(heading.parentElement!.textContent).toContain('844'));
+  });
+
+  it('menu item reads 統計 in Traditional', () => {
+    render(
+      <SideMenu
+        isOpen
+        onClose={() => undefined}
+        theme="light"
+        onThemeChange={() => undefined}
+        language="traditional"
+        onLanguageChange={() => undefined}
+        onOpenStats={() => undefined}
+      />,
+    );
+    expect(screen.getByTestId('menu-open-stats').textContent).toContain('統計');
   });
 });
 
