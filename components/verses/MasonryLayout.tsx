@@ -14,12 +14,22 @@ interface MasonryLayoutProps {
   defaultRevealed?: boolean;
 }
 
+/** Cards that render full text immediately; later ones reveal in idle time (see VerseCard deferReveal). */
+export const EAGER_REVEAL_COUNT = 8;
+
 interface PositionedVerseCardProps extends Omit<MasonryLayoutProps, 'verses'> {
   verse: Verse;
+  deferReveal: boolean;
   position?: OrderedMasonryPosition;
 }
 
-function PositionedVerseCard({ verse, position, onViewInBible, defaultRevealed }: PositionedVerseCardProps) {
+function PositionedVerseCard({
+  verse,
+  position,
+  onViewInBible,
+  defaultRevealed,
+  deferReveal,
+}: PositionedVerseCardProps) {
   return (
     <div
       data-masonry-id={verse.id}
@@ -32,6 +42,7 @@ function PositionedVerseCard({ verse, position, onViewInBible, defaultRevealed }
           size={getCardSize(verse)}
           onViewInBible={() => onViewInBible?.(verse)}
           defaultRevealed={defaultRevealed}
+          deferReveal={deferReveal}
         />
       </div>
     </div>
@@ -53,13 +64,14 @@ export default function MasonryLayout({ verses, onViewInBible, defaultRevealed =
         className="relative motion-safe:transition-[height] motion-safe:duration-200"
         style={{ height: layout.containerHeight, visibility: layout.positions[0]?.width ? 'visible' : 'hidden' }}
       >
-        {verses.map((verse) => (
+        {verses.map((verse, index) => (
           <PositionedVerseCard
             key={verse.id}
             verse={verse}
             position={positions.get(verse.id)}
             onViewInBible={onViewInBible}
             defaultRevealed={defaultRevealed}
+            deferReveal={index >= EAGER_REVEAL_COUNT}
           />
         ))}
       </div>
