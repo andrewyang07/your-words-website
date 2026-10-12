@@ -422,11 +422,11 @@ export default function BibleNoteClient() {
             <button
               onClick={() => setShowNoteList(true)}
               className="flex min-h-[44px] items-center gap-2 rounded-xl px-2.5 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] sm:px-3 md:px-4 touch-manipulation"
-              title="笔记列表"
-              aria-label="打开笔记列表"
+              title={pick('筆記列表', '笔记列表')}
+              aria-label={pick('打開筆記列表', '打开笔记列表')}
             >
               <FileText className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="hidden text-sm font-chinese sm:inline">笔记</span>
+              <span className="hidden text-sm font-chinese sm:inline">{pick('筆記', '笔记')}</span>
             </button>
 
             <div className="relative z-[220] overflow-visible">
@@ -485,8 +485,8 @@ export default function BibleNoteClient() {
               <button
                 onClick={() => setShowMoreMenu(!showMoreMenu)}
                 className="flex min-h-[44px] items-center gap-2 rounded-xl px-2.5 py-2 text-stone-600 transition hover:bg-white/55 dark:text-stone-300 dark:hover:bg-white/[0.06] sm:px-3 md:px-4 touch-manipulation"
-                title="更多笔记工具"
-                aria-label="更多笔记工具"
+                title={pick('更多筆記工具', '更多笔记工具')}
+                aria-label={pick('更多筆記工具', '更多笔记工具')}
               >
                 <MoreHorizontal className="h-4 w-4 md:h-5 md:w-5" />
                 <span className="hidden text-sm font-chinese sm:inline">更多</span>
@@ -504,7 +504,7 @@ export default function BibleNoteClient() {
                             : 'absolute right-0 z-[9999] mt-2 w-56 space-y-1 rounded-2xl border border-stone-900/10 bg-white p-3 shadow-[0_24px_70px_rgba(68,64,60,0.24)] dark:border-amber-200/10 dark:bg-[#17130f]'
                         }
                         role="menu"
-                        aria-label="更多笔记工具"
+                        aria-label={pick('更多筆記工具', '更多笔记工具')}
                       >
                         <OcrImporter onInsertReferences={handleInsertFromOcr} />
                         <button
@@ -515,7 +515,7 @@ export default function BibleNoteClient() {
                           className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-white/[0.08]"
                         >
                           <HelpCircle className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-                          <span className="font-chinese">使用说明</span>
+                          <span className="font-chinese">{pick('使用說明', '使用说明')}</span>
                         </button>
                         <button
                           onClick={() => {
@@ -526,7 +526,7 @@ export default function BibleNoteClient() {
                           className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-300 dark:hover:bg-red-950/30"
                         >
                           <Trash2 className="h-4 w-4" />
-                          <span className="font-chinese">清空当前笔记</span>
+                          <span className="font-chinese">{pick('清空當前筆記', '清空当前笔记')}</span>
                         </button>
                       </div>
                     </>
@@ -612,8 +612,10 @@ export default function BibleNoteClient() {
                     </h4>
                     <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
                       {pick('直接寫下經文引用（如', '直接写下经文引用（如')}{' '}
-                      <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">约3:16</code> 或{' '}
-                      <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">John 3:17</code>
+                      <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">
+                        {pick('約3:16', '约3:16')}
+                      </code>{' '}
+                      或 <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">John 3:17</code>
                       {pick('），右側會自動生成經文邊注。', '），右侧会自动生成经文边注。')}
                     </p>
                   </div>
@@ -622,7 +624,9 @@ export default function BibleNoteClient() {
                 <div className="flex items-start gap-3">
                   <Search className="w-5 h-5 text-bible-600 dark:text-bible-400 mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">/ 斜杠命令</h4>
+                    <h4 className="font-semibold text-bible-800 dark:text-bible-200 mb-1 font-chinese">
+                      {pick('/ 斜槓命令', '/ 斜杠命令')}
+                    </h4>
                     <p className="text-sm text-bible-600 dark:text-bible-400 font-chinese">
                       {pick('在空行開頭輸入', '在空行开头输入')}{' '}
                       <code className="px-1 py-0.5 bg-bible-100 dark:bg-gray-700 rounded text-xs">/</code>{' '}
@@ -667,7 +671,12 @@ export default function BibleNoteClient() {
                 <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
                   <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 font-chinese mb-2">重要提示</p>
                   <ul className="text-xs text-amber-700 dark:text-amber-300 font-chinese space-y-1 ml-4">
-                    <li>支持多篇笔记，点击顶部「笔记」按钮管理笔记列表</li>
+                    <li>
+                      {pick(
+                        '支持多篇筆記，點擊頂部「筆記」按鈕管理筆記列表',
+                        '支持多篇笔记，点击顶部「笔记」按钮管理笔记列表',
+                      )}
+                    </li>
                     <li>
                       {pick('數據保存在瀏覽器本地，清除瀏覽器數據會丟失', '数据保存在浏览器本地，清除浏览器数据会丢失')}
                     </li>

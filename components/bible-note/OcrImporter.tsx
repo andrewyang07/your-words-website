@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { ImagePlus, Loader2, ScanText, Check, X } from 'lucide-react';
 import { parseVerseReferences, type VerseReference } from '@/lib/verseParser';
+import { useScriptPick } from '@/lib/useScriptPick';
 
 declare global {
   interface Window {
@@ -44,6 +45,7 @@ function loadTesseractScript(): Promise<void> {
 }
 
 export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
+  const pick = useScriptPick();
   const [isOpen, setIsOpen] = useState(false);
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [ocrProgress, setOcrProgress] = useState(0);
@@ -114,7 +116,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
       setSelectedRefs(new Set(autoRefs.map((r) => r.original)));
     } catch (err) {
       console.error('OCR recognition error:', err);
-      setError('OCR 识别失败，请尝试更清晰的图片或稍后重试。');
+      setError('ocr-failed');
     } finally {
       setIsRecognizing(false);
     }
@@ -134,11 +136,11 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-white/[0.08] touch-manipulation"
-        title="OCR 识别并插入经文引用（Beta）"
-        aria-label="OCR 识别并插入经文引用"
+        title={pick('OCR 識別並插入經文引用（Beta）', 'OCR 识别并插入经文引用（Beta）')}
+        aria-label={pick('OCR 識別並插入經文引用', 'OCR 识别并插入经文引用')}
       >
         <ScanText className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-        <span className="font-chinese">OCR 识别截图</span>
+        <span className="font-chinese">{pick('OCR 識別截圖', 'OCR 识别截图')}</span>
       </button>
 
       {isOpen && (
@@ -146,16 +148,19 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h4 className="font-semibold text-bible-800 dark:text-stone-100 font-chinese">
-                OCR 识别经文引用（Beta）
+                {pick('OCR 識別經文引用（Beta）', 'OCR 识别经文引用（Beta）')}
               </h4>
               <p className="text-xs text-bible-500 dark:text-stone-400 font-chinese">
-                纯前端本地识别，不上传服务器。建议上传清晰截图。
+                {pick(
+                  '純前端本地識別，不上傳服務器。建議上傳清晰截圖。',
+                  '纯前端本地识别，不上传服务器。建议上传清晰截图。',
+                )}
               </p>
             </div>
             <button
               onClick={() => setIsOpen(false)}
               className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-white/[0.08] transition-colors"
-              aria-label="关闭 OCR 面板"
+              aria-label={pick('關閉 OCR 面板', '关闭 OCR 面板')}
             >
               <X className="w-4 h-4 text-bible-600 dark:text-stone-400" />
             </button>
@@ -181,7 +186,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
           >
             <ImagePlus className="w-5 h-5 text-bible-600 dark:text-amber-300" />
             <span className="text-sm font-chinese text-bible-700 dark:text-stone-300">
-              上传 / 拖放 / 粘贴截图（jpg/png）
+              {pick('上傳 / 拖放 / 粘貼截圖（jpg/png）', '上传 / 拖放 / 粘贴截图（jpg/png）')}
             </span>
             <input
               type="file"
@@ -200,7 +205,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
               <div className="flex items-center gap-2 mb-2">
                 <Loader2 className="w-4 h-4 animate-spin text-bible-600 dark:text-amber-300" />
                 <span className="text-sm font-chinese text-bible-700 dark:text-stone-300">
-                  识别中... {ocrProgress}%
+                  {pick('識別中…', '识别中…')} {ocrProgress}%
                 </span>
               </div>
               <div className="h-2 bg-bible-200 dark:bg-black/30 rounded-full overflow-hidden">
@@ -209,13 +214,19 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
             </div>
           )}
 
-          {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400 font-chinese">{error}</p>}
+          {error && (
+            <p className="mt-3 text-sm text-red-600 dark:text-red-400 font-chinese">
+              {error === 'ocr-failed'
+                ? pick('OCR 識別失敗，請嘗試更清晰的圖片或稍後重試。', 'OCR 识别失败，请尝试更清晰的图片或稍后重试。')
+                : error}
+            </p>
+          )}
 
           {references.length > 0 && (
             <div className="mt-3 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-bible-500 dark:text-stone-400 font-chinese">
-                  识别到 {references.length} 条引用
+                  {pick('識別到', '识别到')} {references.length} {pick('條引用', '条引用')}
                 </span>
                 <button
                   onClick={() => {
@@ -227,7 +238,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                   }}
                   className="text-xs text-bible-600 dark:text-amber-300 hover:underline font-chinese"
                 >
-                  {selectedRefs.size === references.length ? '取消全选' : '全选'}
+                  {selectedRefs.size === references.length ? pick('取消全選', '取消全选') : pick('全選', '全选')}
                 </button>
               </div>
               <div className="max-h-48 overflow-y-auto border border-bible-200 dark:border-amber-200/10 rounded-lg p-2 space-y-1">
@@ -253,7 +264,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
 
               <label className="flex items-center gap-2 text-sm font-chinese text-bible-700 dark:text-stone-300">
                 <input type="checkbox" checked={expandOnInsert} onChange={(e) => setExpandOnInsert(e.target.checked)} />
-                插入后自动展开经文内容
+                {pick('插入後自動展開經文內容', '插入后自动展开经文内容')}
               </label>
 
               <button
@@ -261,7 +272,7 @@ export default function OcrImporter({ onInsertReferences }: OcrImporterProps) {
                 disabled={selectedRefs.size === 0}
                 className="w-full h-10 rounded-lg bg-bible-500 hover:bg-bible-600 disabled:bg-bible-300 text-white font-chinese transition-colors"
               >
-                插入已选引用 ({selectedRefs.size})
+                {pick('插入已選引用', '插入已选引用')} ({selectedRefs.size})
               </button>
             </div>
           )}

@@ -21,6 +21,7 @@ import { useState, useEffect } from 'react';
 import ReaderTextSizeSetting from '@/components/settings/ReaderTextSizeSetting';
 import { getBookDisplayName, getMenuCopy } from '@/lib/uiScript';
 import booksData from '@/public/data/books.json';
+import { toScript, useScriptConverters } from '@/lib/search/scriptConvert';
 
 interface SideMenuProps {
   isOpen: boolean;
@@ -56,6 +57,8 @@ export default function SideMenu({
   const [topVerses, setTopVerses] = useState<TopVerse[]>([]);
   const [topVersesLoading, setTopVersesLoading] = useState(true);
   const copy = getMenuCopy(language);
+  // Top-verse text from the stats API is stored in one script; render it in the UI script.
+  const converters = useScriptConverters(isOpen && topVerses.some((v) => Boolean(v.text)));
 
   const resolveBookLabel = (verse: TopVerse) => {
     const parts = verse.verseId.split('-');
@@ -383,7 +386,7 @@ export default function SideMenu({
                               {/* 经文内容 - 小字显示，完整内容 */}
                               {verse.text && (
                                 <p className="text-[10px] text-stone-500 dark:text-stone-400 font-chinese mt-1 leading-relaxed">
-                                  {verse.text}
+                                  {toScript(verse.text, language, converters)}
                                 </p>
                               )}
                               <p className="flex items-center gap-1 mt-1">

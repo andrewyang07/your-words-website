@@ -79,12 +79,14 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
           >
             {/* 头部 */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-bible-200 dark:border-amber-200/10">
-              <h3 className="font-semibold text-bible-800 dark:text-stone-100 font-chinese">我的笔记</h3>
+              <h3 className="font-semibold text-bible-800 dark:text-stone-100 font-chinese">
+                {pick('我的筆記', '我的笔记')}
+              </h3>
               <div className="flex items-center gap-2">
                 <button
                   onClick={onNewNote}
                   className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bible-500 hover:bg-bible-600 text-white text-sm font-chinese transition-colors"
-                  aria-label="新建笔记"
+                  aria-label={pick('新建筆記', '新建笔记')}
                 >
                   <Plus className="w-3.5 h-3.5" />
                   新建
@@ -92,7 +94,7 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
                 <button
                   onClick={onClose}
                   className="p-1.5 rounded-lg hover:bg-bible-100 dark:hover:bg-white/[0.08] transition-colors"
-                  aria-label="关闭笔记列表"
+                  aria-label={pick('關閉筆記列表', '关闭笔记列表')}
                 >
                   <X className="w-4 h-4 text-bible-600 dark:text-stone-400" />
                 </button>
@@ -104,7 +106,9 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
               {notes.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
                   <FileText className="w-10 h-10 text-bible-300 dark:text-stone-600" />
-                  <p className="text-sm text-bible-500 dark:text-stone-400 font-chinese">还没有笔记，点击新建开始</p>
+                  <p className="text-sm text-bible-500 dark:text-stone-400 font-chinese">
+                    {pick('還沒有筆記，點擊新建開始', '还没有笔记，点击新建开始')}
+                  </p>
                 </div>
               ) : (
                 notes.map((note) => (
@@ -156,7 +160,7 @@ export default function NoteList({ isOpen, onClose, currentNoteId, onSelectNote,
                           setConfirmDeleteId(note.id);
                         }}
                         className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all flex-shrink-0 mt-0.5"
-                        aria-label="删除笔记"
+                        aria-label={pick('刪除筆記', '删除笔记')}
                       >
                         <Trash2 className="w-3.5 h-3.5 text-red-500" />
                       </button>

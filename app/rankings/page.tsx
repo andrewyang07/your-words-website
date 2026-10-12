@@ -112,11 +112,11 @@ export default function RankingsPage() {
               onClick={() => router.push('/help')}
               className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
               style={{ WebkitTapHighlightColor: 'transparent' }}
-              title="显示使用帮助"
-              aria-label="显示使用帮助"
+              title={pick('顯示使用幫助', '显示使用帮助')}
+              aria-label={pick('顯示使用幫助', '显示使用帮助')}
             >
               <HelpCircle className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="hidden sm:inline font-chinese text-sm">帮助</span>
+              <span className="hidden sm:inline font-chinese text-sm">{pick('幫助', '帮助')}</span>
             </button>
             <button
               onClick={() => setLanguage(language === 'simplified' ? 'traditional' : 'simplified')}
@@ -132,8 +132,12 @@ export default function RankingsPage() {
               onClick={() => setShowAllContent(!showAllContent)}
               className="liquid-button flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
               style={{ WebkitTapHighlightColor: 'transparent' }}
-              title={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
-              aria-label={showAllContent ? '切换到背诵模式' : '切换到阅读模式'}
+              title={
+                showAllContent ? pick('切換到背誦模式', '切换到背诵模式') : pick('切換到閱讀模式', '切换到阅读模式')
+              }
+              aria-label={
+                showAllContent ? pick('切換到背誦模式', '切换到背诵模式') : pick('切換到閱讀模式', '切换到阅读模式')
+              }
               aria-pressed={showAllContent}
             >
               {showAllContent ? (
@@ -141,7 +145,9 @@ export default function RankingsPage() {
               ) : (
                 <Eye className="w-4 h-4 md:w-5 md:h-5" />
               )}
-              <span className="hidden sm:inline font-chinese text-sm">{showAllContent ? '背诵' : '阅读'}</span>
+              <span className="hidden sm:inline font-chinese text-sm">
+                {showAllContent ? pick('背誦', '背诵') : pick('閱讀', '阅读')}
+              </span>
             </button>
           </>
         }
@@ -178,7 +184,8 @@ export default function RankingsPage() {
         {rankings.length > 0 && !loading && !error && (
           <div className="relative z-[200] mb-6 flex items-center justify-between flex-wrap gap-3 overflow-visible">
             <span className="text-sm text-stone-500 dark:text-stone-400 font-chinese">
-              共 <span className="font-semibold text-stone-700 dark:text-stone-300">{filteredRankings.length}</span> 节
+              共 <span className="font-semibold text-stone-700 dark:text-stone-300">{filteredRankings.length}</span>{' '}
+              {pick('節', '节')}
             </span>
 
             {/* 筛选按钮 */}

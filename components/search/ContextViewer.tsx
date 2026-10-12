@@ -3,9 +3,14 @@
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchStore } from '@/stores/useSearchStore';
+import { useAppStore } from '@/stores/useAppStore';
+import { getBookDisplayName } from '@/lib/uiScript';
+import { pickVerseText, useScriptConverters } from '@/lib/search/scriptConvert';
 
 export default function ContextViewer() {
   const { contextVerse, setContextVerse, searchLang } = useSearchStore();
+  const language = useAppStore((s) => s.language);
+  const converters = useScriptConverters(Boolean(contextVerse));
 
   if (!contextVerse) return null;
 
@@ -36,12 +41,12 @@ export default function ContextViewer() {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-bible-200 dark:border-gray-700">
               <h3 className="text-lg font-bold text-bible-800 dark:text-bible-200 font-chinese">
-                {contextVerse.bookKey} {contextVerse.chapter}章
+                {getBookDisplayName(contextVerse.bookKey, language)} {contextVerse.chapter}章
               </h3>
               <button
                 onClick={() => setContextVerse(null)}
                 className="p-2 hover:bg-bible-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                aria-label="关闭"
+                aria-label={language === 'traditional' ? '關閉' : '关闭'}
               >
                 <X className="w-5 h-5 text-bible-600 dark:text-bible-400" />
               </button>
@@ -69,7 +74,7 @@ export default function ContextViewer() {
                           : 'text-bible-700 dark:text-bible-300'
                       }`}
                     >
-                      {v.textChinese}
+                      {pickVerseText(v.textChinese, undefined, language, converters)}
                     </p>
                   )}
                   {showEnglish && (

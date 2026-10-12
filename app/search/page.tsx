@@ -118,7 +118,7 @@ function SearchPageInner() {
             <button
               onClick={() => setShowHelpPanel(!showHelpPanel)}
               className="liquid-button inline-flex min-h-[44px] items-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
-              aria-label="切换搜索帮助"
+              aria-label={language === 'traditional' ? '切換搜索幫助' : '切换搜索帮助'}
             >
               <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-stone-700 dark:text-stone-300" />
               <span className="hidden sm:inline font-chinese text-stone-700 dark:text-stone-300 text-sm">
@@ -128,7 +128,7 @@ function SearchPageInner() {
             <button
               onClick={() => setShowSideMenu(true)}
               className="liquid-button inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 py-2 text-stone-600 transition-colors hover:bg-white/65 dark:text-stone-300 dark:hover:bg-white/[0.08] md:px-4 touch-manipulation"
-              aria-label="打开菜单"
+              aria-label={language === 'traditional' ? '打開選單' : '打开菜单'}
             >
               <Menu className="w-4 h-4 md:w-5 md:h-5 text-stone-700 dark:text-stone-300" />
             </button>

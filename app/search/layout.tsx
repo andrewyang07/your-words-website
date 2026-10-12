@@ -39,7 +39,12 @@ export default function SearchLayout({ children }: { children: React.ReactNode }
         traditional="聖經搜索 - 中文、英文、拼音快速查經"
         simplified="圣经搜索 - 中文、英文、拼音快速查经"
       />
-      <section className="sr-only" aria-label="聖經搜索簡介">
+      <section
+        className="sr-only"
+        aria-label="圣经搜索简介"
+        data-aria-label-simplified="圣经搜索简介"
+        data-aria-label-traditional="聖經搜索簡介"
+      >
         <h1>
           <ScriptText traditional="聖經搜索" simplified="圣经搜索" />
         </h1>

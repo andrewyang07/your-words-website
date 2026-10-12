@@ -210,7 +210,7 @@ export default function MemorizePageClient() {
   }, [session]);
 
   useEffect(() => {
-    const globalNavigation = document.querySelector<HTMLElement>('nav[aria-label="主要頁面"]');
+    const globalNavigation = document.querySelector<HTMLElement>('nav[data-global-nav]');
     if (!globalNavigation) return;
     const wasInert = Boolean(globalNavigation.inert);
     globalNavigation.inert = true;
