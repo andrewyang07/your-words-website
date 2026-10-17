@@ -38,8 +38,21 @@ beforeAll(async () => {
   });
   const pagefind = (await import(
     /* @vite-ignore */ pathToFileURL(path.join(pagefindDir, 'pagefind.js')).href
-  )) as PagefindModule & { options: (o: Record<string, unknown>) => Promise<void> };
-  await pagefind.options({ basePath: '/pagefind/', noWorker: true });
+  )) as PagefindModule & {
+    options: (o: Record<string, unknown>) => Promise<void>;
+    search: (t: string) => Promise<unknown>;
+  };
+  // Pagefind picks its query segmenter from <html lang>. Without a DOM it falls back to "unknown" and splits CJK
+  // queries per character (不要忧虑明天 → 647 loose hits instead of 1), unlike the browser (lang="zh-Hans").
+  // Present the site's lang only while the instance is created, then remove the stub.
+  const g = globalThis as { document?: unknown };
+  g.document = { querySelector: () => ({ getAttribute: () => 'zh-Hans' }) };
+  try {
+    await pagefind.options({ basePath: '/pagefind/', noWorker: true });
+    await pagefind.search('神');
+  } finally {
+    delete g.document;
+  }
   resetPagefindClientForTests(pagefind);
   await getSearchEngine().initialize();
 });
