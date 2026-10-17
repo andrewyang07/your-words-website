@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -6,12 +5,12 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { resetPagefindClientForTests, type PagefindModule } from '../../lib/search/pagefindClient';
 import { runClientSearch } from '../../lib/search/runClientSearch';
 import { getSearchEngine } from '../../lib/search/searchEngine';
-import { evaluate, formatReport, type EvalQuery } from './evalHelpers';
+import { evaluate, formatReport, hitIds, regressions, type EvalQuery } from './evalHelpers';
 import baseline from './baseline.json';
 
 // Search eval (spec search-phase1-and-deploy-v1, T3): runs tests/search-eval/queries.json through both search paths
-// against the real corpus. Fails only if the in-scope top-5 hit count drops below the recorded baseline.
-// Regenerate the report and baseline with: SEARCH_EVAL_WRITE=1 npx vitest run tests/search-eval
+// against the real corpus. Fails if any query that hit in baseline.json is now a miss (diff printed).
+// Run: npm run test:search-eval. Regenerate report + baseline: SEARCH_EVAL_WRITE=1 npm run test:search-eval
 const root = process.cwd();
 const pagefindDir = path.join(root, 'public', 'pagefind');
 const here = path.join(root, 'tests', 'search-eval');
@@ -25,7 +24,9 @@ vi.setConfig({ testTimeout: 180_000, hookTimeout: 240_000 });
 
 beforeAll(async () => {
   if (!fs.existsSync(path.join(pagefindDir, 'pagefind.js'))) {
-    execFileSync('node', ['scripts/build-pagefind-index.mjs'], { cwd: root, stdio: 'ignore' });
+    // Built once up front (CI step / npm run test:search-eval), never inside a test: parallel test files each
+    // running the build would rm -rf public/pagefind under each other.
+    throw new Error('public/pagefind is missing. Run `npm run search:build-index` first.');
   }
   vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
@@ -66,15 +67,24 @@ describe('search eval set', () => {
     expect(queries.slice(0, 21).every((q) => q.inScope)).toBe(true);
   });
 
-  it('in-scope top-5 hits do not fall below the baseline (both paths)', async () => {
+  it('no query that hit in the baseline becomes a miss (both paths)', async () => {
     const pagefind = await evaluate(queries, async (q) => toRefs((await runClientSearch(q)).results));
     const mini = await evaluate(queries, async (q) => toRefs((await getSearchEngine().searchWithMeta(q)).results));
     if (process.env.SEARCH_EVAL_WRITE) {
       fs.writeFileSync(path.join(here, 'baseline-report.md'), formatReport({ pagefind, mini }));
-      const counts = { pagefind: pagefind.inScopeHits, mini: mini.inScopeHits, inScopeTotal: pagefind.inScopeTotal };
-      fs.writeFileSync(path.join(here, 'baseline.json'), `${JSON.stringify(counts, null, 2)}\n`);
+      const next = {
+        inScopeTotal: pagefind.inScopeTotal,
+        pagefind: { inScopeHits: pagefind.inScopeHits, hitIds: hitIds(pagefind) },
+        mini: { inScopeHits: mini.inScopeHits, hitIds: hitIds(mini) },
+      };
+      fs.writeFileSync(path.join(here, 'baseline.json'), `${JSON.stringify(next, null, 2)}\n`);
+      return;
     }
-    expect(pagefind.inScopeHits).toBeGreaterThanOrEqual(baseline.pagefind);
-    expect(mini.inScopeHits).toBeGreaterThanOrEqual(baseline.mini);
+    const lost = [
+      ...regressions('Pagefind', baseline.pagefind.hitIds, pagefind),
+      ...regressions('MiniSearch', baseline.mini.hitIds, mini),
+    ];
+    if (lost.length > 0) console.error(`Search eval regressions:\n${lost.join('\n')}`);
+    expect(lost).toEqual([]);
   });
 });

@@ -1,13 +1,13 @@
 # Search eval baseline (T3)
 
-Hit = expected verse in the top 5. Regenerate: `SEARCH_EVAL_WRITE=1 npx vitest run tests/search-eval`.
+Hit = any accepted verse in the top 5. Regenerate: `SEARCH_EVAL_WRITE=1 npm run test:search-eval`.
 
 | Path | In scope (this phase) | Appendix A (1–21) |
 |---|---|---|
-| Pagefind (primary) | 30/47 (63.8%) | 16/21 |
+| Pagefind (primary) | 31/47 (66.0%) | 17/21 |
 | MiniSearch (fallback) | 36/47 (76.6%) | 17/21 |
 
-Launch gate (Pagefind, in scope): ≥ 88.8% (baseline + 25 pts, and ≥ 80%).
+Launch gate (Pagefind, in scope): ≥ 91.0% (baseline + 25 pts, and ≥ 80%).
 
 | # | Query | Expect | Category | Scope | Pagefind | MiniSearch | Pagefind top 3 |
 |---|---|---|---|---|---|---|---|
@@ -29,8 +29,8 @@ Launch gate (Pagefind, in scope): ≥ 88.8% (baseline + 25 pts, and ≥ 80%).
 | 16 | Jn 3:16 | 约翰福音 3:16 | reference | ✓ | ✓ #1 | ✓ #1 | 约翰福音 3:16 |
 | 17 | Rom 8 28 | 罗马书 8:28 | reference | ✓ | ✓ #1 | ✓ #1 | 罗马书 8:28 |
 | 18 | 神愛世人 | 约翰福音 3:16 | traditional | ✓ | ✓ #1 | ✓ #1 | 约翰福音 3:16 |
-| 19 | 饶恕 | 马太福音 6:14 | topic | ✓ | ✓ #2 | ✓ #3 | 以赛亚书 2:9; 马太福音 6:14; 但以理书 9:9 |
-| 20 | 盼望 | 罗马书 15:13 | topic | ✓ | ✗ #49 | ✗ #14 | 罗马书 5:4; 诗篇 71:14; 诗篇 147:11 |
+| 19 | 饶恕 | 以弗所书 4:32 / 马太福音 6:14 / 歌罗西书 3:13 | topic | ✓ | ✓ #2 | ✓ #2 | 以赛亚书 2:9; 马太福音 6:14; 但以理书 9:9 |
+| 20 | 盼望 | 罗马书 15:13 / 罗马书 5:4 / 耶利米书 29:11 | topic | ✓ | ✓ #1 | ✗ #14 | 罗马书 5:4; 诗篇 71:14; 诗篇 147:11 |
 | 21 | 撒该 | 路加福音 19:2 / 路加福音 19:5 / 路加福音 19:8 | name | ✓ | ✓ #1 | ✓ #1 | 路加福音 19:2; 路加福音 19:5; 路加福音 19:8 |
 | 22 | 靠着加给我力量的 | 腓立比书 4:13 | fuzzy-memory | ✓ | ✓ #1 | ✓ #1 | 腓立比书 4:13 |
 | 23 | 上帝爱世人 | 约翰福音 3:16 | near-synonym | ✓ | ✓ #1 | ✓ #2 | 约翰福音 3:16; 约翰福音 3:19; 约翰福音 17:23 |
@@ -57,7 +57,7 @@ Launch gate (Pagefind, in scope): ≥ 88.8% (baseline + 25 pts, and ≥ 80%).
 | 44 | trust in the lord with all your heart | 箴言 3:5 | english | ✓ | ✗ | ✓ #2 |  |
 | 45 | 专心仰赖耶和华 | 箴言 3:5 | exact-phrase | ✓ | ✓ #1 | ✓ #1 | 箴言 3:5 |
 | 46 | the verse that says in nothing be anxious | 腓立比书 4:6 | colloquial-shell | ✓ | ✗ | ✗ #12 |  |
-| 47 | 平安 | 约翰福音 14:27 | topic | ✓ | ✗ | ✗ #28 | 罗马书 3:17; 诗篇 122:7; 箴言 3:17 |
-| 48 | when I feel lonely | 申命记 31:6 | semantic | 以后 | ✗ | ✗ |  |
-| 49 | 神会保护我不害怕 | 以赛亚书 41:10 | semantic | 以后 | ✗ | ✗ #9 |  |
-| 50 | what does the bible say about worry | 马太福音 6:34 | semantic | 以后 | ✗ | ✗ |  |
+| 47 | 平安 | 约翰福音 14:27 / 腓立比书 4:7 / 约翰福音 16:33 | topic | ✓ | ✗ | ✗ #28 | 罗马书 3:17; 诗篇 122:7; 箴言 3:17 |
+| 48 | when I feel lonely | 申命记 31:6 / 希伯来书 13:5 / 以赛亚书 41:10 | semantic | 以后 | ✗ | ✗ |  |
+| 49 | 神会保护我不害怕 | 以赛亚书 41:10 / 诗篇 23:4 / 诗篇 91:1 / 诗篇 91:2 | semantic | 以后 | ✗ | ✗ #9 |  |
+| 50 | what does the bible say about worry | 马太福音 6:34 / 腓立比书 4:6 / 彼得前书 5:7 | semantic | 以后 | ✗ | ✗ |  |

@@ -1,3 +1,4 @@
+/** expect: every accepted verse; a query hits when any of them is in the top 5. */
 export type EvalQuery = {
   id: number;
   query: string;
@@ -43,6 +44,21 @@ export async function evaluate(queries: EvalQuery[], search: (q: string) => Prom
   };
 }
 
+/** Ids of queries whose accepted verse is in the top 5 (all queries, including 以后 ones). */
+export const hitIds = (res: EvalResult): number[] =>
+  res.rows.filter((r) => r.rank !== null && r.rank <= TOP_N).map((r) => r.q.id);
+
+/** Human-readable lines for every baseline hit that is now a miss. */
+export function regressions(path: string, baselineHits: number[], res: EvalResult): string[] {
+  const now = new Set(hitIds(res));
+  return baselineHits
+    .filter((id) => !now.has(id))
+    .map((id) => {
+      const r = res.rows.find((row) => row.q.id === id)!;
+      return `- [${path}] #${id} ${r.q.query}: was hit, now ${r.rank ? `#${r.rank}` : 'not found'} (top 3: ${r.top.join('; ') || 'none'})`;
+    });
+}
+
 const pct = (n: number, d: number) => `${((100 * n) / d).toFixed(1)}%`;
 const cell = (r: EvalRow) => (r.rank !== null && r.rank <= TOP_N ? `✓ #${r.rank}` : r.rank ? `✗ #${r.rank}` : '✗');
 
@@ -50,10 +66,7 @@ export function formatReport({ pagefind, mini }: { pagefind: EvalResult; mini: E
   const lines: string[] = [];
   const appendix = (res: EvalResult) => res.rows.slice(0, 21).filter((r) => r.rank !== null && r.rank <= TOP_N).length;
   lines.push('# Search eval baseline (T3)', '');
-  lines.push(
-    'Hit = expected verse in the top 5. Regenerate: `SEARCH_EVAL_WRITE=1 npx vitest run tests/search-eval`.',
-    '',
-  );
+  lines.push('Hit = any accepted verse in the top 5. Regenerate: `SEARCH_EVAL_WRITE=1 npm run test:search-eval`.', '');
   lines.push('| Path | In scope (this phase) | Appendix A (1–21) |', '|---|---|---|');
   for (const [name, res] of [
     ['Pagefind (primary)', pagefind],

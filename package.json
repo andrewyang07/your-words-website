@@ -22,14 +22,15 @@
     "start": "next start",
     "lint": "eslint . && npm run lint:tw-opacity && npm run format:check",
     "lint:tw-opacity": "node scripts/check-tailwind-opacity.mjs",
-    "test:unit": "vitest run",
+    "test:unit": "vitest run --exclude 'tests/search-eval/**'",
     "type-check": "tsc --noEmit",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run",
+    "test": "vitest run --exclude 'tests/search-eval/**'",
     "check": "npm run lint && npm run type-check && npm run test:unit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:search-eval": "vitest run tests/search-eval"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.18",

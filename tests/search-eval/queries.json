@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "hitRule": "any expected verse within the top 5 results (topic queries: the most-memorized verse must be in the top 5)",
+  "hitRule": "hit = any accepted verse (expect[]) within the top 5 results",
   "queries": [
     {
       "id": 1,
@@ -138,18 +138,18 @@
     {
       "id": 19,
       "query": "饶恕",
-      "expect": ["马太福音 6:14"],
+      "expect": ["以弗所书 4:32", "马太福音 6:14", "歌罗西书 3:13"],
       "category": "topic",
       "inScope": true,
-      "note": "G5; most-memorized verse provisional (spec Q2)"
+      "note": "G5; accepted verses decided by roro 2026-10-17"
     },
     {
       "id": 20,
       "query": "盼望",
-      "expect": ["罗马书 15:13"],
+      "expect": ["罗马书 15:13", "罗马书 5:4", "耶利米书 29:11"],
       "category": "topic",
       "inScope": true,
-      "note": "G5; most-memorized verse provisional (spec Q2)"
+      "note": "G5; accepted verses decided by roro 2026-10-17"
     },
     {
       "id": 21,
@@ -350,15 +350,15 @@
     {
       "id": 47,
       "query": "平安",
-      "expect": ["约翰福音 14:27"],
+      "expect": ["约翰福音 14:27", "腓立比书 4:7", "约翰福音 16:33"],
       "category": "topic",
       "inScope": true,
-      "note": "G5; most-memorized verse provisional"
+      "note": "G5; accepted verses decided by roro 2026-10-17"
     },
     {
       "id": 48,
       "query": "when I feel lonely",
-      "expect": ["申命记 31:6"],
+      "expect": ["申命记 31:6", "希伯来书 13:5", "以赛亚书 41:10"],
       "category": "semantic",
       "inScope": false,
       "note": "以后: no shared keywords"
@@ -366,7 +366,7 @@
     {
       "id": 49,
       "query": "神会保护我不害怕",
-      "expect": ["以赛亚书 41:10"],
+      "expect": ["以赛亚书 41:10", "诗篇 23:4", "诗篇 91:1", "诗篇 91:2"],
       "category": "semantic",
       "inScope": false,
       "note": "以后: meaning only"
@@ -374,7 +374,7 @@
     {
       "id": 50,
       "query": "what does the bible say about worry",
-      "expect": ["马太福音 6:34"],
+      "expect": ["马太福音 6:34", "腓立比书 4:6", "彼得前书 5:7"],
       "category": "semantic",
       "inScope": false,
       "note": "以后: meaning only"

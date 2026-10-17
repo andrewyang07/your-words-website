@@ -43,8 +43,15 @@ jobs:
       - name: Type-check
         run: npm run type-check
 
+      # Built once before tests: test files must not build it themselves (parallel builds rm -rf each other's output).
+      - name: Build search index
+        run: npm run search:build-index
+
       - name: Run unit tests
         run: npm run test:unit
+
+      - name: Search eval (no per-query regressions vs baseline)
+        run: npm run test:search-eval
 
       # No Upstash/Redis secrets are provided on purpose: the production build must not depend on them.
       - name: Build
