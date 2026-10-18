@@ -93,7 +93,8 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
             type="button"
             onClick={() => void showMore()}
             disabled={loadingMore}
-            className="rounded-full border border-bible-200 px-4 py-2 text-sm text-bible-700 font-chinese hover:bg-bible-50 disabled:opacity-60 dark:border-white/10 dark:text-bible-200 dark:hover:bg-white/5"
+            // Same button style as the /search header actions (app/search/page.tsx).
+            className="liquid-button inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-4 py-2 font-chinese text-sm text-stone-600 transition-colors hover:bg-white/65 disabled:opacity-60 dark:text-stone-300 dark:hover:bg-white/[0.08] touch-manipulation"
           >
             {loadingMore
               ? language === 'traditional'

@@ -137,8 +137,7 @@ describe('T6: initials and 多音字 (real index)', () => {
     for (const q of [a, b]) {
       const { results } = await runClientSearch(q);
       expect(results.length).toBeGreaterThan(0);
-      // Top 20: the alternate reading also matches other words (zhong sheng = 众生/众圣 rank above 重生, #14).
-      expect(results.slice(0, 20).some((r) => (r.textSimplified || r.textChinese).includes(word))).toBe(true);
+      expect(results.slice(0, 5).some((r) => (r.textSimplified || r.textChinese).includes(word))).toBe(true);
     }
   });
 });

@@ -70,3 +70,23 @@ describe('T6: initials and 多音字', () => {
     expect(pinyinIndexTokens(['shen', 'ai', 'shi', 'ren'])).toEqual(expect.arrayContaining(['ptsas', 'ptasr']));
   });
 });
+
+describe('whole-word pinyin pairs (pw)', () => {
+  it('indexes a reading pair only when both characters are in one word', () => {
+    // 在|世人|中|升高: 中升 spans two words, 升高 is one word.
+    const tokens = pinyinIndexTokens(['zai', 'shi', 'ren', 'zhong', 'sheng', 'gao'], [0, 1, 1, 2, 3, 3]);
+    expect(tokens).toContain('pwshiren');
+    expect(tokens).toContain('pwshenggao');
+    expect(tokens).not.toContain('pwzhongsheng');
+    expect(tokens).toContain('pbzhongsheng');
+  });
+  it('covers every reading of a 多音字 word (重生 → chong / zhong)', () => {
+    expect(pinyinIndexTokens([['chong', 'zhong'], 'sheng'], [0, 0])).toEqual(
+      expect.arrayContaining(['pwchongsheng', 'pwzhongsheng']),
+    );
+  });
+  it('query: two syllables also search the word pair', () => {
+    expect(pinyinQueryTerms(['zhong', 'sheng'], false).word).toBe('pwzhongsheng');
+    expect(pinyinQueryTerms(['shen', 'ai', 'shi', 'ren'], false).word).toBeNull();
+  });
+});

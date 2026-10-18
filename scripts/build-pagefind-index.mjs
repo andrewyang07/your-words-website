@@ -48,13 +48,35 @@ const stripTone = (value) =>
     .replace(/[\u0300-\u036f]/g, '');
 
 // Per character: in-context reading first, then the other readings of a 多音字 (行 → xing, hang, heng). T6.
-const readingsOf = (value) =>
-  pinyin(value || '', { type: 'all', toneType: 'none' })
-    .filter((c) => c.pinyin)
-    .map((c) => [c.pinyin, ...(c.polyphonic ?? []).map(stripTone)].map(cleanSyllable).filter(Boolean));
+const wordSegmenter = new Intl.Segmenter('zh', { granularity: 'word' });
+
+/** Readings per character plus, for each, the index of the word (Intl.Segmenter) it belongs to. */
+const readingsOf = (value) => {
+  const text = value || '';
+  const wordAt = [];
+  let word = 0;
+  for (const { segment } of wordSegmenter.segment(text)) {
+    for (let k = 0; k < segment.length; k += 1) wordAt.push(word);
+    word += 1;
+  }
+  const chars = pinyin(text, { type: 'all', toneType: 'none' }).map((c, i) => ({ c, w: wordAt[i] }));
+  const kept = chars.filter(({ c }) => c.pinyin);
+  return {
+    readings: kept.map(({ c }) =>
+      [c.pinyin, ...(c.polyphonic ?? []).map(stripTone)].map(cleanSyllable).filter(Boolean),
+    ),
+    wordIds: kept.map(({ w }) => w),
+  };
+};
 
 // Pinyin goes into its own prefixed token namespace (lib/search/pinyinTokens.mjs), apart from English words.
-const toPinyinTokens = (...values) => values.flatMap((value) => pinyinIndexTokens(readingsOf(value))).join(' ');
+const toPinyinTokens = (...values) =>
+  values
+    .flatMap((value) => {
+      const { readings, wordIds } = readingsOf(value);
+      return pinyinIndexTokens(readings, wordIds);
+    })
+    .join(' ');
 
 /** Synthetic search tokens follow this word in each record; post-processing cuts them out of the stored text. */
 const TOKEN_SENTINEL = 'zzpagefindtokenszz';

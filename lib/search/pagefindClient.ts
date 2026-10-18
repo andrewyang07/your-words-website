@@ -370,6 +370,8 @@ function mapPagefindData(data: PagefindResultData, fallbackScore: number, query:
 /** Pinyin matches (exact pairs / whole-verse prefix) vs 模糊音 pairs; comparable to the English tier (≤ ~50k). */
 const PINYIN_TIER = 60_000;
 const PINYIN_FUZZY_TIER = 45_000;
+/** The two syllables as one word (pw: 重生 / 众生 for "zhong sheng"), above a pair that spans two words (中|升). */
+const PINYIN_WORD_TIER = 80_000;
 /** Initials matches: below a full English match (coverage alone is 30k), above engine-rank noise. */
 const INITIALS_TIER = 25_000;
 
@@ -400,6 +402,7 @@ function pinyinSearchesFor(trimmed: string): { term: string; weight: number }[] 
   const pinyinSyllables = segmentPinyin(trimmed);
   const pinyinTerms = pinyinSyllables ? pinyinQueryTerms(pinyinSyllables, !/\s/.test(trimmed)) : null;
   const searches: { term: string; weight: number }[] = [];
+  if (pinyinTerms?.word) searches.push({ term: pinyinTerms.word, weight: PINYIN_WORD_TIER });
   if (pinyinTerms?.exact) searches.push({ term: pinyinTerms.exact, weight: PINYIN_TIER });
   if (pinyinTerms?.prefix) searches.push({ term: pinyinTerms.prefix, weight: PINYIN_TIER });
   if (pinyinTerms?.fuzzy) searches.push({ term: pinyinTerms.fuzzy, weight: PINYIN_FUZZY_TIER });
