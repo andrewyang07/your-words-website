@@ -102,6 +102,7 @@ export default function SearchResultCard({ result, index, isSelected }: SearchRe
 
   return (
     <div
+      data-search-result
       className={`group rounded-2xl border p-5 transition-all cursor-pointer ${
         isSelected
           ? 'border-bible-400 dark:border-bible-500 bg-bible-50/80 dark:bg-[#211d17] shadow-sm'

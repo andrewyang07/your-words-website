@@ -113,6 +113,35 @@ export function moreWordsHint(query: string, traditional: boolean): string {
  * is and only append the new ones, so nothing the user is looking at moves (layout shift). With nothing shown,
  * the incoming list is used as-is. loadMore is wrapped the same way.
  */
+/**
+ * Pinyin results that arrive after the main results are on screen: keep the first `keep` shown results (the ones
+ * the user can see) in place and order everything below them by the merged score. `keep` 0 means nothing is
+ * visible yet, so the merged list is used as-is. Never moves a visible card, so no layout shift.
+ */
+export function mergeKeepingVisible(shown: SearchResult[], incoming: SearchResponse, keep: number): SearchResponse {
+  if (shown.length === 0 || keep <= 0) return incoming;
+  const head = shown.slice(0, keep);
+  const ids = new Set(head.map((r) => r.id));
+  const results = [...head, ...incoming.results.filter((r) => !ids.has(r.id))];
+  const next = incoming.loadMore;
+  return {
+    results,
+    truncated: incoming.truncated,
+    ...(next ? { loadMore: async () => appendNewResults(results, await next()) } : {}),
+  };
+}
+
+/** Number of result cards whose top edge is inside the viewport (cards marked with data-search-result). */
+export function visibleResultCount(): number {
+  if (typeof document === 'undefined') return 0;
+  const cards = document.querySelectorAll('[data-search-result]');
+  let n = 0;
+  cards.forEach((el, i) => {
+    if (el.getBoundingClientRect().top < window.innerHeight) n = i + 1;
+  });
+  return n;
+}
+
 export function appendNewResults(shown: SearchResult[], incoming: SearchResponse): SearchResponse {
   if (shown.length === 0) return incoming;
   const ids = new Set(shown.map((r) => r.id));
