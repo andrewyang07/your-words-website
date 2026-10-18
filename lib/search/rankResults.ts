@@ -10,6 +10,7 @@ import { hasCjk, phraseScore } from './searchHelpers';
  *   phrase       whole query (any script variant) inside the verse            100_000 / 80_000 (phraseScore)
  *   bigrams      share of the query's CJK bigrams present in the verse         up to 50_000
  *   english      whole-word coverage + density for Latin queries               up to ~50_000
+ *   pinyin       pinyin sub-search tier (T5), caller-supplied
  *   synonym      hook for T7 (query expansion)                                 caller-supplied
  *   popular      hook for T9 (static popularity snapshot)                      caller-supplied
  *   engine rank  the engine's own order                                        0–1000
@@ -21,6 +22,8 @@ export type RankContext = {
   simplified: string;
   /** Script variants of the query (original, Traditional, Simplified, corrections). */
   variants: string[];
+  /** Pinyin tier from the engine's pinyin sub-searches (T5); Latin input is scored as pinyin and English apart. */
+  pinyinBoost?: (result: SearchResult) => number;
   synonymBoost?: (result: SearchResult) => number;
   popularBoost?: (result: SearchResult) => number;
 };
@@ -106,6 +109,7 @@ export function rankResults(candidates: SearchResult[], ctx: RankContext): Searc
       phrase +
       bigramCoverage(grams, simplifiedText(result)) +
       (latin ? englishRelevance(ctx.query, result.textEnglish) : 0) +
+      (ctx.pinyinBoost?.(result) ?? 0) +
       (ctx.synonymBoost?.(result) ?? 0) +
       (ctx.popularBoost?.(result) ?? 0) +
       Math.round((1 - i / n) * ENGINE_RANK_WEIGHT);

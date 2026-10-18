@@ -83,3 +83,25 @@ export type SearchResponse = {
   results: SearchResult[];
   truncated: boolean;
 };
+
+/**
+ * Terms so frequent that a Pagefind word search for them scores 14k–25k pages and takes 1–2.5 s (的 2.2 s, the
+ * 1.8 s, of 1.2 s). The word sub-search drops them when other terms remain (pagefindClient dropStopTerms).
+ */
+export const HEAVY_CJK = /的/g;
+export const HEAVY_WORDS = new Set(['the', 'and', 'of', 'to', 'i']);
+
+/** The query is made only of heavy stop terms (的, 的的, the, "of the"), so search returns nothing for it. */
+export function isOnlyStopTerms(query: string): boolean {
+  const q = query.trim();
+  if (!q) return false;
+  if (hasCjk(q)) return q.replace(HEAVY_CJK, '').replace(/[\s\p{P}]/gu, '') === '';
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  return words.length > 0 && words.every((w) => HEAVY_WORDS.has(w));
+}
+
+/** Hint for an empty result caused by a stop-term-only query (Latin query → English). */
+export function moreWordsHint(query: string, traditional: boolean): string {
+  if (!hasCjk(query)) return 'Please type a few more words';
+  return traditional ? '請多輸入幾個字' : '请多输入几个字';
+}

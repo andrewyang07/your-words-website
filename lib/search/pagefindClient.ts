@@ -1,6 +1,14 @@
 import type { SearchResult } from '@/types/search';
+import { segmentPinyin, pinyinQueryTerms } from './pinyinTokens.mjs';
 import { rankResults } from './rankResults';
-import { DEFAULT_SEARCH_LIMIT, hasCjk, phraseScore, type SearchResponse } from './searchHelpers';
+import {
+  DEFAULT_SEARCH_LIMIT,
+  HEAVY_CJK,
+  HEAVY_WORDS,
+  hasCjk,
+  phraseScore,
+  type SearchResponse,
+} from './searchHelpers';
 
 export { hasCjk } from './searchHelpers';
 export { cjkBigrams, englishRelevance, requireAllBigramsWhenPhraseHits } from './rankResults';
@@ -286,6 +294,22 @@ function mapPagefindData(data: PagefindResultData, fallbackScore: number, query:
  * Pagefind search with OpenCC query variants + phrase boost.
  * Returns truncated=true when more than `limit` unique hits exist.
  */
+/** Pinyin matches (exact pairs / whole-verse prefix) vs 模糊音 pairs; comparable to the English tier (≤ ~50k). */
+const PINYIN_TIER = 60_000;
+const PINYIN_FUZZY_TIER = 45_000;
+
+/** Drop heavy stop terms (searchHelpers HEAVY_*) from a word sub-search; null when nothing would remain. */
+export function dropStopTerms(term: string): string | null {
+  if (hasCjk(term)) {
+    const rest = term.replace(HEAVY_CJK, '');
+    return /[\u3400-\u9fff]/.test(rest) ? rest : null;
+  }
+  const words = term.split(/\s+/).filter(Boolean);
+  const kept = words.filter((w) => !HEAVY_WORDS.has(w.toLowerCase()));
+  if (kept.length === 0) return null;
+  return kept.length === words.length ? term : kept.join(' ');
+}
+
 export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_LIMIT): Promise<SearchResponse> {
   const trimmed = query.trim();
   if (!trimmed) return { results: [], truncated: false };
@@ -293,21 +317,39 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
   const failuresBefore = pagefindFetchFailures;
   const pagefind = await loadPagefind();
   const variants = await getQueryVariants(trimmed);
+  const cjk = hasCjk(trimmed);
   // Pagefind's zh segmenter only indexes dictionary words (出发, 以马内利 were unfindable), so CJK queries also
   // search the bigram tokens the index build adds for the Simplified text.
-  const bigramQuery = hasCjk(trimmed) ? toCjkBigramQuery((await loadOpenCC()).toSimplified(trimmed)) : null;
-  const searches = bigramQuery ? [...variants, bigramQuery] : variants;
+  const bigramQuery = cjk ? toCjkBigramQuery((await loadOpenCC()).toSimplified(trimmed)) : null;
+  // G1 (T5): Latin input is tried both as English (variants) and as pinyin (prefixed pinyin tokens), scored apart.
+  const pinyinSyllables = cjk ? null : segmentPinyin(trimmed);
+  const pinyinTerms = pinyinSyllables ? pinyinQueryTerms(pinyinSyllables, !/\s/.test(trimmed)) : null;
+  const pinyinSearches: { term: string; weight: number }[] = [];
+  if (pinyinTerms?.exact) pinyinSearches.push({ term: pinyinTerms.exact, weight: PINYIN_TIER });
+  if (pinyinTerms?.prefix) pinyinSearches.push({ term: pinyinTerms.prefix, weight: PINYIN_TIER });
+  if (pinyinTerms?.fuzzy) pinyinSearches.push({ term: pinyinTerms.fuzzy, weight: PINYIN_FUZZY_TIER });
+
+  const wordSearches = unique(variants.map(dropStopTerms).filter((v): v is string => v !== null));
+  const searches = [...wordSearches, ...(bigramQuery ? [bigramQuery] : []), ...pinyinSearches.map((p) => p.term)];
   const responses = await Promise.all(searches.map((term) => pagefind.search(term, { excerptLength: 12 })));
   // Engine relevance = sum over the sub-searches (each script variant + the bigram search) of 1 − rank/len, so a
   // verse found high by several sub-searches beats one found by a single search; raw Pagefind scores of
-  // different sub-searches are not comparable.
+  // different sub-searches are not comparable. Pinyin sub-searches also give a pinyin tier from their own rank.
   const byId = new Map<string, SearchResult>();
-  for (const response of responses) {
+  const pinyinScore = new Map<string, number>();
+  const pinyinOffset = searches.length - pinyinSearches.length;
+  for (let index = 0; index < responses.length; index += 1) {
+    const response = responses[index]!;
     const top = response.results.slice(0, Math.max(limit * 3, 100));
     const data = await Promise.all(top.map(loadResultData));
+    const weight = index >= pinyinOffset ? pinyinSearches[index - pinyinOffset]!.weight : 0;
     data.forEach((resultData, rank) => {
       const mapped = mapPagefindData(resultData, 1 - rank / top.length, '');
       if (!mapped) return;
+      if (weight > 0) {
+        const tier = Math.round(weight * (1 - rank / (2 * top.length)));
+        pinyinScore.set(mapped.id, Math.max(pinyinScore.get(mapped.id) ?? 0, tier));
+      }
       const existing = byId.get(mapped.id);
       if (existing) existing.score += mapped.score;
       else byId.set(mapped.id, mapped);
@@ -316,7 +358,12 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
   const candidates = [...byId.values()];
   // Shared with the MiniSearch fallback (T4): phrase / bigram / English tiers + engine-rank tiebreak.
   const simplified = hasCjk(trimmed) ? (await loadOpenCC()).toSimplified(trimmed) : trimmed;
-  const ranked = rankResults(candidates, { query: trimmed, simplified, variants });
+  const ranked = rankResults(candidates, {
+    query: trimmed,
+    simplified,
+    variants,
+    pinyinBoost: (r) => pinyinScore.get(r.id) ?? 0,
+  });
 
   if (pagefindFetchFailures > failuresBefore) {
     throw new PagefindLoadError('a /pagefind/ index or fragment request failed during this search');

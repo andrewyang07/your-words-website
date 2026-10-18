@@ -29,7 +29,14 @@ import Image from 'next/image';
 import { useVerseStore } from '@/stores/useVerseStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { bookMatchesFilter, getBookDisplayName, getChromeCopy, getTestamentLabel } from '@/lib/uiScript';
-import { MAX_QUERY_LENGTH, clampQuery, formatResultCount, normalizeSpacedReference } from '@/lib/search/searchHelpers';
+import {
+  MAX_QUERY_LENGTH,
+  clampQuery,
+  formatResultCount,
+  isOnlyStopTerms,
+  moreWordsHint,
+  normalizeSpacedReference,
+} from '@/lib/search/searchHelpers';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMaskStore } from '@/stores/useMaskStore';
 import { type Verse, type Book } from '@/types/verse';
@@ -2500,10 +2507,12 @@ export default function HomePage() {
                   {searchQuery}」
                 </p>
                 <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-chinese">
-                  {pick(
-                    '可以試試引用、繁簡另一種寫法，或拼音，例如 約3:16 / 神愛世人 / yuehan。',
-                    '可以试试引用、繁简另一种写法，或拼音，例如 约3:16 / 神爱世人 / yuehan。',
-                  )}
+                  {isOnlyStopTerms(searchQuery)
+                    ? moreWordsHint(searchQuery, language === 'traditional')
+                    : pick(
+                        '可以試試引用、繁簡另一種寫法，或拼音，例如 約3:16 / 神愛世人 / yuehan。',
+                        '可以试试引用、繁简另一种写法，或拼音，例如 约3:16 / 神爱世人 / yuehan。',
+                      )}
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                   {(language === 'traditional'
