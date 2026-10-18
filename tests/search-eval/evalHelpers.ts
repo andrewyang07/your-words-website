@@ -76,8 +76,12 @@ export function formatReport({ pagefind, mini }: { pagefind: EvalResult; mini: E
       `| ${name} | ${res.inScopeHits}/${res.inScopeTotal} (${pct(res.inScopeHits, res.inScopeTotal)}) | ${appendix(res)}/21 |`,
     );
   }
-  const target = Math.min(100, Math.max(80, (100 * pagefind.inScopeHits) / pagefind.inScopeTotal + 25));
-  lines.push('', `Launch gate (Pagefind, in scope): ≥ ${target.toFixed(1)}% (baseline + 25 pts, and ≥ 80%).`, '');
+  const gate = 43;
+  lines.push(
+    '',
+    `Launch gate (spec §3.3): Pagefind in scope ≥ ${gate}/${pagefind.inScopeTotal}. Now ${pagefind.inScopeHits}/${pagefind.inScopeTotal} — ${pagefind.inScopeHits >= gate ? 'met' : `${gate - pagefind.inScopeHits} short`}.`,
+    '',
+  );
   lines.push(
     '| # | Query | Expect | Category | Scope | Pagefind | MiniSearch | Pagefind top 3 |',
     '|---|---|---|---|---|---|---|---|',

@@ -31,8 +31,19 @@ beforeAll(async () => {
   });
   const pagefind = (await import(
     /* @vite-ignore */ pathToFileURL(path.join(pagefindDir, 'pagefind.js')).href
-  )) as PagefindModule & { options: (o: Record<string, unknown>) => Promise<void> };
-  await pagefind.options({ basePath: '/pagefind/', noWorker: true });
+  )) as PagefindModule & {
+    options: (o: Record<string, unknown>) => Promise<void>;
+    search: (t: string) => Promise<unknown>;
+  };
+  // Pagefind picks its CJK query segmenter from <html lang>; give it the site's lang (zh-Hans) like the browser.
+  const g = globalThis as { document?: unknown };
+  g.document = { querySelector: () => ({ getAttribute: () => 'zh-Hans' }) };
+  try {
+    await pagefind.options({ basePath: '/pagefind/', noWorker: true });
+    await pagefind.search('神');
+  } finally {
+    delete g.document;
+  }
   resetPagefindClientForTests(pagefind);
 });
 
