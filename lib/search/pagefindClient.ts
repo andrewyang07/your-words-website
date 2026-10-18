@@ -1,7 +1,9 @@
 import type { SearchResult } from '@/types/search';
+import { rankResults } from './rankResults';
 import { DEFAULT_SEARCH_LIMIT, hasCjk, phraseScore, type SearchResponse } from './searchHelpers';
 
 export { hasCjk } from './searchHelpers';
+export { cjkBigrams, englishRelevance, requireAllBigramsWhenPhraseHits } from './rankResults';
 
 type PagefindResultData = {
   meta?: Record<string, string>;
@@ -223,54 +225,6 @@ export function chapterToken(bookOrder: number, chapter: number): string {
   return `ch${bookOrder}x${chapter}`;
 }
 
-/**
- * English relevance on top of Pagefind's stemmed score: whole-word matches of every query term, weighted by how
- * focused the verse is (matches / √words). "love" → 1 Jn 4:8 "God is love" before long verses that merely
- * contain love/loved/beloved several times.
- */
-export function englishRelevance(query: string, text: string): number {
-  const terms = query.toLowerCase().match(/[a-z']+/g);
-  if (!terms || !text) return 0;
-  const words = text.toLowerCase().match(/[a-z']+/g) ?? [];
-  if (words.length === 0) return 0;
-  let matched = 0;
-  let hits = 0;
-  for (const term of new Set(terms)) {
-    const count = words.filter((w) => w === term).length;
-    if (count > 0) matched += 1;
-    hits += Math.min(count, 2);
-  }
-  if (matched === 0) return 0;
-  const coverage = matched / new Set(terms).size;
-  const density = hits / Math.sqrt(words.length);
-  return Math.round(coverage * 30_000 + density * 20_000);
-}
-
-/** Simplified CJK bigrams of a query (e.g. 以马内利 → 以马, 马内, 内利). */
-export function cjkBigrams(simplified: string): string[] {
-  const grams: string[] = [];
-  for (const run of simplified.match(/[\u3400-\u9fff]+/g) ?? []) {
-    for (let i = 0; i + 1 < run.length; i += 1) grams.push(run.slice(i, i + 2));
-  }
-  return [...new Set(grams)];
-}
-
-/**
- * Multi-character CJK queries: when some results contain the whole phrase, drop results that do not contain
- * every bigram of it (以马内利 used to include 赛 7:8, which has none of the phrase).
- */
-export function requireAllBigramsWhenPhraseHits(results: SearchResult[], simplifiedQuery: string): SearchResult[] {
-  const phrase = (simplifiedQuery.match(/[\u3400-\u9fff]+/g) ?? []).join('');
-  const grams = cjkBigrams(simplifiedQuery);
-  if (phrase.length < 2 || grams.length === 0) return results;
-  const text = (r: SearchResult) => (r.textSimplified ?? '') || r.textChinese;
-  if (!results.some((r) => text(r).includes(phrase))) return results;
-  return results.filter((r) => grams.every((g) => text(r).includes(g)));
-}
-
-/** Bigram (contiguous-ish CJK) hits rank above plain Pagefind word hits; exact phrases rank above both. */
-const BIGRAM_TIER = 50_000;
-
 async function loadResultData(result: PagefindSearchResult): Promise<PagefindResultData> {
   let resultData: PagefindResultData | undefined;
   try {
@@ -344,56 +298,33 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
   const bigramQuery = hasCjk(trimmed) ? toCjkBigramQuery((await loadOpenCC()).toSimplified(trimmed)) : null;
   const searches = bigramQuery ? [...variants, bigramQuery] : variants;
   const responses = await Promise.all(searches.map((term) => pagefind.search(term, { excerptLength: 12 })));
+  // Engine relevance = sum over the sub-searches (each script variant + the bigram search) of 1 − rank/len, so a
+  // verse found high by several sub-searches beats one found by a single search; raw Pagefind scores of
+  // different sub-searches are not comparable.
   const byId = new Map<string, SearchResult>();
-
-  for (let index = 0; index < responses.length; index += 1) {
-    const response = responses[index]!;
-    const isBigram = bigramQuery !== null && index === responses.length - 1;
-    const data = await Promise.all(response.results.slice(0, Math.max(limit * 3, 100)).map(loadResultData));
+  for (const response of responses) {
+    const top = response.results.slice(0, Math.max(limit * 3, 100));
+    const data = await Promise.all(top.map(loadResultData));
     data.forEach((resultData, rank) => {
-      const mapped = mapPagefindData(resultData, (response.results[rank]?.score ?? 0) - rank / 1000, '');
+      const mapped = mapPagefindData(resultData, 1 - rank / top.length, '');
       if (!mapped) return;
       const existing = byId.get(mapped.id);
-      const tier = isBigram ? BIGRAM_TIER : 0;
-      if (existing) {
-        existing.score = Math.max(existing.score, mapped.score + tier);
-      } else {
-        byId.set(mapped.id, {
-          ...mapped,
-          score: mapped.score + tier,
-        });
-      }
+      if (existing) existing.score += mapped.score;
+      else byId.set(mapped.id, mapped);
     });
   }
-
-  // Phrase boost against every variant and both scripts (the first variant may be Simplified while
-  // textChinese is Traditional, which used to leave the right verses unboosted).
-  const latinQuery = !hasCjk(trimmed) && /[a-z]/i.test(trimmed);
-  const merged: SearchResult[] = [...byId.values()].map((result) => {
-    const textSimplified = result.textSimplified ?? '';
-    const english = latinQuery ? englishRelevance(trimmed, result.textEnglish) : 0;
-    let best = 0;
-    for (const variant of variants) {
-      best = Math.max(
-        best,
-        phraseScore(variant, { ...result, score: 0 }),
-        phraseScore(variant, { ...result, textChinese: textSimplified, score: 0 }),
-      );
-    }
-    return { ...result, score: result.score + best + english };
-  });
-  const filtered = hasCjk(trimmed)
-    ? requireAllBigramsWhenPhraseHits(merged, (await loadOpenCC()).toSimplified(trimmed))
-    : merged;
+  const candidates = [...byId.values()];
+  // Shared with the MiniSearch fallback (T4): phrase / bigram / English tiers + engine-rank tiebreak.
+  const simplified = hasCjk(trimmed) ? (await loadOpenCC()).toSimplified(trimmed) : trimmed;
+  const ranked = rankResults(candidates, { query: trimmed, simplified, variants });
 
   if (pagefindFetchFailures > failuresBefore) {
     throw new PagefindLoadError('a /pagefind/ index or fragment request failed during this search');
   }
 
-  const sorted = filtered.sort((a, b) => b.score - a.score);
-  const truncated = sorted.length > limit;
+  const truncated = ranked.length > limit;
   return {
-    results: sorted.slice(0, limit),
+    results: ranked.slice(0, limit),
     truncated,
   };
 }

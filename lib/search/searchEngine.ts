@@ -11,6 +11,7 @@ import { isExactBookName } from '@/lib/verseParser';
 import { parseReference } from './referenceParser';
 import { buildPinyinIndexAsync, searchPinyin, type PinyinIndex } from './fuzzyPinyin';
 import { DEFAULT_SEARCH_LIMIT, hasCjk, type SearchResponse } from './searchHelpers';
+import { rankResults } from './rankResults';
 import { webBookName } from './webBookName';
 
 type BibleJSON = Record<string, Record<string, Record<string, string>>>;
@@ -366,15 +367,6 @@ class SearchEngine {
       const bookEnglish = englishMap.get(bookKey) || '';
       const textEnglish = english[webBookName(bookEnglish)]?.[String(chapter)]?.[String(verse)] || '';
 
-      // Boost score if query appears as exact substring
-      let finalScore = score;
-      const queryLower = query.toLowerCase();
-      if (textChinese.includes(query)) finalScore += 10;
-      if (textEnglish.toLowerCase().includes(queryLower)) finalScore += 10;
-      const isChinese = /[\u4e00-\u9fff]/.test(query);
-      if (isChinese && textChinese.includes(query)) finalScore += 5;
-      if (!isChinese && textEnglish.toLowerCase().includes(queryLower)) finalScore += 5;
-
       results.push({
         id: verseId,
         bookKey,
@@ -384,13 +376,13 @@ class SearchEngine {
         verse,
         textChinese,
         textEnglish,
-        score: finalScore,
+        score,
         matchType: 'keyword',
       });
     }
 
-    results.sort((a, b) => b.score - a.score);
-    return { results, truncated };
+    // Shared final ranking with the Pagefind path (T4). `query` is already Simplified (normalizeToSimplified).
+    return { results: rankResults(results, { query, simplified: query, variants: [query] }), truncated };
   }
 
   private verseTextById(id: string): string | undefined {
