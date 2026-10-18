@@ -2,7 +2,7 @@
 
 import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
-import { formatResultCount } from '@/lib/search/searchHelpers';
+import { formatResultCount, isOnlyStopTerms, moreWordsHint } from '@/lib/search/searchHelpers';
 import SearchResultCard from './SearchResultCard';
 
 interface SearchResultsProps {
@@ -47,9 +47,11 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
           {language === 'traditional' ? '未找到相關經文' : '未找到相关经文'}
         </p>
         <p className="text-sm text-stone-500 dark:text-stone-400 mt-2 font-chinese">
-          {language === 'traditional'
-            ? '試試其他關鍵詞，或輸入如「約3:16」的經文引用'
-            : '试试其他关键词，或输入如“约3:16”的经文引用'}
+          {isOnlyStopTerms(query)
+            ? moreWordsHint(query, language === 'traditional')
+            : language === 'traditional'
+              ? '試試其他關鍵詞，或輸入如「約3:16」的經文引用'
+              : '试试其他关键词，或输入如“约3:16”的经文引用'}
         </p>
       </div>
     );

@@ -1,7 +1,14 @@
 import type { SearchResult } from '@/types/search';
 import { segmentPinyin, pinyinQueryTerms } from './pinyinTokens.mjs';
 import { rankResults } from './rankResults';
-import { DEFAULT_SEARCH_LIMIT, hasCjk, phraseScore, type SearchResponse } from './searchHelpers';
+import {
+  DEFAULT_SEARCH_LIMIT,
+  HEAVY_CJK,
+  HEAVY_WORDS,
+  hasCjk,
+  phraseScore,
+  type SearchResponse,
+} from './searchHelpers';
 
 export { hasCjk } from './searchHelpers';
 export { cjkBigrams, englishRelevance, requireAllBigramsWhenPhraseHits } from './rankResults';
@@ -291,14 +298,7 @@ function mapPagefindData(data: PagefindResultData, fallbackScore: number, query:
 const PINYIN_TIER = 60_000;
 const PINYIN_FUZZY_TIER = 45_000;
 
-/**
- * Terms so frequent that a Pagefind word search for them scores 14k–25k pages and takes 1–2.5 s (的 2.2 s, the
- * 1.8 s, of 1.2 s; 人 is 0.4 s). They are dropped from the word sub-search when other terms remain; phrase and
- * bigram scoring still see the full query. A query made only of them has no word sub-search.
- */
-const HEAVY_CJK = /的/g;
-const HEAVY_WORDS = new Set(['the', 'and', 'of', 'to', 'i']);
-
+/** Drop heavy stop terms (searchHelpers HEAVY_*) from a word sub-search; null when nothing would remain. */
 export function dropStopTerms(term: string): string | null {
   if (hasCjk(term)) {
     const rest = term.replace(HEAVY_CJK, '');
