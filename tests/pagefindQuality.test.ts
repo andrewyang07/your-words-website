@@ -17,7 +17,7 @@ vi.setConfig({ testTimeout: 60_000, hookTimeout: 240_000 });
 
 beforeAll(async () => {
   if (!fs.existsSync(path.join(pagefindDir, 'pagefind.js'))) {
-    execFileSync('node', ['scripts/build-pagefind-index.mjs'], { cwd: root, stdio: 'ignore' });
+    execFileSync('node', ['scripts/build-pagefind-index.mjs'], { cwd: root, stdio: 'inherit' });
   }
   // Serve /pagefind/* from disk for the real Pagefind runtime (main-thread mode).
   vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {

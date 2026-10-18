@@ -1,0 +1,383 @@
+{
+  "version": 1,
+  "hitRule": "hit = any accepted verse (expect[]) within the top 5 results",
+  "queries": [
+    {
+      "id": 1,
+      "query": "神爱世人那节",
+      "expect": ["约翰福音 3:16"],
+      "category": "colloquial-shell",
+      "inScope": true,
+      "note": "G4"
+    },
+    {
+      "id": 2,
+      "query": "不要忧虑明天",
+      "expect": ["马太福音 6:34"],
+      "category": "fuzzy-memory",
+      "inScope": true
+    },
+    {
+      "id": 3,
+      "query": "love is patient",
+      "expect": ["哥林多前书 13:4"],
+      "category": "english",
+      "inScope": true
+    },
+    {
+      "id": 4,
+      "query": "shen ai shi ren",
+      "expect": ["约翰福音 3:16"],
+      "category": "pinyin-full",
+      "inScope": true,
+      "note": "G1"
+    },
+    {
+      "id": 5,
+      "query": "shen ai si ren",
+      "expect": ["约翰福音 3:16"],
+      "category": "pinyin-fuzzy",
+      "inScope": true
+    },
+    {
+      "id": 6,
+      "query": "sasr",
+      "expect": ["约翰福音 3:16"],
+      "category": "pinyin-initials",
+      "inScope": true,
+      "note": "G2"
+    },
+    {
+      "id": 7,
+      "query": "God so loved the world",
+      "expect": ["约翰福音 3:16"],
+      "category": "english",
+      "inScope": true
+    },
+    {
+      "id": 8,
+      "query": "我靠着那加给我力量的",
+      "expect": ["腓立比书 4:13"],
+      "category": "exact-phrase",
+      "inScope": true,
+      "note": "QA ran it in the English UI; search is UI-independent"
+    },
+    {
+      "id": 9,
+      "query": "叫一切信他的",
+      "expect": ["约翰福音 3:16"],
+      "category": "exact-phrase",
+      "inScope": true
+    },
+    {
+      "id": 10,
+      "query": "神爱世仁",
+      "expect": ["约翰福音 3:16"],
+      "category": "typo",
+      "inScope": true
+    },
+    {
+      "id": 11,
+      "query": "凡事都能作",
+      "expect": ["腓立比书 4:13"],
+      "category": "near-synonym",
+      "inScope": true,
+      "note": "G3: CUV text is 凡事都能做"
+    },
+    {
+      "id": 12,
+      "query": "约 3:16",
+      "expect": ["约翰福音 3:16"],
+      "category": "reference",
+      "inScope": true
+    },
+    {
+      "id": 13,
+      "query": "约3:16",
+      "expect": ["约翰福音 3:16"],
+      "category": "reference",
+      "inScope": true
+    },
+    {
+      "id": 14,
+      "query": "罗8:28",
+      "expect": ["罗马书 8:28"],
+      "category": "reference",
+      "inScope": true
+    },
+    {
+      "id": 15,
+      "query": "林前13",
+      "expect": ["哥林多前书 13:1"],
+      "category": "chapter-reference",
+      "inScope": true,
+      "note": "hit = top 5 are 哥林多前书 13:1-5 in order"
+    },
+    {
+      "id": 16,
+      "query": "Jn 3:16",
+      "expect": ["约翰福音 3:16"],
+      "category": "reference",
+      "inScope": true
+    },
+    {
+      "id": 17,
+      "query": "Rom 8 28",
+      "expect": ["罗马书 8:28"],
+      "category": "reference",
+      "inScope": true
+    },
+    {
+      "id": 18,
+      "query": "神愛世人",
+      "expect": ["约翰福音 3:16"],
+      "category": "traditional",
+      "inScope": true,
+      "note": "QA ran it in the Traditional UI"
+    },
+    {
+      "id": 19,
+      "query": "饶恕",
+      "expect": ["以弗所书 4:32", "马太福音 6:14", "歌罗西书 3:13"],
+      "category": "topic",
+      "inScope": true,
+      "note": "G5; accepted verses decided by roro 2026-10-17"
+    },
+    {
+      "id": 20,
+      "query": "盼望",
+      "expect": ["罗马书 15:13", "罗马书 5:4", "耶利米书 29:11"],
+      "category": "topic",
+      "inScope": true,
+      "note": "G5; accepted verses decided by roro 2026-10-17"
+    },
+    {
+      "id": 21,
+      "query": "撒该",
+      "expect": ["路加福音 19:2", "路加福音 19:5", "路加福音 19:8"],
+      "category": "name",
+      "inScope": true
+    },
+    {
+      "id": 22,
+      "query": "靠着加给我力量的",
+      "expect": ["腓立比书 4:13"],
+      "category": "fuzzy-memory",
+      "inScope": true,
+      "note": "dropped words"
+    },
+    {
+      "id": 23,
+      "query": "上帝爱世人",
+      "expect": ["约翰福音 3:16"],
+      "category": "near-synonym",
+      "inScope": true,
+      "note": "G3 神=上帝"
+    },
+    {
+      "id": 24,
+      "query": "shenaishiren",
+      "expect": ["约翰福音 3:16"],
+      "category": "pinyin-full",
+      "inScope": true,
+      "note": "G2 no spaces"
+    },
+    {
+      "id": 25,
+      "query": "shenasr",
+      "expect": ["约翰福音 3:16"],
+      "category": "pinyin-mixed",
+      "inScope": true,
+      "note": "G2 full + initials"
+    },
+    {
+      "id": 26,
+      "query": "世人 神 爱",
+      "expect": ["约翰福音 3:16"],
+      "category": "word-order",
+      "inScope": true
+    },
+    {
+      "id": 27,
+      "query": "verse about God so loved the world",
+      "expect": ["约翰福音 3:16"],
+      "category": "colloquial-shell",
+      "inScope": true,
+      "note": "G4"
+    },
+    {
+      "id": 28,
+      "query": "耶和华是我的牧者",
+      "expect": ["诗篇 23:1"],
+      "category": "exact-phrase",
+      "inScope": true
+    },
+    {
+      "id": 29,
+      "query": "the lord is my shepherd",
+      "expect": ["诗篇 23:1"],
+      "category": "english",
+      "inScope": true,
+      "note": "G3: WEB says Yahweh"
+    },
+    {
+      "id": 30,
+      "query": "ye he hua shi wo de mu zhe",
+      "expect": ["诗篇 23:1"],
+      "category": "pinyin-full",
+      "inScope": true
+    },
+    {
+      "id": 31,
+      "query": "你们要先求他的国",
+      "expect": ["马太福音 6:33"],
+      "category": "exact-phrase",
+      "inScope": true
+    },
+    {
+      "id": 32,
+      "query": "万事都互相效力",
+      "expect": ["罗马书 8:28"],
+      "category": "exact-phrase",
+      "inScope": true
+    },
+    {
+      "id": 33,
+      "query": "万事互相效力叫爱神的人得益处",
+      "expect": ["罗马书 8:28"],
+      "category": "fuzzy-memory",
+      "inScope": true,
+      "note": "dropped 都"
+    },
+    {
+      "id": 34,
+      "query": "爱是恒久忍耐",
+      "expect": ["哥林多前书 13:4"],
+      "category": "exact-phrase",
+      "inScope": true
+    },
+    {
+      "id": 35,
+      "query": "爱是长久忍耐",
+      "expect": ["哥林多前书 13:4"],
+      "category": "typo",
+      "inScope": true,
+      "note": "misremembered 恒→长"
+    },
+    {
+      "id": 36,
+      "query": "应当一无挂虑",
+      "expect": ["腓立比书 4:6"],
+      "category": "exact-phrase",
+      "inScope": true
+    },
+    {
+      "id": 37,
+      "query": "yi wu gua lv",
+      "expect": ["腓立比书 4:6"],
+      "category": "pinyin-full",
+      "inScope": true,
+      "note": "lv = lü"
+    },
+    {
+      "id": 38,
+      "query": "我就是道路真理生命",
+      "expect": ["约翰福音 14:6"],
+      "category": "fuzzy-memory",
+      "inScope": true,
+      "note": "dropped punctuation"
+    },
+    {
+      "id": 39,
+      "query": "I am the way the truth and the life",
+      "expect": ["约翰福音 14:6"],
+      "category": "english",
+      "inScope": true
+    },
+    {
+      "id": 40,
+      "query": "你的话是我脚前的灯",
+      "expect": ["诗篇 119:105"],
+      "category": "exact-phrase",
+      "inScope": true
+    },
+    {
+      "id": 41,
+      "query": "喜乐的心乃是良药",
+      "expect": ["箴言 17:22"],
+      "category": "exact-phrase",
+      "inScope": true
+    },
+    {
+      "id": 42,
+      "query": "快乐的心乃是良药",
+      "expect": ["箴言 17:22"],
+      "category": "near-synonym",
+      "inScope": true,
+      "note": "G3 喜乐≈快乐"
+    },
+    {
+      "id": 43,
+      "query": "常常喜乐 不住祷告",
+      "expect": ["帖撒罗尼迦前书 5:16", "帖撒罗尼迦前书 5:17"],
+      "category": "word-order",
+      "inScope": true,
+      "note": "spans 5:16-17"
+    },
+    {
+      "id": 44,
+      "query": "trust in the lord with all your heart",
+      "expect": ["箴言 3:5"],
+      "category": "english",
+      "inScope": true,
+      "note": "G3: WEB says Yahweh"
+    },
+    {
+      "id": 45,
+      "query": "专心仰赖耶和华",
+      "expect": ["箴言 3:5"],
+      "category": "exact-phrase",
+      "inScope": true
+    },
+    {
+      "id": 46,
+      "query": "the verse that says in nothing be anxious",
+      "expect": ["腓立比书 4:6"],
+      "category": "colloquial-shell",
+      "inScope": true,
+      "note": "G4"
+    },
+    {
+      "id": 47,
+      "query": "平安",
+      "expect": ["约翰福音 14:27", "腓立比书 4:7", "约翰福音 16:33"],
+      "category": "topic",
+      "inScope": true,
+      "note": "G5; accepted verses decided by roro 2026-10-17"
+    },
+    {
+      "id": 48,
+      "query": "when I feel lonely",
+      "expect": ["申命记 31:6", "希伯来书 13:5", "以赛亚书 41:10"],
+      "category": "semantic",
+      "inScope": false,
+      "note": "以后: no shared keywords"
+    },
+    {
+      "id": 49,
+      "query": "神会保护我不害怕",
+      "expect": ["以赛亚书 41:10", "诗篇 23:4", "诗篇 91:1", "诗篇 91:2"],
+      "category": "semantic",
+      "inScope": false,
+      "note": "以后: meaning only"
+    },
+    {
+      "id": 50,
+      "query": "what does the bible say about worry",
+      "expect": ["马太福音 6:34", "腓立比书 4:6", "彼得前书 5:7"],
+      "category": "semantic",
+      "inScope": false,
+      "note": "以后: meaning only"
+    }
+  ]
+}
