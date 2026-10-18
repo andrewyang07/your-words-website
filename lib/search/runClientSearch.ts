@@ -1,5 +1,11 @@
 import { getSearchEngine } from './searchEngine';
-import { DEFAULT_SEARCH_LIMIT, clampQuery, normalizeSpacedReference, type SearchResponse } from './searchHelpers';
+import {
+  DEFAULT_SEARCH_LIMIT,
+  appendNewResults,
+  clampQuery,
+  normalizeSpacedReference,
+  type SearchResponse,
+} from './searchHelpers';
 
 /**
  * Homepage-parity search for /search: try Pagefind first (OpenCC + phraseScore),
@@ -11,7 +17,20 @@ import { DEFAULT_SEARCH_LIMIT, clampQuery, normalizeSpacedReference, type Search
 export type RunClientSearchOptions = {
   /** Called when Pagefind failed and the MiniSearch fallback must first download/index the Bible. */
   onFallbackLoading?: () => void;
+  /**
+   * Two-step pinyin search. When set, the returned response comes from the main index only (English / CJK results
+   * are never held up by the pinyin index); if the query could be pinyin, the pinyin index is then loaded in the
+   * background and this is called with the merged main + pinyin results. Without it, results include pinyin.
+   */
+  onPinyinResults?: (response: SearchResponse) => void;
+  /** False once a newer query replaced this one: its pinyin search is not started or is abandoned. */
+  isCurrent?: () => boolean;
 };
+
+/** Main-index hit count at or below which the pinyin index is fetched in parallel with the main results. */
+const FEW_MAIN_HITS = 10;
+/** Pinyin result fragments loaded for the first screen of a two-step search. */
+const PINYIN_FIRST_FRAGMENTS = 10;
 
 export async function runClientSearch(
   query: string,
@@ -33,7 +52,10 @@ export async function runClientSearch(
       try {
         const { searchWithPagefind } = await import('./pagefindClient');
         const { promoteReference, loadVersesFromCorpus } = await import('./referenceFirst');
-        const rest = await searchWithPagefind(leading.rest, limit).catch(() => ({ results: [], truncated: false }));
+        const rest = await searchWithPagefind(leading.rest, limit, { pinyin: false }).catch(() => ({
+          results: [],
+          truncated: false,
+        }));
         const results = await promoteReference(rest.results, ref, limit, loadVersesFromCorpus);
         if (results.some((r) => r.matchType === 'reference')) return { results, truncated: rest.truncated };
       } catch {
@@ -50,7 +72,7 @@ export async function runClientSearch(
       // Chapter-only reference: that chapter's verses in order, then normal full-text results.
       const [chapterVerses, response] = await Promise.all([
         pagefindClient.searchChapterWithPagefind(chapterRef.bookOrder, chapterRef.chapter),
-        searchWithPagefind(trimmed, limit),
+        searchWithPagefind(trimmed, limit, { pinyin: false }),
       ]);
       if (chapterVerses.length > 0) {
         const ids = new Set(chapterVerses.map((r) => r.id));
@@ -60,10 +82,45 @@ export async function runClientSearch(
       return response;
     }
     const refPromise = resolveReference(trimmed);
-    const response = await searchWithPagefind(trimmed, limit);
+    const twoStep = Boolean(options.onPinyinResults);
+    const wantsPinyin = twoStep && pagefindClient.couldBePinyin(trimmed);
+    let mainDelivered: () => void = () => undefined;
+    const delivered = new Promise<void>((resolve) => (mainDelivered = resolve));
+    let pinyinStarted = false;
+    const startPinyin = () => {
+      if (pinyinStarted || !wantsPinyin || options.isCurrent?.() === false) return;
+      pinyinStarted = true;
+      // First screen: only the top PINYIN_FIRST_FRAGMENTS fragments per pinyin search; the rest via loadMore.
+      void searchWithPagefind(trimmed, limit, {
+        pinyin: true,
+        pinyinTop: PINYIN_FIRST_FRAGMENTS,
+        isCurrent: options.isCurrent,
+      })
+        // Never before the caller has shown the main results (they would overwrite the merged list).
+        .then(async (merged) => {
+          await delivered;
+          // Append-only below the main results already shown (none shown: pinyin list as-is).
+          options.onPinyinResults?.(appendNewResults(response.results, merged));
+        })
+        .catch(() => undefined);
+    };
+    const response = await searchWithPagefind(trimmed, limit, {
+      pinyin: !twoStep,
+      // A query superseded while typing stops before fetching its result fragments.
+      isCurrent: options.isCurrent,
+      // Few main-index hits (sasr, shen ai shi ren): nothing much to download for the main list, so fetch the
+      // pinyin index alongside it. Many hits (love): wait until the main results are shown.
+      onMainHits: (count) => {
+        if (count <= FEW_MAIN_HITS) startPinyin();
+      },
+    });
     const ref = await refPromise;
-    if (!ref) return response;
-
+    if (!ref) {
+      startPinyin();
+      // The caller renders the returned results in its continuation; release pinyin results after that.
+      setTimeout(mainDelivered, 0);
+      return response;
+    }
     const { promoteReference, loadVersesFromCorpus } = await import('./referenceFirst');
     const results = await promoteReference(response.results, ref, limit, loadVersesFromCorpus);
     // Exact verse reference: show just the referenced verse(s). Loose full-text matches of "约翰福音 3:16"
@@ -71,7 +128,9 @@ export async function runClientSearch(
     const exact = results.filter((r) => r.matchType === 'reference');
     if (exact.length > 0) return { results: exact, truncated: false };
     return { results, truncated: response.truncated };
-  } catch {
+  } catch (error) {
+    // Superseded by a newer query: nothing to show, and not a Pagefind failure (no MiniSearch fallback).
+    if (error instanceof Error && error.name === 'StaleSearchError') return { results: [], truncated: false };
     const engine = getSearchEngine();
     if (!engine.initialized) {
       options.onFallbackLoading?.();
@@ -131,4 +190,19 @@ export function preloadSearch(): Promise<void> {
       preloadPromise = null;
     });
   return preloadPromise;
+}
+
+/**
+ * While the user types: start fetching the pinyin index (search code + part metas) for a pinyin-like query, so the
+ * pinyin search after Enter does not start from zero. Call debounced; skipped while a search is loading so it never
+ * competes with main-index results.
+ */
+export function prefetchPinyinFor(query: string): void {
+  const trimmed = clampQuery(query).trim();
+  if (!trimmed || /[\u3400-\u9fff\d]/.test(trimmed)) return;
+  void import('./pagefindClient')
+    .then((m) => {
+      if (m.couldBePinyin(trimmed)) m.preloadPinyinPagefind(trimmed);
+    })
+    .catch(() => undefined);
 }

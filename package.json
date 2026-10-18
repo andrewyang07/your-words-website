@@ -18,7 +18,7 @@
     "prebuild": "npm run data:presets && npm run search:build-index",
     "data:presets": "node scripts/build-preset-data.mjs",
     "build": "next build --webpack",
-    "search:build-index": "node scripts/build-pagefind-index.mjs",
+    "search:build-index": "node scripts/build-pagefind-index.mjs main && node scripts/build-pagefind-index.mjs pinyin 0 && node scripts/build-pagefind-index.mjs pinyin 1",
     "start": "next start",
     "lint": "eslint . && npm run lint:tw-opacity && npm run format:check",
     "lint:tw-opacity": "node scripts/check-tailwind-opacity.mjs",

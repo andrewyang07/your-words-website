@@ -1,9 +1,9 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { resetPagefindClientForTests, type PagefindModule } from '../lib/search/pagefindClient';
+import { strictShards } from '../lib/search/pagefindClient';
+import { loadRealPagefind } from './helpers/realPagefind';
 import { runClientSearch } from '../lib/search/runClientSearch';
 
 // Real data: the generated Pagefind index (built here if missing, e.g. in CI where tests run before `next build`).
@@ -17,34 +17,10 @@ vi.setConfig({ testTimeout: 60_000, hookTimeout: 240_000 });
 
 beforeAll(async () => {
   if (!fs.existsSync(path.join(pagefindDir, 'pagefind.js'))) {
-    execFileSync('node', ['scripts/build-pagefind-index.mjs'], { cwd: root, stdio: 'inherit' });
+    execFileSync('npm', ['run', 'search:build-index'], { cwd: root, stdio: 'inherit' });
   }
   // Serve /pagefind/* from disk for the real Pagefind runtime (main-thread mode).
-  vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-    const rel = url.replace(/^.*\/pagefind\//, '').split('?')[0]!;
-    try {
-      return new Response(fs.readFileSync(path.join(pagefindDir, rel)), { status: 200 });
-    } catch {
-      return new Response('not found', { status: 404 });
-    }
-  });
-  const pagefind = (await import(
-    /* @vite-ignore */ pathToFileURL(path.join(pagefindDir, 'pagefind.js')).href
-  )) as PagefindModule & {
-    options: (o: Record<string, unknown>) => Promise<void>;
-    search: (t: string) => Promise<unknown>;
-  };
-  // Pagefind picks its CJK query segmenter from <html lang>; give it the site's lang (zh-Hans) like the browser.
-  const g = globalThis as { document?: unknown };
-  g.document = { querySelector: () => ({ getAttribute: () => 'zh-Hans' }) };
-  try {
-    await pagefind.options({ basePath: '/pagefind/', noWorker: true });
-    await pagefind.search('神');
-  } finally {
-    delete g.document;
-  }
-  resetPagefindClientForTests(pagefind);
+  await loadRealPagefind();
 });
 
 const refs = async (q: string, n: number) =>
@@ -138,5 +114,42 @@ describe('T5: pinyin and English are separate; reference + extra text; heavy ter
     expect((await runClientSearch('的')).results).toEqual([]);
     expect(performance.now() - t).toBeLessThan(500);
     expect((await runClientSearch('的人')).results.length).toBeGreaterThan(10);
+  });
+});
+
+describe('T6: initials and 多音字 (real index)', () => {
+  it.each(['sasr', 'shenasr'])('%s puts 约翰福音 3:16 first', async (q) => {
+    expect(await refs(q, 1)).toEqual(['约翰福音 3:16']);
+  });
+
+  it('an English word that also looks like initials still ranks by English ("God so loved" style)', async () => {
+    const { results } = await runClientSearch('god');
+    for (const r of results.slice(0, 5)) expect(r.textEnglish.toLowerCase()).toMatch(/\bgod\b/);
+  });
+
+  it.each([
+    ['行善', 'xing shan', 'hang shan'],
+    ['重生', 'chong sheng', 'zhong sheng'],
+    ['长子', 'zhang zi', 'chang zi'],
+    ['快乐', 'kuai le', 'kuai yue'],
+    ['偿还', 'chang huan', 'chang hai'],
+  ])('多音字 %s: both %s and %s find verses containing it', async (word, a, b) => {
+    for (const q of [a, b]) {
+      const { results } = await runClientSearch(q);
+      expect(results.length).toBeGreaterThan(0);
+      expect(results.slice(0, 5).some((r) => (r.textSimplified || r.textChinese).includes(word))).toBe(true);
+    }
+  });
+});
+
+describe('strictShards (sharded index)', () => {
+  it('drops bundles that loosened a query they have no word for', () => {
+    expect(strictShards([1, 942, 950, 914])).toEqual([true, false, false, false]);
+    expect(strictShards([0, 0, 0, 767])).toEqual([true, true, true, false]);
+  });
+  it('keeps every bundle when counts are about even', () => {
+    expect(strictShards([898, 912, 894, 869])).toEqual([true, true, true, true]);
+    expect(strictShards([1, 0, 1, 2])).toEqual([true, true, true, true]);
+    expect(strictShards([24, 20, 19, 23])).toEqual([true, true, true, true]);
   });
 });

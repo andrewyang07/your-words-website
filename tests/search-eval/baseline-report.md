@@ -4,10 +4,10 @@ Hit = any accepted verse in the top 5. Regenerate: `SEARCH_EVAL_WRITE=1 npm run 
 
 | Path                  | In scope (this phase) | Appendix A (1–21) |
 | --------------------- | --------------------- | ----------------- |
-| Pagefind (primary)    | 35/47 (74.5%)         | 18/21             |
+| Pagefind (primary)    | 37/47 (78.7%)         | 19/21             |
 | MiniSearch (fallback) | 36/47 (76.6%)         | 17/21             |
 
-Launch gate (spec §3.3): Pagefind in scope ≥ 43/47. Now 35/47 — 8 short.
+Launch gate (spec §3.3): Pagefind in scope ≥ 43/47. Now 37/47 — 6 short.
 
 | #   | Query                                     | Expect                                             | Category          | Scope | Pagefind | MiniSearch | Pagefind top 3                                    |
 | --- | ----------------------------------------- | -------------------------------------------------- | ----------------- | ----- | -------- | ---------- | ------------------------------------------------- |
@@ -16,12 +16,12 @@ Launch gate (spec §3.3): Pagefind in scope ≥ 43/47. Now 35/47 — 8 short.
 | 3   | love is patient                           | 哥林多前书 13:4                                    | english           | ✓     | ✓ #1     | ✓ #1       | 哥林多前书 13:4                                   |
 | 4   | shen ai shi ren                           | 约翰福音 3:16                                      | pinyin-full       | ✓     | ✓ #1     | ✗          | 约翰福音 3:16                                     |
 | 5   | shen ai si ren                            | 约翰福音 3:16                                      | pinyin-fuzzy      | ✓     | ✓ #1     | ✗          | 约翰福音 3:16; 撒母耳记上 7:12                    |
-| 6   | sasr                                      | 约翰福音 3:16                                      | pinyin-initials   | ✓     | ✗        | ✗          |                                                   |
+| 6   | sasr                                      | 约翰福音 3:16                                      | pinyin-initials   | ✓     | ✓ #1     | ✗          | 约翰福音 3:16; 诗篇 147:16; 以赛亚书 13:12        |
 | 7   | God so loved the world                    | 约翰福音 3:16                                      | english           | ✓     | ✓ #1     | ✓ #1       | 约翰福音 3:16                                     |
 | 8   | 我靠着那加给我力量的                      | 腓立比书 4:13                                      | exact-phrase      | ✓     | ✓ #1     | ✓ #1       | 腓立比书 4:13                                     |
 | 9   | 叫一切信他的                              | 约翰福音 3:16                                      | exact-phrase      | ✓     | ✓ #2     | ✓ #2       | 约翰福音 3:15; 约翰福音 3:16                      |
 | 10  | 神爱世仁                                  | 约翰福音 3:16                                      | typo              | ✓     | ✓ #1     | ✓ #1       | 约翰福音 3:16                                     |
-| 11  | 凡事都能作                                | 腓立比书 4:13                                      | near-synonym      | ✓     | ✗        | ✓ #2       | 歌罗西书 3:20; 提摩太后书 4:5; 提摩太前书 3:4     |
+| 11  | 凡事都能作                                | 腓立比书 4:13                                      | near-synonym      | ✓     | ✗        | ✓ #2       |                                                   |
 | 12  | 约 3:16                                   | 约翰福音 3:16                                      | reference         | ✓     | ✓ #1     | ✓ #1       | 约翰福音 3:16                                     |
 | 13  | 约3:16                                    | 约翰福音 3:16                                      | reference         | ✓     | ✓ #1     | ✓ #1       | 约翰福音 3:16                                     |
 | 14  | 罗8:28                                    | 罗马书 8:28                                        | reference         | ✓     | ✓ #1     | ✓ #1       | 罗马书 8:28                                       |
@@ -35,7 +35,7 @@ Launch gate (spec §3.3): Pagefind in scope ≥ 43/47. Now 35/47 — 8 short.
 | 22  | 靠着加给我力量的                          | 腓立比书 4:13                                      | fuzzy-memory      | ✓     | ✓ #1     | ✓ #1       | 腓立比书 4:13                                     |
 | 23  | 上帝爱世人                                | 约翰福音 3:16                                      | near-synonym      | ✓     | ✓ #1     | ✓ #1       | 约翰福音 3:16; 约翰福音 3:19; 约翰福音 17:23      |
 | 24  | shenaishiren                              | 约翰福音 3:16                                      | pinyin-full       | ✓     | ✓ #1     | ✗          | 约翰福音 3:16; 撒母耳记上 7:12                    |
-| 25  | shenasr                                   | 约翰福音 3:16                                      | pinyin-mixed      | ✓     | ✗        | ✗          | 撒母耳记上 7:12                                   |
+| 25  | shenasr                                   | 约翰福音 3:16                                      | pinyin-mixed      | ✓     | ✓ #1     | ✗          | 约翰福音 3:16; 撒母耳记上 7:12                    |
 | 26  | 世人 神 爱                                | 约翰福音 3:16                                      | word-order        | ✓     | ✓ #1     | ✓ #1       | 约翰福音 3:16; 诗篇 36:7; 约伯记 36:28            |
 | 27  | verse about God so loved the world        | 约翰福音 3:16                                      | colloquial-shell  | ✓     | ✗        | ✓ #1       |                                                   |
 | 28  | 耶和华是我的牧者                          | 诗篇 23:1                                          | exact-phrase      | ✓     | ✓ #1     | ✓ #1       | 诗篇 23:1                                         |

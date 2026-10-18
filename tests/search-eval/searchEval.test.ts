@@ -1,9 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { format, resolveConfig } from 'prettier';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { resetPagefindClientForTests, type PagefindModule } from '../../lib/search/pagefindClient';
+import { loadRealPagefind } from '../helpers/realPagefind';
 import { runClientSearch } from '../../lib/search/runClientSearch';
 import { getSearchEngine } from '../../lib/search/searchEngine';
 import { evaluate, formatReport, hitIds, regressions, type EvalQuery } from './evalHelpers';
@@ -29,33 +28,7 @@ beforeAll(async () => {
     // running the build would rm -rf public/pagefind under each other.
     throw new Error('public/pagefind is missing. Run `npm run search:build-index` first.');
   }
-  vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-    const rel = url.replace(/^.*\/pagefind\//, '').split('?')[0]!;
-    try {
-      return new Response(fs.readFileSync(path.join(pagefindDir, rel)), { status: 200 });
-    } catch {
-      return new Response('not found', { status: 404 });
-    }
-  });
-  const pagefind = (await import(
-    /* @vite-ignore */ pathToFileURL(path.join(pagefindDir, 'pagefind.js')).href
-  )) as PagefindModule & {
-    options: (o: Record<string, unknown>) => Promise<void>;
-    search: (t: string) => Promise<unknown>;
-  };
-  // Pagefind picks its query segmenter from <html lang>. Without a DOM it falls back to "unknown" and splits CJK
-  // queries per character (不要忧虑明天 → 647 loose hits instead of 1), unlike the browser (lang="zh-Hans").
-  // Present the site's lang only while the instance is created, then remove the stub.
-  const g = globalThis as { document?: unknown };
-  g.document = { querySelector: () => ({ getAttribute: () => 'zh-Hans' }) };
-  try {
-    await pagefind.options({ basePath: '/pagefind/', noWorker: true });
-    await pagefind.search('神');
-  } finally {
-    delete g.document;
-  }
-  resetPagefindClientForTests(pagefind);
+  await loadRealPagefind();
   await getSearchEngine().initialize();
 });
 

@@ -1,5 +1,6 @@
 import type { SearchResult } from '@/types/search';
-import { segmentPinyin, pinyinQueryTerms } from './pinyinTokens.mjs';
+import { PINYIN_BUNDLES } from './pagefindShards.mjs';
+import { initialsQueryTerm, initialsReadings, pinyinQueryTerms, segmentPinyin } from './pinyinTokens.mjs';
 import { rankResults } from './rankResults';
 import {
   DEFAULT_SEARCH_LIMIT,
@@ -30,7 +31,12 @@ type PagefindSearchResponse = {
 
 export type PagefindModule = {
   options?: (options: Record<string, unknown>) => Promise<void>;
-  search: (query: string, options?: { excerptLength?: number }) => Promise<PagefindSearchResponse>;
+  init?: () => Promise<void>;
+  preload?: (term: string) => Promise<void>;
+  search: (
+    query: string,
+    options?: { excerptLength?: number; filters?: Record<string, unknown> },
+  ) => Promise<PagefindSearchResponse>;
 };
 
 type OpenCCModule = {
@@ -38,6 +44,8 @@ type OpenCCModule = {
 };
 
 let pagefindPromise: Promise<PagefindModule> | null = null;
+/** One Pagefind instance per pinyin part (each part's own pagefind.js), loaded in parallel. */
+let pinyinPromise: Promise<PagefindModule[]> | null = null;
 let openCCPromise: Promise<{
   toTraditional: (value: string) => string;
   toSimplified: (value: string) => string;
@@ -79,15 +87,55 @@ export function installPagefindFetchTracker(target: typeof globalThis = globalTh
   };
 }
 
-/** Test hook. */
-export function resetPagefindClientForTests(module?: PagefindModule): void {
+/** Test hook: the main index module and (optionally) the pinyin part modules. */
+export function resetPagefindClientForTests(module?: PagefindModule, pinyin?: PagefindModule | PagefindModule[]): void {
   pagefindPromise = module ? Promise.resolve(module) : null;
+  mainSearchCache.clear();
+  pinyinPromise = pinyin ? Promise.resolve(Array.isArray(pinyin) ? pinyin : [pinyin]) : null;
   pagefindFetchFailures = 0;
+}
+
+/** Start loading the pinyin index (search code, both parts' metas; with a query, its index chunks) without searching. */
+export function preloadPinyinPagefind(query?: string): void {
+  // With a query: also fetch the index chunks its pinyin searches will read (Pagefind preload).
+  const terms = query ? pinyinSearchesFor(query.trim()).map((s) => s.term) : [];
+  void loadPinyinPagefind()
+    .then((parts) =>
+      Promise.all(
+        parts.flatMap((part) =>
+          terms.length > 0
+            ? terms.map((term) => part.preload?.(term) ?? Promise.resolve())
+            : [part.init?.() ?? Promise.resolve()],
+        ),
+      ),
+    )
+    .catch(() => undefined);
 }
 
 /** Warm Pagefind + OpenCC (idle / focus) so the first real query does not pay for loading them. */
 export async function preloadPagefind(): Promise<void> {
   await Promise.all([loadPagefind(), loadOpenCC()]);
+}
+
+/**
+ * Search the pinyin parts as one index without Pagefind's per-index loosening. A part with no entry for a query
+ * word does not return nothing: it ignores the word or falls back to a shorter prefix. Verses are dealt to the parts
+ * round-robin, so a real match count is about the same in every part; a part returning far more than the smallest
+ * count is loosened and left out. Kept results are merged by Pagefind score.
+ */
+export function strictShards(counts: number[]): boolean[] {
+  const min = Math.min(...counts);
+  const limit = min + 5 * Math.sqrt(min + 1) + 10;
+  return counts.map((count) => count <= limit);
+}
+
+async function shardedSearch(parts: PagefindModule[], term: string): Promise<PagefindSearchResponse> {
+  const perPart = await Promise.all(parts.map((part) => part.search(term, { excerptLength: 12 })));
+  if (perPart.length === 1) return perPart[0]!;
+  const keep = strictShards(perPart.map((response) => response.results.length));
+  const results = perPart.flatMap((response, part) => (keep[part] ? response.results : []));
+  results.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  return { results };
 }
 
 async function loadPagefind(): Promise<PagefindModule> {
@@ -104,6 +152,31 @@ async function loadPagefind(): Promise<PagefindModule> {
     );
   }
   return pagefindPromise;
+}
+
+/**
+ * The pinyin index: one Pagefind instance per part (a separate copy of pagefind.js each), all loaded in parallel.
+ * mergeIndex would load the parts one after another (two extra round trips before the first pinyin search).
+ */
+async function loadPinyinPagefind(): Promise<PagefindModule[]> {
+  installPagefindFetchTracker();
+  if (!pinyinPromise) {
+    const load = new Function('url', 'return import(url)') as (url: string) => Promise<PagefindModule>;
+    pinyinPromise = Promise.all(
+      PINYIN_BUNDLES.map(async (base) => {
+        const part = await load(`${base}pagefind.js`);
+        // Pagefind's Web Worker: pinyin index work runs off the main thread, in parallel with the main index
+        // (main-thread mode only matters for detecting failed loads, and a failed pinyin load just means no pinyin
+        // results).
+        await part.options?.({ basePath: base });
+        return part;
+      }),
+    ).catch((error: unknown) => {
+      pinyinPromise = null;
+      throw error;
+    });
+  }
+  return pinyinPromise;
 }
 
 async function loadOpenCC() {
@@ -297,6 +370,10 @@ function mapPagefindData(data: PagefindResultData, fallbackScore: number, query:
 /** Pinyin matches (exact pairs / whole-verse prefix) vs 模糊音 pairs; comparable to the English tier (≤ ~50k). */
 const PINYIN_TIER = 60_000;
 const PINYIN_FUZZY_TIER = 45_000;
+/** The two syllables as one word (pw: 重生 / 众生 for "zhong sheng"), above a pair that spans two words (中|升). */
+const PINYIN_WORD_TIER = 80_000;
+/** Initials matches: below a full English match (coverage alone is 30k), above engine-rank noise. */
+const INITIALS_TIER = 25_000;
 
 /** Drop heavy stop terms (searchHelpers HEAVY_*) from a word sub-search; null when nothing would remain. */
 export function dropStopTerms(term: string): string | null {
@@ -310,7 +387,86 @@ export function dropStopTerms(term: string): string | null {
   return kept.length === words.length ? term : kept.join(' ');
 }
 
-export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_LIMIT): Promise<SearchResponse> {
+/** Thrown when a search is abandoned because a newer query replaced it. */
+export class StaleSearchError extends Error {
+  constructor() {
+    super('search superseded by a newer query');
+    this.name = 'StaleSearchError';
+  }
+}
+
+/** Pinyin sub-searches for a query (Latin only): full / prefix / 模糊音 pinyin, or 首字母 initials. */
+function pinyinSearchesFor(trimmed: string): { term: string; weight: number }[] {
+  if (hasCjk(trimmed)) return [];
+  // G1 (T5): Latin input is tried both as English (variants) and as pinyin (prefixed pinyin tokens), scored apart.
+  const pinyinSyllables = segmentPinyin(trimmed);
+  const pinyinTerms = pinyinSyllables ? pinyinQueryTerms(pinyinSyllables, !/\s/.test(trimmed)) : null;
+  const searches: { term: string; weight: number }[] = [];
+  if (pinyinTerms?.word) searches.push({ term: pinyinTerms.word, weight: PINYIN_WORD_TIER });
+  if (pinyinTerms?.exact) searches.push({ term: pinyinTerms.exact, weight: PINYIN_TIER });
+  if (pinyinTerms?.prefix) searches.push({ term: pinyinTerms.prefix, weight: PINYIN_TIER });
+  if (pinyinTerms?.fuzzy) searches.push({ term: pinyinTerms.fuzzy, weight: PINYIN_FUZZY_TIER });
+  // 首字母 (T6): "sasr", "shenasr". Only when the input is not plain pinyin; scored below a real English match so
+  // English words that happen to look like initials ("god") still rank by English relevance.
+  if (!pinyinSyllables && !/\s/.test(trimmed)) {
+    for (const reading of initialsReadings(trimmed)) {
+      searches.push({ term: initialsQueryTerm(reading), weight: INITIALS_TIER });
+    }
+  }
+  return searches;
+}
+
+/** True when the pinyin index could add results for this query (Latin text that reads as pinyin or initials). */
+export function couldBePinyin(query: string): boolean {
+  return pinyinSearchesFor(query.trim()).length > 0;
+}
+
+export type PagefindSearchOptions = {
+  /** Also search the pinyin index (loading it if needed). false = main index only (fast first results). */
+  pinyin?: boolean;
+  /** Called with the main index's raw hit count as soon as it is known (before any fragment loads). */
+  onMainHits?: (count: number) => void;
+  /** Load at most this many result fragments per pinyin sub-search (first screen); default all ranked ones. */
+  pinyinTop?: number;
+  /** Checked before fragments are fetched; false (a newer query was typed) abandons this search. */
+  isCurrent?: () => boolean;
+};
+
+/**
+ * Main-index searches, memoised per term for the current page: the two-step pinyin search runs the same word /
+ * bigram searches again, and their result data is then reused instead of fetched twice.
+ */
+const mainSearchCache = new Map<string, Promise<PagefindSearchResponse>>();
+function mainSearch(pagefind: PagefindModule, term: string): Promise<PagefindSearchResponse> {
+  let cached = mainSearchCache.get(term);
+  if (!cached) {
+    cached = pagefind.search(term, { excerptLength: 12 }).then((response) => ({
+      results: response.results.map((result) => {
+        let data: Promise<PagefindResultData> | null = null;
+        return {
+          ...result,
+          data: () => {
+            data ??= result.data().catch((error: unknown) => {
+              data = null;
+              throw error;
+            });
+            return data;
+          },
+        };
+      }),
+    }));
+    cached.catch(() => mainSearchCache.delete(term));
+    mainSearchCache.set(term, cached);
+    if (mainSearchCache.size > 50) mainSearchCache.delete(mainSearchCache.keys().next().value!);
+  }
+  return cached;
+}
+
+export async function searchWithPagefind(
+  query: string,
+  limit = DEFAULT_SEARCH_LIMIT,
+  { pinyin = true, onMainHits, pinyinTop, isCurrent }: PagefindSearchOptions = {},
+): Promise<SearchResponse> {
   const trimmed = query.trim();
   if (!trimmed) return { results: [], truncated: false };
 
@@ -321,27 +477,35 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
   // Pagefind's zh segmenter only indexes dictionary words (出发, 以马内利 were unfindable), so CJK queries also
   // search the bigram tokens the index build adds for the Simplified text.
   const bigramQuery = cjk ? toCjkBigramQuery((await loadOpenCC()).toSimplified(trimmed)) : null;
-  // G1 (T5): Latin input is tried both as English (variants) and as pinyin (prefixed pinyin tokens), scored apart.
-  const pinyinSyllables = cjk ? null : segmentPinyin(trimmed);
-  const pinyinTerms = pinyinSyllables ? pinyinQueryTerms(pinyinSyllables, !/\s/.test(trimmed)) : null;
-  const pinyinSearches: { term: string; weight: number }[] = [];
-  if (pinyinTerms?.exact) pinyinSearches.push({ term: pinyinTerms.exact, weight: PINYIN_TIER });
-  if (pinyinTerms?.prefix) pinyinSearches.push({ term: pinyinTerms.prefix, weight: PINYIN_TIER });
-  if (pinyinTerms?.fuzzy) pinyinSearches.push({ term: pinyinTerms.fuzzy, weight: PINYIN_FUZZY_TIER });
+  // The pinyin index is optional: if it cannot load, the main-index results still stand.
+  const pinyinIndex = pinyin && couldBePinyin(trimmed) ? await loadPinyinPagefind().catch(() => null) : null;
+  const pinyinSearches = pinyinIndex ? pinyinSearchesFor(trimmed) : [];
 
   const wordSearches = unique(variants.map(dropStopTerms).filter((v): v is string => v !== null));
   const searches = [...wordSearches, ...(bigramQuery ? [bigramQuery] : []), ...pinyinSearches.map((p) => p.term)];
-  const responses = await Promise.all(searches.map((term) => pagefind.search(term, { excerptLength: 12 })));
+  const pinyinOffset = searches.length - pinyinSearches.length;
+  const isPinyin = (index: number) => index >= pinyinOffset;
+  const responses = await Promise.all(
+    searches.map((term, index) => (isPinyin(index) ? shardedSearch(pinyinIndex!, term) : mainSearch(pagefind, term))),
+  );
+  onMainHits?.(responses.reduce((n, response, index) => n + (isPinyin(index) ? 0 : response.results.length), 0));
   // Engine relevance = sum over the sub-searches (each script variant + the bigram search) of 1 − rank/len, so a
   // verse found high by several sub-searches beats one found by a single search; raw Pagefind scores of
   // different sub-searches are not comparable. Pinyin sub-searches also give a pinyin tier from their own rank.
+  if (isCurrent && !isCurrent()) throw new StaleSearchError();
+  const fullTop = Math.max(limit * 3, 100);
+  const tops = responses.map((response, index) =>
+    response.results.slice(0, isPinyin(index) && pinyinTop ? Math.min(pinyinTop, fullTop) : fullTop),
+  );
+  const pinyinCut = responses.some(
+    (response, index) => isPinyin(index) && response.results.length > tops[index]!.length,
+  );
+  const datas = await Promise.all(tops.map((top) => Promise.all(top.map(loadResultData))));
   const byId = new Map<string, SearchResult>();
   const pinyinScore = new Map<string, number>();
-  const pinyinOffset = searches.length - pinyinSearches.length;
   for (let index = 0; index < responses.length; index += 1) {
-    const response = responses[index]!;
-    const top = response.results.slice(0, Math.max(limit * 3, 100));
-    const data = await Promise.all(top.map(loadResultData));
+    const top = tops[index]!;
+    const data = datas[index]!;
     const weight = index >= pinyinOffset ? pinyinSearches[index - pinyinOffset]!.weight : 0;
     data.forEach((resultData, rank) => {
       const mapped = mapPagefindData(resultData, 1 - rank / top.length, '');
@@ -366,12 +530,14 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
   });
 
   if (pagefindFetchFailures > failuresBefore) {
+    mainSearchCache.clear(); // do not keep results computed from a failed chunk
     throw new PagefindLoadError('a /pagefind/ index or fragment request failed during this search');
   }
 
   const truncated = ranked.length > limit;
   return {
     results: ranked.slice(0, limit),
-    truncated,
+    truncated: truncated || pinyinCut,
+    ...(pinyinCut ? { loadMore: () => searchWithPagefind(query, limit, { pinyin: true }) } : {}),
   };
 }
