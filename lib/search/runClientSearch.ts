@@ -1,5 +1,11 @@
 import { getSearchEngine } from './searchEngine';
-import { DEFAULT_SEARCH_LIMIT, clampQuery, normalizeSpacedReference, type SearchResponse } from './searchHelpers';
+import {
+  DEFAULT_SEARCH_LIMIT,
+  appendNewResults,
+  clampQuery,
+  normalizeSpacedReference,
+  type SearchResponse,
+} from './searchHelpers';
 
 /**
  * Homepage-parity search for /search: try Pagefind first (OpenCC + phraseScore),
@@ -93,7 +99,8 @@ export async function runClientSearch(
         // Never before the caller has shown the main results (they would overwrite the merged list).
         .then(async (merged) => {
           await delivered;
-          options.onPinyinResults?.(merged);
+          // Append-only below the main results already shown (none shown: pinyin list as-is).
+          options.onPinyinResults?.(appendNewResults(response.results, merged));
         })
         .catch(() => undefined);
     };

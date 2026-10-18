@@ -6,6 +6,7 @@ import {
   type PagefindModule,
 } from '../lib/search/pagefindClient';
 import { runClientSearch } from '../lib/search/runClientSearch';
+import { appendNewResults } from '../lib/search/searchHelpers';
 
 vi.mock('../lib/search/referenceFirst', async (orig) => {
   const actual = await orig<typeof import('../lib/search/referenceFirst')>();
@@ -130,5 +131,35 @@ describe('two-index routing (main + pinyin)', () => {
   it('a search superseded while typing returns nothing and does not fall back to MiniSearch', async () => {
     const response = await runClientSearch('love', undefined, { isCurrent: () => false });
     expect(response).toEqual({ results: [], truncated: false });
+  });
+
+  it('pinyin results only append below main results already shown (never reorder them)', async () => {
+    // Pinyin ranks 3:16 first, but love's main results are on screen: they stay on top, 3:16 goes after them.
+    const onPinyinResults = vi.fn();
+    const first = await runClientSearch('love', undefined, { onPinyinResults });
+    await vi.waitFor(() => expect(onPinyinResults).toHaveBeenCalledTimes(1));
+    const merged = onPinyinResults.mock.calls[0]![0] as { results: { id: string }[] };
+    expect(merged.results.slice(0, first.results.length).map((r) => r.id)).toEqual(first.results.map((r) => r.id));
+  });
+});
+
+describe('appendNewResults', () => {
+  const r = (id: string) => ({ id }) as never;
+  it('keeps shown order and appends only new ids', () => {
+    const out = appendNewResults([r('a'), r('b')], { results: [r('c'), r('b'), r('a'), r('d')], truncated: false });
+    expect(out.results.map((x: { id: string }) => x.id)).toEqual(['a', 'b', 'c', 'd']);
+  });
+  it('nothing shown: incoming list as-is', () => {
+    const incoming = { results: [r('c'), r('d')], truncated: true };
+    expect(appendNewResults([], incoming)).toBe(incoming);
+  });
+  it('loadMore stays append-only', async () => {
+    const out = appendNewResults([r('a')], {
+      results: [r('b'), r('a')],
+      truncated: true,
+      loadMore: async () => ({ results: [r('z'), r('b'), r('a'), r('c')], truncated: false }),
+    });
+    const more = await out.loadMore!();
+    expect(more.results.map((x: { id: string }) => x.id)).toEqual(['a', 'b', 'z', 'c']);
   });
 });

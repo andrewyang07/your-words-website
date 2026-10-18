@@ -107,3 +107,20 @@ export function moreWordsHint(query: string, traditional: boolean): string {
   if (!hasCjk(query)) return 'Please type a few more words';
   return traditional ? '請多輸入幾個字' : '请多输入几个字';
 }
+
+/**
+ * Results that arrive after a list is already on screen (pinyin index, "more"): keep every shown result where it
+ * is and only append the new ones, so nothing the user is looking at moves (layout shift). With nothing shown,
+ * the incoming list is used as-is. loadMore is wrapped the same way.
+ */
+export function appendNewResults(shown: SearchResult[], incoming: SearchResponse): SearchResponse {
+  if (shown.length === 0) return incoming;
+  const ids = new Set(shown.map((r) => r.id));
+  const results = [...shown, ...incoming.results.filter((r) => !ids.has(r.id))];
+  const next = incoming.loadMore;
+  return {
+    results,
+    truncated: incoming.truncated,
+    ...(next ? { loadMore: async () => appendNewResults(results, await next()) } : {}),
+  };
+}
