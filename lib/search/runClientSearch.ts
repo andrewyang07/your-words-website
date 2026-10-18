@@ -23,6 +23,25 @@ export async function runClientSearch(
   const spaced = normalizeSpacedReference(trimmed);
   if (spaced !== trimmed && (await resolveReference(spaced))) trimmed = spaced;
 
+  // "John 3:16 meaning", "约3:16 神爱世人": a verse reference followed by extra words. The whole string is not a
+  // reference (Pagefind ANDs every word → 0 results; the loose parser even read "John 3:16 test" as 3 John 1:6), so
+  // show the referenced verse(s) first, then full-text results for the extra words.
+  const leading = splitLeadingReference(trimmed);
+  if (leading) {
+    const ref = await resolveReference(leading.reference);
+    if (ref) {
+      try {
+        const { searchWithPagefind } = await import('./pagefindClient');
+        const { promoteReference, loadVersesFromCorpus } = await import('./referenceFirst');
+        const rest = await searchWithPagefind(leading.rest, limit).catch(() => ({ results: [], truncated: false }));
+        const results = await promoteReference(rest.results, ref, limit, loadVersesFromCorpus);
+        if (results.some((r) => r.matchType === 'reference')) return { results, truncated: rest.truncated };
+      } catch {
+        // fall through to the normal path
+      }
+    }
+  }
+
   try {
     const pagefindClient = await import('./pagefindClient');
     const { searchWithPagefind } = pagefindClient;
@@ -60,6 +79,15 @@ export async function runClientSearch(
     }
     return engine.searchWithMeta(trimmed, limit);
   }
+}
+
+/** Leading "book chapter:verse[-verse]" plus at least one more word, else null. */
+export function splitLeadingReference(query: string): { reference: string; rest: string } | null {
+  const match = /^(.+?\d{1,3}\s*[:：.]\s*\d{1,3}(?:\s*[-–—~～至到]\s*\d{1,3})?)(?:\s+|(?=[\u3400-\u9fff]))(\S.*)$/.exec(
+    query.trim(),
+  );
+  if (!match?.[1] || !match[2]) return null;
+  return { reference: match[1].trim(), rest: match[2].trim() };
 }
 
 async function resolveChapterReference(query: string) {

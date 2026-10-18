@@ -117,3 +117,26 @@ describe('search quality follow-ups (manual QA)', () => {
     expect(Array.isArray(results)).toBe(true);
   });
 });
+
+describe('T5: pinyin and English are separate; reference + extra text; heavy terms', () => {
+  it('shen ai shi ren: 约翰福音 3:16 first, and no top-10 result matched only through English words', async () => {
+    const { pinyin } = await import('pinyin-pro');
+    const { results } = await runClientSearch('shen ai shi ren');
+    expect(`${results[0]?.bookKey} ${results[0]?.chapter}:${results[0]?.verse}`).toBe('约翰福音 3:16');
+    for (const r of results.slice(0, 10)) {
+      const py = pinyin(r.textSimplified || r.textChinese, { toneType: 'none', type: 'array' });
+      for (const syl of ['shen', 'ai', 'shi', 'ren']) expect(py).toContain(syl);
+    }
+  });
+
+  it.each(['John 3:16 meaning', 'John 3:16 test', 'Jn 3:16 hello'])('%s puts 约翰福音 3:16 first', async (q) => {
+    expect(await refs(q, 1)).toEqual(['约翰福音 3:16']);
+  });
+
+  it('的 alone runs no heavy word search (fast, empty); 的人 still finds verses', async () => {
+    const t = performance.now();
+    expect((await runClientSearch('的')).results).toEqual([]);
+    expect(performance.now() - t).toBeLessThan(500);
+    expect((await runClientSearch('的人')).results.length).toBeGreaterThan(10);
+  });
+});

@@ -4,18 +4,18 @@ Hit = any accepted verse in the top 5. Regenerate: `SEARCH_EVAL_WRITE=1 npm run 
 
 | Path                  | In scope (this phase) | Appendix A (1–21) |
 | --------------------- | --------------------- | ----------------- |
-| Pagefind (primary)    | 32/47 (68.1%)         | 17/21             |
+| Pagefind (primary)    | 35/47 (74.5%)         | 18/21             |
 | MiniSearch (fallback) | 36/47 (76.6%)         | 17/21             |
 
-Launch gate (spec §3.3): Pagefind in scope ≥ 43/47. Now 32/47 — 11 short.
+Launch gate (spec §3.3): Pagefind in scope ≥ 43/47. Now 35/47 — 8 short.
 
 | #   | Query                                     | Expect                                             | Category          | Scope | Pagefind | MiniSearch | Pagefind top 3                                    |
 | --- | ----------------------------------------- | -------------------------------------------------- | ----------------- | ----- | -------- | ---------- | ------------------------------------------------- |
 | 1   | 神爱世人那节                              | 约翰福音 3:16                                      | colloquial-shell  | ✓     | ✗        | ✓ #1       |                                                   |
 | 2   | 不要忧虑明天                              | 马太福音 6:34                                      | fuzzy-memory      | ✓     | ✓ #1     | ✓ #1       | 马太福音 6:34                                     |
 | 3   | love is patient                           | 哥林多前书 13:4                                    | english           | ✓     | ✓ #1     | ✓ #1       | 哥林多前书 13:4                                   |
-| 4   | shen ai shi ren                           | 约翰福音 3:16                                      | pinyin-full       | ✓     | ✗ #19    | ✗          | 约书亚记 10:2; 约伯记 34:28; 诗篇 119:165         |
-| 5   | shen ai si ren                            | 约翰福音 3:16                                      | pinyin-fuzzy      | ✓     | ✓ #2     | ✗          | 何西阿书 6:6; 约翰福音 3:16; 出埃及记 2:23        |
+| 4   | shen ai shi ren                           | 约翰福音 3:16                                      | pinyin-full       | ✓     | ✓ #1     | ✗          | 约翰福音 3:16                                     |
+| 5   | shen ai si ren                            | 约翰福音 3:16                                      | pinyin-fuzzy      | ✓     | ✓ #1     | ✗          | 约翰福音 3:16; 撒母耳记上 7:12                    |
 | 6   | sasr                                      | 约翰福音 3:16                                      | pinyin-initials   | ✓     | ✗        | ✗          |                                                   |
 | 7   | God so loved the world                    | 约翰福音 3:16                                      | english           | ✓     | ✓ #1     | ✓ #1       | 约翰福音 3:16                                     |
 | 8   | 我靠着那加给我力量的                      | 腓立比书 4:13                                      | exact-phrase      | ✓     | ✓ #1     | ✓ #1       | 腓立比书 4:13                                     |
@@ -34,20 +34,20 @@ Launch gate (spec §3.3): Pagefind in scope ≥ 43/47. Now 32/47 — 11 short.
 | 21  | 撒该                                      | 路加福音 19:2 / 路加福音 19:5 / 路加福音 19:8      | name              | ✓     | ✓ #1     | ✓ #1       | 路加福音 19:2; 路加福音 19:5; 路加福音 19:8       |
 | 22  | 靠着加给我力量的                          | 腓立比书 4:13                                      | fuzzy-memory      | ✓     | ✓ #1     | ✓ #1       | 腓立比书 4:13                                     |
 | 23  | 上帝爱世人                                | 约翰福音 3:16                                      | near-synonym      | ✓     | ✓ #1     | ✓ #1       | 约翰福音 3:16; 约翰福音 3:19; 约翰福音 17:23      |
-| 24  | shenaishiren                              | 约翰福音 3:16                                      | pinyin-full       | ✓     | ✓ #1     | ✗          | 约翰福音 3:16                                     |
-| 25  | shenasr                                   | 约翰福音 3:16                                      | pinyin-mixed      | ✓     | ✗        | ✗          | 诗篇 60:10; 诗篇 108:11; 诗篇 83:1                |
+| 24  | shenaishiren                              | 约翰福音 3:16                                      | pinyin-full       | ✓     | ✓ #1     | ✗          | 约翰福音 3:16; 撒母耳记上 7:12                    |
+| 25  | shenasr                                   | 约翰福音 3:16                                      | pinyin-mixed      | ✓     | ✗        | ✗          | 撒母耳记上 7:12                                   |
 | 26  | 世人 神 爱                                | 约翰福音 3:16                                      | word-order        | ✓     | ✓ #1     | ✓ #1       | 约翰福音 3:16; 诗篇 36:7; 约伯记 36:28            |
 | 27  | verse about God so loved the world        | 约翰福音 3:16                                      | colloquial-shell  | ✓     | ✗        | ✓ #1       |                                                   |
 | 28  | 耶和华是我的牧者                          | 诗篇 23:1                                          | exact-phrase      | ✓     | ✓ #1     | ✓ #1       | 诗篇 23:1                                         |
 | 29  | the lord is my shepherd                   | 诗篇 23:1                                          | english           | ✓     | ✗        | ✗ #26      |                                                   |
-| 30  | ye he hua shi wo de mu zhe                | 诗篇 23:1                                          | pinyin-full       | ✓     | ✗ #33    | ✗          | 撒母耳记上 24:6; 申命记 33:9; 撒母耳记下 23:17    |
+| 30  | ye he hua shi wo de mu zhe                | 诗篇 23:1                                          | pinyin-full       | ✓     | ✓ #1     | ✗          | 诗篇 23:1                                         |
 | 31  | 你们要先求他的国                          | 马太福音 6:33                                      | exact-phrase      | ✓     | ✓ #1     | ✓ #1       | 马太福音 6:33                                     |
 | 32  | 万事都互相效力                            | 罗马书 8:28                                        | exact-phrase      | ✓     | ✓ #1     | ✓ #1       | 罗马书 8:28                                       |
 | 33  | 万事互相效力叫爱神的人得益处              | 罗马书 8:28                                        | fuzzy-memory      | ✓     | ✓ #1     | ✓ #1       | 罗马书 8:28                                       |
 | 34  | 爱是恒久忍耐                              | 哥林多前书 13:4                                    | exact-phrase      | ✓     | ✓ #1     | ✓ #1       | 哥林多前书 13:4                                   |
 | 35  | 爱是长久忍耐                              | 哥林多前书 13:4                                    | typo              | ✓     | ✗        | ✓ #1       |                                                   |
 | 36  | 应当一无挂虑                              | 腓立比书 4:6                                       | exact-phrase      | ✓     | ✓ #1     | ✓ #1       | 腓立比书 4:6                                      |
-| 37  | yi wu gua lv                              | 腓立比书 4:6                                       | pinyin-full       | ✓     | ✗ #39    | ✗          | 以赛亚书 1:8; 路加福音 12:58; 路加福音 16:6       |
+| 37  | yi wu gua lv                              | 腓立比书 4:6                                       | pinyin-full       | ✓     | ✓ #1     | ✗          | 腓立比书 4:6                                      |
 | 38  | 我就是道路真理生命                        | 约翰福音 14:6                                      | fuzzy-memory      | ✓     | ✓ #1     | ✓ #1       | 约翰福音 14:6                                     |
 | 39  | I am the way the truth and the life       | 约翰福音 14:6                                      | english           | ✓     | ✓ #1     | ✓ #1       | 约翰福音 14:6                                     |
 | 40  | 你的话是我脚前的灯                        | 诗篇 119:105                                       | exact-phrase      | ✓     | ✓ #1     | ✓ #1       | 诗篇 119:105                                      |

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { pinyin } from 'pinyin-pro';
+import { cleanSyllable, pinyinIndexTokens } from '../lib/search/pinyinTokens.mjs';
 
 const execFileAsync = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -40,11 +41,13 @@ const chapterToken = (order, chapter) => `ch${order}x${chapter}`;
 
 const slug = (value) => encodeURIComponent(value).replaceAll('%', '').slice(0, 80);
 
-const toPinyinAliases = (value) => {
-  const spaced = pinyin(value || '', { toneType: 'none' }).toLowerCase();
-  const joined = spaced.replaceAll(' ', '');
-  return `${spaced} ${joined}`.trim();
-};
+const syllablesOf = (value) =>
+  pinyin(value || '', { toneType: 'none', type: 'array' })
+    .map(cleanSyllable)
+    .filter(Boolean);
+
+// Pinyin goes into its own prefixed token namespace (lib/search/pinyinTokens.mjs), apart from English words.
+const toPinyinTokens = (...values) => values.flatMap((value) => pinyinIndexTokens(syllablesOf(value))).join(' ');
 
 async function main() {
   await rm(sourceDir, { recursive: true, force: true });
@@ -78,12 +81,7 @@ async function main() {
         const textSimplified = simplifiedBook?.[chapter]?.[verse] || '';
         const textTraditional = traditionalBook?.[chapter]?.[verse] || textSimplified;
         const textEnglish = englishBook?.[chapter]?.[verse] || '';
-        const pinyinAliases = [
-          toPinyinAliases(book.nameSimplified),
-          toPinyinAliases(book.nameTraditional),
-          toPinyinAliases(textSimplified),
-          toPinyinAliases(textTraditional),
-        ].join(' ');
+        const pinyinAliases = toPinyinTokens(book.nameSimplified, textSimplified);
         const html = `<!doctype html>
 <html lang="zh-Hant">
 <head>
