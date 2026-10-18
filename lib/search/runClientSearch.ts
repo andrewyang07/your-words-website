@@ -1,7 +1,8 @@
 import { getSearchEngine } from './searchEngine';
 import {
   DEFAULT_SEARCH_LIMIT,
-  appendNewResults,
+  mergeKeepingVisible,
+  visibleResultCount,
   clampQuery,
   normalizeSpacedReference,
   type SearchResponse,
@@ -23,6 +24,8 @@ export type RunClientSearchOptions = {
    * background and this is called with the merged main + pinyin results. Without it, results include pinyin.
    */
   onPinyinResults?: (response: SearchResponse) => void;
+  /** How many shown results are on screen when pinyin results arrive (default: cards in the viewport). */
+  visibleCount?: () => number;
   /** False once a newer query replaced this one: its pinyin search is not started or is abandoned. */
   isCurrent?: () => boolean;
 };
@@ -99,8 +102,9 @@ export async function runClientSearch(
         // Never before the caller has shown the main results (they would overwrite the merged list).
         .then(async (merged) => {
           await delivered;
-          // Append-only below the main results already shown (none shown: pinyin list as-is).
-          options.onPinyinResults?.(appendNewResults(response.results, merged));
+          // Merge by score, but keep the results already on screen in place (none shown: merged list as-is).
+          const keep = (options.visibleCount ?? visibleResultCount)();
+          options.onPinyinResults?.(mergeKeepingVisible(response.results, merged, keep));
         })
         .catch(() => undefined);
     };

@@ -6,7 +6,7 @@ import {
   type PagefindModule,
 } from '../lib/search/pagefindClient';
 import { runClientSearch } from '../lib/search/runClientSearch';
-import { appendNewResults } from '../lib/search/searchHelpers';
+import { appendNewResults, mergeKeepingVisible } from '../lib/search/searchHelpers';
 
 vi.mock('../lib/search/referenceFirst', async (orig) => {
   const actual = await orig<typeof import('../lib/search/referenceFirst')>();
@@ -133,13 +133,31 @@ describe('two-index routing (main + pinyin)', () => {
     expect(response).toEqual({ results: [], truncated: false });
   });
 
-  it('pinyin results only append below main results already shown (never reorder them)', async () => {
-    // Pinyin ranks 3:16 first, but love's main results are on screen: they stay on top, 3:16 goes after them.
+  it('pinyin results merge by score below the results on screen (visible ones never move)', async () => {
+    // Pinyin ranks 3:16 first. Two of love's main results are on screen: they stay, 3:16 comes right after them.
     const onPinyinResults = vi.fn();
-    const first = await runClientSearch('love', undefined, { onPinyinResults });
+    const first = await runClientSearch('love', undefined, { onPinyinResults, visibleCount: () => 2 });
     await vi.waitFor(() => expect(onPinyinResults).toHaveBeenCalledTimes(1));
     const merged = onPinyinResults.mock.calls[0]![0] as { results: { id: string }[] };
-    expect(merged.results.slice(0, first.results.length).map((r) => r.id)).toEqual(first.results.map((r) => r.id));
+    expect(merged.results.slice(0, 2).map((r) => r.id)).toEqual(first.results.slice(0, 2).map((r) => r.id));
+    expect(new Set(merged.results.map((r) => r.id)).size).toBe(merged.results.length);
+  });
+});
+
+describe('mergeKeepingVisible', () => {
+  const r = (id: string) => ({ id }) as never;
+  const ids = (x: { results: { id: string }[] }) => x.results.map((y) => y.id);
+  it('keeps the visible head, merged score order below it', () => {
+    const out = mergeKeepingVisible(
+      [r('a'), r('b'), r('c')],
+      { results: [r('p'), r('c'), r('a'), r('b')], truncated: false },
+      1,
+    );
+    expect(ids(out)).toEqual(['a', 'p', 'c', 'b']);
+  });
+  it('nothing visible: merged list as-is', () => {
+    const incoming = { results: [r('p'), r('a')], truncated: false };
+    expect(mergeKeepingVisible([r('a')], incoming, 0)).toBe(incoming);
   });
 });
 
