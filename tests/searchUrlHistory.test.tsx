@@ -12,6 +12,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(nav.query),
 }));
 vi.mock('../lib/search/runClientSearch', () => ({
+  prefetchPinyinFor: () => undefined,
   preloadSearch: vi.fn(() => Promise.resolve()),
   preloadSearchWhenIdle: () => () => {},
   runClientSearch: vi.fn(async () => ({ results: [], truncated: false })),

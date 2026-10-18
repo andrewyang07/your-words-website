@@ -3,7 +3,7 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 import { useSearchStore } from '@/stores/useSearchStore';
-import { preloadSearch, runClientSearch } from '@/lib/search/runClientSearch';
+import { prefetchPinyinFor, preloadSearch, runClientSearch } from '@/lib/search/runClientSearch';
 import { MAX_QUERY_LENGTH, clampQuery, detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
 import { useScriptPick } from '@/lib/useScriptPick';
 
@@ -22,6 +22,9 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
   const pick = useScriptPick();
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prefetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** True while a main-index search is loading; pinyin prefetch waits so it never competes with it. */
+  const mainInFlightRef = useRef(false);
   // Monotonic id of the latest search; responses from older requests are dropped so they can't overwrite newer ones.
   const requestIdRef = useRef(0);
   const placeholderIndexRef = useRef(0);
@@ -74,9 +77,16 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       setLoading(true);
       try {
         // Pagefind first; runClientSearch lazy-loads MiniSearch only if Pagefind fails.
+        mainInFlightRef.current = true;
         const { results: searched, truncated } = await runClientSearch(searchQuery, undefined, {
           onFallbackLoading: () => useSearchStore.getState().setFallbackLoading(true),
+          isCurrent,
+          // Pinyin matches arrive after the main results (separate index); replace the list if still current.
+          onPinyinResults: (merged) => {
+            if (isCurrent()) setResults(merged.results, merged.truncated, merged.loadMore);
+          },
         });
+        mainInFlightRef.current = false;
         if (!isCurrent()) return;
         setResults(searched, truncated);
         setEngineReady(true);
@@ -85,6 +95,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         console.error('Search error:', error);
         setResults([]);
       } finally {
+        mainInFlightRef.current = false;
         if (isCurrent()) setLoading(false);
       }
     },
@@ -109,6 +120,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       setQuery(value);
 
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (prefetchTimerRef.current) clearTimeout(prefetchTimerRef.current);
 
       if (!value.trim()) {
         clear();
@@ -120,11 +132,19 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
 
       // Detect if likely a reference (contains digits after text) → immediate
       const isReference = /[a-zA-Z\u4e00-\u9fff]\s*\d/.test(value);
-      const delay = isReference ? 0 : 150;
+      // Latin input waits a little longer so a word typed at a normal pace (150–200 ms per key) does not start a
+      // search per letter: "s", "sa", "sas" each ran a large prefix search that held up the final one. Enter
+      // searches at once.
+      const delay = isReference ? 0 : /[\u3400-\u9fff]/.test(value) ? 150 : 250;
 
       timerRef.current = setTimeout(() => {
+        timerRef.current = null;
         void performSearch(value);
       }, delay);
+      // Pinyin-like input: fetch the pinyin index in the background while typing (not during a main search).
+      prefetchTimerRef.current = setTimeout(() => {
+        if (!mainInFlightRef.current) prefetchPinyinFor(value);
+      }, 100);
     },
     [setQuery, setLoading, performSearch, clear],
   );
@@ -140,6 +160,11 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
       } else if (e.key === 'Escape') {
         clear();
         inputRef.current?.focus();
+      } else if (e.key === 'Enter' && selectedIndex < 0 && timerRef.current) {
+        // Typed and pressed Enter before the debounce fired: search now.
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+        void performSearch(clampQuery(e.currentTarget.value));
       } else if (e.key === 'Enter' && selectedIndex >= 0) {
         e.preventDefault();
         // Copy selected result
@@ -150,7 +175,7 @@ export default function SearchBox({ variant = 'hero', autoFocus = true }: Search
         }
       }
     },
-    [selectedIndex, results, setSelectedIndex, clear],
+    [selectedIndex, results, setSelectedIndex, clear, performSearch],
   );
 
   return (

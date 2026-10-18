@@ -82,6 +82,8 @@ export function rankByPhraseVariants(results: SearchResult[], queryVariants: str
 export type SearchResponse = {
   results: SearchResult[];
   truncated: boolean;
+  /** Pinyin results were cut to the first fragments; call to load the full merged list ("more"). */
+  loadMore?: () => Promise<SearchResponse>;
 };
 
 /**

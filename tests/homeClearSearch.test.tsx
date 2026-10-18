@@ -10,6 +10,7 @@ const pagefind = vi.hoisted(() => ({
   calls: [] as { query: string; resolve: (r: unknown) => void }[],
 }));
 vi.mock('../lib/search/pagefindClient', () => ({
+  couldBePinyin: () => false,
   searchWithPagefind: (query: string) =>
     new Promise((resolve) => {
       pagefind.calls.push({ query, resolve });

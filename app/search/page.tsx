@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { HelpCircle, Menu } from 'lucide-react';
 import { hydrateSearchStore, useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
-import { runClientSearch } from '@/lib/search/runClientSearch';
+import { prefetchPinyinFor, runClientSearch } from '@/lib/search/runClientSearch';
 import { clampQuery, detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
 import SideMenu from '@/components/navigation/SideMenu';
 import SearchBox from '@/components/search/SearchBox';
@@ -63,11 +63,18 @@ function SearchQuerySync() {
     const langFromQuery = detectSearchLangFromQuery(urlQuery);
     if (langFromQuery) store.setSearchLang(langFromQuery);
     store.setLoading(true);
+    // Opened with a pinyin-like ?q= (shared link, reload): fetch the pinyin index alongside the main one.
+    prefetchPinyinFor(urlQuery);
+    const isCurrent = () => searchId === urlSearchIdRef.current && useSearchStore.getState().query.trim() === urlQuery;
     void runClientSearch(urlQuery, undefined, {
       onFallbackLoading: () => useSearchStore.getState().setFallbackLoading(true),
+      isCurrent,
+      onPinyinResults: (merged) => {
+        if (isCurrent()) useSearchStore.getState().setResults(merged.results, merged.truncated, merged.loadMore);
+      },
     })
       .then(({ results, truncated }) => {
-        if (searchId !== urlSearchIdRef.current || useSearchStore.getState().query.trim() !== urlQuery) return;
+        if (!isCurrent()) return;
         useSearchStore.getState().setResults(results, truncated);
       })
       .catch((error: unknown) => console.error('Search from URL failed:', error))

@@ -885,9 +885,22 @@ export default function HomePage() {
 
           let results: SearchResult[];
           try {
-            const { searchWithPagefind } = await import('@/lib/search/pagefindClient');
-            const pagefindResponse = await searchWithPagefind(value.trim());
+            const { searchWithPagefind, couldBePinyin } = await import('@/lib/search/pagefindClient');
+            // Main index first; pinyin matches (separate index) replace the list when they arrive.
+            const pagefindResponse = await searchWithPagefind(value.trim(), undefined, { pinyin: false });
             results = pagefindResponse.results;
+            if (couldBePinyin(value)) {
+              void searchWithPagefind(value.trim(), undefined, { pinyin: true })
+                .then((merged) => {
+                  if (requestId !== searchRequestRef.current) return;
+                  setSearchResults(merged.results);
+                  if (merged.results.length > 0) {
+                    if (prevShowAllContentRef.current === null) prevShowAllContentRef.current = showAllContent;
+                    setShowAllContent(true);
+                  }
+                })
+                .catch(() => undefined);
+            }
           } catch (pagefindErr) {
             logError('HomePage:pagefindSearchFallback', pagefindErr);
             await initSearchEngine();

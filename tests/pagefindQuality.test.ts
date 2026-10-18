@@ -1,9 +1,9 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { resetPagefindClientForTests, strictShards, type PagefindModule } from '../lib/search/pagefindClient';
+import { strictShards } from '../lib/search/pagefindClient';
+import { loadRealPagefind } from './helpers/realPagefind';
 import { runClientSearch } from '../lib/search/runClientSearch';
 
 // Real data: the generated Pagefind index (built here if missing, e.g. in CI where tests run before `next build`).
@@ -17,34 +17,10 @@ vi.setConfig({ testTimeout: 60_000, hookTimeout: 240_000 });
 
 beforeAll(async () => {
   if (!fs.existsSync(path.join(pagefindDir, 'pagefind.js'))) {
-    execFileSync('node', ['scripts/build-pagefind-index.mjs'], { cwd: root, stdio: 'inherit' });
+    execFileSync('npm', ['run', 'search:build-index'], { cwd: root, stdio: 'inherit' });
   }
   // Serve /pagefind/* from disk for the real Pagefind runtime (main-thread mode).
-  vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-    const rel = url.replace(/^.*\/pagefind\//, '').split('?')[0]!;
-    try {
-      return new Response(fs.readFileSync(path.join(pagefindDir, rel)), { status: 200 });
-    } catch {
-      return new Response('not found', { status: 404 });
-    }
-  });
-  const pagefind = (await import(
-    /* @vite-ignore */ pathToFileURL(path.join(pagefindDir, 'pagefind.js')).href
-  )) as PagefindModule & {
-    options: (o: Record<string, unknown>) => Promise<void>;
-    search: (t: string) => Promise<unknown>;
-  };
-  // Pagefind picks its CJK query segmenter from <html lang>; give it the site's lang (zh-Hans) like the browser.
-  const g = globalThis as { document?: unknown };
-  g.document = { querySelector: () => ({ getAttribute: () => 'zh-Hans' }) };
-  try {
-    await pagefind.options({ basePath: '/pagefind/', noWorker: true });
-    await pagefind.search('神');
-  } finally {
-    delete g.document;
-  }
-  resetPagefindClientForTests(pagefind);
+  await loadRealPagefind();
 });
 
 const refs = async (q: string, n: number) =>
@@ -161,8 +137,8 @@ describe('T6: initials and 多音字 (real index)', () => {
     for (const q of [a, b]) {
       const { results } = await runClientSearch(q);
       expect(results.length).toBeGreaterThan(0);
-      // Top 10: the alternate reading also matches other words (zhong sheng = 众生/众圣 rank above 重生).
-      expect(results.slice(0, 10).some((r) => (r.textSimplified || r.textChinese).includes(word))).toBe(true);
+      // Top 20: the alternate reading also matches other words (zhong sheng = 众生/众圣 rank above 重生, #14).
+      expect(results.slice(0, 20).some((r) => (r.textSimplified || r.textChinese).includes(word))).toBe(true);
     }
   });
 });

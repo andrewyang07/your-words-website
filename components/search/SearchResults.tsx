@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { formatResultCount, isOnlyStopTerms, moreWordsHint } from '@/lib/search/searchHelpers';
@@ -10,8 +11,26 @@ interface SearchResultsProps {
 }
 
 export default function SearchResults({ showKeyboardHint = true }: SearchResultsProps) {
-  const { results, resultsTruncated, selectedIndex, loading, fallbackLoading, query } = useSearchStore();
+  const { results, resultsTruncated, selectedIndex, loading, fallbackLoading, query, loadMore } = useSearchStore();
   const language = useAppStore((s) => s.language);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Pinyin results load only their first fragments; "more" fetches the full merged list for the same query.
+  const showMore = async () => {
+    if (!loadMore || loadingMore) return;
+    const forQuery = useSearchStore.getState().query;
+    setLoadingMore(true);
+    try {
+      const full = await loadMore();
+      if (useSearchStore.getState().query === forQuery) {
+        useSearchStore.getState().setResults(full.results, full.truncated, full.loadMore);
+      }
+    } catch {
+      // keep the first-screen results
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -68,6 +87,24 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
       {results.map((result, index) => (
         <SearchResultCard key={result.id} result={result} index={index} isSelected={index === selectedIndex} />
       ))}
+      {loadMore && (
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => void showMore()}
+            disabled={loadingMore}
+            className="rounded-full border border-bible-200 px-4 py-2 text-sm text-bible-700 font-chinese hover:bg-bible-50 disabled:opacity-60 dark:border-white/10 dark:text-bible-200 dark:hover:bg-white/5"
+          >
+            {loadingMore
+              ? language === 'traditional'
+                ? '載入中…'
+                : '加载中…'
+              : language === 'traditional'
+                ? '更多結果'
+                : '更多结果'}
+          </button>
+        </div>
+      )}
       {showKeyboardHint && results.length > 0 && (
         <p className="text-center text-xs text-bible-400 dark:text-bible-500 pt-2 font-chinese">
           {language === 'traditional' ? '↑↓ 導航 · Enter 複製 · Esc 清除' : '↑↓ 导航 · Enter 复制 · Esc 清除'}

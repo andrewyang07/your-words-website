@@ -10,6 +10,7 @@ import type { SearchResult } from '../types/search';
 
 const pending = vi.hoisted(() => new Map<string, (r: { results: unknown[]; truncated: boolean }) => void>());
 vi.mock('../lib/search/runClientSearch', () => ({
+  prefetchPinyinFor: () => undefined,
   preloadSearch: () => Promise.resolve(),
   preloadSearchWhenIdle: () => () => {},
   runClientSearch: (q: string) =>
@@ -56,13 +57,25 @@ describe('SearchBox', () => {
     expect(pending.size).toBe(0); // still debouncing
   });
 
+  it('Latin input waits 250 ms (no search per letter); Enter searches at once', async () => {
+    const { container } = render(<SearchBox />);
+    const input = container.querySelector('input')!;
+    type(input, 'sasr');
+    await act(async () => vi.advanceTimersByTime(200));
+    expect(pending.size).toBe(0);
+    await act(async () => fireEvent.keyDown(input, { key: 'Enter' }));
+    expect([...pending.keys()]).toEqual(['sasr']);
+    await act(async () => vi.advanceTimersByTime(300));
+    expect(pending.size).toBe(1); // the debounced search was replaced, not run again
+  });
+
   it('drops stale responses that resolve after a newer search', async () => {
     const { container } = render(<SearchBox />);
     const input = container.querySelector('input')!;
     type(input, '神爱');
-    await act(async () => vi.advanceTimersByTime(200));
+    await act(async () => vi.advanceTimersByTime(300));
     type(input, '神爱世人');
-    await act(async () => vi.advanceTimersByTime(200));
+    await act(async () => vi.advanceTimersByTime(300));
 
     await act(async () => pending.get('神爱世人')!({ results: [hit('new')], truncated: false }));
     await act(async () => pending.get('神爱')!({ results: [hit('old')], truncated: false }));
@@ -75,9 +88,9 @@ describe('SearchBox', () => {
     const { container } = render(<SearchBox />);
     const input = container.querySelector('input')!;
     type(input, '神爱');
-    await act(async () => vi.advanceTimersByTime(200));
+    await act(async () => vi.advanceTimersByTime(300));
     type(input, '神爱世人');
-    await act(async () => vi.advanceTimersByTime(200));
+    await act(async () => vi.advanceTimersByTime(300));
     await act(async () => pending.get('神爱')!({ results: [hit('old')], truncated: false }));
     expect(useSearchStore.getState().loading).toBe(true);
     expect(useSearchStore.getState().results).toEqual([]);
@@ -87,7 +100,7 @@ describe('SearchBox', () => {
     const { container } = render(<SearchBox />);
     const input = container.querySelector('input')!;
     type(input, '神爱');
-    await act(async () => vi.advanceTimersByTime(200));
+    await act(async () => vi.advanceTimersByTime(300));
     type(input, '');
     expect(useSearchStore.getState().loading).toBe(false);
     await act(async () => pending.get('神爱')!({ results: [hit('old')], truncated: false }));
@@ -100,7 +113,7 @@ describe('SearchBox clear while a slow search is in flight', () => {
     const view = render(<SearchBox />);
     const input = view.container.querySelector('input')!;
     type(input, '神爱');
-    await act(async () => vi.advanceTimersByTime(200));
+    await act(async () => vi.advanceTimersByTime(300));
     expect(pending.has('神爱')).toBe(true);
     expect(useSearchStore.getState().loading).toBe(true);
     return { view, input };

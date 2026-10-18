@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import type { SearchResponse } from '@/lib/search/searchHelpers';
 import type { SearchResult, ContextVerse } from '@/types/search';
 
 export type SearchLang = 'zh' | 'en';
@@ -8,6 +9,8 @@ interface SearchState {
   query: string;
   results: SearchResult[];
   resultsTruncated: boolean;
+  /** Set when pinyin results were cut to the first fragments; loads the full list. */
+  loadMore: (() => Promise<SearchResponse>) | null;
   selectedIndex: number;
   searchLang: SearchLang;
   contextVerse: {
@@ -22,7 +25,7 @@ interface SearchState {
   engineReady: boolean;
 
   setQuery: (query: string) => void;
-  setResults: (results: SearchResult[], truncated?: boolean) => void;
+  setResults: (results: SearchResult[], truncated?: boolean, loadMore?: SearchResponse['loadMore']) => void;
   setSelectedIndex: (index: number) => void;
   setSearchLang: (lang: SearchLang) => void;
   setContextVerse: (ctx: SearchState['contextVerse']) => void;
@@ -45,6 +48,7 @@ export const useSearchStore = create<SearchState>()(
       query: '',
       results: [],
       resultsTruncated: false,
+      loadMore: null,
       selectedIndex: -1,
       // Server and first client render must agree (React #418): start at 'zh' and apply the saved / browser
       // language only after hydration, via hydrateSearchStore().
@@ -55,7 +59,8 @@ export const useSearchStore = create<SearchState>()(
       engineReady: false,
 
       setQuery: (query) => set({ query }),
-      setResults: (results, truncated = false) => set({ results, resultsTruncated: truncated, selectedIndex: -1 }),
+      setResults: (results, truncated = false, loadMore) =>
+        set({ results, resultsTruncated: truncated, loadMore: loadMore ?? null, selectedIndex: -1 }),
       setSelectedIndex: (selectedIndex) => set({ selectedIndex }),
       setSearchLang: (searchLang) => set({ searchLang }),
       setContextVerse: (contextVerse) => set({ contextVerse }),
@@ -67,6 +72,7 @@ export const useSearchStore = create<SearchState>()(
           query: '',
           results: [],
           resultsTruncated: false,
+          loadMore: null,
           selectedIndex: -1,
           contextVerse: null,
         }),

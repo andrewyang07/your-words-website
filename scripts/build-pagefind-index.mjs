@@ -2,13 +2,22 @@ import { readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pinyin } from 'pinyin-pro';
-import { PAGEFIND_SHARD_COUNT } from '../lib/search/pagefindShards.mjs';
+import { PINYIN_SHARD_COUNT } from '../lib/search/pagefindShards.mjs';
 import { cleanSyllable, pinyinIndexTokens } from '../lib/search/pinyinTokens.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, '.pagefind-source');
 const outputDir = path.join(root, 'public', 'pagefind');
+// Two indexes, each built by its own process (`node build-pagefind-index.mjs main|pinyin`) so each stays under the
+// build machine's memory: main = text, refs, CJK bigrams, chapter tokens (every query); pinyin = only the pinyin /
+// 多音字 / initials tokens, loaded by the client for Latin queries that could be pinyin. Keep the pinyin path in sync
+// with PAGEFIND_PINYIN_PATH in lib/search/pagefindClient.ts.
+// The pinyin index alone peaked at 5.3 GB, so it is split in PINYIN_SHARD_COUNT bundles (verse n → bundle n % N),
+// one process each: `node build-pagefind-index.mjs pinyin <k>`.
+const KIND = process.argv[2] === 'pinyin' ? 'pinyin' : 'main';
+const SHARD = KIND === 'pinyin' ? Number(process.argv[3] ?? 0) : 0;
+const pinyinOutputDir = path.join(outputDir, `pinyin-${SHARD}`);
 
 const readJson = async (relativePath) => JSON.parse(await readFile(path.join(root, relativePath), 'utf8'));
 
@@ -50,8 +59,9 @@ const toPinyinTokens = (...values) => values.flatMap((value) => pinyinIndexToken
 /** Synthetic search tokens follow this word in each record; post-processing cuts them out of the stored text. */
 const TOKEN_SENTINEL = 'zzpagefindtokenszz';
 
-/** Stream one shard's verses into a Pagefind index (Node API, one record at a time). */
-async function addBooks(index, books, { simplified, traditional, english }, shard = 0, shardCount = 1) {
+/** Stream every verse into a Pagefind index (Node API, one record at a time). */
+async function addBooks(index, books, { simplified, traditional, english }) {
+  const shardCount = KIND === 'pinyin' ? PINYIN_SHARD_COUNT : 1;
   let count = 0;
   let ordinal = 0;
   for (const book of books) {
@@ -65,32 +75,32 @@ async function addBooks(index, books, { simplified, traditional, english }, shar
       const verses = simplifiedBook[chapter] || {};
       for (const verse of Object.keys(verses).sort((a, b) => Number(a) - Number(b))) {
         ordinal += 1;
-        if ((ordinal - 1) % shardCount !== shard) continue;
+        if ((ordinal - 1) % shardCount !== SHARD) continue;
         count += 1;
         const id = `${book.key}-${chapter}-${verse}`;
         const title = `${book.nameTraditional} ${chapter}:${verse}`;
         const textSimplified = simplifiedBook?.[chapter]?.[verse] || '';
         const textTraditional = traditionalBook?.[chapter]?.[verse] || textSimplified;
         const textEnglish = englishBook?.[chapter]?.[verse] || '';
-        const content = [
-          title,
-          `${book.nameSimplified}${chapter}:${verse} ${book.nameTraditional}${chapter}:${verse} ${book.nameEnglish} ${chapter}:${verse}`,
-          `${book.nameSimplified} ${book.nameTraditional} ${book.nameEnglish}`,
-          textSimplified,
-          textTraditional,
-          textEnglish,
-          // Index-only tokens (stripped from the stored fragment text below): pinyin, CJK bigrams, chapter token.
-          TOKEN_SENTINEL,
-          toPinyinTokens(book.nameSimplified, textSimplified),
-          cjkBigrams(textSimplified),
-          chapterToken(book.order, chapter),
-        ].join('\n');
+        // Index-only tokens follow TOKEN_SENTINEL and are cut from the stored fragment text after writeFiles.
+        const content =
+          KIND === 'pinyin'
+            ? [TOKEN_SENTINEL, toPinyinTokens(book.nameSimplified, textSimplified)].join('\n')
+            : [
+                title,
+                `${book.nameSimplified}${chapter}:${verse} ${book.nameTraditional}${chapter}:${verse} ${book.nameEnglish} ${chapter}:${verse}`,
+                `${book.nameSimplified} ${book.nameTraditional} ${book.nameEnglish}`,
+                textSimplified,
+                textTraditional,
+                textEnglish,
+                TOKEN_SENTINEL,
+                cjkBigrams(textSimplified),
+                chapterToken(book.order, chapter),
+              ].join('\n');
         const { errors: addErrors } = await index.addCustomRecord({
           url: `/verse/${slug(id)}`,
           content,
           language: 'zh-hant',
-          // Lets the client search one bundle at a time (lib/search/pagefindClient.ts shardedSearch).
-          filters: { shard: [String(shard)] },
           meta: {
             title,
             id,
@@ -114,7 +124,8 @@ async function addBooks(index, books, { simplified, traditional, english }, shar
 
 async function main() {
   await rm(sourceDir, { recursive: true, force: true }); // left over from the old HTML-file build
-  await rm(outputDir, { recursive: true, force: true });
+  // `main` runs first and starts from an empty /pagefind/; each `pinyin <k>` then replaces only /pagefind/pinyin-<k>/.
+  await rm(KIND === 'pinyin' ? pinyinOutputDir : outputDir, { recursive: true, force: true });
 
   const [{ books }, simplified, traditional, english] = await Promise.all([
     readJson('public/data/books.json'),
@@ -123,26 +134,17 @@ async function main() {
     readJson('public/data/WEB_bible.json'),
   ]);
 
-  // Interleave verses across shards (verse n goes to shard n % count) so every shard has nearly the same
-  // term statistics; Pagefind scores each bundle on its own, and contiguous book ranges skewed merged ranking.
-  const shards = Array.from({ length: PAGEFIND_SHARD_COUNT }, (_, i) => i);
-
+  const out = KIND === 'pinyin' ? pinyinOutputDir : outputDir;
   const { createIndex, close } = await import('pagefind');
-  let count = 0;
-  let stripped = 0;
-  for (let shard = 0; shard < shards.length; shard += 1) {
-    // One Pagefind service per shard, closed before the next one starts, so peak memory is one shard's worth.
-    const { index, errors } = await createIndex({ forceLanguage: 'zh-hant' });
-    if (!index) throw new Error(`pagefind createIndex failed: ${errors.join('; ')}`);
-    count += await addBooks(index, books, { simplified, traditional, english }, shard, shards.length);
-    const out = shard === 0 ? outputDir : path.join(outputDir, `shard-${shard}`);
-    const { errors: writeErrors } = await index.writeFiles({ outputPath: out });
-    if (writeErrors.length) throw new Error(`pagefind writeFiles failed: ${writeErrors.join('; ')}`);
-    await close();
-    stripped += await stripTokensFromFragments(path.join(out, 'fragment'));
-  }
+  const { index, errors } = await createIndex({ forceLanguage: 'zh-hant' });
+  if (!index) throw new Error(`pagefind createIndex failed: ${errors.join('; ')}`);
+  const count = await addBooks(index, books, { simplified, traditional, english });
+  const { errors: writeErrors } = await index.writeFiles({ outputPath: out });
+  if (writeErrors.length) throw new Error(`pagefind writeFiles failed: ${writeErrors.join('; ')}`);
+  await close();
+  const stripped = await stripTokensFromFragments(path.join(out, 'fragment'));
   console.log(
-    `Generated Pagefind index for ${count} verses in ${shards.length} bundles (tokens cut from ${stripped} fragments).`,
+    `Generated ${KIND === 'pinyin' ? `pinyin-${SHARD}` : 'main'} Pagefind index for ${count} verses (tokens cut from ${stripped} fragments).`,
   );
 }
 
