@@ -56,6 +56,8 @@ describe('T6: initials and 多音字', () => {
     expect(initialsReadings('sasr').map(initialsQueryTerm)).toContain('ptsas ptasr');
     expect(initialsReadings('shenasr').map(initialsQueryTerm)).toContain('ptsas ptasr pyshen');
     expect(initialsReadings('a')).toEqual([]);
+    for (const two of ['ys', 'jn', 'ps']) expect(initialsReadings(two)).toEqual([]);
+    expect(initialsReadings('ysj').length).toBeGreaterThan(0);
     expect(initialsReadings('love is')).toEqual(initialsReadings('loveis'));
   });
 
