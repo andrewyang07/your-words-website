@@ -46,7 +46,9 @@ export const useSearchStore = create<SearchState>()(
       results: [],
       resultsTruncated: false,
       selectedIndex: -1,
-      searchLang: detectDefaultLang(),
+      // Server and first client render must agree (React #418): start at 'zh' and apply the saved / browser
+      // language only after hydration, via hydrateSearchStore().
+      searchLang: 'zh',
       contextVerse: null,
       loading: false,
       fallbackLoading: false,
@@ -75,6 +77,17 @@ export const useSearchStore = create<SearchState>()(
       partialize: (state) => ({
         searchLang: state.searchLang,
       }),
+      skipHydration: true,
     },
   ),
 );
+
+/**
+ * Apply the saved search language (or the browser default when nothing is saved). Call from an effect after the
+ * first render; reading localStorage / navigator during render made the client HTML differ from the server's.
+ */
+export function hydrateSearchStore(): void {
+  const saved = typeof localStorage !== 'undefined' && localStorage.getItem('bible-search') !== null;
+  void useSearchStore.persist.rehydrate();
+  if (!saved) useSearchStore.setState({ searchLang: detectDefaultLang() });
+}

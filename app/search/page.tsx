@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { HelpCircle, Menu } from 'lucide-react';
-import { useSearchStore } from '@/stores/useSearchStore';
+import { hydrateSearchStore, useSearchStore } from '@/stores/useSearchStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { runClientSearch } from '@/lib/search/runClientSearch';
 import { clampQuery, detectSearchLangFromQuery } from '@/lib/search/searchHelpers';
@@ -36,6 +36,11 @@ function SearchQuerySync() {
   // The q value that URL and store currently agree on; null until the URL has been read once.
   const syncedRef = useRef<string | null>(null);
   const urlSearchIdRef = useRef(0);
+
+  // Saved search language is applied after hydration (before the URL effect below, which may override it).
+  useEffect(() => {
+    hydrateSearchStore();
+  }, []);
 
   useEffect(() => {
     // Pagefind answers queries; MiniSearch is only loaded lazily by runClientSearch when Pagefind fails.
