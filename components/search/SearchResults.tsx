@@ -33,8 +33,10 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
   };
 
   if (loading) {
+    // Loading and results reserve the viewport height with the same top margin, so the help section below
+    // never jumps when results replace the skeleton (CLS, T6d).
     return (
-      <div className="w-full max-w-3xl mx-auto mt-6 space-y-4" aria-busy="true">
+      <div className="w-full max-w-3xl mx-auto mt-5 min-h-[100svh] space-y-4" aria-busy="true">
         <p role="status" className="px-1 text-center text-sm text-stone-600 dark:text-stone-400 font-chinese">
           {language === 'traditional' ? '載入中…' : '加载中…'}
           {fallbackLoading && (
@@ -77,7 +79,7 @@ export default function SearchResults({ showKeyboardHint = true }: SearchResults
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto mt-5 space-y-4">
+    <div className="w-full max-w-3xl mx-auto mt-5 min-h-[100svh] space-y-4">
       <p className="text-xs text-stone-500 dark:text-stone-400 font-chinese px-1">
         {formatResultCount(results.length, {
           truncated: resultsTruncated,
