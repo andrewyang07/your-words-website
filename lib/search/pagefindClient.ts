@@ -1,4 +1,5 @@
 import type { SearchResult } from '@/types/search';
+import { PAGEFIND_EXTRA_SHARDS, PAGEFIND_SHARD_COUNT } from './pagefindShards.mjs';
 import { initialsQueryTerm, initialsReadings, pinyinQueryTerms, segmentPinyin } from './pinyinTokens.mjs';
 import { rankResults } from './rankResults';
 import {
@@ -30,7 +31,11 @@ type PagefindSearchResponse = {
 
 export type PagefindModule = {
   options?: (options: Record<string, unknown>) => Promise<void>;
-  search: (query: string, options?: { excerptLength?: number }) => Promise<PagefindSearchResponse>;
+  search: (
+    query: string,
+    options?: { excerptLength?: number; filters?: Record<string, unknown> },
+  ) => Promise<PagefindSearchResponse>;
+  mergeIndex?: (basePath: string, options?: Record<string, unknown>) => Promise<void>;
 };
 
 type OpenCCModule = {
@@ -81,13 +86,47 @@ export function installPagefindFetchTracker(target: typeof globalThis = globalTh
 
 /** Test hook. */
 export function resetPagefindClientForTests(module?: PagefindModule): void {
-  pagefindPromise = module ? Promise.resolve(module) : null;
+  pagefindPromise = module ? mergeShards(module).then(() => module) : null;
   pagefindFetchFailures = 0;
 }
 
 /** Warm Pagefind + OpenCC (idle / focus) so the first real query does not pay for loading them. */
 export async function preloadPagefind(): Promise<void> {
   await Promise.all([loadPagefind(), loadOpenCC()]);
+}
+
+/** Merge the other index bundles (pagefindShards.mjs) into the primary one; they are searched as one index. */
+async function mergeShards(module: PagefindModule): Promise<void> {
+  if (typeof module.mergeIndex !== 'function') return;
+  await Promise.all(PAGEFIND_EXTRA_SHARDS.map((basePath) => module.mergeIndex!(basePath)));
+}
+
+/**
+ * Search the bundles as one index without Pagefind's per-bundle loosening. A bundle with no entry for a query word
+ * does not return nothing: it ignores the word or falls back to a shorter prefix (神爱世人 found John 3:16 in one
+ * bundle and ~940 verses with 神 in each of the others; sasr matched 767 "sa…" verses in one bundle). Verses are
+ * dealt to the bundles round-robin, so a real match count is about the same in every bundle; a bundle returning
+ * far more than the smallest count is loosened and left out. Kept results are merged by Pagefind score.
+ */
+export function strictShards(counts: number[]): boolean[] {
+  const min = Math.min(...counts);
+  const limit = min + 5 * Math.sqrt(min + 1) + 10;
+  return counts.map((count) => count <= limit);
+}
+
+async function shardedSearch(pagefind: PagefindModule, term: string): Promise<PagefindSearchResponse> {
+  if (typeof pagefind.mergeIndex !== 'function' || PAGEFIND_SHARD_COUNT < 2) {
+    return pagefind.search(term, { excerptLength: 12 });
+  }
+  const perShard = await Promise.all(
+    Array.from({ length: PAGEFIND_SHARD_COUNT }, (_, shard) =>
+      pagefind.search(term, { excerptLength: 12, filters: { shard: String(shard) } }),
+    ),
+  );
+  const keep = strictShards(perShard.map((response) => response.results.length));
+  const results = perShard.flatMap((response, shard) => (keep[shard] ? response.results : []));
+  results.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  return { results };
 }
 
 async function loadPagefind(): Promise<PagefindModule> {
@@ -99,6 +138,7 @@ async function loadPagefind(): Promise<PagefindModule> {
         // Run Pagefind on the main thread: in its Web Worker, index/fragment fetches bypass the fetch tracker
         // above and load failures can't be detected. Must be set before the first search initialises it.
         await module.options?.({ noWorker: true });
+        await mergeShards(module);
         return module;
       },
     );
@@ -340,7 +380,7 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
 
   const wordSearches = unique(variants.map(dropStopTerms).filter((v): v is string => v !== null));
   const searches = [...wordSearches, ...(bigramQuery ? [bigramQuery] : []), ...pinyinSearches.map((p) => p.term)];
-  const responses = await Promise.all(searches.map((term) => pagefind.search(term, { excerptLength: 12 })));
+  const responses = await Promise.all(searches.map((term) => shardedSearch(pagefind, term)));
   // Engine relevance = sum over the sub-searches (each script variant + the bigram search) of 1 − rank/len, so a
   // verse found high by several sub-searches beats one found by a single search; raw Pagefind scores of
   // different sub-searches are not comparable. Pinyin sub-searches also give a pinyin tier from their own rank.

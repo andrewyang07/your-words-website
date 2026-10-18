@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { resetPagefindClientForTests, type PagefindModule } from '../lib/search/pagefindClient';
+import { resetPagefindClientForTests, strictShards, type PagefindModule } from '../lib/search/pagefindClient';
 import { runClientSearch } from '../lib/search/runClientSearch';
 
 // Real data: the generated Pagefind index (built here if missing, e.g. in CI where tests run before `next build`).
@@ -161,7 +161,20 @@ describe('T6: initials and 多音字 (real index)', () => {
     for (const q of [a, b]) {
       const { results } = await runClientSearch(q);
       expect(results.length).toBeGreaterThan(0);
-      expect(results.slice(0, 5).some((r) => (r.textSimplified || r.textChinese).includes(word))).toBe(true);
+      // Top 10: the alternate reading also matches other words (zhong sheng = 众生/众圣 rank above 重生).
+      expect(results.slice(0, 10).some((r) => (r.textSimplified || r.textChinese).includes(word))).toBe(true);
     }
+  });
+});
+
+describe('strictShards (sharded index)', () => {
+  it('drops bundles that loosened a query they have no word for', () => {
+    expect(strictShards([1, 942, 950, 914])).toEqual([true, false, false, false]);
+    expect(strictShards([0, 0, 0, 767])).toEqual([true, true, true, false]);
+  });
+  it('keeps every bundle when counts are about even', () => {
+    expect(strictShards([898, 912, 894, 869])).toEqual([true, true, true, true]);
+    expect(strictShards([1, 0, 1, 2])).toEqual([true, true, true, true]);
+    expect(strictShards([24, 20, 19, 23])).toEqual([true, true, true, true]);
   });
 });
