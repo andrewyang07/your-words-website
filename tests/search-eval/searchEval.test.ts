@@ -97,7 +97,7 @@ describe('search eval set', () => {
 
 // Spec §3.2 (T4): on a fixed set of 20 queries both engines put the same verses in the same order in the top 5.
 // Pagefind's word segmentation often returns fewer candidates (e.g. only the matching verse), so the shorter list
-// must be a prefix of the longer one rather than an exact match of all five.
+// must be a non-empty prefix of the longer one rather than an exact match of all five.
 const PARITY_IDS = [2, 3, 7, 9, 12, 13, 14, 15, 16, 17, 18, 21, 28, 31, 32, 34, 36, 40, 41, 45];
 
 describe('engine parity (T4: shared rankResults)', () => {
@@ -107,7 +107,10 @@ describe('engine parity (T4: shared rankResults)', () => {
       const a = toRefs((await runClientSearch(q.query)).results).slice(0, 5);
       const b = toRefs((await getSearchEngine().searchWithMeta(q.query)).results).slice(0, 5);
       const n = Math.min(a.length, b.length);
-      if (n === 0 || a.slice(0, n).join() !== b.slice(0, n).join()) {
+      if (n === 0) {
+        // Approved rule (roro, 2026-10-18): the shorter list must be non-empty; an empty result never counts as parity.
+        diffs.push(`#${q.id} ${q.query}: empty result (Pagefind ${a.length}, MiniSearch ${b.length})`);
+      } else if (a.slice(0, n).join() !== b.slice(0, n).join()) {
         diffs.push(`#${q.id} ${q.query}: Pagefind ${a.join('; ')} | MiniSearch ${b.join('; ')}`);
       }
     }
