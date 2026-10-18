@@ -1,5 +1,5 @@
 import type { SearchResult } from '@/types/search';
-import { segmentPinyin, pinyinQueryTerms } from './pinyinTokens.mjs';
+import { initialsQueryTerm, initialsReadings, pinyinQueryTerms, segmentPinyin } from './pinyinTokens.mjs';
 import { rankResults } from './rankResults';
 import {
   DEFAULT_SEARCH_LIMIT,
@@ -297,6 +297,8 @@ function mapPagefindData(data: PagefindResultData, fallbackScore: number, query:
 /** Pinyin matches (exact pairs / whole-verse prefix) vs 模糊音 pairs; comparable to the English tier (≤ ~50k). */
 const PINYIN_TIER = 60_000;
 const PINYIN_FUZZY_TIER = 45_000;
+/** Initials matches: below a full English match (coverage alone is 30k), above engine-rank noise. */
+const INITIALS_TIER = 25_000;
 
 /** Drop heavy stop terms (searchHelpers HEAVY_*) from a word sub-search; null when nothing would remain. */
 export function dropStopTerms(term: string): string | null {
@@ -328,6 +330,13 @@ export async function searchWithPagefind(query: string, limit = DEFAULT_SEARCH_L
   if (pinyinTerms?.exact) pinyinSearches.push({ term: pinyinTerms.exact, weight: PINYIN_TIER });
   if (pinyinTerms?.prefix) pinyinSearches.push({ term: pinyinTerms.prefix, weight: PINYIN_TIER });
   if (pinyinTerms?.fuzzy) pinyinSearches.push({ term: pinyinTerms.fuzzy, weight: PINYIN_FUZZY_TIER });
+  // 首字母 (T6): "sasr", "shenasr". Only when the input is not plain pinyin; scored below a real English match so
+  // English words that happen to look like initials ("god") still rank by English relevance.
+  if (!cjk && !pinyinSyllables && !/\s/.test(trimmed)) {
+    for (const reading of initialsReadings(trimmed)) {
+      pinyinSearches.push({ term: initialsQueryTerm(reading), weight: INITIALS_TIER });
+    }
+  }
 
   const wordSearches = unique(variants.map(dropStopTerms).filter((v): v is string => v !== null));
   const searches = [...wordSearches, ...(bigramQuery ? [bigramQuery] : []), ...pinyinSearches.map((p) => p.term)];

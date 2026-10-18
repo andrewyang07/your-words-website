@@ -41,13 +41,21 @@ const chapterToken = (order, chapter) => `ch${order}x${chapter}`;
 
 const slug = (value) => encodeURIComponent(value).replaceAll('%', '').slice(0, 80);
 
-const syllablesOf = (value) =>
-  pinyin(value || '', { toneType: 'none', type: 'array' })
-    .map(cleanSyllable)
-    .filter(Boolean);
+const stripTone = (value) =>
+  value
+    .replace(/ü/g, 'v')
+    .normalize('NFD')
+    .replace(/u\u0308/g, 'v')
+    .replace(/[\u0300-\u036f]/g, '');
+
+// Per character: in-context reading first, then the other readings of a 多音字 (行 → xing, hang, heng). T6.
+const readingsOf = (value) =>
+  pinyin(value || '', { type: 'all', toneType: 'none' })
+    .filter((c) => c.pinyin)
+    .map((c) => [c.pinyin, ...(c.polyphonic ?? []).map(stripTone)].map(cleanSyllable).filter(Boolean));
 
 // Pinyin goes into its own prefixed token namespace (lib/search/pinyinTokens.mjs), apart from English words.
-const toPinyinTokens = (...values) => values.flatMap((value) => pinyinIndexTokens(syllablesOf(value))).join(' ');
+const toPinyinTokens = (...values) => values.flatMap((value) => pinyinIndexTokens(readingsOf(value))).join(' ');
 
 async function main() {
   await rm(sourceDir, { recursive: true, force: true });

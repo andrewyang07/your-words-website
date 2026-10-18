@@ -140,3 +140,28 @@ describe('T5: pinyin and English are separate; reference + extra text; heavy ter
     expect((await runClientSearch('的人')).results.length).toBeGreaterThan(10);
   });
 });
+
+describe('T6: initials and 多音字 (real index)', () => {
+  it.each(['sasr', 'shenasr'])('%s puts 约翰福音 3:16 first', async (q) => {
+    expect(await refs(q, 1)).toEqual(['约翰福音 3:16']);
+  });
+
+  it('an English word that also looks like initials still ranks by English ("God so loved" style)', async () => {
+    const { results } = await runClientSearch('god');
+    for (const r of results.slice(0, 5)) expect(r.textEnglish.toLowerCase()).toMatch(/\bgod\b/);
+  });
+
+  it.each([
+    ['行善', 'xing shan', 'hang shan'],
+    ['重生', 'chong sheng', 'zhong sheng'],
+    ['长子', 'zhang zi', 'chang zi'],
+    ['快乐', 'kuai le', 'kuai yue'],
+    ['偿还', 'chang huan', 'chang hai'],
+  ])('多音字 %s: both %s and %s find verses containing it', async (word, a, b) => {
+    for (const q of [a, b]) {
+      const { results } = await runClientSearch(q);
+      expect(results.length).toBeGreaterThan(0);
+      expect(results.slice(0, 5).some((r) => (r.textSimplified || r.textChinese).includes(word))).toBe(true);
+    }
+  });
+});
